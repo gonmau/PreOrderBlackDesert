@@ -1,23 +1,36 @@
-name: Daily PS5 Sales Tracker
+name: Daily Crimson Desert Tracker
 
 on:
   schedule:
-    # 한국 시간(KST) 오전 8시 = UTC 23:00 (전날)
-    - cron: '0 23 * * *'
+    - cron: '0 23 * * *' # 한국시간 오전 8시
   workflow_dispatch:
 
 jobs:
-  report:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
+
       - name: Install dependencies
-        run: pip install requests beautifulsoup4
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium # 실제 브라우저 설치
+
       - name: Run Tracker
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: python scraper.py
+
+      - name: Commit files # 데이터를 저장하기 위해 변경사항을 깃허브에 다시 커밋
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add rank_history.csv rank_trend.png
+          git commit -m "Update ranking data" || echo "No changes to commit"
+          git push
