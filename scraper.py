@@ -2,16 +2,13 @@ import requests
 import os
 from datetime import datetime
 
-DISCORD_WEBHOOK_URL = os.environ['DISCORD_WEBHOOK']
+DISCORD_WEBHOOK_URL = os.environ.get('DISCORD_WEBHOOK')
 
-# 붉은사막 정보 (실제 출시/예약판매 시점에 할당되는 ID 확인 필요)
-# 현재는 검색 키워드 기반으로 순위를 대조합니다.
-TARGET_GAME_NAME = "Crimson Desert" 
-
+# 이미지 기반 국가 리스트 설정
 REGION_CONFIG = {
     "미국": {"lang": "en", "country": "us"},
     "일본": {"lang": "ja", "country": "jp"},
-    "홍콩": {"lang": "en", "country": "hk"}, # 또는 zh-hant
+    "홍콩": {"lang": "en", "country": "hk"},
     "인도": {"lang": "en", "country": "in"},
     "영국": {"lang": "en", "country": "gb"},
     "독일": {"lang": "de", "country": "de"},
@@ -25,41 +22,60 @@ REGION_CONFIG = {
 }
 
 def get_ps_rank_api(lang, country):
-    # PS 스토어 베스트셀러 카테고리 ID (변동될 수 있음)
+    # PS 스토어 베스트셀러 카테고리 ID (글로벌 공통)
     category_id = "05a79ebd-771a-40ad-87d0-14fb847b019a"
-    url = f"https://web-api.global.sonyentertainmentnetwork.com/query/v1/productRetrieve?size=100&age=99&lang={lang}&country={country}&category={category_id}"
+    
+    # GraphQL을 사용하는 최신 API 엔드포인트 또는 통합 쿼리 주소
+    url = f"https://web-api.global.sonyentertainmentnetwork.com/query/v1/productRetrieve?size=100&lang={lang}&country={country}&category={category_id}"
     
     headers = {
-        'User-Agent': 'Mozilla/5.0',
-        'Origin': 'https://store.playstation.com'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Origin': 'https://store.playstation.com',
+        'Referer': f'https://store.playstation.com/{lang}-{country}/category/{category_id}',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
     }
 
     try:
-        response = requests.get(url, headers=headers, timeout=10)
-        data = response.json()
+        response = requests.get(url, headers=headers, timeout=15)
+        # 만약 403 에러가 나면 여기서 예외 발생
+        response.raise_for_status()
         
-        # 상품 리스트 순회하여 이름 매칭
+        data = response.json()
         products = data.get('data', {}).get('categoryRetrieve', {}).get('products', [])
         
+        if not products:
+            return "조회 결과 없음"
+
         for index, product in enumerate(products):
             name = product.get('name', '')
-            if "Crimson Desert" in name or "붉은사막" in name or "紅の砂漠" in name:
+            # 예약 판매량 집계는 보통 상품명에 포함됨
+            if any(kw in name for kw in ["Crimson Desert", "붉은사막", "紅の砂漠", "赤色沙漠"]):
                 return f"🔥 **{index + 1}위**"
         
         return "100위권 밖"
-    except:
-        return "⚠️ 데이터 접근 오류"
+    
+    except requests.exceptions.HTTPError as e:
+        return f"🚫 접근 차단 (Status: {e.response.status_code})"
+    except Exception as e:
+        return f"⚠️ 오류: {str(e)[:20]}..."
 
 def run_tracker():
     now = datetime.now().strftime('%Y-%m-%d %H:%M')
-    report = [f"🎮 **붉은사막 전 세계 PS5 예약판매 현황** ({now})\n"]
+    report = [f"🎮 **붉은사막 PS5 전 세계 예약판매 현황** ({now})\n"]
     
     for country_name, info in REGION_CONFIG.items():
         rank = get_ps_rank_api(info['lang'], info['country'])
         report.append(f"📍 {country_name.ljust(6)}: {rank}")
+        # API 과부하 방지를 위한 미세한 지연
+        import time
+        time.sleep(0.5)
     
-    # 디스크도 전송 (메시지가 너무 길면 잘릴 수 있으니 한 번에 전송)
-    requests.post(DISCORD_WEBHOOK_URL, json={"content": "\n".join(report)})
+    final_msg = "\n".join(report)
+    print(final_msg) # 로그 확인용
+    
+    if DISCORD_WEBHOOK_URL:
+        requests.post(DISCORD_WEBHOOK_URL, json={"content": final_msg})
 
 if __name__ == "__main__":
     run_tracker()
