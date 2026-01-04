@@ -34,8 +34,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          # 파일이 없어도 에러가 나지 않도록 처리
-          touch rank_history.csv 
+          # 파일이 없어도 에러가 나지 않도록 처리 
           git add rank_history.csv rank_trend.png
           # 변경사항이 있을 때만 커밋
           git diff --quiet && git diff --staged --quiet || (git commit -m "Update ranking data" && git push)
