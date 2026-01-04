@@ -1,0 +1,28 @@
+name: Daily Crimson Desert Tracker
+
+on:
+  schedule:
+    # 한국 시간(KST) 오전 8시 = UTC 23:00 (전날)
+    - cron: '0 23 * * *'
+  workflow_dispatch: # 수동 실행 기능
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4
+
+      - name: Run Tracker
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: python scraper.py
