@@ -1,40 +1,12 @@
-name: Daily Crimson Desert Tracker
-
-on:
-  schedule:
-    - cron: '0 23 * * *'
-  workflow_dispatch:
-
-permissions: # 깃허브 액션에 쓰기 권한 부여 (필수)
-  contents: write
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-      - name: Install dependencies
+- name: Install dependencies
         run: |
           pip install pandas matplotlib requests playwright
-          playwright install chromium
+          # 시스템 의존성 라이브러리까지 설치해줘야 에러가 안 납니다
+          python -m playwright install --with-deps chromium
 
       - name: Run Tracker
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        # 서버에서 봇으로 인식되지 않도록 가짜 디스플레이 환경(xvfb) 설정을 고려할 수 있으나
+        # 일단은 아래 scraper.py의 코드 수정이 더 중요합니다.
         run: python scraper.py
-
-      - name: Commit & Push changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          # 파일이 없어도 에러가 나지 않도록 처리 
-          git add rank_history.csv rank_trend.png
-          # 변경사항이 있을 때만 커밋
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update ranking data" && git push)
