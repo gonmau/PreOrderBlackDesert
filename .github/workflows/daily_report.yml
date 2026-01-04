@@ -1,13 +1,13 @@
-name: Daily Sales Tracker
+name: Daily PS5 Sales Tracker
 
 on:
   schedule:
-    # 한국 시간 오전 8시는 UTC 기준 전날 23시입니다.
+    # 한국 시간(KST) 오전 8시 = UTC 23:00 (전날)
     - cron: '0 23 * * *'
   workflow_dispatch:
 
 jobs:
-  check-rank:
+  report:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -17,7 +17,7 @@ jobs:
           python-version: '3.9'
       - name: Install dependencies
         run: pip install requests beautifulsoup4
-      - name: Run Scraper
+      - name: Run Tracker
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: python scraper.py
