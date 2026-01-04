@@ -7,149 +7,92 @@ import requests
 from datetime import datetime
 import random
 
-# 환경변수 로드
+# 설정 정보
 DISCORD_WEBHOOK = os.environ.get('DISCORD_WEBHOOK')
 DATA_FILE = 'rank_history.csv'
-
-# 지역 코드 및 타겟
 REGIONS = {
     "미국": "en-us", "일본": "ja-jp", "홍콩": "en-hk", "영국": "en-gb", 
     "독일": "de-de", "프랑스": "fr-fr", "멕시코": "es-mx", "캐나다": "en-ca", 
     "대한민국": "ko-kr", "호주": "en-au", "브라질": "pt-br", "스페인": "es-es"
 }
-
-# 봇 탐지 회피를 위한 리얼한 User-Agent 설정
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 async def get_preorder_rank(browser, region_name, region_code):
-    """
-    특정 국가의 PS Store 예약 주문 페이지를 스크래핑하여 순위를 반환합니다.
-    """
-    # 국가별 격리를 위해 매번 새로운 Context 생성 (쿠키/세션 분리)
-    context = await browser.new_context(
-        user_agent=USER_AGENT,
-        viewport={'width': 1920, 'height': 1080},
-        locale=region_code
-    )
-    
+    context = await browser.new_context(user_agent=USER_AGENT, viewport={'width': 1920, 'height': 1080})
     page = await context.new_page()
     
-    # 예약 주문 카테고리 URL (PS5 Best Sellers Pre-orders)
+    # 1. 예약 주문 페이지 접속 (인기순 정렬 기본 적용된 URL)
     url = f"https://store.playstation.com/{region_code}/category/601955f3-5290-449e-9907-f3160a2b918b/1"
-    
-    rank = 30 # 기본값 (순위 밖)
+    rank = 30 # 기본값
     
     try:
-        # 타임아웃을 40초로 넉넉하게 설정 (GitHub Actions 네트워크 지연 대비)
-        await page.goto(url, wait_until="domcontentloaded", timeout=40000)
+        await page.goto(url, wait_until="networkidle", timeout=60000)
+        await page.wait_for_timeout(3000) # 추가 렌더링 대기
         
-        # 봇 탐지 회피를 위한 임의 지연 (2~4초 랜덤 대기)
-        await page.wait_for_timeout(random.randint(2000, 4000))
+        # 2. 모든 상품 로드를 위해 아래로 스크롤 (중요!)
+        for _ in range(3):
+            await page.mouse.wheel(0, 2000)
+            await page.wait_for_timeout(1000)
 
-        # 상품 그리드가 로드될 때까지 대기
-        try:
-            # 선택자가 보일 때까지 최대 20초 대기
-            await page.wait_for_selector('[data-qa^="product-grid"]', state="visible", timeout=20000)
-        except Exception:
-            # 로딩 실패 시 스크린샷 저장 (디버깅용)
-            print(f"⚠️ {region_name} ({region_code}) 그리드 로딩 실패 - 스크린샷 저장")
-            await page.screenshot(path=f"debug_error_{region_code}.png")
-            # 여기서 에러를 던지지 않고 30위로 처리하고 넘어감
-            return 30
-
-        # 상품명 추출
-        names = await page.locator('[data-qa="product-name"]').all_text_contents()
+        # 3. 상품 목록 추출
+        product_selector = '[data-qa="product-name"]'
+        await page.wait_for_selector(product_selector, timeout=15000)
+        products = await page.locator(product_selector).all_text_contents()
         
-        found = False
-        for i, name in enumerate(names):
-            # 대소문자 무시하고 키워드 확인 (다국어 지원)
-            if any(kw in name.lower() for kw in ["crimson desert", "붉은사막", "紅の砂漠", "赤血沙漠"]):
+        # 4. 순위 검색
+        keywords = ["crimson desert", "붉은사막", "紅の砂漠", "赤血沙漠", "デザート"]
+        for i, name in enumerate(products):
+            if any(kw.lower() in name.lower() for kw in keywords):
                 rank = i + 1
-                found = True
+                print(f"✅ {region_name} 매칭 성공: {name} ({rank}위)")
                 break
-        
-        if not found:
-            rank = 30
-
+                
     except Exception as e:
-        print(f"⚠️ {region_name} 처리 중 오류 발생: {e}")
-        rank = 30
-    
+        print(f"⚠️ {region_name} 에러: {str(e)[:50]}")
+        await page.screenshot(path=f"debug_{region_code}.png") # 실패 시 화면 확인용
     finally:
-        # 컨텍스트 종료 (메모리 누수 방지)
         await context.close()
-        
     return rank
 
 async def main():
     async with async_playwright() as p:
-        # 브라우저 런칭: 봇 탐지 자동 제어 기능 비활성화
-        browser = await p.chromium.launch(
-            headless=True, # GitHub Actions에서는 반드시 True여야 함
-            args=["--disable-blink-features=AutomationControlled"]
-        )
-
+        # 봇 탐지 우회를 위한 인자 추가
+        browser = await p.chromium.launch(headless=True, args=["--disable-blink-features=AutomationControlled"])
+        
         today = datetime.now().strftime('%Y-%m-%d')
         results = {'date': today}
         
-        print(f"🚀 {today} 붉은사막 순위 집계 시작...")
-
         for name, code in REGIONS.items():
             rank = await get_preorder_rank(browser, name, code)
             results[name] = rank
             print(f"📍 {name}: {rank}위")
-        
+            # 서버 과부하 및 차단 방지를 위한 짧은 휴식
+            await asyncio.sleep(random.uniform(1, 3))
+            
         await browser.close()
 
-        # --- 데이터 저장 및 그래프 로직 ---
-        
-        # 기존 데이터 로드 또는 생성
-        if os.path.exists(DATA_FILE) and os.path.getsize(DATA_FILE) > 0:
-            try:
-                df = pd.read_csv(DATA_FILE)
-            except:
-                df = pd.DataFrame(columns=['date'] + list(REGIONS.keys()))
-        else:
-            df = pd.DataFrame(columns=['date'] + list(REGIONS.keys()))
-            
-        # 오늘 날짜 중복 제거 (재실행 시 중복 데이터 쌓임 방지)
-        df = df[df['date'] != today]
-        
-        # 새로운 데이터 추가
-        new_row = pd.DataFrame([results])
-        df = pd.concat([df, new_row], ignore_index=True)
+        # 데이터 저장 로직
+        df = pd.read_csv(DATA_FILE) if os.path.exists(DATA_FILE) else pd.DataFrame(columns=['date'] + list(REGIONS.keys()))
+        df = df[df['date'] != today] # 당일 중복 데이터 제거
+        df = pd.concat([df, pd.DataFrame([results])], ignore_index=True)
         df.to_csv(DATA_FILE, index=False)
-        
+
         # 그래프 생성
-        plt.figure(figsize=(12, 6))
-        
-        # 데이터 플로팅
+        plt.figure(figsize=(15, 8))
         for col in REGIONS.keys():
-            if col in df.columns:
-                valid_data = df[['date', col]].dropna()
-                if not valid_data.empty:
-                    # x축 날짜, y축 순위
-                    plt.plot(valid_data['date'], valid_data[col], marker='o', label=col)
+            plt.plot(df['date'], df[col], marker='o', label=col)
         
-        plt.gca().invert_yaxis() # 1위가 위로 가도록 반전 (y축 뒤집기)
-        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=1, prop={'size': 8})
-        plt.title(f"Crimson Desert PS5 Pre-Order Rank ({today})")
-        plt.grid(True, alpha=0.3)
+        plt.gca().invert_yaxis() # 1위가 상단에 오도록
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=6)
+        plt.title(f"Crimson Desert Global Pre-Order Rank ({today})")
+        plt.grid(True, axis='y', alpha=0.3)
         plt.tight_layout()
         plt.savefig('rank_trend.png')
-        print("✅ 그래프 저장 완료")
-        
-        # 디스코드 알림 전송
+
+        # 디스코드 알림
         if DISCORD_WEBHOOK:
-            try:
-                with open('rank_trend.png', 'rb') as f:
-                    requests.post(DISCORD_WEBHOOK, 
-                        data={'content': f"📊 **{today} 붉은사막 글로벌 예구 순위**\n(PS Store 기준)"}, 
-                        files={'file': f}
-                    )
-                print("✅ 디스코드 전송 완료")
-            except Exception as e:
-                print(f"❌ 디스코드 전송 실패: {e}")
+            with open('rank_trend.png', 'rb') as f:
+                requests.post(DISCORD_WEBHOOK, data={'content': f"📊 **{today} 붉은사막 예구 현황**"}, files={'file': f})
 
 if __name__ == "__main__":
     asyncio.run(main())
