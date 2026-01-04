@@ -1,64 +1,65 @@
 import requests
-from bs4 import BeautifulSoup
 import os
 from datetime import datetime
 
-# 설정
 DISCORD_WEBHOOK_URL = os.environ['DISCORD_WEBHOOK']
-# 붉은사막 PS Store ID (지역마다 다를 수 있으나, 일반적으로 Title ID 기반으로 검색)
-PS_STORE_QUERY = "Crimson Desert"
 
-# 이미지에 제공된 국가 리스트 및 PS Store 지역 코드 설정
+# 붉은사막 정보 (실제 출시/예약판매 시점에 할당되는 ID 확인 필요)
+# 현재는 검색 키워드 기반으로 순위를 대조합니다.
+TARGET_GAME_NAME = "Crimson Desert" 
+
 REGION_CONFIG = {
-    "미국": {"code": "en-us", "kw": "Crimson Desert"},
-    "일본": {"code": "ja-jp", "kw": "紅の砂漠"},
-    "홍콩": {"code": "zh-hans-hk", "kw": "赤色沙漠"},
-    "인도": {"code": "en-in", "kw": "Crimson Desert"},
-    "영국": {"code": "en-gb", "kw": "Crimson Desert"},
-    "독일": {"code": "de-de", "kw": "Crimson Desert"},
-    "프랑스": {"code": "fr-fr", "kw": "Crimson Desert"},
-    "멕시코": {"code": "es-mx", "kw": "Crimson Desert"},
-    "캐나다": {"code": "en-ca", "kw": "Crimson Desert"},
-    "한국": {"code": "ko-kr", "kw": "붉은사막"},
-    "호주": {"code": "en-au", "kw": "Crimson Desert"},
-    "브라질": {"code": "pt-br", "kw": "Crimson Desert"},
-    "스페인": {"code": "es-es", "kw": "Crimson Desert"}
+    "미국": {"lang": "en", "country": "us"},
+    "일본": {"lang": "ja", "country": "jp"},
+    "홍콩": {"lang": "en", "country": "hk"}, # 또는 zh-hant
+    "인도": {"lang": "en", "country": "in"},
+    "영국": {"lang": "en", "country": "gb"},
+    "독일": {"lang": "de", "country": "de"},
+    "프랑스": {"lang": "fr", "country": "fr"},
+    "멕시코": {"lang": "es", "country": "mx"},
+    "캐나다": {"lang": "en", "country": "ca"},
+    "한국": {"lang": "ko", "country": "kr"},
+    "호주": {"lang": "en", "country": "au"},
+    "브라질": {"lang": "pt", "country": "br"},
+    "스페인": {"lang": "es", "country": "es"}
 }
 
-def get_ps_rank(region_code, keyword):
-    """국가별 PS Store 예약 판매 순위(Best Sellers) 추출"""
-    # PS Store의 판매량 순위 페이지 타겟 (예시 URL 구조)
-    url = f"https://store.playstation.com/{region_code}/category/05a79ebd-771a-40ad-87d0-14fb847b019a/1"
+def get_ps_rank_api(lang, country):
+    # PS 스토어 베스트셀러 카테고리 ID (변동될 수 있음)
+    category_id = "05a79ebd-771a-40ad-87d0-14fb847b019a"
+    url = f"https://web-api.global.sonyentertainmentnetwork.com/query/v1/productRetrieve?size=100&age=99&lang={lang}&country={country}&category={category_id}"
+    
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0',
+        'Origin': 'https://store.playstation.com'
     }
-    
+
     try:
-        res = requests.get(url, headers=headers, timeout=10)
-        soup = BeautifulSoup(res.text, 'html.parser')
+        response = requests.get(url, headers=headers, timeout=10)
+        data = response.json()
         
-        # 상품 리스트 내에서 키워드(붉은사막) 포함 여부 확인 및 순위 계산
-        # PS 스토어의 HTML 구조는 동적 로딩이 많으므로 실제 운영 시에는 API 엔드포인트 분석이 필요할 수 있습니다.
-        items = soup.find_all('span', {'data-qa': 'product-name'})
-        for index, item in enumerate(items):
-            if keyword.lower() in item.text.lower():
-                return f"{index + 1}위"
-        return "순위권 밖"
+        # 상품 리스트 순회하여 이름 매칭
+        products = data.get('data', {}).get('categoryRetrieve', {}).get('products', [])
+        
+        for index, product in enumerate(products):
+            name = product.get('name', '')
+            if "Crimson Desert" in name or "붉은사막" in name or "紅の砂漠" in name:
+                return f"🔥 **{index + 1}위**"
+        
+        return "100위권 밖"
     except:
-        return "조회 불가"
+        return "⚠️ 데이터 접근 오류"
 
-def run_ps_tracker():
+def run_tracker():
     now = datetime.now().strftime('%Y-%m-%d %H:%M')
-    report_lines = [f"🎮 **붉은사막 PS5 전 세계 예약판매 순위** ({now})\n"]
+    report = [f"🎮 **붉은사막 전 세계 PS5 예약판매 현황** ({now})\n"]
     
-    for country, info in REGION_CONFIG.items():
-        rank = get_ps_rank(info['code'], info['kw'])
-        report_lines.append(f"📍 **{country}**: {rank}")
-
-    final_report = "\n".join(report_lines)
+    for country_name, info in REGION_CONFIG.items():
+        rank = get_ps_rank_api(info['lang'], info['country'])
+        report.append(f"📍 {country_name.ljust(6)}: {rank}")
     
-    # 디스크도 전송
-    requests.post(DISCORD_WEBHOOK_URL, json={"content": final_report})
+    # 디스크도 전송 (메시지가 너무 길면 잘릴 수 있으니 한 번에 전송)
+    requests.post(DISCORD_WEBHOOK_URL, json={"content": "\n".join(report)})
 
 if __name__ == "__main__":
-    run_ps_tracker()
+    run_tracker()
