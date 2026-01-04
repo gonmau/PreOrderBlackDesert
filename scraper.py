@@ -1,78 +1,25 @@
-import asyncio
-from playwright.async_api import async_playwright
-import pandas as pd
-import matplotlib.pyplot as plt
-import os
-import requests
-from datetime import datetime
-
-DISCORD_WEBHOOK = os.environ.get('DISCORD_WEBHOOK')
-DATA_FILE = 'rank_history.csv'
-
-# 국가 설정
-REGIONS = {
-    "USA": "en-us", "JPN": "ja-jp", "HKG": "en-hk", "IND": "en-in",
-    "GBR": "en-gb", "DEU": "de-de", "FRA": "fr-fr", "MEX": "es-mx",
-    "CAN": "en-ca", "KOR": "ko-kr", "AUS": "en-au", "BRA": "pt-br", "ESP": "es-es"
-}
-
-async def get_search_rank(page, region, keyword):
-    # 각국 스토어의 검색 결과 페이지로 직접 이동
-    url = f"https://store.playstation.com/{region}/search/{keyword}"
-    try:
-        await page.goto(url, wait_until="networkidle")
-        await page.wait_for_timeout(5000) # 검색 결과 로딩 대기
-        
-        # 검색 결과 리스트의 상품명들 수집
-        names = await page.locator('[data-qa="product-name"]').all_text_contents()
-        
-        for i, name in enumerate(names):
-            # 붉은사막 키워드가 포함된 가장 높은 순위 반환
-            if any(kw in name.lower() for kw in ["crimson desert", "붉은사막", "紅の砂漠"]):
-                return i + 1
-        return 100 # 검색 결과에도 없으면 100위
-    except:
-        return 100
-
-async def main():
-    async with async_playwright() as p:
-        browser = await p.chromium.launch()
-        page = await browser.new_page()
-        today = datetime.now().strftime('%Y-%m-%d')
-        results = {'date': today}
-        
-        for name, code in REGIONS.items():
-            # 각국 언어에 맞는 키워드로 검색 시도
-            search_kw = "Crimson Desert"
-            if name == "KOR": search_kw = "붉은사막"
-            elif name == "JPN": search_kw = "紅の砂漠"
+async def get_exact_rank(page, region):
+    # PS 스토어의 '출시 예정/예약 주문' 전체 보기 카테고리 (가장 공신력 있는 순위 포인트)
+    # 이 ID는 PS Store의 정식 예약판매 리스트를 불러옵니다.
+    category_id = "601955f3-5290-449e-9907-f3160a2b918b"
+    
+    # 최대 3페이지(약 72개 항목)까지 뒤져서 붉은사막을 찾습니다.
+    for page_num in range(1, 4):
+        url = f"https://store.playstation.com/{region}/category/{category_id}/{page_num}"
+        try:
+            await page.goto(url, wait_until="networkidle")
+            await page.wait_for_timeout(4000) # 로딩 대기시간 증가
             
-            rank = await get_search_rank(page, code, search_kw)
-            results[name] = rank
-            print(f"{name}: {rank}위")
+            # 상품 이름 추출
+            names = await page.locator('[data-qa="product-name"]').all_text_contents()
             
-        await browser.close()
-        
-        # --- 데이터 저장 및 그래프 생성 로직 (이전과 동일) ---
-        if os.path.exists(DATA_FILE):
-            df = pd.read_csv(DATA_FILE)
-        else:
-            df = pd.DataFrame(columns=['date'] + list(REGIONS.keys()))
-            
-        df = pd.concat([df, pd.DataFrame([results])], ignore_index=True)
-        df.to_csv(DATA_FILE, index=False)
-        
-        plt.figure(figsize=(12, 6))
-        for col in REGIONS.keys():
-            plt.plot(df['date'], df[col], marker='o', label=col)
-        plt.gca().invert_yaxis()
-        plt.title("Crimson Desert Global Search Ranking")
-        plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
-        plt.grid(True, alpha=0.3)
-        plt.savefig('rank_trend.png', bbox_inches='tight')
-        
-        with open('rank_trend.png', 'rb') as f:
-            requests.post(DISCORD_WEBHOOK, data={'content': f"📊 {today} Crimson Desert Report"}, files={'file': f})
+            if not names: continue
 
-if __name__ == "__main__":
-    asyncio.run(main())
+            for i, name in enumerate(names):
+                # 에디션 명칭(Deluxe 등)에 상관없이 'Crimson Desert' 단어 포함 여부 확인
+                if any(kw in name.lower() for kw in ["crimson desert", "붉은사막", "紅の砂漠"]):
+                    # 정확한 순위 계산: (이전 페이지 수 * 24) + 현재 페이지 순서
+                    return ((page_num - 1) * 24) + (i + 1)
+        except:
+            continue
+    return 100 # 끝까지 없으면 100위
