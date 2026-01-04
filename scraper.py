@@ -5,35 +5,59 @@ from datetime import datetime
 
 # 설정
 DISCORD_WEBHOOK_URL = os.environ['DISCORD_WEBHOOK']
-# 붉은사막 Steam App ID: 3321460
-STEAM_URL = "https://steamdb.info/app/3321460/charts/"
+APP_ID = "3321460" # 붉은사막 스팀 ID
 
-def get_rankings():
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }
-    
-    # 실제 운영 시에는 정교한 크롤링 혹은 API 사용 권장
-    # 여기서는 스팀 차트상의 현재 순위 정보를 요약해서 보낸다고 가정합니다.
+# 국가별 정보 설정 (현지어 키워드 포함)
+REGION_CONFIG = {
+    "Global": {"cc": "us", "kw": "Crimson Desert"},
+    "South Korea": {"cc": "kr", "kw": "붉은사막"},
+    "Japan": {"cc": "jp", "kw": "紅の砂漠"},
+    "Taiwan": {"cc": "tw", "kw": "赤色沙漠"},
+    "Germany": {"cc": "de", "kw": "Crimson Desert"},
+    "France": {"cc": "fr", "kw": "Crimson Desert"}
+}
+
+def get_steam_rank(country_code):
+    """스팀 국가별 판매 순위 추출"""
+    url = f"https://store.steampowered.com/search/?filter=topsellers&cc={country_code}"
+    headers = {'User-Agent': 'Mozilla/5.0'}
     try:
-        # SteamDB 등에서 순위 정보를 가져오는 로직 (예시)
-        # 현재는 출시 전이므로 '인기 위시리스트 순위' 등을 주로 모니터링합니다.
-        
-        report_msg = (
-            f"📅 **{datetime.now().strftime('%Y-%m-%d')} 붉은사막 데일리 리포트**\n"
-            f"━━━━━━━━━━━━━━━━━━\n"
-            f"🔥 **Steam 판매 순위:** 데이터 집계 중 (출시 예정)\n"
-            f"⭐ **Steam 위시리스트 순위:** Top 30위권 유지 중\n"
-            f"🔗 [상세 데이터 확인하기]({STEAM_URL})\n"
-            f"━━━━━━━━━━━━━━━━━━"
-        )
-        return report_msg
-    except Exception as e:
-        return f"❌ 데이터 수집 중 오류 발생: {e}"
+        res = requests.get(url, headers=headers, timeout=10)
+        soup = BeautifulSoup(res.text, 'html.parser')
+        items = soup.find_all('a', {'data-ds-appid': True})
+        for index, item in enumerate(items):
+            if item['data-ds-appid'] == APP_ID:
+                return f"{index + 1}위"
+        return "100위권 밖"
+    except:
+        return "조회 실패"
 
-def send_discord(message):
-    requests.post(DISCORD_WEBHOOK_URL, json={"content": message})
+def get_local_news(keyword):
+    """구글 뉴스 RSS를 이용한 국가별 최신 뉴스 1건 추출"""
+    url = f"https://news.google.com/rss/search?q={keyword}&hl=en&gl=US&ceid=US:en"
+    # 실제로는 hl, gl 값을 키워드에 맞춰 변경하면 더 정확합니다.
+    try:
+        res = requests.get(url)
+        soup = BeautifulSoup(res.content, 'xml')
+        top_news = soup.find('item')
+        if top_news:
+            return f"[{top_news.title.text}]({top_news.link.text})"
+        return "관련 뉴스 없음"
+    except:
+        return "뉴스 조회 실패"
+
+def run_tracker():
+    report_lines = [f"🛡️ **붉은사막 전 세계 지표 보고서** ({datetime.now().strftime('%Y-%m-%d')})\n"]
+    
+    for region, info in REGION_CONFIG.items():
+        rank = get_steam_rank(info['cc'])
+        news = get_local_news(info['kw'])
+        report_lines.append(f"📍 **{region}**")
+        report_lines.append(f"  - 순위: {rank}")
+        report_lines.append(f"  - 최신소식: {news}\n")
+
+    final_report = "\n".join(report_lines)
+    requests.post(DISCORD_WEBHOOK_URL, json={"content": final_report})
 
 if __name__ == "__main__":
-    content = get_rankings()
-    send_discord(content)
+    run_tracker()
