@@ -2,8 +2,11 @@ name: Daily Crimson Desert Tracker
 
 on:
   schedule:
-    - cron: '0 23 * * *' # 한국시간 오전 8시
+    - cron: '0 23 * * *'
   workflow_dispatch:
+
+permissions: # 깃허브 액션에 쓰기 권한 부여 (필수)
+  contents: write
 
 jobs:
   build:
@@ -19,18 +22,20 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
-          playwright install chromium # 실제 브라우저 설치
+          pip install pandas matplotlib requests playwright
+          playwright install chromium
 
       - name: Run Tracker
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: python scraper.py
 
-      - name: Commit files # 데이터를 저장하기 위해 변경사항을 깃허브에 다시 커밋
+      - name: Commit & Push changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+          # 파일이 없어도 에러가 나지 않도록 처리
+          touch rank_history.csv 
           git add rank_history.csv rank_trend.png
-          git commit -m "Update ranking data" || echo "No changes to commit"
-          git push
+          # 변경사항이 있을 때만 커밋
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update ranking data" && git push)
