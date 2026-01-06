@@ -1,0 +1,39 @@
+name: Game Sales Scraper
+
+on:
+  schedule:
+    # 매일 오전 9시 (UTC 기준 0시)에 실행
+    - cron: '0 0 * * *'
+  workflow_dispatch:  # 수동 실행 가능
+
+jobs:
+  scrape-and-notify:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 저장소 체크아웃
+      uses: actions/checkout@v3
+    
+    - name: Python 설정
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: 의존성 설치
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: 스크래핑 실행 및 Discord 전송
+      env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: |
+        python preorder_tracker.py
+    
+    - name: 결과 저장 (선택사항)
+      uses: actions/upload-artifact@v3
+      with:
+        name: sales-data
+        path: |
+          sales_data.json
+          rankings_report.txt
