@@ -15,8 +15,9 @@ import os
 class GameSalesScraper:
     """게임 판매량 스크래핑 및 집계 클래스"""
     
-    def __init__(self, data_file: str = "sales_data.json"):
+    def __init__(self, data_file: str = "sales_data.json", discord_webhook: str = None):
         self.data_file = data_file
+        self.discord_webhook = discord_webhook or os.getenv('DISCORD_WEBHOOK_URL')
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
@@ -311,22 +312,155 @@ class GameSalesScraper:
             f.write(f"\n생성 일시: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         
         print(f"\n✓ 리포트 생성 완료: {filename}")
+    
+    def send_to_discord(self, results: Dict = None, all_rankings: bool = False):
+        """Discord Webhook으로 결과 전송"""
+        if not self.discord_webhook:
+            print("\n❌ Discord Webhook URL이 설정되지 않았습니다.")
+            print("사용 방법:")
+            print("  1. scraper = GameSalesScraper(discord_webhook='YOUR_WEBHOOK_URL')")
+            print("  2. 또는 환경변수: export DISCORD_WEBHOOK_URL='YOUR_WEBHOOK_URL'")
+            return False
+        
+        try:
+            if all_rankings:
+                # 전체 플랫폼 순위 전송
+                self._send_all_rankings_to_discord()
+            elif results:
+                # 특정 게임 순위 전송
+                self._send_game_ranking_to_discord(results)
+            else:
+                print("\n❌ 전송할 데이터가 없습니다.")
+                return False
+            
+            return True
+            
+        except Exception as e:
+            print(f"\n❌ Discord 전송 실패: {e}")
+            return False
+    
+    def _send_game_ranking_to_discord(self, results: Dict):
+        """특정 게임 순위를 Discord로 전송"""
+        game_name = results.get('game_name', 'Unknown')
+        timestamp = results.get('timestamp', 'N/A')
+        
+        # Discord Embed 생성
+        embed = {
+            "title": f"🎮 {game_name} 게임 순위 정보",
+            "description": f"플랫폼별 판매 순위 검색 결과",
+            "color": 3447003,  # 파란색
+            "timestamp": timestamp,
+            "fields": [],
+            "footer": {
+                "text": "Game Sales Tracker"
+            }
+        }
+        
+        # 플랫폼별 순위 추가
+        for platform, data in results.get('platforms', {}).items():
+            if data.get('found'):
+                rank = data['rank']
+                title = data.get('details', {}).get('title', game_name)
+                embed["fields"].append({
+                    "name": f"📊 {platform}",
+                    "value": f"**{rank}위** - {title}",
+                    "inline": False
+                })
+            else:
+                embed["fields"].append({
+                    "name": f"📊 {platform}",
+                    "value": "❌ Top 20 차트에 없음",
+                    "inline": False
+                })
+        
+        # Discord로 전송
+        payload = {
+            "embeds": [embed]
+        }
+        
+        response = requests.post(self.discord_webhook, json=payload)
+        
+        if response.status_code == 204:
+            print("\n✅ Discord로 전송 완료!")
+        else:
+            print(f"\n❌ Discord 전송 실패: {response.status_code}")
+    
+    def _send_all_rankings_to_discord(self):
+        """전체 플랫폼 순위를 Discord로 전송"""
+        if 'all_rankings' not in self.data:
+            print("\n❌ 수집된 데이터가 없습니다.")
+            return
+        
+        data = self.data['all_rankings']
+        timestamp = data.get('timestamp', 'N/A')
+        
+        # 메인 Embed
+        main_embed = {
+            "title": "🏆 전세계 플랫폼별 베스트셀러 TOP 10",
+            "description": f"수집 시간: {timestamp}",
+            "color": 15844367,  # 금색
+            "footer": {
+                "text": f"총 {len(data.get('platforms', {}))}개 플랫폼"
+            }
+        }
+        
+        embeds = [main_embed]
+        
+        # 각 플랫폼별 Embed 생성 (최대 10개까지)
+        for platform, games in data.get('platforms', {}).items():
+            platform_embed = {
+                "title": f"🎮 {platform}",
+                "color": 5814783,  # 보라색
+                "fields": []
+            }
+            
+            # TOP 10만 표시
+            for game in games[:10]:
+                rank = game.get('rank', '?')
+                title = game.get('title', 'Unknown')
+                platform_embed["fields"].append({
+                    "name": f"{rank}위",
+                    "value": title,
+                    "inline": True
+                })
+            
+            embeds.append(platform_embed)
+            
+            # Discord는 최대 10개 embed까지 지원
+            if len(embeds) >= 10:
+                break
+        
+        # Discord로 전송
+        payload = {
+            "embeds": embeds
+        }
+        
+        response = requests.post(self.discord_webhook, json=payload)
+        
+        if response.status_code == 204:
+            print("\n✅ Discord로 전체 순위 전송 완료!")
+        else:
+            print(f"\n❌ Discord 전송 실패: {response.status_code}")
 
 
 def main():
     """메인 실행 함수"""
-    scraper = GameSalesScraper()
-    
+    # Discord Webhook URL 입력 받기 (선택사항)
     print("\n" + "="*70)
     print("게임 판매량 순위 스크래핑 시스템")
     print("="*70)
+    
+    webhook_url = input("\nDiscord Webhook URL (선택사항, 엔터로 건너뛰기): ").strip()
+    scraper = GameSalesScraper(discord_webhook=webhook_url if webhook_url else None)
+    
     print("\n옵션을 선택하세요:")
     print("1. Black Desert 게임 순위 검색")
     print("2. 전체 플랫폼 베스트셀러 TOP 20 수집")
     print("3. 저장된 데이터 보기")
     print("4. 리포트 생성")
+    print("5. Discord로 전송")
     
-    choice = input("\n선택 (1-4): ").strip()
+    choice = input("\n선택 (1-5): ").strip()
     
     if choice == "1":
         game_name = input("게임 이름 입력 (기본값: Black Desert): ").strip()
@@ -335,10 +469,22 @@ def main():
         
         results = scraper.search_game_ranking(game_name)
         scraper.display_rankings(results)
+        
+        # Discord 전송 여부 확인
+        if scraper.discord_webhook:
+            send = input("\nDiscord로 전송하시겠습니까? (y/n): ").strip().lower()
+            if send == 'y':
+                scraper.send_to_discord(results=results)
     
     elif choice == "2":
         all_data = scraper.get_all_platform_rankings()
         scraper.display_all_rankings(all_data)
+        
+        # Discord 전송 여부 확인
+        if scraper.discord_webhook:
+            send = input("\nDiscord로 전송하시겠습니까? (y/n): ").strip().lower()
+            if send == 'y':
+                scraper.send_to_discord(all_rankings=True)
     
     elif choice == "3":
         if 'all_rankings' in scraper.data:
@@ -348,6 +494,27 @@ def main():
     
     elif choice == "4":
         scraper.generate_report()
+    
+    elif choice == "5":
+        print("\n전송할 데이터 선택:")
+        print("1. 마지막 게임 검색 결과")
+        print("2. 전체 플랫폼 순위")
+        
+        sub_choice = input("\n선택 (1-2): ").strip()
+        
+        if sub_choice == "1":
+            if 'platforms' in scraper.data:
+                results = {
+                    'game_name': scraper.data.get('game_name', 'Unknown'),
+                    'timestamp': scraper.data.get('last_updated', ''),
+                    'platforms': scraper.data.get('platforms', {})
+                }
+                scraper.send_to_discord(results=results)
+            else:
+                print("\n저장된 게임 검색 결과가 없습니다.")
+        
+        elif sub_choice == "2":
+            scraper.send_to_discord(all_rankings=True)
     
     else:
         print("\n잘못된 선택입니다.")
