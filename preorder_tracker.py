@@ -12,6 +12,16 @@ import time
 import os
 import re
 
+# Selenium imports
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.core.os_manager import ChromeType
+
 class CrimsonDesertTracker:
     """Crimson Desert 예약 판매 순위 추적 클래스"""
     
@@ -22,6 +32,7 @@ class CrimsonDesertTracker:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
         self.data = self.load_data()
+        self.driver = None  # Selenium WebDriver
         
         # Crimson Desert 정보
         self.game_info = {
@@ -33,13 +44,46 @@ class CrimsonDesertTracker:
         
         # 추적할 국가/지역
         self.regions = {
-            'US': {'name': '미국', 'steam_cc': 'us', 'psn_region': 'en/us', 'amazon': 'com'},
-            'KR': {'name': '한국', 'steam_cc': 'kr', 'psn_region': 'ko/kr', 'amazon': None},
-            'JP': {'name': '일본', 'steam_cc': 'jp', 'psn_region': 'ja/jp', 'amazon': 'co.jp'},
-            'GB': {'name': '영국', 'steam_cc': 'gb', 'psn_region': 'en/gb', 'amazon': 'co.uk'},
-            'DE': {'name': '독일', 'steam_cc': 'de', 'psn_region': 'de/de', 'amazon': 'de'},
-            'FR': {'name': '프랑스', 'steam_cc': 'fr', 'psn_region': 'fr/fr', 'amazon': 'fr'}
+            'US': {'name': '미국', 'steam_cc': 'us', 'psn_region': 'en-us', 'amazon': 'com'},
+            'KR': {'name': '한국', 'steam_cc': 'kr', 'psn_region': 'ko-kr', 'amazon': None},
+            'JP': {'name': '일본', 'steam_cc': 'jp', 'psn_region': 'ja-jp', 'amazon': 'co.jp'},
+            'GB': {'name': '영국', 'steam_cc': 'gb', 'psn_region': 'en-gb', 'amazon': 'co.uk'},
+            'DE': {'name': '독일', 'steam_cc': 'de', 'psn_region': 'de-de', 'amazon': 'de'},
+            'FR': {'name': '프랑스', 'steam_cc': 'fr', 'psn_region': 'fr-fr', 'amazon': 'fr'}
         }
+    
+    def init_selenium_driver(self):
+        """Selenium WebDriver 초기화 (Headless Chrome)"""
+        if self.driver:
+            return self.driver
+        
+        print("\n🌐 Selenium Chrome 드라이버 초기화 중...")
+        
+        chrome_options = Options()
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--disable-extensions')
+        chrome_options.add_argument('--window-size=1920,1080')
+        chrome_options.add_argument(f'user-agent={self.headers["User-Agent"]}')
+        
+        try:
+            # webdriver-manager로 자동 ChromeDriver 설치
+            service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
+            self.driver = webdriver.Chrome(service=service, options=chrome_options)
+            print("✅ Selenium 드라이버 초기화 완료")
+            return self.driver
+        except Exception as e:
+            print(f"⚠️  Selenium 초기화 실패: {e}")
+            return None
+    
+    def close_selenium_driver(self):
+        """Selenium WebDriver 종료"""
+        if self.driver:
+            self.driver.quit()
+            self.driver = None
+            print("✅ Selenium 드라이버 종료")
     
     def load_data(self) -> Dict:
         """저장된 데이터 로드"""
@@ -214,82 +258,99 @@ class CrimsonDesertTracker:
             return None
     
     def get_playstation_preorder_rank(self, region_code: str = 'US') -> Optional[Dict]:
-        """PlayStation Store 예약 순위 확인 (국가별) - Pre-order 페이지 스크래핑"""
+        """PlayStation Store 예약 순위 확인 (Selenium 사용)"""
         region_name = self.regions.get(region_code.upper(), {}).get('name', region_code)
-        psn_region = self.regions.get(region_code.upper(), {}).get('psn_region', 'en/us')
+        psn_region = self.regions.get(region_code.upper(), {}).get('psn_region', 'en-us')
         
-        print(f"\n🔍 PlayStation Store ({region_name}) Pre-order 순위 확인 중...")
+        print(f"\n🔍 PlayStation Store ({region_name}) Pre-order 순위 확인 중 (Selenium)...")
         
         try:
-            # PlayStation Store Pre-orders 페이지 (Best Selling 정렬)
+            # Selenium 드라이버 초기화
+            driver = self.init_selenium_driver()
+            if not driver:
+                return self._get_ps_fallback(region_name)
+            
+            # PlayStation Store Pre-orders 페이지
             url = f"https://store.playstation.com/{psn_region}/pages/browse/pre-orders"
+            print(f"  접속: {url}")
             
-            response = requests.get(url, headers=self.headers, timeout=15)
+            driver.get(url)
             
-            if response.status_code == 200:
-                soup = BeautifulSoup(response.content, 'html.parser')
-                
-                # 게임 타일 찾기 (여러 패턴 시도)
-                game_tiles = soup.find_all(['div', 'article', 'li'], class_=re.compile(r'product|game|grid-cell|tile'))
-                
-                if not game_tiles:
-                    # 다른 구조 시도
-                    game_tiles = soup.find_all('a', href=re.compile(r'/product/'))
-                
-                rank = 0
-                for tile in game_tiles[:50]:  # TOP 50까지 확인
-                    rank += 1
+            # 페이지 로딩 대기 (최대 15초)
+            time.sleep(5)  # JavaScript 렌더링 대기
+            
+            # 페이지 소스 가져오기
+            html = driver.page_source
+            soup = BeautifulSoup(html, 'html.parser')
+            
+            # 게임 타일 찾기
+            rank = 0
+            found_games = []
+            
+            # 다양한 선택자 시도
+            game_selectors = [
+                'div[data-testid="product-card"]',
+                'div[class*="product"]',
+                'article',
+                'a[href*="/product/"]'
+            ]
+            
+            for selector in game_selectors:
+                games = soup.select(selector)
+                if games:
+                    print(f"  {len(games)}개 게임 발견 (선택자: {selector})")
                     
-                    # 제목 찾기
-                    title_elem = tile.find(['h3', 'h2', 'span', 'div'], class_=re.compile(r'title|name|product'))
-                    if not title_elem:
-                        title_elem = tile.find(string=re.compile(r'crimson', re.IGNORECASE))
-                    
-                    if title_elem:
-                        title_text = title_elem.get_text() if hasattr(title_elem, 'get_text') else str(title_elem)
-                        title_lower = title_text.lower()
+                    for game in games[:50]:
+                        rank += 1
+                        text_content = game.get_text().lower()
                         
-                        if 'crimson desert' in title_lower:
-                            # 버전 확인 (Deluxe vs Standard)
-                            if 'deluxe' in title_lower:
+                        if 'crimson desert' in text_content:
+                            # 버전 확인
+                            if 'deluxe' in text_content:
                                 version = 'Deluxe Edition'
-                            elif 'standard' in title_lower:
+                            elif 'standard' in text_content:
                                 version = 'Standard Edition'
                             else:
-                                version = 'Standard Edition'
+                                version = ''
                             
-                            print(f"  ✅ PlayStation ({region_name}): {rank}위 - {version}")
-                            return {
-                                'platform': 'PlayStation',
-                                'region': region_name,
+                            found_games.append({
                                 'rank': rank,
-                                'found': True,
-                                'title': f'Crimson Desert {version}',
-                                'type': 'Pre-order Best Selling'
-                            }
-                
-                # 못 찾은 경우 - 기본 정보 반환
-                print(f"  ℹ️  PlayStation ({region_name}): Pre-order 목록에서 찾을 수 없음")
+                                'version': version
+                            })
+                            
+                            print(f"  ✅ 발견! {rank}위 - {version}")
+                    
+                    if found_games:
+                        break
+            
+            # 가장 높은 순위 (낮은 숫자) 반환
+            if found_games:
+                best = min(found_games, key=lambda x: x['rank'])
                 return {
                     'platform': 'PlayStation',
                     'region': region_name,
+                    'rank': best['rank'],
                     'found': True,
-                    'status': '✨ Most Anticipated 2026',
-                    'rank': 'Most Anticipated',
-                    'note': 'Pre-order 목록 TOP 50 밖'
+                    'title': f'Crimson Desert {best["version"]}',
+                    'type': 'Pre-order Best Selling'
                 }
+            
+            print(f"  ❌ PlayStation ({region_name}): Crimson Desert를 찾을 수 없음")
+            return self._get_ps_fallback(region_name)
             
         except Exception as e:
             print(f"  ⚠️  PlayStation Store ({region_name}) 조회 실패: {e}")
-        
-        # 실패 시 기본 정보
+            return self._get_ps_fallback(region_name)
+    
+    def _get_ps_fallback(self, region_name: str) -> Dict:
+        """PlayStation 스크래핑 실패 시 기본값 반환"""
         return {
             'platform': 'PlayStation',
             'region': region_name,
             'found': True,
             'status': '✨ Most Anticipated 2026',
             'rank': 'Most Anticipated',
-            'note': 'PlayStation 2026년 가장 기대되는 게임'
+            'note': 'Pre-order 순위 스크래핑 실패 - Most Anticipated 게임'
         }
     
     def get_xbox_preorder_rank(self, region_code: str = 'US') -> Optional[Dict]:
@@ -485,6 +546,9 @@ class CrimsonDesertTracker:
         self.data['rankings'] = results
         self.data['history'].append(results)
         self.save_data()
+        
+        # Selenium 드라이버 종료
+        self.close_selenium_driver()
         
         return results
     
