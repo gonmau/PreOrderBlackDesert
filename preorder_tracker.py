@@ -258,7 +258,7 @@ class CrimsonDesertTracker:
             return None
     
     def get_playstation_preorder_rank(self, region_code: str = 'US') -> Optional[Dict]:
-        """PlayStation Store 예약 순위 확인 (Selenium 사용)"""
+        """PlayStation Store 예약 순위 확인 (Selenium 사용) - 개선됨"""
         region_name = self.regions.get(region_code.upper(), {}).get('name', region_code)
         psn_region = self.regions.get(region_code.upper(), {}).get('psn_region', 'en-us')
         
@@ -270,77 +270,100 @@ class CrimsonDesertTracker:
             if not driver:
                 return self._get_ps_fallback(region_name)
             
-            # PlayStation Store Pre-orders 카테고리 페이지 (공통 카테고리 ID)
+            # PlayStation Store Pre-orders 카테고리 페이지
             category_id = "3bf499d7-7acf-4931-97dd-2667494ee2c9"
             url = f"https://store.playstation.com/{psn_region}/category/{category_id}/1"
             print(f"  접속: {url}")
             
             driver.get(url)
             
-            # 페이지 로딩 대기 (최대 15초)
-            time.sleep(5)  # JavaScript 렌더링 대기
+            # 페이지가 완전히 로드될 때까지 대기
+            try:
+                # 게임 그리드가 나타날 때까지 최대 20초 대기
+                WebDriverWait(driver, 20).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "section[data-qa*='product-grid'], ul[data-qa*='grid']"))
+                )
+                print(f"  ✓ 게임 그리드 로드 완료")
+            except:
+                print(f"  ⚠️  게임 그리드 로딩 타임아웃")
+            
+            # 추가로 JavaScript 실행 대기
+            time.sleep(3)
+            
+            # 페이지 끝까지 스크롤 (lazy loading 게임들 로드)
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(2)
             
             # 페이지 소스 가져오기
             html = driver.page_source
             soup = BeautifulSoup(html, 'html.parser')
             
-            # 게임 타일 찾기
-            rank = 0
-            found_games = []
-            
-            # PlayStation Store의 게임 카드 선택자
-            game_selectors = [
-                'li[data-qa*="product"]',
-                'div[data-qa*="grid-cell"]',
-                'a[href*="/concept/"]',
-                'section[data-qa*="product-grid"]'
-            ]
-            
+            # 디버깅: 페이지에 Crimson Desert 있는지 확인
             all_text = soup.get_text().lower()
             if 'crimson desert' in all_text:
                 print(f"  ✓ 페이지에 'Crimson Desert' 텍스트 발견!")
+            else:
+                print(f"  ✗ 페이지에 'Crimson Desert' 없음")
             
-            for selector in game_selectors:
-                games = soup.select(selector)
-                if games:
-                    print(f"  {len(games)}개 게임 발견 (선택자: {selector})")
+            # PlayStation Store의 게임 목록 찾기 (순서대로!)
+            rank = 0
+            found_games = []
+            
+            # 여러 선택자 시도
+            game_lists = [
+                soup.select('section[data-qa*="grid"] li'),
+                soup.select('ul[data-qa*="grid"] li'),
+                soup.select('div[data-qa*="product-grid"] > div'),
+                soup.select('li[data-qa*="grid-cell"]'),
+                # 더 넓은 범위
+                soup.find_all('li', class_=re.compile(r'product|grid')),
+                soup.find_all('div', {'data-qa': re.compile(r'product|grid-cell')})
+            ]
+            
+            for game_list in game_lists:
+                if game_list:
+                    print(f"  → {len(game_list)}개 항목 발견")
                     
-                    for game in games[:50]:
+                    for item in game_list[:60]:  # TOP 60까지 확인
                         rank += 1
-                        text_content = game.get_text().lower()
+                        text_content = item.get_text()
+                        text_lower = text_content.lower()
                         
-                        if 'crimson desert' in text_content:
+                        # Crimson Desert 찾기
+                        if 'crimson' in text_lower and 'desert' in text_lower:
                             # 버전 확인
-                            if 'deluxe' in text_content:
-                                version = 'Deluxe Edition'
-                            elif 'standard' in text_content:
-                                version = 'Standard Edition'
+                            if 'deluxe' in text_lower:
+                                version = 'Deluxe'
+                            elif 'standard' in text_lower:
+                                version = 'Standard'
                             else:
                                 version = ''
                             
                             found_games.append({
                                 'rank': rank,
-                                'version': version
+                                'version': version,
+                                'text': text_content[:100]  # 디버깅용
                             })
                             
-                            print(f"  ✅ 발견! {rank}위 - {version}")
+                            print(f"  ✅ 발견! {rank}위 - Crimson Desert {version}")
                     
                     if found_games:
-                        break
+                        # 가장 높은 순위 (낮은 숫자) 반환
+                        best = min(found_games, key=lambda x: x['rank'])
+                        return {
+                            'platform': 'PlayStation',
+                            'region': region_name,
+                            'rank': best['rank'],
+                            'found': True,
+                            'title': f'Crimson Desert {best["version"]}',
+                            'type': 'Pre-order Best Selling'
+                        }
             
-            # 가장 높은 순위 (낮은 숫자) 반환
-            if found_games:
-                best = min(found_games, key=lambda x: x['rank'])
-                return {
-                    'platform': 'PlayStation',
-                    'region': region_name,
-                    'rank': best['rank'],
-                    'found': True,
-                    'title': f'Crimson Desert {best["version"]}',
-                    'type': 'Pre-order Best Selling'
-                }
+            print(f"  ❌ PlayStation ({region_name}): 게임 목록에서 Crimson Desert를 찾을 수 없음")
             
-            print(f"  ❌ PlayStation ({region_name}): Crimson Desert를 찾을 수 없음")
+            # 디버깅: HTML 일부 출력
+            print(f"  디버깅: HTML 길이 = {len(html)} 문자")
+            
             return self._get_ps_fallback(region_name)
             
         except Exception as e:
