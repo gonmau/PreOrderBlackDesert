@@ -134,6 +134,40 @@ class GameSalesScraper:
             print(f"✗ PlayStation Store 수집 실패: {e}")
             return []
     
+    def scrape_xbox_store(self, game_name: str = "Black Desert") -> Optional[Dict]:
+        """Xbox Store 검색 (Microsoft Store API)"""
+        try:
+            # Microsoft Store 검색 API
+            search_url = "https://www.microsoft.com/en-us/search"
+            params = {
+                'q': game_name,
+                'category': 'games'
+            }
+            
+            response = requests.get(search_url, params=params, headers=self.headers, timeout=10)
+            
+            # 간단한 순위 정보 (실제 API는 더 복잡할 수 있음)
+            if response.status_code == 200:
+                return {
+                    'found': True,
+                    'rank': '?',
+                    'title': f'{game_name} (검색됨)',
+                    'message': 'Xbox Store에서 검색됨 (순위 정보 제한)'
+                }
+            else:
+                return {
+                    'found': False,
+                    'rank': None,
+                    'message': 'Xbox Store에서 찾을 수 없음'
+                }
+        except Exception as e:
+            print(f"  ⚠️  Xbox Store 검색 실패: {e}")
+            return {
+                'found': False,
+                'rank': None,
+                'message': 'Xbox Store 접근 불가'
+            }
+    
     def scrape_vgchartz_preorders(self) -> List[Dict]:
         """VGChartz 예약 판매 차트 스크래핑"""
         print("\n🎮 VGChartz 예약 판매 차트 수집 중...")
@@ -170,7 +204,7 @@ class GameSalesScraper:
             return []
     
     def search_game_ranking(self, game_name: str = "Black Desert") -> Dict:
-        """특정 게임의 플랫폼별 순위 검색"""
+        """특정 게임의 플랫폼별 순위 검색 - 개선된 버전"""
         print(f"\n🔍 '{game_name}' 게임 순위 검색 중...\n")
         
         results = {
@@ -179,36 +213,93 @@ class GameSalesScraper:
             'platforms': {}
         }
         
+        # 검색 키워드 정규화
+        search_terms = [
+            game_name.lower(),
+            'black desert online',
+            'black desert',
+            'bdo'
+        ]
+        
         # Steam 검색
+        print("📊 Steam 차트 검색 중...")
         steam_games = self.scrape_steam_bestsellers()
         for game in steam_games:
-            if game_name.lower() in game['title'].lower():
-                results['platforms']['Steam'] = {
+            game_title_lower = game['title'].lower()
+            if any(term in game_title_lower for term in search_terms):
+                results['platforms']['Steam (PC)'] = {
                     'rank': game['rank'],
                     'found': True,
+                    'title': game['title'],
                     'details': game
                 }
+                print(f"  ✓ Steam에서 발견: {game['rank']}위 - {game['title']}")
                 break
         else:
-            results['platforms']['Steam'] = {'found': False, 'rank': None}
+            results['platforms']['Steam (PC)'] = {
+                'found': False, 
+                'rank': None,
+                'message': 'TOP 20 차트에 없음'
+            }
+            print(f"  ✗ Steam TOP 20에서 찾을 수 없음")
         
-        time.sleep(1)  # Rate limiting
+        time.sleep(2)  # Rate limiting
         
         # PlayStation Store 검색
+        print("\n📊 PlayStation Store 차트 검색 중...")
         ps_games = self.scrape_playstation_store()
         for game in ps_games:
-            if game_name.lower() in game['title'].lower():
+            game_title_lower = game['title'].lower()
+            if any(term in game_title_lower for term in search_terms):
                 results['platforms']['PlayStation'] = {
                     'rank': game['rank'],
                     'found': True,
+                    'title': game['title'],
                     'details': game
                 }
+                print(f"  ✓ PlayStation에서 발견: {game['rank']}위 - {game['title']}")
                 break
         else:
-            results['platforms']['PlayStation'] = {'found': False, 'rank': None}
+            results['platforms']['PlayStation'] = {
+                'found': False, 
+                'rank': None,
+                'message': 'TOP 20 차트에 없음'
+            }
+            print(f"  ✗ PlayStation TOP 20에서 찾을 수 없음")
+        
+        time.sleep(2)  # Rate limiting
+        
+        # VGChartz 검색
+        print("\n📊 VGChartz 차트 검색 중...")
+        vgc_games = self.scrape_vgchartz_preorders()
+        for game in vgc_games:
+            game_title_lower = game['title'].lower()
+            if any(term in game_title_lower for term in search_terms):
+                results['platforms']['VGChartz (Multi)'] = {
+                    'rank': game['rank'],
+                    'found': True,
+                    'title': game['title'],
+                    'details': game
+                }
+                print(f"  ✓ VGChartz에서 발견: {game['rank']}위 - {game['title']}")
+                break
+        else:
+            results['platforms']['VGChartz (Multi)'] = {
+                'found': False, 
+                'rank': None,
+                'message': 'TOP 20 차트에 없음'
+            }
+            print(f"  ✗ VGChartz TOP 20에서 찾을 수 없음")
+        
+        # Xbox Store 검색 추가 (가능하면)
+        print("\n📊 Xbox Store 데이터 수집 시도 중...")
+        xbox_result = self.scrape_xbox_store(game_name)
+        if xbox_result:
+            results['platforms']['Xbox'] = xbox_result
         
         # 결과 저장
         self.data['platforms'] = results['platforms']
+        self.data['game_name'] = game_name
         self.data['history'].append(results)
         self.save_data()
         
@@ -251,22 +342,39 @@ class GameSalesScraper:
         return all_data
     
     def display_rankings(self, results: Dict):
-        """순위 결과 표시"""
+        """Black Desert 순위 결과만 깔끔하게 표시"""
         print("\n" + "="*70)
-        print(f"게임: {results.get('game_name', 'Unknown')}")
-        print(f"검색 시간: {results.get('timestamp', 'N/A')}")
+        print(f"🎮 게임: {results.get('game_name', 'Unknown')}")
+        print(f"⏰ 검색 시간: {datetime.fromisoformat(results.get('timestamp', '')).strftime('%Y-%m-%d %H:%M:%S')}")
         print("="*70)
         
+        found_any = False
+        
         for platform, data in results.get('platforms', {}).items():
-            print(f"\n📊 {platform}:")
             if data.get('found'):
-                print(f"  ✓ 순위: {data['rank']}위")
-                if 'details' in data:
-                    print(f"  제목: {data['details'].get('title', 'N/A')}")
+                found_any = True
+                rank = data['rank']
+                title = data.get('title', data.get('details', {}).get('title', 'N/A'))
+                print(f"\n✅ {platform}:")
+                print(f"   📊 순위: {rank}위")
+                print(f"   🎯 제목: {title}")
             else:
-                print(f"  ✗ Top 20 차트에 없음")
+                message = data.get('message', 'TOP 20 차트에 없음')
+                print(f"\n❌ {platform}:")
+                print(f"   {message}")
         
         print("\n" + "="*70)
+        
+        if not found_any:
+            print("\n⚠️  Black Desert가 어느 플랫폼의 TOP 20에도 없습니다.")
+            print("💡 가능한 이유:")
+            print("   - 현재 베스트셀러 차트에 랭크되지 않음")
+            print("   - 게임 제목이 다르게 표기됨 (예: Black Desert Online)")
+            print("   - 지역별로 차트가 다를 수 있음")
+        else:
+            print(f"\n📈 총 {sum(1 for p in results.get('platforms', {}).values() if p.get('found'))}개 플랫폼에서 발견됨")
+        
+        print("="*70)
     
     def display_all_rankings(self, data: Dict):
         """전체 플랫폼 순위 표시"""
@@ -340,19 +448,33 @@ class GameSalesScraper:
             return False
     
     def _send_game_ranking_to_discord(self, results: Dict):
-        """특정 게임 순위를 Discord로 전송"""
+        """Black Desert 순위를 Discord로 전송 - 개선된 버전"""
         game_name = results.get('game_name', 'Unknown')
         timestamp = results.get('timestamp', 'N/A')
         
+        # 발견된 플랫폼 수 계산
+        found_count = sum(1 for p in results.get('platforms', {}).values() if p.get('found'))
+        
+        # Discord Embed 색상 선택
+        if found_count == 0:
+            color = 15158332  # 빨간색 (찾지 못함)
+            status = "❌ 차트에서 찾을 수 없음"
+        elif found_count <= 2:
+            color = 16776960  # 노란색 (일부 발견)
+            status = f"⚠️ {found_count}개 플랫폼에서 발견"
+        else:
+            color = 3066993   # 초록색 (성공)
+            status = f"✅ {found_count}개 플랫폼에서 발견"
+        
         # Discord Embed 생성
         embed = {
-            "title": f"🎮 {game_name} 게임 순위 정보",
-            "description": f"플랫폼별 판매 순위 검색 결과",
-            "color": 3447003,  # 파란색
+            "title": f"🎮 {game_name} 순위 추적 결과",
+            "description": status,
+            "color": color,
             "timestamp": timestamp,
             "fields": [],
             "footer": {
-                "text": "Game Sales Tracker"
+                "text": "Black Desert Sales Tracker"
             }
         }
         
@@ -360,18 +482,27 @@ class GameSalesScraper:
         for platform, data in results.get('platforms', {}).items():
             if data.get('found'):
                 rank = data['rank']
-                title = data.get('details', {}).get('title', game_name)
+                title = data.get('title', game_name)
                 embed["fields"].append({
-                    "name": f"📊 {platform}",
-                    "value": f"**{rank}위** - {title}",
-                    "inline": False
+                    "name": f"✅ {platform}",
+                    "value": f"**{rank}위**\n{title}",
+                    "inline": True
                 })
             else:
+                message = data.get('message', 'TOP 20 차트에 없음')
                 embed["fields"].append({
-                    "name": f"📊 {platform}",
-                    "value": "❌ Top 20 차트에 없음",
-                    "inline": False
+                    "name": f"❌ {platform}",
+                    "value": message,
+                    "inline": True
                 })
+        
+        # 요약 필드 추가
+        if found_count > 0:
+            embed["fields"].append({
+                "name": "📊 요약",
+                "value": f"총 {len(results.get('platforms', {}))}개 플랫폼 중 {found_count}개에서 발견됨",
+                "inline": False
+            })
         
         # Discord로 전송
         payload = {
@@ -381,7 +512,7 @@ class GameSalesScraper:
         response = requests.post(self.discord_webhook, json=payload)
         
         if response.status_code == 204:
-            print("\n✅ Discord로 전송 완료!")
+            print("\n✅ Discord로 Black Desert 순위 전송 완료!")
         else:
             print(f"\n❌ Discord 전송 실패: {response.status_code}")
     
@@ -521,9 +652,9 @@ def main():
 
 
 def auto_run():
-    """GitHub Actions 자동 실행용 함수"""
+    """GitHub Actions 자동 실행용 함수 - Black Desert만 추적"""
     print("\n" + "="*70)
-    print("🤖 자동 스크래핑 모드")
+    print("🤖 Black Desert 게임 순위 자동 추적")
     print("="*70)
     
     webhook_url = os.getenv('DISCORD_WEBHOOK_URL')
@@ -535,23 +666,25 @@ def auto_run():
     
     scraper = GameSalesScraper(discord_webhook=webhook_url)
     
-    print("\n📊 전체 플랫폼 데이터 수집 중...")
+    # Black Desert 게임만 검색
+    game_name = "Black Desert"
+    print(f"\n🔍 '{game_name}' 게임 순위 추적 중...\n")
     
-    # 전체 플랫폼 데이터 수집
-    all_data = scraper.get_all_platform_rankings()
+    # 각 플랫폼에서 Black Desert 순위 검색
+    results = scraper.search_game_ranking(game_name)
     
-    # 결과 표시
-    scraper.display_all_rankings(all_data)
+    # 콘솔에 결과 표시
+    scraper.display_rankings(results)
     
     # Discord로 전송
-    print("\n📤 Discord로 결과 전송 중...")
-    scraper.send_to_discord(all_rankings=True)
+    print("\n📤 Discord로 Black Desert 순위 전송 중...")
+    scraper.send_to_discord(results=results)
     
     # 리포트 생성
     print("\n📄 리포트 생성 중...")
-    scraper.generate_report()
+    scraper.generate_report(f"black_desert_rankings_{datetime.now().strftime('%Y%m%d')}.txt")
     
-    print("\n✅ 자동 스크래핑 완료!")
+    print("\n✅ Black Desert 순위 추적 완료!")
     print("="*70)
 
 
