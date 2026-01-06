@@ -1,2 +1,14 @@
-requests
-beautifulsoup4
+# Black Desert Platform Sales Scraper
+# 웹 스크래핑에 필요한 패키지
+
+# HTTP 요청
+requests>=2.31.0
+
+# HTML 파싱
+beautifulsoup4>=4.12.0
+
+# HTML 파서 (선택적, 더 빠른 파싱)
+lxml>=4.9.0
+
+# 설치 방법:
+# pip install -r requirements.txt
