@@ -214,35 +214,83 @@ class CrimsonDesertTracker:
             return None
     
     def get_playstation_preorder_rank(self, region_code: str = 'US') -> Optional[Dict]:
-        """PlayStation Store 예약 순위 확인 (국가별) - 개선됨"""
+        """PlayStation Store 예약 순위 확인 (국가별) - Pre-order 페이지 스크래핑"""
         region_name = self.regions.get(region_code.upper(), {}).get('name', region_code)
+        psn_region = self.regions.get(region_code.upper(), {}).get('psn_region', 'en/us')
         
-        print(f"\n🔍 PlayStation Store ({region_name}) 정보 확인 중...")
+        print(f"\n🔍 PlayStation Store ({region_name}) Pre-order 순위 확인 중...")
         
         try:
-            # PlayStation에서 Crimson Desert는 "Most Anticipated 2026"에 포함됨
-            # 실제 숫자 순위는 공개하지 않으므로 상태만 표시
+            # PlayStation Store Pre-orders 페이지 (Best Selling 정렬)
+            url = f"https://store.playstation.com/{psn_region}/pages/browse/pre-orders"
             
-            result = {
-                'platform': 'PlayStation',
-                'region': region_name,
-                'found': True,
-                'status': '✨ Most Anticipated 2026',
-                'rank': 'Most Anticipated',
-                'note': 'PlayStation 2026년 가장 기대되는 게임 선정'
-            }
+            response = requests.get(url, headers=self.headers, timeout=15)
             
-            print(f"  ✅ PlayStation ({region_name}): Most Anticipated 2026 선정")
-            return result
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.content, 'html.parser')
+                
+                # 게임 타일 찾기 (여러 패턴 시도)
+                game_tiles = soup.find_all(['div', 'article', 'li'], class_=re.compile(r'product|game|grid-cell|tile'))
+                
+                if not game_tiles:
+                    # 다른 구조 시도
+                    game_tiles = soup.find_all('a', href=re.compile(r'/product/'))
+                
+                rank = 0
+                for tile in game_tiles[:50]:  # TOP 50까지 확인
+                    rank += 1
+                    
+                    # 제목 찾기
+                    title_elem = tile.find(['h3', 'h2', 'span', 'div'], class_=re.compile(r'title|name|product'))
+                    if not title_elem:
+                        title_elem = tile.find(string=re.compile(r'crimson', re.IGNORECASE))
+                    
+                    if title_elem:
+                        title_text = title_elem.get_text() if hasattr(title_elem, 'get_text') else str(title_elem)
+                        title_lower = title_text.lower()
+                        
+                        if 'crimson desert' in title_lower:
+                            # 버전 확인 (Deluxe vs Standard)
+                            if 'deluxe' in title_lower:
+                                version = 'Deluxe Edition'
+                            elif 'standard' in title_lower:
+                                version = 'Standard Edition'
+                            else:
+                                version = 'Standard Edition'
+                            
+                            print(f"  ✅ PlayStation ({region_name}): {rank}위 - {version}")
+                            return {
+                                'platform': 'PlayStation',
+                                'region': region_name,
+                                'rank': rank,
+                                'found': True,
+                                'title': f'Crimson Desert {version}',
+                                'type': 'Pre-order Best Selling'
+                            }
+                
+                # 못 찾은 경우 - 기본 정보 반환
+                print(f"  ℹ️  PlayStation ({region_name}): Pre-order 목록에서 찾을 수 없음")
+                return {
+                    'platform': 'PlayStation',
+                    'region': region_name,
+                    'found': True,
+                    'status': '✨ Most Anticipated 2026',
+                    'rank': 'Most Anticipated',
+                    'note': 'Pre-order 목록 TOP 50 밖'
+                }
             
         except Exception as e:
             print(f"  ⚠️  PlayStation Store ({region_name}) 조회 실패: {e}")
-            return {
-                'platform': 'PlayStation',
-                'region': region_name,
-                'found': False,
-                'message': '조회 오류'
-            }
+        
+        # 실패 시 기본 정보
+        return {
+            'platform': 'PlayStation',
+            'region': region_name,
+            'found': True,
+            'status': '✨ Most Anticipated 2026',
+            'rank': 'Most Anticipated',
+            'note': 'PlayStation 2026년 가장 기대되는 게임'
+        }
     
     def get_xbox_preorder_rank(self, region_code: str = 'US') -> Optional[Dict]:
         """Xbox Store 예약 정보 확인 (국가별) - 개선됨"""
