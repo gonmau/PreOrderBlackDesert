@@ -60,6 +60,65 @@ class CrimsonDesertTracker:
         with open(self.data_file, 'w', encoding='utf-8') as f:
             json.dump(self.data, f, ensure_ascii=False, indent=2)
     
+    def get_ggdeals_wishlist_rank(self, platform: str = 'playstation', preorder_only: bool = True) -> Optional[Dict]:
+        """GG.deals에서 Wishlist 순위 확인 - 실제 순위 제공!"""
+        print(f"\n🔍 GG.deals ({platform}) Wishlist 순위 확인 중...")
+        
+        try:
+            # GG.deals 예약 판매 게임 순위 페이지
+            if preorder_only:
+                url = f"https://gg.deals/ranking/{platform}/most-wishlisted/pre-orders/"
+            else:
+                url = f"https://gg.deals/ranking/{platform}/most-wishlisted/"
+            
+            response = requests.get(url, headers=self.headers, timeout=15)
+            
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.content, 'html.parser')
+                
+                # 게임 리스트 찾기
+                game_items = soup.find_all('div', class_='game-item')
+                if not game_items:
+                    # 다른 클래스 시도
+                    game_items = soup.find_all('a', href=re.compile(r'/game/'))
+                
+                for rank, item in enumerate(game_items[:100], 1):
+                    # 제목 찾기
+                    title_elem = item.find('span', class_='game-info-title')
+                    if not title_elem:
+                        title_elem = item.find('div', class_='title')
+                    
+                    if title_elem:
+                        title = title_elem.text.strip().lower()
+                        
+                        if 'crimson desert' in title:
+                            print(f"  ✅ GG.deals ({platform}): {rank}위 발견!")
+                            return {
+                                'platform': platform.capitalize(),
+                                'source': 'GG.deals',
+                                'type': 'Wishlist Ranking',
+                                'rank': rank,
+                                'found': True,
+                                'title': title_elem.text.strip()
+                            }
+                
+                print(f"  ❌ GG.deals ({platform}) TOP 100에서 찾을 수 없음")
+                return {
+                    'platform': platform.capitalize(),
+                    'source': 'GG.deals',
+                    'found': False,
+                    'message': 'TOP 100 위시리스트에 없음'
+                }
+            
+        except Exception as e:
+            print(f"  ⚠️  GG.deals ({platform}) 조회 실패: {e}")
+            return {
+                'platform': platform.capitalize(),
+                'source': 'GG.deals',
+                'found': False,
+                'message': '조회 오류'
+            }
+    
     def get_steam_wishlist_rank(self, region_code: str = 'us') -> Optional[Dict]:
         """Steam Wishlist 순위 확인 (국가별)"""
         region_name = self.regions.get(region_code.upper(), {}).get('name', region_code)
@@ -332,13 +391,19 @@ class CrimsonDesertTracker:
                 region_results['platforms']['Steam'] = steam_result
             time.sleep(2)
             
-            # PlayStation
-            ps_result = self.get_playstation_preorder_rank(region_code)
-            if ps_result:
-                region_results['platforms']['PlayStation'] = ps_result
+            # PlayStation (GG.deals에서 실제 순위 확인)
+            ps_gg_result = self.get_ggdeals_wishlist_rank('playstation', preorder_only=True)
+            if ps_gg_result and ps_gg_result.get('found'):
+                region_results['platforms']['PlayStation'] = ps_gg_result
+            else:
+                # 실패 시 기존 방법 시도
+                ps_result = self.get_playstation_preorder_rank(region_code)
+                if ps_result:
+                    region_results['platforms']['PlayStation'] = ps_result
             time.sleep(2)
             
-            # Xbox
+            # Xbox (GG.deals에서 실제 순위 확인 시도)
+            # 참고: GG.deals는 주로 Steam과 PlayStation 중심
             xbox_result = self.get_xbox_preorder_rank(region_code)
             if xbox_result:
                 region_results['platforms']['Xbox'] = xbox_result
