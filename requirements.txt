@@ -1,5 +1,2 @@
 requests
-pandas
-matplotlib
-playwright
-pytest-playwright
+beautifulsoup4
