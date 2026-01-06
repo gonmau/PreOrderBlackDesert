@@ -520,5 +520,44 @@ def main():
         print("\n잘못된 선택입니다.")
 
 
+def auto_run():
+    """GitHub Actions 자동 실행용 함수"""
+    print("\n" + "="*70)
+    print("🤖 자동 스크래핑 모드")
+    print("="*70)
+    
+    webhook_url = os.getenv('DISCORD_WEBHOOK_URL')
+    
+    if not webhook_url:
+        print("\n❌ Discord Webhook URL이 설정되지 않았습니다.")
+        print("GitHub Secrets에 DISCORD_WEBHOOK_URL을 설정해주세요.")
+        return
+    
+    scraper = GameSalesScraper(discord_webhook=webhook_url)
+    
+    print("\n📊 전체 플랫폼 데이터 수집 중...")
+    
+    # 전체 플랫폼 데이터 수집
+    all_data = scraper.get_all_platform_rankings()
+    
+    # 결과 표시
+    scraper.display_all_rankings(all_data)
+    
+    # Discord로 전송
+    print("\n📤 Discord로 결과 전송 중...")
+    scraper.send_to_discord(all_rankings=True)
+    
+    # 리포트 생성
+    print("\n📄 리포트 생성 중...")
+    scraper.generate_report()
+    
+    print("\n✅ 자동 스크래핑 완료!")
+    print("="*70)
+
+
 if __name__ == "__main__":
-    main()
+    # GitHub Actions에서 실행 중인지 확인
+    if os.getenv('GITHUB_ACTIONS') == 'true':
+        auto_run()
+    else:
+        main()
