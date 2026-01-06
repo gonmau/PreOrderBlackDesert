@@ -12,12 +12,12 @@ jobs:
     
     steps:
     - name: 저장소 체크아웃
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Python 설정
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.9'
+        python-version: '3.11'
     
     - name: 의존성 설치
       run: |
@@ -31,9 +31,11 @@ jobs:
         python preorder_tracker.py
     
     - name: 결과 저장 (선택사항)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
+      if: always()
       with:
         name: sales-data
         path: |
           sales_data.json
           rankings_report.txt
+        retention-days: 30
