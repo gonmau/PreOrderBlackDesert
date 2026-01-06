@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 import time
 import re
+import os
 
 class GameSalesScraper:
     """게임 판매량 스크래핑 및 집계 클래스"""
