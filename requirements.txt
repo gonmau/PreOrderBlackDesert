@@ -1,4 +1,4 @@
-# Black Desert Platform Sales Scraper
+# Crimson Desert Platform Sales Scraper
 # 웹 스크래핑에 필요한 패키지
 
 # HTTP 요청
@@ -9,6 +9,12 @@ beautifulsoup4>=4.12.0
 
 # HTML 파서 (선택적, 더 빠른 파싱)
 lxml>=4.9.0
+
+# Selenium (JavaScript 렌더링된 페이지 스크래핑)
+selenium>=4.15.0
+
+# WebDriver Manager (자동으로 ChromeDriver 설치)
+webdriver-manager>=4.0.0
 
 # 설치 방법:
 # pip install -r requirements.txt
