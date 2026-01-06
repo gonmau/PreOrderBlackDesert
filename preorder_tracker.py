@@ -275,57 +275,99 @@ class CrimsonDesertTracker:
                 'message': '조회 오류'
             }
     
-    def get_amazon_preorder_rank(self, region_code: str = 'US') -> Optional[Dict]:
-        """Amazon 예약 판매 순위 확인 (국가별)"""
+    def get_amazon_bestseller_rank(self, region_code: str = 'US') -> Optional[Dict]:
+        """Amazon 비디오 게임 베스트셀러 순위 확인 (실제 순위!)"""
         region_name = self.regions.get(region_code.upper(), {}).get('name', region_code)
         amazon_domain = self.regions.get(region_code.upper(), {}).get('amazon')
         
         if not amazon_domain:
-            print(f"  ⚠️  Amazon ({region_name}): 해당 국가 미지원")
-            return {
-                'platform': 'Amazon',
-                'region': region_name,
-                'found': False,
-                'message': 'Amazon 미지원 국가'
-            }
+            return None
         
-        print(f"\n🔍 Amazon ({region_name}) 예약 판매 순위 확인 중...")
+        print(f"\n🔍 Amazon ({region_name}) 베스트셀러 순위 확인 중...")
         
         try:
-            # Amazon 검색
-            url = f"https://www.amazon.{amazon_domain}/s"
-            params = {
-                'k': 'crimson desert',
-                'i': 'videogames'
+            # 방법 1: 직접 제품 페이지에서 순위 확인
+            product_urls = {
+                'US': 'https://www.amazon.com/Crimson-Desert-Standard-PlayStation-5/dp/B0FST4FTPQ',
+                'JP': 'https://www.amazon.co.jp/dp/B0FST4FTPQ',
+                'GB': 'https://www.amazon.co.uk/dp/B0FST4FTPQ',
+                'DE': 'https://www.amazon.de/dp/B0FST4FTPQ',
+                'FR': 'https://www.amazon.fr/dp/B0FST4FTPQ'
             }
             
-            response = requests.get(url, params=params, headers=self.headers, timeout=15)
+            url = product_urls.get(region_code.upper())
+            if url:
+                response = requests.get(url, headers=self.headers, timeout=15)
+                
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.content, 'html.parser')
+                    
+                    # Amazon 베스트셀러 순위 찾기 (여러 패턴 시도)
+                    rank_patterns = [
+                        ('span', {'id': 'productDetails_detailBullets_sections1'}),
+                        ('li', {'id': 'SalesRank'}),
+                        ('th', {'class': 'prodDetSectionEntry'})
+                    ]
+                    
+                    for tag, attrs in rank_patterns:
+                        rank_elem = soup.find(tag, attrs)
+                        if rank_elem:
+                            text = rank_elem.get_text()
+                            # "#12 in Video Games" 같은 패턴 찾기
+                            rank_match = re.search(r'#(\d+)\s+in\s+Video\s+Games', text, re.IGNORECASE)
+                            if not rank_match:
+                                rank_match = re.search(r'(\d+)\s*位.*ゲーム', text)  # 일본어
+                            if not rank_match:
+                                rank_match = re.search(r'Nr\.\s*(\d+)\s+in\s+Games', text)  # 독일어
+                            
+                            if rank_match:
+                                rank = int(rank_match.group(1))
+                                print(f"  ✅ Amazon ({region_name}): {rank}위 발견!")
+                                return {
+                                    'platform': 'Amazon',
+                                    'region': region_name,
+                                    'rank': rank,
+                                    'found': True,
+                                    'type': 'Bestseller'
+                                }
+            
+            # 방법 2: 베스트셀러 페이지에서 검색
+            bestseller_url = f"https://www.amazon.{amazon_domain}/best-sellers-video-games/zgbs/videogames"
+            response = requests.get(bestseller_url, headers=self.headers, timeout=15)
             
             if response.status_code == 200:
                 soup = BeautifulSoup(response.content, 'html.parser')
                 
-                # 검색 결과에서 Crimson Desert 찾기
-                results = soup.find_all('div', {'data-component-type': 's-search-result'})
+                # 베스트셀러 아이템들
+                items = soup.find_all(['div', 'li'], class_=re.compile(r'zg-item|a-carousel-card'))
                 
-                for rank, result in enumerate(results[:20], 1):
-                    title_elem = result.find('h2')
+                for item in items[:100]:
+                    title_elem = item.find(['span', 'div', 'a'], class_=re.compile(r'p13n-sc-truncate|_cDEzb_p13n-sc-css-line-clamp'))
                     
-                    if title_elem and 'crimson desert' in title_elem.text.lower():
-                        print(f"  ✅ Amazon ({region_name}): {rank}위 발견")
-                        return {
-                            'platform': 'Amazon',
-                            'region': region_name,
-                            'rank': rank,
-                            'found': True
-                        }
-                
-                print(f"  ❌ Amazon ({region_name}): 검색 결과 없음")
-                return {
-                    'platform': 'Amazon',
-                    'region': region_name,
-                    'found': False,
-                    'message': '검색 결과 없음'
-                }
+                    if title_elem and 'crimson desert' in title_elem.get_text().lower():
+                        # 순위 찾기
+                        rank_elem = item.find(['span', 'div'], class_=re.compile(r'zg-badge|rank'))
+                        if rank_elem:
+                            rank_text = rank_elem.get_text()
+                            rank_match = re.search(r'#?(\d+)', rank_text)
+                            if rank_match:
+                                rank = int(rank_match.group(1))
+                                print(f"  ✅ Amazon ({region_name}) 베스트셀러: {rank}위")
+                                return {
+                                    'platform': 'Amazon',
+                                    'region': region_name,
+                                    'rank': rank,
+                                    'found': True,
+                                    'type': 'Bestseller'
+                                }
+            
+            print(f"  ⚠️  Amazon ({region_name}): 순위 정보 파싱 실패")
+            return {
+                'platform': 'Amazon',
+                'region': region_name,
+                'found': False,
+                'message': '순위 파싱 실패 (상품 존재하나 순위 미표시)'
+            }
             
         except Exception as e:
             print(f"  ⚠️  Amazon ({region_name}) 조회 실패: {e}")
@@ -382,9 +424,9 @@ class CrimsonDesertTracker:
                 region_results['platforms']['Xbox'] = xbox_result
             time.sleep(1)
             
-            # Amazon (지원 국가만)
+            # Amazon (지원 국가만 - 실제 베스트셀러 순위)
             if region_info.get('amazon'):
-                amazon_result = self.get_amazon_preorder_rank(region_code)
+                amazon_result = self.get_amazon_bestseller_rank(region_code)
                 if amazon_result:
                     region_results['platforms']['Amazon'] = amazon_result
                 time.sleep(2)
