@@ -270,8 +270,9 @@ class CrimsonDesertTracker:
             if not driver:
                 return self._get_ps_fallback(region_name)
             
-            # PlayStation Store Pre-orders 페이지
-            url = f"https://store.playstation.com/{psn_region}/pages/browse/pre-orders"
+            # PlayStation Store Pre-orders 카테고리 페이지 (공통 카테고리 ID)
+            category_id = "3bf499d7-7acf-4931-97dd-2667494ee2c9"
+            url = f"https://store.playstation.com/{psn_region}/category/{category_id}/1"
             print(f"  접속: {url}")
             
             driver.get(url)
@@ -287,13 +288,17 @@ class CrimsonDesertTracker:
             rank = 0
             found_games = []
             
-            # 다양한 선택자 시도
+            # PlayStation Store의 게임 카드 선택자
             game_selectors = [
-                'div[data-testid="product-card"]',
-                'div[class*="product"]',
-                'article',
-                'a[href*="/product/"]'
+                'li[data-qa*="product"]',
+                'div[data-qa*="grid-cell"]',
+                'a[href*="/concept/"]',
+                'section[data-qa*="product-grid"]'
             ]
+            
+            all_text = soup.get_text().lower()
+            if 'crimson desert' in all_text:
+                print(f"  ✓ 페이지에 'Crimson Desert' 텍스트 발견!")
             
             for selector in game_selectors:
                 games = soup.select(selector)
@@ -340,6 +345,8 @@ class CrimsonDesertTracker:
             
         except Exception as e:
             print(f"  ⚠️  PlayStation Store ({region_name}) 조회 실패: {e}")
+            import traceback
+            traceback.print_exc()
             return self._get_ps_fallback(region_name)
     
     def _get_ps_fallback(self, region_name: str) -> Dict:
