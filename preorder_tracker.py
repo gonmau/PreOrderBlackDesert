@@ -283,6 +283,31 @@ class CrimsonDesertTracker:
             
             driver.get(url)
             
+            # 쿠키 동의 팝업 처리
+            try:
+                # 여러 가지 쿠키 버튼 선택자 시도
+                cookie_buttons = [
+                    "button[id*='onetrust-accept']",
+                    "button[class*='accept']",
+                    "button[aria-label*='Accept']",
+                    "#onetrust-accept-btn-handler",
+                    "button:contains('Accept')"
+                ]
+                
+                for selector in cookie_buttons:
+                    try:
+                        cookie_btn = WebDriverWait(driver, 3).until(
+                            EC.element_to_be_clickable((By.CSS_SELECTOR, selector))
+                        )
+                        cookie_btn.click()
+                        print(f"  ✓ 쿠키 팝업 수락 완료")
+                        time.sleep(1)
+                        break
+                    except:
+                        continue
+            except:
+                print(f"  ℹ️  쿠키 팝업 없음 또는 이미 수락됨")
+            
             # 페이지가 완전히 로드될 때까지 대기
             try:
                 # 게임 그리드가 나타날 때까지 최대 20초 대기
@@ -304,12 +329,20 @@ class CrimsonDesertTracker:
             html = driver.page_source
             soup = BeautifulSoup(html, 'html.parser')
             
+            # Crimson Desert 검색 키워드 (다국어 지원)
+            search_keywords = [
+                'crimson desert',  # 영어
+                '크림슨 데저트',    # 한국어
+                'クリムゾンデザート',  # 일본어
+                'crimson'  # 부분 매칭
+            ]
+            
             # 디버깅: 페이지에 Crimson Desert 있는지 확인
-            all_text = soup.get_text().lower()
-            if 'crimson desert' in all_text:
-                print(f"  ✓ 페이지에 'Crimson Desert' 텍스트 발견!")
-            else:
-                print(f"  ✗ 페이지에 'Crimson Desert' 없음")
+            all_text_lower = soup.get_text().lower()
+            for keyword in search_keywords:
+                if keyword.lower() in all_text_lower:
+                    print(f"  ✓ 페이지에 '{keyword}' 발견!")
+                    break
             
             # PlayStation Store의 게임 목록 찾기 (순서대로!)
             rank = 0
@@ -330,20 +363,29 @@ class CrimsonDesertTracker:
                 if game_list:
                     print(f"  → {len(game_list)}개 항목 발견")
                     
-                    for item in game_list[:60]:  # TOP 60까지 확인
+                    for item in game_list[:80]:  # TOP 80까지 확인
                         rank += 1
                         text_content = item.get_text()
                         text_lower = text_content.lower()
                         
-                        # Crimson Desert 찾기
-                        if 'crimson' in text_lower and 'desert' in text_lower:
-                            # 버전 확인
-                            if 'deluxe' in text_lower:
-                                version = 'Deluxe'
-                            elif 'standard' in text_lower:
-                                version = 'Standard'
-                            else:
-                                version = ''
+                        # Crimson Desert 찾기 (다국어)
+                        is_crimson = any(keyword.lower() in text_lower for keyword in search_keywords)
+                        
+                        if is_crimson:
+                            # 버전 확인 (다국어)
+                            version_keywords = {
+                                'Deluxe': ['deluxe', 'デラックス', '디럭스', 'édition deluxe'],
+                                'Standard': ['standard', 'スタンダード', '스탠다드', 'édition standard'],
+                            }
+                            
+                            version = ''
+                            for ver_name, ver_keywords in version_keywords.items():
+                                if any(kw.lower() in text_lower for kw in ver_keywords):
+                                    version = ver_name
+                                    break
+                            
+                            if not version:
+                                version = 'Standard'  # 기본값
                             
                             found_games.append({
                                 'rank': rank,
@@ -354,16 +396,39 @@ class CrimsonDesertTracker:
                             print(f"  ✅ 발견! {rank}위 - Crimson Desert {version}")
                     
                     if found_games:
-                        # 가장 높은 순위 (낮은 숫자) 반환
-                        best = min(found_games, key=lambda x: x['rank'])
-                        return {
-                            'platform': 'PlayStation',
-                            'region': region_name,
-                            'rank': best['rank'],
-                            'found': True,
-                            'title': f'Crimson Desert {best["version"]}',
-                            'type': 'Pre-order Best Selling'
-                        }
+                        break
+            
+            # 여러 버전이 있는 경우 가중치 평균 계산
+            if found_games:
+                # 각 버전별로 분류
+                deluxe_ranks = [g['rank'] for g in found_games if g['version'] == 'Deluxe']
+                standard_ranks = [g['rank'] for g in found_games if g['version'] == 'Standard']
+                
+                # 가중치: Deluxe 60%, Standard 40% (Deluxe가 더 중요)
+                if deluxe_ranks and standard_ranks:
+                    weighted_rank = (min(deluxe_ranks) * 0.6 + min(standard_ranks) * 0.4)
+                    display_rank = round(weighted_rank)
+                    versions_info = f"Deluxe {min(deluxe_ranks)}위 + Standard {min(standard_ranks)}위"
+                    print(f"  📊 가중 평균 순위: {display_rank}위 ({versions_info})")
+                elif deluxe_ranks:
+                    display_rank = min(deluxe_ranks)
+                    versions_info = f"Deluxe only"
+                elif standard_ranks:
+                    display_rank = min(standard_ranks)
+                    versions_info = f"Standard only"
+                else:
+                    display_rank = found_games[0]['rank']
+                    versions_info = "Unknown"
+                
+                return {
+                    'platform': 'PlayStation',
+                    'region': region_name,
+                    'rank': display_rank,
+                    'found': True,
+                    'title': f'Crimson Desert',
+                    'versions': versions_info,
+                    'type': 'Pre-order Best Selling'
+                }
             
             print(f"  ❌ PlayStation ({region_name}): 게임 목록에서 Crimson Desert를 찾을 수 없음")
             
