@@ -321,9 +321,25 @@ class CrimsonDesertTracker:
             # 추가로 JavaScript 실행 대기
             time.sleep(3)
             
-            # 페이지 끝까지 스크롤 (lazy loading 게임들 로드)
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(2)
+            # 페이지를 여러 번 스크롤해서 모든 게임 로드 (lazy loading)
+            print(f"  📜 페이지 스크롤하여 모든 게임 로딩 중...")
+            last_height = driver.execute_script("return document.body.scrollHeight")
+            
+            for i in range(5):  # 최대 5번 스크롤
+                # 스크롤 다운
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                time.sleep(2)
+                
+                # 새로운 높이 확인
+                new_height = driver.execute_script("return document.body.scrollHeight")
+                if new_height == last_height:
+                    break
+                last_height = new_height
+                print(f"  → 스크롤 {i+1}/5 완료")
+            
+            # 맨 위로 돌아가기
+            driver.execute_script("window.scrollTo(0, 0);")
+            time.sleep(1)
             
             # 페이지 소스 가져오기
             html = driver.page_source
@@ -363,7 +379,7 @@ class CrimsonDesertTracker:
                 if game_list:
                     print(f"  → {len(game_list)}개 항목 발견")
                     
-                    for item in game_list[:80]:  # TOP 80까지 확인
+                    for item in game_list[:100]:  # TOP 100까지 확인 (더 많이)
                         rank += 1
                         text_content = item.get_text()
                         text_lower = text_content.lower()
@@ -374,8 +390,8 @@ class CrimsonDesertTracker:
                         if is_crimson:
                             # 버전 확인 (다국어)
                             version_keywords = {
-                                'Deluxe': ['deluxe', 'デラックス', '디럭스', 'édition deluxe'],
-                                'Standard': ['standard', 'スタンダード', '스탠다드', 'édition standard'],
+                                'Deluxe': ['deluxe', 'デラックス', '디럭스', 'édition deluxe', 'luxe'],
+                                'Standard': ['standard', 'スタンダード', '스탠다드', 'スタンダード版', 'édition standard'],
                             }
                             
                             version = ''
@@ -385,7 +401,11 @@ class CrimsonDesertTracker:
                                     break
                             
                             if not version:
-                                version = 'Standard'  # 기본값
+                                # 가격으로 추정 (Deluxe가 더 비쌈)
+                                if '$79' in text_content or '$89' in text_content or '¥' in text_content:
+                                    version = 'Deluxe'
+                                else:
+                                    version = 'Standard'
                             
                             found_games.append({
                                 'rank': rank,
