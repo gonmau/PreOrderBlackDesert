@@ -42,14 +42,20 @@ class CrimsonDesertTracker:
             'platforms': ['Steam (PC)', 'PlayStation 5', 'Xbox Series X/S']
         }
         
-        # 추적할 국가/지역
+        # 추적할 국가/지역 (12개국)
         self.regions = {
             'US': {'name': '미국', 'steam_cc': 'us', 'psn_region': 'en-us', 'amazon': 'com'},
-            'KR': {'name': '한국', 'steam_cc': 'kr', 'psn_region': 'ko-kr', 'amazon': None},
-            'JP': {'name': '일본', 'steam_cc': 'jp', 'psn_region': 'ja-jp', 'amazon': 'co.jp'},
             'GB': {'name': '영국', 'steam_cc': 'gb', 'psn_region': 'en-gb', 'amazon': 'co.uk'},
+            'JP': {'name': '일본', 'steam_cc': 'jp', 'psn_region': 'ja-jp', 'amazon': 'co.jp'},
             'DE': {'name': '독일', 'steam_cc': 'de', 'psn_region': 'de-de', 'amazon': 'de'},
-            'FR': {'name': '프랑스', 'steam_cc': 'fr', 'psn_region': 'fr-fr', 'amazon': 'fr'}
+            'FR': {'name': '프랑스', 'steam_cc': 'fr', 'psn_region': 'fr-fr', 'amazon': 'fr'},
+            'CA': {'name': '캐나다', 'steam_cc': 'ca', 'psn_region': 'en-ca', 'amazon': 'ca'},
+            'AU': {'name': '호주', 'steam_cc': 'au', 'psn_region': 'en-au', 'amazon': 'com.au'},
+            'IT': {'name': '이탈리아', 'steam_cc': 'it', 'psn_region': 'it-it', 'amazon': 'it'},
+            'ES': {'name': '스페인', 'steam_cc': 'es', 'psn_region': 'es-es', 'amazon': 'es'},
+            'BR': {'name': '브라질', 'steam_cc': 'br', 'psn_region': 'pt-br', 'amazon': 'com.br'},
+            'SA': {'name': '사우디/중동', 'steam_cc': 'sa', 'psn_region': 'en-sa', 'amazon': None},
+            'KR': {'name': '한국', 'steam_cc': 'kr', 'psn_region': 'ko-kr', 'amazon': None}
         }
     
     def init_selenium_driver(self):
