@@ -5,16 +5,18 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import requests
-
+import os
 # ================= 설정 =================
-DISCORD_WEBHOOK_URL = "여기에_디스코드_WEBHOOK_URL"
+
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
+
 GAME_KEYWORD = "Crimson Desert"
 MAX_PAGE = 2
 
 URLS = {
-    "🇺🇸 미국": "https://store.playstation.com/en-us/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/",
-    "🇬🇧 영국": "https://store.playstation.com/en-gb/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/",
-    "🇰🇷 한국": "https://store.playstation.com/ko-kr/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/",
+    "🇺🇸 미국": "https://store.playstation.com/en-us/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "🇬🇧 영국": "https://store.playstation.com/en-gb/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "🇰🇷 한국": "https://store.playstation.com/ko-kr/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
 }
 # =======================================
 
