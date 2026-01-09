@@ -194,9 +194,9 @@ def crawl_country(driver, country, url):
             
             # 그래도 구분 안되면 순위순
             if not standard_rank and found_products:
-                standard_rank = found_products[1]['rank']
+                standard_rank = found_products[0]['rank']
             if not deluxe_rank and len(found_products) > 1:
-                deluxe_rank = found_products[0]['rank']
+                deluxe_rank = found_products[1]['rank']
             
             print(f"  ⚠️  가격없음: 이름기준 S={standard_rank}위 D={deluxe_rank}위")
     elif len(found_products) == 1:
