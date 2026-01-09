@@ -38,12 +38,16 @@ jobs:
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
         
-        # 최신 상태를 가져오고 내가 만든 변경사항을 그 위에 쌓음 (충돌 방지)
+        # 1. 현재 수정된 파일(rank_history.json)을 임시 저장소로 보냄
+        git stash
+        
+        # 2. 서버의 최신 데이터를 가져옴
         git pull origin main --rebase
         
-        git add rank_history.json
-        # 저장할 내용이 있을 때만 커밋
-        git commit -m "Update rank history [skip ci]" || exit 0
+        # 3. 임시 저장했던 내 수정사항을 다시 꺼내옴
+        git stash pop || echo "No changes to pop"
         
-        # 다시 한번 최신 상태 확인 후 푸시
+        # 4. 변경사항을 커밋하고 푸시
+        git add rank_history.json
+        git commit -m "Update rank history [skip ci]" || exit 0
         git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main
