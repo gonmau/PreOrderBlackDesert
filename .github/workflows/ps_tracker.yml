@@ -2,7 +2,7 @@ name: PlayStation Store Tracker
 
 on:
   schedule:
-    - cron: '0 * * * *'  # 매시간 실행
+    - cron: '0,30 * * * *'  # 매 30분마다 실행 (매시 0분, 30분)
   workflow_dispatch:  # 수동 실행 가능
 
 jobs:
