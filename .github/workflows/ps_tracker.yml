@@ -1,0 +1,66 @@
+name: PlayStation Store Tracker
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # 매시간 실행
+  workflow_dispatch:  # 수동 실행 가능
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install Chrome
+      run: |
+        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+    
+    - name: Install Dependencies
+      run: |
+        pip install selenium webdriver-manager requests
+    
+    - name: Run Tracker
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      run: python crimson_tracker.py
+    
+    - name: Upload Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: rank-results
+        path: rank_results.json
+```
+
+**설정 방법:**
+
+1. **GitHub 저장소 생성**
+   - 새 저장소 만들기
+   - `crimson_tracker.py` 파일 업로드
+
+2. **Discord Webhook 설정**
+   - Discord 서버 → 서버 설정 → 연동 → 웹후크
+   - 새 웹후크 생성 → URL 복사
+
+3. **GitHub Secrets 설정**
+   - 저장소 → Settings → Secrets and variables → Actions
+   - `New repository secret` 클릭
+   - Name: `DISCORD_WEBHOOK`
+   - Value: Discord 웹후크 URL 붙여넣기
+
+4. **폴더 구조**
+```
+your-repo/
+├── .github/
+│   └── workflows/
+│       └── ps_tracker.yml
+└── crimson_tracker.py
