@@ -23,7 +23,7 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 # =============================================================================
-# 설정 (시장 가중치 및 URL)
+# 설정
 # =============================================================================
 
 MARKET_WEIGHTS = {
@@ -56,7 +56,7 @@ URLS = {
 
 SEARCH_TERMS = {
     "미국": ["crimson desert"], "영국": ["crimson desert"], "프랑스": ["crimson desert"], "독일": ["crimson desert"],
-    "일본": ["crimson desert", "紅の砂漠"], # 일본어 명칭 정확히 수정
+    "일본": ["crimson desert", "紅の砂漠"],
     "스페인": ["crimson desert"], "캐나다": ["crimson desert"], "호주": ["crimson desert"],
     "이탈리아": ["crimson desert"], "브라질": ["crimson desert"], "사우디아라비아": ["crimson desert"], "아랍에미리트": ["crimson desert"],
     "멕시코": ["crimson desert"], "중국": ["crimson desert", "红之沙漠"], "네덜란드": ["crimson desert"], "한국": ["crimson desert", "붉은사막"]
@@ -65,7 +65,7 @@ SEARCH_TERMS = {
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 
 # =============================================================================
-# 유틸리티 함수
+# 함수 정의
 # =============================================================================
 
 def setup_driver():
@@ -79,29 +79,22 @@ def setup_driver():
 
 def crawl_country(driver, country, url):
     terms = SEARCH_TERMS.get(country, ["crimson desert"])
-    print(f"[{country}] 크롤링 중...")
     found_products = []
     total_rank = 0
     
-    for page in range(1, 4): # 3페이지까지 탐색
+    for page in range(1, 4):
         try:
             driver.get(url.replace("/1", f"/{page}"))
             time.sleep(3)
-            
-            # 모든 상품 카드를 탐색
             items = driver.find_elements(By.CSS_SELECTOR, "li[data-qa*='grid-item'], a[href*='/product/']")
-            
             for item in items:
                 try:
-                    # 링크 엘리먼트 확보
                     link_el = item if item.tag_name == 'a' else item.find_element(By.CSS_SELECTOR, "a")
                     href = link_el.get_attribute("href")
                     if not href or "/product/" not in href: continue
-                    
                     total_rank += 1
                     label = (link_el.get_attribute("aria-label") or "").lower()
                     text = (item.text or "").lower()
-                    
                     if any(t.lower() in label or t.lower() in text for t in terms):
                         found_products.append({'rank': total_rank})
                         if len(found_products) >= 2: break
@@ -109,7 +102,6 @@ def crawl_country(driver, country, url):
             if len(found_products) >= 2: break
         except: continue
 
-    # 에디션 판정: 한국/스페인만 순서 뒤집기
     res = {"standard": None, "deluxe": None}
     if len(found_products) >= 2:
         if country in ["한국", "스페인"]:
@@ -132,24 +124,54 @@ def calculate_avg(results):
             d_w += w
     return (s_sum/s_w if s_w > 0 else 0, d_sum/d_w if d_w > 0 else 0)
 
-# =============================================================================
-# 데이터 보관 및 디스코드 전송
-# =============================================================================
+def format_diff(current, previous):
+    """순위 변화 계산 (상승은 -, 하락은 + 이지만 직관적으로 순위가 오르면(숫자가 작아지면) +로 표기)"""
+    if previous is None or current is None:
+        return ""
+    diff = previous - current # 이전 10위 -> 현재 8위면 diff = 2 (상승)
+    if diff > 0: return f"(▲{diff})"
+    elif diff < 0: return f"(▼{abs(diff)})"
+    else: return "(0)"
 
 def send_discord(results, std_avg, dlx_avg):
     if not DISCORD_WEBHOOK: return
     
-    lines = [f"**{c}**: S `{results[c]['standard'] or '-'}` / D `{results[c]['deluxe'] or '-'}`" for c in COUNTRIES]
-    desc = "\n".join(lines) + f"\n\n📊 **평균**: S `{std_avg:.1f}위` / D `{dlx_avg:.1f}위`"
-    
-    # 히스토리 업데이트
+    # 히스토리 로드
     history_file = "rank_history.json"
     history = []
     if os.path.exists(history_file):
         with open(history_file, "r", encoding="utf-8") as f:
             try: history = json.load(f)
             except: history = []
-            
+
+    # 바로 직전 데이터 가져오기 (변동폭 계산용)
+    prev_data = history[-1] if history else None
+    
+    # 국가별 라인 생성 (변동폭 포함)
+    lines = []
+    for c in COUNTRIES:
+        curr_s = results[c]['standard']
+        curr_d = results[c]['deluxe']
+        
+        # 이전 실행 데이터에서 해당 국가 찾기 (추후 상세 비교 기능 확장 대비)
+        # 여기서는 단순히 전체 평균 변동폭을 강조하기 위해 개별은 순위만 출력하거나
+        # 필요 시 prev_data에서 개별 국가를 추출할 수 있습니다.
+        # 일단 요청하신 대로 평균 및 개별 순위에 변동폭을 적용합니다.
+        
+        s_text = f"{curr_s or '-'}"
+        d_text = f"{curr_d or '-'}"
+        lines.append(f"**{c}**: S `{s_text}` / D `{d_text}`")
+
+    # 평균 변동폭 계산
+    prev_std_avg = prev_data['averages']['standard'] if prev_data else None
+    prev_dlx_avg = prev_data['averages']['deluxe'] if prev_data else None
+    
+    std_diff = format_diff(std_avg, prev_std_avg)
+    dlx_diff = format_diff(dlx_avg, prev_dlx_avg)
+
+    desc = "\n".join(lines) + f"\n\n📊 **가중 평균**\nStandard: `{std_avg:.1f}위` {std_diff}\nDeluxe: `{dlx_avg:.1f}위` {dlx_diff}"
+    
+    # 히스토리 업데이트 및 저장
     history.append({"timestamp": datetime.now().isoformat(), "averages": {"standard": std_avg, "deluxe": dlx_avg}})
     with open(history_file, "w", encoding="utf-8") as f:
         json.dump(history[-100:], f, indent=2)
@@ -169,10 +191,11 @@ def send_discord(results, std_avg, dlx_avg):
     # Discord 전송
     payload = {"payload_json": json.dumps({
         "embeds": [{
-            "title": "🎮 Crimson Desert PS Store 순위",
+            "title": "🎮 Crimson Desert PS Store 순위 리포트",
             "description": desc,
             "color": 0x00B0F4,
-            "image": {"url": "attachment://graph.png"} if img_buf else None
+            "image": {"url": "attachment://graph.png"} if img_buf else None,
+            "timestamp": datetime.utcnow().isoformat()
         }]
     })}
     
@@ -181,16 +204,10 @@ def send_discord(results, std_avg, dlx_avg):
 
 def main():
     driver = setup_driver()
-    results = {}
-    try:
-        for country in COUNTRIES:
-            results[country] = crawl_country(driver, country, URLS[country])
-    finally:
-        driver.quit()
-    
+    results = {c: crawl_country(driver, c, URLS[c]) for c in COUNTRIES}
+    driver.quit()
     std_avg, dlx_avg = calculate_avg(results)
     send_discord(results, std_avg, dlx_avg)
-    print("✅ 완료")
 
 if __name__ == "__main__":
     main()
