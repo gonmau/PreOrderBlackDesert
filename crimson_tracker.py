@@ -124,8 +124,8 @@ def crawl_country(driver, country, url):
                                 price = extract_price(price_elem.text)
                             except: pass
                         
-                        found_products.append({'rank': total_rank, 'price': price, 'name': aria_label[:40]})
-                        print(f"  발견: {total_rank}위 (${price:.2f if price else 0})")
+                        found_products.append({'rank': total_rank, 'price': price, 'name': aria_label[:50]})
+                        print(f"  발견: {total_rank}위 '{aria_label[:30]}' (가격: {price if price else '없음'})")
                         
                         # 2개 찾으면 즉시 종료
                         if len(found_products) >= 2:
@@ -150,15 +150,36 @@ def crawl_country(driver, country, url):
             standard_rank = with_price[-1]['rank']   # 가장 낮은 가격
             print(f"  ✅ 가격기준: S={standard_rank}위(${with_price[-1]['price']:.1f}) D={deluxe_rank}위(${with_price[0]['price']:.1f})")
         else:
-            # 가격 정보 없으면 순위 순서
-            standard_rank = found_products[0]['rank']
-            deluxe_rank = found_products[1]['rank'] if len(found_products) > 1 else None
-            print(f"  ⚠️  가격없음: 순위순으로 배정")
+            # 가격 정보 없으면 제품명으로 구분
+            for p in found_products:
+                name_lower = p['name'].lower()
+                # 디럭스 키워드 확인
+                if any(kw in name_lower for kw in ['deluxe', 'デラックス', '디럭스', '豪华', '豪華']):
+                    if not deluxe_rank:
+                        deluxe_rank = p['rank']
+                else:
+                    if not standard_rank:
+                        standard_rank = p['rank']
+            
+            # 그래도 구분 안되면 순위순
+            if not standard_rank and found_products:
+                standard_rank = found_products[0]['rank']
+            if not deluxe_rank and len(found_products) > 1:
+                deluxe_rank = found_products[1]['rank']
+            
+            print(f"  ⚠️  가격없음: 이름기준 S={standard_rank}위 D={deluxe_rank}위")
     elif len(found_products) == 1:
-        standard_rank = found_products[0]['rank']
-        print(f"  ⚠️  1개만 발견: {standard_rank}위")
+        # 1개만 발견 - 이름으로 구분
+        p = found_products[0]
+        if any(kw in p['name'].lower() for kw in ['deluxe', 'デラックス', '디럭스', '豪华', '豪華']):
+            deluxe_rank = p['rank']
+        else:
+            standard_rank = p['rank']
+        print(f"  ⚠️  1개만 발견: {p['rank']}위")
     else:
         print(f"  ❌ 못찾음")
+    
+    return {"standard": standard_rank, "deluxe": deluxe_rank}
 
 def calculate_avg(results):
     """평균 순위 계산"""
