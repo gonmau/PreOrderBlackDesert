@@ -2,8 +2,12 @@ name: PlayStation Store Tracker
 
 on:
   schedule:
-    - cron: '0 * * * *'  # 매 1시간마다 실행 (매시 0분)
-  workflow_dispatch:  # 수동 실행 가능
+    - cron: '0 * * * *'  # 매 1시간마다 실행
+  workflow_dispatch:      # 수동 실행 가능
+
+# [중요] 쓰기 권한 추가
+permissions:
+  contents: write
 
 jobs:
   track:
@@ -18,37 +22,23 @@ jobs:
       with:
         python-version: '3.11'
     
-    - name: Install Chrome
-      run: |
-        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-        sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
-        sudo apt-get update
-        sudo apt-get install -y google-chrome-stable
-    
     - name: Install Dependencies
       run: |
-        pip install selenium webdriver-manager requests
+        pip install selenium webdriver-manager requests matplotlib
     
     - name: Run Tracker
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       run: python crimson_tracker.py
     
-    - name: Upload Results
-      uses: actions/upload-artifact@v4
-      with:
-        name: rank-results
-        path: rank_results.json
-
-    - name: Run script
-      env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-      run: python crimson_tracker.py
-
     - name: Commit and Push changes
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
+        # 파일이 없을 경우를 대비해 touch로 생성 후 add
+        touch rank_history.json
         git add rank_history.json
-        git commit -m "Update rank history" || exit 0
-        git push
+        git commit -m "Update rank history [skip ci]" || exit 0
+        git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
