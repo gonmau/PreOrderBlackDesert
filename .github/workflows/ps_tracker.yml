@@ -37,8 +37,13 @@ jobs:
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        # 파일이 없을 경우를 대비해 touch로 생성 후 add
-        touch rank_history.json
+        
+        # 최신 상태를 가져오고 내가 만든 변경사항을 그 위에 쌓음 (충돌 방지)
+        git pull origin main --rebase
+        
         git add rank_history.json
+        # 저장할 내용이 있을 때만 커밋
         git commit -m "Update rank history [skip ci]" || exit 0
-        git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
+        
+        # 다시 한번 최신 상태 확인 후 푸시
+        git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main
