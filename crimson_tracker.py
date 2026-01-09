@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Crimson Desert PlayStation Store 순위 추적기
-GitHub Actions + Discord Webhook
-"""
 
 import time
 import re
@@ -28,30 +24,16 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 # =============================================================================
-# 설정 (PlayStation 시장 점유율 기준 정렬)
+# 설정
 # =============================================================================
 
-# PlayStation 시장 점유율 (2024 기준, 높은 순)
 MARKET_WEIGHTS = {
-    "미국": 30.0,      # 최대 시장
-    "영국": 8.5,
-    "일본": 8.0,
-    "독일": 6.5,
-    "프랑스": 6.0,
-    "캐나다": 4.5,
-    "스페인": 4.0,
-    "이탈리아": 3.5,
-    "호주": 3.0,
-    "한국": 2.8,
-    "브라질": 2.5,
-    "멕시코": 2.0,
-    "네덜란드": 1.8,
-    "사우디아라비아": 1.5,
-    "아랍에미리트": 1.2,
-    "중국": 0.2        # 시장 제한
+    "미국": 30.0, "영국": 8.5, "일본": 8.0, "독일": 6.5, "프랑스": 6.0,
+    "캐나다": 4.5, "스페인": 4.0, "이탈리아": 3.5, "호주": 3.0, "한국": 2.8,
+    "브라질": 2.5, "멕시코": 2.0, "네덜란드": 1.8, "사우디아라비아": 1.5,
+    "아랍에미리트": 1.2, "중국": 0.2
 }
 
-# 점유율 순으로 국가 정렬
 COUNTRIES = sorted(MARKET_WEIGHTS.keys(), key=lambda x: MARKET_WEIGHTS[x], reverse=True)
 
 URLS = {
@@ -84,7 +66,7 @@ DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 MAX_PAGES = 5
 
 # =============================================================================
-# 함수들
+# 유틸리티 함수
 # =============================================================================
 
 def setup_driver():
@@ -92,298 +74,172 @@ def setup_driver():
     options.add_argument('--headless=new')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--disable-gpu')
     service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=options)
-    driver.set_page_load_timeout(20)
-    return driver
+    return webdriver.Chrome(service=service, options=options)
 
 def extract_price(text):
+    """국가별 다양한 가격 표기법에서 숫자만 추출 (예: 79,99€ -> 79.99)"""
     if not text: return None
-    patterns = [r'₩\s*[\d,]+', r'[\d,]+\s*원', r'¥\s*[\d,]+', r'[\$€£]\s*[\d,\.]+', r'[\d,\.]+\s*[\$€£¥₩]']
-    for pattern in patterns:
-        matches = re.findall(pattern, text)
-        if matches:
-            try:
-                num_str = re.findall(r'[\d,\.]+', matches[0])[0]
-                if '₩' in matches[0] or '원' in matches[0] or '¥' in matches[0]:
-                    return float(num_str.replace(',', ''))
-                if ',' in num_str and '.' in num_str:
-                    return float(num_str.replace(',', ''))
-                elif num_str.count(',') == 1 and '.' not in num_str:
-                    return float(num_str.replace(',', '.'))
-                return float(num_str.replace(',', ''))
-            except: pass
-    return None
+    # 통화기호 제거 및 숫자, 마침표, 쉼표만 남김
+    clean = re.sub(r'[^\d,.]', '', text)
+    if not clean: return None
+    try:
+        # 천단위 구분자와 소수점 구분자 처리 (유럽식 쉼표 대응)
+        if ',' in clean and '.' in clean:
+            clean = clean.replace(',', '') # 1,234.56 -> 1234.56
+        elif ',' in clean:
+            clean = clean.replace(',', '.') # 79,99 -> 79.99
+        return float(clean)
+    except: return None
 
 def crawl_country(driver, country, url):
-    """국가별 순위 크롤링"""
     search_terms = SEARCH_TERMS.get(country, ["crimson desert"])
-    print(f"[{country}] 시작...")
-    
+    print(f"[{country}] 크롤링 중...")
     found_products = []
     total_rank = 0
     
     for page in range(1, MAX_PAGES + 1):
         try:
             driver.get(url.replace("/1", f"/{page}"))
-            time.sleep(1.5)
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(0.8)
-            
-            cards = driver.find_elements(By.CSS_SELECTOR, "a[href*='/product/']")
-            if not cards:
-                cards = driver.find_elements(By.CSS_SELECTOR, "li[data-qa*='grid']")
+            time.sleep(2)
+            cards = driver.find_elements(By.CSS_SELECTOR, "a[href*='/product/'], li[data-qa*='grid']")
             
             for card in cards:
                 try:
                     link = card if card.tag_name == 'a' else card.find_element(By.CSS_SELECTOR, "a[href*='/product/']")
-                    href = link.get_attribute("href") or ""
-                    if "/product/" not in href: continue
+                    href = link.get_attribute("href")
+                    if not href or "/product/" not in href: continue
                     
                     total_rank += 1
-                    
-                    aria_label = link.get_attribute("aria-label") or ""
                     card_text = card.text or ""
-                    combined = (aria_label + " " + card_text).lower()
+                    aria_label = (link.get_attribute("aria-label") or "").lower()
                     
-                    if any(term.lower() in combined for term in search_terms):
+                    if any(term.lower() in aria_label or term.lower() in card_text.lower() for term in search_terms):
                         price = extract_price(card_text)
-                        if not price:
-                            try:
-                                price_elem = card.find_element(By.CSS_SELECTOR, "[data-qa*='price'], [class*='price']")
-                                price = extract_price(price_elem.text)
-                            except: pass
-                        
-                        found_products.append({'rank': total_rank, 'price': price, 'name': aria_label[:50]})
-                        print(f"  발견: {total_rank}위 '{aria_label[:30]}' (가격: {price if price else '없음'})")
-                        
-                        # 2개 찾으면 즉시 종료
-                        if len(found_products) >= 2:
-                            print(f"  ✅ 2개 발견 완료!")
-                            break
+                        found_products.append({'rank': total_rank, 'price': price, 'name': aria_label})
+                        if len(found_products) >= 2: break
                 except: continue
-            
             if len(found_products) >= 2: break
         except: continue
-    
-    # 가격 기준으로 에디션 구분
-    standard_rank = None
-    deluxe_rank = None
-    
+
+    # 에디션 판정: 가격이 높으면 Deluxe, 낮으면 Standard
+    std_rank, dlx_rank = None, None
     if len(found_products) >= 2:
-        # 가격이 있는 것만 필터
-        with_price = [p for p in found_products if p['price']]
-        if len(with_price) >= 2:
-            # 가격 순 정렬 (높은 가격 = 디럭스, 낮은 가격 = 스탠다드)
-            with_price.sort(key=lambda x: x['price'], reverse=True)
-            deluxe_rank = with_price[0]['rank']      # 가장 높은 가격
-            standard_rank = with_price[-1]['rank']   # 가장 낮은 가격
-            print(f"  ✅ 가격기준: S={standard_rank}위(${with_price[-1]['price']:.1f}) D={deluxe_rank}위(${with_price[0]['price']:.1f})")
+        # 가격 정보가 둘 다 있는 경우
+        if found_products[0]['price'] and found_products[1]['price']:
+            if found_products[0]['price'] > found_products[1]['price']:
+                dlx_rank, std_rank = found_products[0]['rank'], found_products[1]['rank']
+            else:
+                std_rank, dlx_rank = found_products[0]['rank'], found_products[1]['rank']
         else:
-            # 가격 정보 없으면 제품명으로 구분
-            for p in found_products:
-                name_lower = p['name'].lower()
-                # 디럭스 키워드 확인
-                if any(kw in name_lower for kw in ['deluxe', 'デラックス', '디럭스', '豪华', '豪華']):
-                    if not deluxe_rank:
-                        deluxe_rank = p['rank']
-                else:
-                    if not standard_rank:
-                        standard_rank = p['rank']
-            
-            # 그래도 구분 안되면 순위순
-            if not standard_rank and found_products:
-                standard_rank = found_products[0]['rank']
-            if not deluxe_rank and len(found_products) > 1:
-                deluxe_rank = found_products[1]['rank']
-            
-            print(f"  ⚠️  가격없음: 이름기준 S={standard_rank}위 D={deluxe_rank}위")
+            # 가격 정보가 없으면 이름으로 판정
+            is_p1_dlx = any(kw in found_products[0]['name'] for kw in ['deluxe', 'edition', '디럭스', '豪華', 'デラックス'])
+            if is_p1_dlx:
+                dlx_rank, std_rank = found_products[0]['rank'], found_products[1]['rank']
+            else:
+                std_rank, dlx_rank = found_products[0]['rank'], found_products[1]['rank']
     elif len(found_products) == 1:
-        # 1개만 발견 - 이름으로 구분
-        p = found_products[0]
-        if any(kw in p['name'].lower() for kw in ['deluxe', 'デラックス', '디럭스', '豪华', '豪華']):
-            deluxe_rank = p['rank']
-        else:
-            standard_rank = p['rank']
-        print(f"  ⚠️  1개만 발견: {p['rank']}위")
-    else:
-        print(f"  ❌ 못찾음")
-    
-    return {"standard": standard_rank, "deluxe": deluxe_rank}
+        std_rank = found_products[0]['rank']
+        
+    return {"standard": std_rank, "deluxe": dlx_rank}
 
 def calculate_avg(results):
-    """가중 평균 순위 계산"""
-    std_weighted_sum = 0
-    dlx_weighted_sum = 0
-    std_weight_total = 0
-    dlx_weight_total = 0
-    
-    for country, data in results.items():
-        weight = MARKET_WEIGHTS.get(country, 1.0)
-        
-        if data.get('standard'):
-            std_weighted_sum += data['standard'] * weight
-            std_weight_total += weight
-        
-        if data.get('deluxe'):
-            dlx_weighted_sum += data['deluxe'] * weight
-            dlx_weight_total += weight
-    
-    std_avg = std_weighted_sum / std_weight_total if std_weight_total > 0 else None
-    dlx_avg = dlx_weighted_sum / dlx_weight_total if dlx_weight_total > 0 else None
-    
-    return std_avg, dlx_avg
-def load_history():
-    """기존 히스토리 데이터 로드"""
-    history_file = "rank_history.json"
-    if os.path.exists(history_file):
-        try:
-            with open(history_file, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except:
-            return []
-    return []
-
-def save_json(results, std_avg, dlx_avg):
-    """결과를 JSON 파일로 저장 (GitHub Actions artifact용)"""
-    # 현재 결과 저장
-    data = {
-        "timestamp": datetime.now().isoformat(),
-        "results": results,
-        "averages": {
-            "standard": std_avg,
-            "deluxe": dlx_avg
-        }
-    }
-    
-    with open("rank_results.json", "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    
-    print("✅ rank_results.json 저장 완료")
-    
-    # 히스토리에 추가
-    history = load_history()
-    history.append(data)
-    
-    # 최근 100개만 유지
-    if len(history) > 100:
-        history = history[-100:]
-    
-    with open("rank_history.json", "w", encoding="utf-8") as f:
-        json.dump(history, f, ensure_ascii=False, indent=2)
-    
-    print("✅ rank_history.json 업데이트 완료")
-def send_discord(results, std_avg, dlx_avg):
-    """Discord로 결과 전송"""
-    if not DISCORD_WEBHOOK:
-        print("⚠️  DISCORD_WEBHOOK 환경변수 없음")
-        return
-    
-    # 결과 정리
-    lines = []
-    for country in COUNTRIES:
-        data = results.get(country, {})
-        std = data.get('standard', '-')
-        dlx = data.get('deluxe', '-')
-        
-        if std != '-' and dlx != '-':
-            lines.append(f"**{country}**: S `{std}위` / D `{dlx}위`")
-        elif std != '-':
-            lines.append(f"**{country}**: S `{std}위` / D `없음`")
-        elif dlx != '-':
-            lines.append(f"**{country}**: S `없음` / D `{dlx}위`")
-        else:
-            lines.append(f"**{country}**: 발견 안됨")
-    
-    # 평균 추가
-    avg_text = ""
-    if std_avg:
-        avg_text += f"\n\n📊 **평균 순위 (스탠다드)**: `{std_avg:.1f}위`"
-    if dlx_avg:
-        avg_text += f"\n📊 **평균 순위 (디럭스)**: `{dlx_avg:.1f}위`"
-    
-    # Discord embed
-    embed = {
-        "title": "🎮 Crimson Desert PlayStation 순위",
-        "description": "\n".join(lines) + avg_text,
-        "color": 0x00B0F4,
-        "timestamp": datetime.utcnow().isoformat(),
-        "footer": {"text": "PlayStation Store Tracker"}
-    }
-    
-    payload = {"embeds": [embed]}
-    
-    try:
-        response = requests.post(DISCORD_WEBHOOK, json=payload)
-        if response.status_code == 204:
-            print("✅ Discord 전송 성공!")
-        else:
-            print(f"⚠️  Discord 전송 실패: {response.status_code}")
-    except Exception as e:
-        print(f"❌ Discord 오류: {e}")
-
-def save_json(results, std_avg, dlx_avg):
-    """결과를 JSON 파일로 저장 (GitHub Actions artifact용)"""
-    data = {
-        "timestamp": datetime.now().isoformat(),
-        "results": results,
-        "averages": {
-            "standard": std_avg,
-            "deluxe": dlx_avg
-        }
-    }
-    
-    with open("rank_results.json", "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    
-    print("✅ rank_results.json 저장 완료")
+    s_sum, s_weight, d_sum, d_weight = 0, 0, 0, 0
+    for c, data in results.items():
+        w = MARKET_WEIGHTS.get(c, 1.0)
+        if data['standard']:
+            s_sum += data['standard'] * w
+            s_weight += w
+        if data['deluxe']:
+            d_sum += data['deluxe'] * w
+            d_weight += w
+    return (s_sum/s_weight if s_weight > 0 else None, d_sum/d_weight if d_weight > 0 else None)
 
 # =============================================================================
-# 메인
+# 히스토리 및 그래프
+# =============================================================================
+
+def load_history():
+    if os.path.exists("rank_history.json"):
+        with open("rank_history.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
+def save_data(results, std_avg, dlx_avg):
+    history = load_history()
+    entry = {
+        "timestamp": datetime.now().isoformat(),
+        "averages": {"standard": std_avg, "deluxe": dlx_avg}
+    }
+    history.append(entry)
+    with open("rank_history.json", "w", encoding="utf-8") as f:
+        json.dump(history[-100:], f, indent=2) # 최근 100개 유지
+
+def create_graph(history):
+    if not HAS_MATPLOTLIB or len(history) < 2: return None
+    plt.figure(figsize=(10, 5))
+    dates = [datetime.fromisoformat(h['timestamp']) for h in history]
+    std = [h['averages']['standard'] for h in history]
+    dlx = [h['averages']['deluxe'] for h in history]
+    
+    plt.plot(dates, std, label='Standard', marker='o', color='#00B0F4')
+    plt.plot(dates, dlx, label='Deluxe', marker='s', color='#FF4500')
+    plt.gca().invert_yaxis()
+    plt.title("Crimson Desert PS Store Avg Rank Trend")
+    plt.legend(); plt.grid(True, alpha=0.3)
+    
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0); plt.close()
+    return buf
+
+# =============================================================================
+# 디스코드 전송
+# =============================================================================
+
+def send_discord(results, std_avg, dlx_avg):
+    if not DISCORD_WEBHOOK: return
+    
+    lines = [f"**{c}**: S `{results[c]['standard'] or '-'}` / D `{results[c]['deluxe'] or '-'}`" for c in COUNTRIES]
+    desc = "\n".join(lines) + f"\n\n📊 **평균**: S `{std_avg:.1f}위` / D `{dlx_avg:.1f}위`"
+    
+    history = load_history()
+    img_buf = create_graph(history)
+    
+    payload = {
+        "payload_json": json.dumps({
+            "embeds": [{
+                "title": "🎮 Crimson Desert PS Store 순위 리포트",
+                "description": desc,
+                "color": 0x00B0F4,
+                "image": {"url": "attachment://graph.png"} if img_buf else None,
+                "timestamp": datetime.utcnow().isoformat()
+            }]
+        })
+    }
+    
+    try:
+        files = {"file": ("graph.png", img_buf, "image/png")} if img_buf else None
+        requests.post(DISCORD_WEBHOOK, data=payload, files=files)
+    except Exception as e: print(f"Discord 오류: {e}")
+
+# =============================================================================
+# 메인 실행
 # =============================================================================
 
 def main():
-    print("=" * 60)
-    print("🎮 Crimson Desert PS Store 순위 추적")
-    print("=" * 60)
-    
-    start_time = time.time()
     driver = setup_driver()
-    
     results = {}
-    
     try:
         for country in COUNTRIES:
-            url = URLS[country]
-            results[country] = crawl_country(driver, country, url)
+            results[country] = crawl_country(driver, country, URLS[country])
     finally:
         driver.quit()
-    
-    elapsed = (time.time() - start_time) / 60
-    print(f"\n⏱️  소요 시간: {elapsed:.1f}분")
-    
-    # 평균 계산
+        
     std_avg, dlx_avg = calculate_avg(results)
-    
-    # 결과 출력
-    print("\n" + "=" * 60)
-    print("📊 결과 요약")
-    print("=" * 60)
-    for country in COUNTRIES:
-        data = results[country]
-        print(f"{country}: S {data.get('standard', '-')}위 / D {data.get('deluxe', '-')}위")
-    
-    if std_avg:
-        print(f"\n평균 (스탠다드): {std_avg:.1f}위")
-    if dlx_avg:
-        print(f"평균 (디럭스): {dlx_avg:.1f}위")
-    
-    # Discord 전송
-    send_discord(results, std_avg, dlx_avg)
-    
-    # JSON 저장
-    save_json(results, std_avg, dlx_avg)
+    save_data(results, std_avg, dlx_avg) # 히스토리 저장
+    send_discord(results, std_avg, dlx_avg) # 디스코드 전송 (그래프 포함)
+    print("✅ 모든 작업 완료")
 
 if __name__ == "__main__":
     main()
