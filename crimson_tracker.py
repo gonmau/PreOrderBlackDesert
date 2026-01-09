@@ -65,7 +65,7 @@ SEARCH_TERMS = {
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 
 # =============================================================================
-# 함수 정의
+# 유틸리티
 # =============================================================================
 
 def setup_driver():
@@ -125,18 +125,17 @@ def calculate_avg(results):
     return (s_sum/s_w if s_w > 0 else 0, d_sum/d_w if d_w > 0 else 0)
 
 def format_diff(current, previous):
-    """순위 변화 계산 (상승은 -, 하락은 + 이지만 직관적으로 순위가 오르면(숫자가 작아지면) +로 표기)"""
+    """순위 수치 증감 포맷팅"""
     if previous is None or current is None:
         return ""
-    diff = previous - current # 이전 10위 -> 현재 8위면 diff = 2 (상승)
-    if diff > 0: return f"(▲{diff})"
-    elif diff < 0: return f"(▼{abs(diff)})"
-    else: return "(0)"
+    diff = previous - current # 작아질수록 순위 상승
+    if diff > 0: return f"▲{diff}"
+    elif diff < 0: return f"▼{abs(diff)}"
+    else: return "0"
 
 def send_discord(results, std_avg, dlx_avg):
     if not DISCORD_WEBHOOK: return
     
-    # 히스토리 로드
     history_file = "rank_history.json"
     history = []
     if os.path.exists(history_file):
@@ -144,35 +143,44 @@ def send_discord(results, std_avg, dlx_avg):
             try: history = json.load(f)
             except: history = []
 
-    # 바로 직전 데이터 가져오기 (변동폭 계산용)
-    prev_data = history[-1] if history else None
+    # 이전 실행 데이터 (최신 1건)
+    prev_run = history[-1] if history else None
     
-    # 국가별 라인 생성 (변동폭 포함)
+    # 국가별 라인 생성
     lines = []
     for c in COUNTRIES:
         curr_s = results[c]['standard']
         curr_d = results[c]['deluxe']
         
-        # 이전 실행 데이터에서 해당 국가 찾기 (추후 상세 비교 기능 확장 대비)
-        # 여기서는 단순히 전체 평균 변동폭을 강조하기 위해 개별은 순위만 출력하거나
-        # 필요 시 prev_data에서 개별 국가를 추출할 수 있습니다.
-        # 일단 요청하신 대로 평균 및 개별 순위에 변동폭을 적용합니다.
+        # 이전 개별 국가 순위 가져오기
+        prev_s, prev_d = None, None
+        if prev_run and "raw_results" in prev_run:
+            prev_country_data = prev_run["raw_results"].get(c, {})
+            prev_s = prev_country_data.get("standard")
+            prev_d = prev_country_data.get("deluxe")
+
+        s_diff = format_diff(curr_s, prev_s)
+        d_diff = format_diff(curr_d, prev_d)
         
-        s_text = f"{curr_s or '-'}"
-        d_text = f"{curr_d or '-'}"
-        lines.append(f"**{c}**: S `{s_text}` / D `{d_text}`")
+        s_part = f"{curr_s or '-'}{'(' + s_diff + ')' if s_diff else ''}"
+        d_part = f"{curr_d or '-'}{'(' + d_diff + ')' if d_diff else ''}"
+        
+        lines.append(f"**{c}**: S `{s_part}` / D `{d_part}`")
 
-    # 평균 변동폭 계산
-    prev_std_avg = prev_data['averages']['standard'] if prev_data else None
-    prev_dlx_avg = prev_data['averages']['deluxe'] if prev_data else None
-    
-    std_diff = format_diff(std_avg, prev_std_avg)
-    dlx_diff = format_diff(dlx_avg, prev_dlx_avg)
+    # 평균 변동폭
+    prev_std_avg = prev_run['averages']['standard'] if prev_run else None
+    prev_dlx_avg = prev_run['averages']['deluxe'] if prev_run else None
+    std_diff_text = format_diff(std_avg, prev_std_avg)
+    dlx_diff_text = format_diff(dlx_avg, prev_dlx_avg)
 
-    desc = "\n".join(lines) + f"\n\n📊 **가중 평균**\nStandard: `{std_avg:.1f}위` {std_diff}\nDeluxe: `{dlx_avg:.1f}위` {dlx_diff}"
+    desc = "\n".join(lines) + f"\n\n📊 **가중 평균**\nStandard: `{std_avg:.1f}위` {'(' + std_diff_text + ')' if std_diff_text else ''}\nDeluxe: `{dlx_avg:.1f}위` {'(' + dlx_diff_text + ')' if dlx_diff_text else ''}"
     
-    # 히스토리 업데이트 및 저장
-    history.append({"timestamp": datetime.now().isoformat(), "averages": {"standard": std_avg, "deluxe": dlx_avg}})
+    # 히스토리 업데이트 (raw_results 포함하여 저장해야 다음 실행 때 비교 가능)
+    history.append({
+        "timestamp": datetime.now().isoformat(),
+        "averages": {"standard": std_avg, "deluxe": dlx_avg},
+        "raw_results": results # 개별 국가 순위 보관
+    })
     with open(history_file, "w", encoding="utf-8") as f:
         json.dump(history[-100:], f, indent=2)
 
@@ -188,7 +196,6 @@ def send_discord(results, std_avg, dlx_avg):
         img_buf = BytesIO()
         plt.savefig(img_buf, format='png'); img_buf.seek(0); plt.close()
 
-    # Discord 전송
     payload = {"payload_json": json.dumps({
         "embeds": [{
             "title": "🎮 Crimson Desert PS Store 순위 리포트",
