@@ -144,18 +144,21 @@ def crawl_country(driver, country, url):
         # 가격이 있는 것만 필터
         with_price = [p for p in found_products if p['price']]
         if len(with_price) >= 2:
-            # 가격 순 정렬 (높은 가격이 디럭스)
+            # 가격 순 정렬 (높은 가격 = 디럭스, 낮은 가격 = 스탠다드)
             with_price.sort(key=lambda x: x['price'], reverse=True)
-            deluxe_rank = with_price[0]['rank']
-            standard_rank = with_price[-1]['rank']
+            deluxe_rank = with_price[0]['rank']      # 가장 높은 가격
+            standard_rank = with_price[-1]['rank']   # 가장 낮은 가격
+            print(f"  ✅ 가격기준: S={standard_rank}위(${with_price[-1]['price']:.1f}) D={deluxe_rank}위(${with_price[0]['price']:.1f})")
         else:
             # 가격 정보 없으면 순위 순서
             standard_rank = found_products[0]['rank']
             deluxe_rank = found_products[1]['rank'] if len(found_products) > 1 else None
+            print(f"  ⚠️  가격없음: 순위순으로 배정")
     elif len(found_products) == 1:
         standard_rank = found_products[0]['rank']
-    
-    return {"standard": standard_rank, "deluxe": deluxe_rank}
+        print(f"  ⚠️  1개만 발견: {standard_rank}위")
+    else:
+        print(f"  ❌ 못찾음")
 
 def calculate_avg(results):
     """평균 순위 계산"""
