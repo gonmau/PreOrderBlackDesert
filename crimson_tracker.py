@@ -234,7 +234,46 @@ def calculate_avg(results):
     dlx_avg = dlx_weighted_sum / dlx_weight_total if dlx_weight_total > 0 else None
     
     return std_avg, dlx_avg
+def load_history():
+    """기존 히스토리 데이터 로드"""
+    history_file = "rank_history.json"
+    if os.path.exists(history_file):
+        try:
+            with open(history_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            return []
+    return []
 
+def save_json(results, std_avg, dlx_avg):
+    """결과를 JSON 파일로 저장 (GitHub Actions artifact용)"""
+    # 현재 결과 저장
+    data = {
+        "timestamp": datetime.now().isoformat(),
+        "results": results,
+        "averages": {
+            "standard": std_avg,
+            "deluxe": dlx_avg
+        }
+    }
+    
+    with open("rank_results.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    
+    print("✅ rank_results.json 저장 완료")
+    
+    # 히스토리에 추가
+    history = load_history()
+    history.append(data)
+    
+    # 최근 100개만 유지
+    if len(history) > 100:
+        history = history[-100:]
+    
+    with open("rank_history.json", "w", encoding="utf-8") as f:
+        json.dump(history, f, ensure_ascii=False, indent=2)
+    
+    print("✅ rank_history.json 업데이트 완료")
 def send_discord(results, std_avg, dlx_avg):
     """Discord로 결과 전송"""
     if not DISCORD_WEBHOOK:
