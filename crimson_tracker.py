@@ -11,17 +11,48 @@ import os
 import json
 import requests
 from datetime import datetime
+from io import BytesIO
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
+try:
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    import matplotlib.dates as mdates
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
+
 # =============================================================================
-# 설정
+# 설정 (PlayStation 시장 점유율 기준 정렬)
 # =============================================================================
 
-COUNTRIES = ["미국", "영국", "프랑스", "독일", "일본", "스페인", "캐나다", "호주", "이탈리아", "브라질", "사우디아라비아", "아랍에미리트", "멕시코", "중국", "네덜란드", "한국"]
+# PlayStation 시장 점유율 (2024 기준, 높은 순)
+MARKET_WEIGHTS = {
+    "미국": 30.0,      # 최대 시장
+    "영국": 8.5,
+    "일본": 8.0,
+    "독일": 6.5,
+    "프랑스": 6.0,
+    "캐나다": 4.5,
+    "스페인": 4.0,
+    "이탈리아": 3.5,
+    "호주": 3.0,
+    "한국": 2.8,
+    "브라질": 2.5,
+    "멕시코": 2.0,
+    "네덜란드": 1.8,
+    "사우디아라비아": 1.5,
+    "아랍에미리트": 1.2,
+    "중국": 0.2        # 시장 제한
+}
+
+# 점유율 순으로 국가 정렬
+COUNTRIES = sorted(MARKET_WEIGHTS.keys(), key=lambda x: MARKET_WEIGHTS[x], reverse=True)
 
 URLS = {
     "미국": "https://store.playstation.com/en-us/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
@@ -182,12 +213,25 @@ def crawl_country(driver, country, url):
     return {"standard": standard_rank, "deluxe": deluxe_rank}
 
 def calculate_avg(results):
-    """평균 순위 계산"""
-    std_ranks = [r['standard'] for r in results.values() if r['standard']]
-    dlx_ranks = [r['deluxe'] for r in results.values() if r['deluxe']]
+    """가중 평균 순위 계산"""
+    std_weighted_sum = 0
+    dlx_weighted_sum = 0
+    std_weight_total = 0
+    dlx_weight_total = 0
     
-    std_avg = sum(std_ranks) / len(std_ranks) if std_ranks else None
-    dlx_avg = sum(dlx_ranks) / len(dlx_ranks) if dlx_ranks else None
+    for country, data in results.items():
+        weight = MARKET_WEIGHTS.get(country, 1.0)
+        
+        if data.get('standard'):
+            std_weighted_sum += data['standard'] * weight
+            std_weight_total += weight
+        
+        if data.get('deluxe'):
+            dlx_weighted_sum += data['deluxe'] * weight
+            dlx_weight_total += weight
+    
+    std_avg = std_weighted_sum / std_weight_total if std_weight_total > 0 else None
+    dlx_avg = dlx_weighted_sum / dlx_weight_total if dlx_weight_total > 0 else None
     
     return std_avg, dlx_avg
 
