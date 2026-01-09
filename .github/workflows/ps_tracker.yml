@@ -39,3 +39,16 @@ jobs:
       with:
         name: rank-results
         path: rank_results.json
+
+    - name: Run script
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      run: python crimson_tracker.py
+
+    - name: Commit and Push changes
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add rank_history.json
+        git commit -m "Update rank history" || exit 0
+        git push
