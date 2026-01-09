@@ -23,7 +23,7 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 # =============================================================================
-# 설정 (시장 가중치 및 URL)
+# 설정
 # =============================================================================
 
 MARKET_WEIGHTS = {
@@ -56,7 +56,7 @@ URLS = {
 
 SEARCH_TERMS = {
     "미국": ["crimson desert"], "영국": ["crimson desert"], "프랑스": ["crimson desert"], "독일": ["crimson desert"],
-    "일본": ["crimson desert", "紅の砂漠"], "스페인": ["crimson desert"], "캐나다": ["crimson desert"], "호주": ["crimson desert"],
+    "일본": ["crimson desert", "紅의砂漠"], "스페인": ["crimson desert"], "캐나다": ["crimson desert"], "호주": ["crimson desert"],
     "이탈리아": ["crimson desert"], "브라질": ["crimson desert"], "사우디아라비아": ["crimson desert"], "아랍에미리트": ["crimson desert"],
     "멕시코": ["crimson desert"], "중국": ["crimson desert", "红之沙漠"], "네덜란드": ["crimson desert"], "한국": ["crimson desert", "붉은사막"]
 }
@@ -64,7 +64,7 @@ SEARCH_TERMS = {
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 
 # =============================================================================
-# 유틸리티 함수
+# 함수 정의
 # =============================================================================
 
 def setup_driver():
@@ -72,43 +72,56 @@ def setup_driver():
     options.add_argument('--headless=new')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--window-size=1920,1080')
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36")
     service = Service(ChromeDriverManager().install())
     return webdriver.Chrome(service=service, options=options)
 
 def crawl_country(driver, country, url):
     search_terms = SEARCH_TERMS.get(country, ["crimson desert"])
-    print(f"[{country}] 크롤링 중...")
+    print(f"[{country}] 탐색 시작...")
     found_products = []
     total_rank = 0
     
     for page in range(1, 4):
         try:
             driver.get(url.replace("/1", f"/{page}"))
-            time.sleep(2)
-            # PS Store 상품 링크 추출
-            cards = driver.find_elements(By.CSS_SELECTOR, "a[href*='/product/']")
+            time.sleep(3) # 로딩 대기
             
-            for card in cards:
-                try:
-                    href = card.get_attribute("href")
-                    if not href or "/product/" not in href: continue
-                    
-                    total_rank += 1
-                    # aria-label에 상품명이 들어있음
-                    label = (card.get_attribute("aria-label") or "").lower()
-                    
-                    if any(term.lower() in label for term in search_terms):
-                        found_products.append({'rank': total_rank})
-                        if len(found_products) >= 2: break
-                except: continue
+            # 더 넓은 범위의 요소를 탐색
+            items = driver.find_elements(By.CSS_SELECTOR, "li[data-qa*='grid-item'], a[href*='/product/']")
+            
+            for item in items:
+                # 중복 카운팅 방지 (링크가 포함된 li만 처리)
+                if item.tag_name == 'li':
+                    try:
+                        link_el = item.find_element(By.CSS_SELECTOR, "a")
+                    except: continue
+                else:
+                    link_el = item
+                
+                href = link_el.get_attribute("href")
+                if not href or "/product/" not in href: continue
+                
+                total_rank += 1
+                card_text = item.text or ""
+                aria_label = (link_el.get_attribute("aria-label") or "").lower()
+                combined_text = (aria_label + " " + card_text).lower()
+                
+                if any(term.lower() in combined_text for term in search_terms):
+                    print(f"   > 발견! {total_rank}위")
+                    found_products.append({'rank': total_rank})
+                    if len(found_products) >= 2: break
             if len(found_products) >= 2: break
-        except: continue
+        except Exception as e:
+            print(f"   ! 에러 발생 ({country}): {e}")
+            continue
 
-    # 판정 로직: PS Store는 고가 에디션(Deluxe)을 먼저 노출함
+    # 순서 기반 할당: 먼저 발견된 상품(순위 높은 것)이 Deluxe
     res = {"standard": None, "deluxe": None}
     if len(found_products) >= 2:
-        res["deluxe"] = found_products[0]['rank']   # 1순위 발견
-        res["standard"] = found_products[1]['rank']  # 2순위 발견
+        res["deluxe"] = found_products[0]['rank']
+        res["standard"] = found_products[1]['rank']
     elif len(found_products) == 1:
         res["standard"] = found_products[0]['rank']
         
@@ -126,81 +139,51 @@ def calculate_avg(results):
             d_w += w
     return (s_sum/s_w if s_w > 0 else 0, d_sum/d_w if d_w > 0 else 0)
 
-# =============================================================================
-# 데이터 저장 및 그래프 전송
-# =============================================================================
-
 def send_discord(results, std_avg, dlx_avg):
     if not DISCORD_WEBHOOK: return
     
-    # 국가별 순위 텍스트 생성
     lines = [f"**{c}**: S `{results[c]['standard'] or '-'}` / D `{results[c]['deluxe'] or '-'}`" for c in COUNTRIES]
     desc = "\n".join(lines) + f"\n\n📊 **가중 평균**: S `{std_avg:.1f}위` / D `{dlx_avg:.1f}위`"
     
-    # 히스토리 관리 (그래프용)
+    # 히스토리 업데이트
     history_file = "rank_history.json"
     history = []
     if os.path.exists(history_file):
         try:
-            with open(history_file, "r", encoding="utf-8") as f:
-                history = json.load(f)
-        except: history = []
+            with open(history_file, "r", encoding="utf-8") as f: history = json.load(f)
+        except: pass
     
-    history.append({
-        "timestamp": datetime.now().isoformat(),
-        "averages": {"standard": std_avg, "deluxe": dlx_avg}
-    })
-    
-    # 최근 50개만 유지 및 저장
+    history.append({"timestamp": datetime.now().isoformat(), "averages": {"standard": std_avg, "deluxe": dlx_avg}})
     history = history[-50:]
-    with open(history_file, "w", encoding="utf-8") as f:
-        json.dump(history, f, indent=2)
+    with open(history_file, "w", encoding="utf-8") as f: json.dump(history, f, indent=2)
 
-    # 그래프 이미지 생성
+    # 그래프 생성
     img_buf = None
     if HAS_MATPLOTLIB and len(history) >= 2:
         plt.figure(figsize=(10, 5))
         dates = [datetime.fromisoformat(h['timestamp']) for h in history]
-        stds = [h['averages']['standard'] for h in history]
-        dlxs = [h['averages']['deluxe'] for h in history]
-        
-        plt.plot(dates, stds, label='Standard', color='#00B0F4', marker='o')
-        plt.plot(dates, dlxs, label='Deluxe', color='#FF4500', marker='s')
-        plt.gca().invert_yaxis()  # 순위이므로 뒤집기
-        plt.title("Crimson Desert PS Store Rank Trend")
-        plt.legend()
-        plt.grid(True, alpha=0.2)
-        
+        plt.plot(dates, [h['averages']['standard'] for h in history], label='Standard', color='#00B0F4', marker='o')
+        plt.plot(dates, [h['averages']['deluxe'] for h in history], label='Deluxe', color='#FF4500', marker='s')
+        plt.gca().invert_yaxis()
+        plt.title("Rank Trend"); plt.legend(); plt.grid(True, alpha=0.2)
         img_buf = BytesIO()
-        plt.savefig(img_buf, format='png')
-        img_buf.seek(0)
-        plt.close()
+        plt.savefig(img_buf, format='png'); img_buf.seek(0); plt.close()
 
-    # Discord 페이로드 구성
-    payload = {
-        "payload_json": json.dumps({
-            "embeds": [{
-                "title": "🎮 Crimson Desert PS Store 순위 리포트",
-                "description": desc,
-                "color": 0x00B0F4,
-                "image": {"url": "attachment://graph.png"} if img_buf else None,
-                "footer": {"text": f"Last Update: {datetime.now().strftime('%Y-%m-%d %H:%M')}"}
-            }]
-        })
-    }
+    payload = {"payload_json": json.dumps({
+        "embeds": [{
+            "title": "🎮 Crimson Desert PS Store Rank",
+            "description": desc,
+            "color": 0x00B0F4,
+            "image": {"url": "attachment://graph.png"} if img_buf else None
+        }]
+    })}
     
     try:
         if img_buf:
-            files = {"file": ("graph.png", img_buf, "image/png")}
-            requests.post(DISCORD_WEBHOOK, data=payload, files=files)
+            requests.post(DISCORD_WEBHOOK, data=payload, files={"file": ("graph.png", img_buf, "image/png")})
         else:
             requests.post(DISCORD_WEBHOOK, json=json.loads(payload["payload_json"]))
-    except Exception as e:
-        print(f"Discord 전송 실패: {e}")
-
-# =============================================================================
-# 메인 함수
-# =============================================================================
+    except: pass
 
 def main():
     driver = setup_driver()
@@ -210,10 +193,9 @@ def main():
             results[country] = crawl_country(driver, country, URLS[country])
     finally:
         driver.quit()
-        
+    
     std_avg, dlx_avg = calculate_avg(results)
     send_discord(results, std_avg, dlx_avg)
-    print("✅ 모든 국가 집계 및 전송 완료")
 
 if __name__ == "__main__":
     main()
