@@ -117,11 +117,19 @@ def crawl_country(driver, country, url):
             print(f"   ! 에러 발생 ({country}): {e}")
             continue
 
-    # 순서 기반 할당: 먼저 발견된 상품(순위 높은 것)이 Deluxe
+# --- 에디션 구분 로직 (국가별 맞춤형) ---
     res = {"standard": None, "deluxe": None}
+    
     if len(found_products) >= 2:
-        res["deluxe"] = found_products[0]['rank']
-        res["standard"] = found_products[1]['rank']
+        # 한국과 스페인은 발견 순서가 [스탠다드, 디럭스]인 경우
+        if country in ["한국", "스페인"]:
+            res["standard"] = found_products[0]['rank'] # 먼저 발견된 게 스탠다드
+            res["deluxe"] = found_products[1]['rank']   # 나중에 발견된 게 디럭스
+        # 그 외 국가(미국 등)는 발견 순서가 [디럭스, 스탠다드]인 경우
+        else:
+            res["deluxe"] = found_products[0]['rank']   # 먼저 발견된 게 디럭스
+            res["standard"] = found_products[1]['rank'] # 나중에 발견된 게 스탠다드
+            
     elif len(found_products) == 1:
         res["standard"] = found_products[0]['rank']
         
