@@ -639,5 +639,22 @@
       "Japan": null,
       "United Kingdom": null
     }
+  },
+  {
+    "timestamp": "2026-01-10T12:13:45.753336",
+    "google": {
+      "score": 84,
+      "avg_7d": 21,
+      "top_regions": {
+        "Wallis & Futuna": 100
+      }
+    },
+    "youtube": {
+      "Global": null,
+      "South Korea": null,
+      "United States": null,
+      "Japan": null,
+      "United Kingdom": null
+    }
   }
 ]
