@@ -26,7 +26,8 @@ DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 
 # Crimson Desert 공식 트레일러 영상 ID들
 VIDEO_IDS = {
-    "Official Trailer": "ehjUUJAselQ",  # 2024년 12월 공개
+    "Official Trailer": "n1igh_q0Wc",  # 2024년 12월 공개
+    "50분 초반 플레이": "1ItNYP9U1M0",  # 2024년 9월 공
     # 추가 트레일러가 있으면 여기에 추가
 }
 
