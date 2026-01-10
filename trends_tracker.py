@@ -195,14 +195,31 @@ def save_history(google_data, youtube_data):
     """히스토리 저장"""
     history = load_history()
     
+    # Google 데이터 (DataFrame 제외)
+    google_entry = None
+    if google_data:
+        google_entry = {
+            "score": google_data.get("score"),
+            "avg_7d": google_data.get("avg_7d"),
+            "top_regions": google_data.get("top_regions", {})
+        }
+    
+    # YouTube 데이터 (DataFrame 제외)
+    youtube_entry = {}
+    if youtube_data:
+        for country, data in youtube_data.items():
+            if data:
+                youtube_entry[country] = {
+                    "score": data.get("score"),
+                    "avg_7d": data.get("avg_7d")
+                }
+            else:
+                youtube_entry[country] = None
+    
     entry = {
         "timestamp": datetime.now().isoformat(),
-        "google": {
-            "score": google_data.get("score") if google_data else None,
-            "avg_7d": google_data.get("avg_7d") if google_data else None,
-            "top_regions": google_data.get("top_regions") if google_data else {}
-        },
-        "youtube": youtube_data if youtube_data else {}
+        "google": google_entry,
+        "youtube": youtube_entry
     }
     
     history.append(entry)
