@@ -95,8 +95,8 @@ def get_google_trends():
                 for country, score in top_10[KEYWORD].items():
                     print(f"    - '{country}': {score}")
                 
-                # 전체 Top 10을 딕셔너리로 저장
-                top_regions_dict = top_10[KEYWORD].to_dict()
+                # 전체 데이터를 딕셔너리로 저장 (Top 10뿐만 아니라 전체)
+                top_regions_dict = filtered[KEYWORD].to_dict()
                 
         except Exception as e:
             print(f"  ⚠️  지역별 데이터 수집 오류: {e}")
@@ -306,24 +306,33 @@ def send_discord(google_data, youtube_data):
             regions = google_data['top_regions']
             
             # 실제 국가명 확인용 디버깅
-            print(f"📍 지역 데이터 키: {list(regions.keys())[:10]}")
+            print(f"📍 전체 지역 데이터 수: {len(regions)}")
             
-            # 다양한 국가명 표기 시도
-            country_variations = {
-                'South Korea': ['South Korea', 'Korea', 'Republic of Korea', 'KR'],
-                'United States': ['United States', 'USA', 'US', 'America'],
-                'United Kingdom': ['United Kingdom', 'UK', 'Great Britain', 'GB'],
-                'Japan': ['Japan', 'JP']
+            # 주요 시장 국가명 (정확한 매칭)
+            major_market_keys = {
+                'South Korea': 'South Korea',
+                'United States': 'United States', 
+                'United Kingdom': 'United Kingdom',
+                'Japan': 'Japan'
             }
             
+            # 주요 시장 점수 찾기
             major_markets = {}
-            for display_name, variations in country_variations.items():
-                score = 0
-                for var in variations:
-                    if var in regions:
-                        score = regions[var]
-                        break
+            for display_name, key in major_market_keys.items():
+                score = regions.get(key, 0)
                 major_markets[display_name] = score
+                if score > 0:
+                    print(f"  ✅ {display_name} 발견: {score}")
+                else:
+                    # 비슷한 이름 찾기 시도
+                    for region_name in regions.keys():
+                        if key.lower() in region_name.lower() or region_name.lower() in key.lower():
+                            score = regions[region_name]
+                            major_markets[display_name] = score
+                            print(f"  ✅ {display_name} 발견 ('{region_name}'): {score}")
+                            break
+                    else:
+                        print(f"  ⚠️  {display_name} 데이터 없음")
             
             lines.append(f"\n**📍 주요 시장:**")
             for country, score in major_markets.items():
@@ -332,20 +341,13 @@ def send_discord(google_data, youtube_data):
                 else:
                     lines.append(f"• {country}: `데이터 없음`")
             
-            # Top 3 (주요 시장 제외)
-            excluded = []
-            for variations in country_variations.values():
-                excluded.extend(variations)
+            # Top 5 (전체 지역 중)
+            sorted_regions = sorted(regions.items(), key=lambda x: x[1], reverse=True)
             
-            top_others = {k: v for k, v in regions.items() 
-                         if k not in excluded}
-            
-            if top_others:
-                lines.append(f"\n**🏆 기타 인기 지역 Top 3:**")
-                sorted_others = sorted(top_others.items(), key=lambda x: x[1], reverse=True)
-                for idx, (region, score) in enumerate(sorted_others[:3], 1):
-                    if score > 0:
-                        lines.append(f"{idx}. {region}: `{score}/100`")
+            lines.append(f"\n**🏆 전체 인기 지역 Top 5:**")
+            for idx, (region, score) in enumerate(sorted_regions[:5], 1):
+                if score > 0:
+                    lines.append(f"{idx}. {region}: `{score}/100`")
     else:
         lines.append("**🔍 Google 검색**: 데이터 없음")
     
