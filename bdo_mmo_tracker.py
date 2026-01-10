@@ -1,17 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import time
 import os
 import json
 import requests
 from datetime import datetime
 from io import BytesIO
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 
 try:
     import matplotlib
@@ -34,59 +28,32 @@ DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 # 함수들
 # =============================================================================
 
-def setup_driver():
-    options = Options()
-    options.add_argument('--headless=new')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--window-size=1920,1080')
-    service = Service(ChromeDriverManager().install())
-    return webdriver.Chrome(service=service, options=options)
-
-def crawl_mmo_rank(driver):
-    """Steam Charts에서 검은사막 순위 크롤링"""
-    print("🎮 Steam 동접자 순위 크롤링 시작...")
+def crawl_mmo_rank(driver=None):
+    """Steam API에서 검은사막 동접자 수 가져오기"""
+    print("🎮 Steam 동접자 수 조회 시작...")
     
     try:
-        driver.get(STEAM_CHARTS_URL)
-        time.sleep(4)
+        # Steam API 호출 (크롤링 불필요)
+        response = requests.get(STEAM_API_URL, timeout=10)
+        response.raise_for_status()
+        data = response.json()
         
-        # 순위 테이블 찾기
-        rows = driver.find_elements(By.CSS_SELECTOR, "table tbody tr")
-        
-        for idx, row in enumerate(rows, 1):
-            try:
-                # 게임 이름 찾기
-                game_link = row.find_element(By.CSS_SELECTOR, "td.game-name a")
-                game_name = game_link.text.strip()
-                
-                # Black Desert 찾기
-                if "Black Desert" in game_name:
-                    # 현재 플레이어 수 추출
-                    try:
-                        current_players_elem = row.find_element(By.CSS_SELECTOR, "td:nth-child(2)")
-                        players_text = current_players_elem.text.strip().replace(",", "")
-                        players = int(players_text) if players_text.isdigit() else None
-                    except:
-                        players = None
-                    
-                    bdo_data = {
-                        "rank": idx,
-                        "players": players,
-                        "game_name": game_name
-                    }
-                    
-                    print(f"  ✅ 발견: {idx}위 - {players:,}명 동접" if players else f"  ✅ 발견: {idx}위")
-                    return bdo_data
-                    
-            except Exception as e:
-                continue
-        
-        print("  ❌ Black Desert를 찾을 수 없음")
-        return None
+        if data.get('response', {}).get('result') == 1:
+            players = data['response']['player_count']
+            
+            bdo_data = {
+                "players": players,
+                "game_name": "Black Desert Online"
+            }
+            
+            print(f"  ✅ 현재 동접자: {players:,}명")
+            return bdo_data
+        else:
+            print("  ❌ Steam API 응답 오류")
+            return None
         
     except Exception as e:
-        print(f"  ❌ 크롤링 오류: {e}")
+        print(f"  ❌ API 호출 오류: {e}")
         import traceback
         traceback.print_exc()
         return None
@@ -108,7 +75,6 @@ def save_history(data):
     
     entry = {
         "timestamp": datetime.now().isoformat(),
-        "rank": data.get("rank") if data else None,
         "players": data.get("players") if data else None
     }
     
@@ -124,7 +90,7 @@ def save_history(data):
     print("✅ bdo_history.json 저장 완료")
 
 def create_rank_graph():
-    """순위 변화 그래프 생성"""
+    """동접자 변화 그래프 생성"""
     if not HAS_MATPLOTLIB:
         print("⚠️  matplotlib 없음 - 그래프 생략")
         return None
@@ -136,16 +102,16 @@ def create_rank_graph():
     
     # 데이터 파싱
     timestamps = []
-    ranks = []
+    players = []
     
     for entry in history:
         try:
             dt = datetime.fromisoformat(entry['timestamp'])
-            rank = entry.get('rank')
+            player_count = entry.get('players')
             
-            if rank:
+            if player_count:
                 timestamps.append(dt)
-                ranks.append(rank)
+                players.append(player_count)
         except:
             continue
     
@@ -156,19 +122,22 @@ def create_rank_graph():
     plt.figure(figsize=(12, 6))
     plt.style.use('seaborn-v0_8-darkgrid')
     
-    plt.plot(timestamps, ranks, marker='o', linewidth=2, 
-            markersize=8, color='#FF6B00', label='MMO Rank')
+    plt.plot(timestamps, players, marker='o', linewidth=2, 
+            markersize=8, color='#FF6B00', label='Concurrent Players')
     
-    plt.gca().invert_yaxis()  # 순위는 낮을수록 좋음
     plt.xlabel('Date', fontsize=12, fontweight='bold')
-    plt.ylabel('Steam Ranking', fontsize=12, fontweight='bold')
-    plt.title('Black Desert Online - Steam Ranking Trend', 
+    plt.ylabel('Players', fontsize=12, fontweight='bold')
+    plt.title('Black Desert Online - Steam Concurrent Players Trend', 
              fontsize=14, fontweight='bold', pad=20)
     plt.legend(loc='best', fontsize=11)
     plt.grid(True, alpha=0.3)
     
+    # Y축 숫자 포맷 (쉼표)
+    ax = plt.gca()
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
+    
     # 날짜 포맷
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
     plt.gcf().autofmt_xdate()
     
     plt.tight_layout()
@@ -217,18 +186,10 @@ def send_discord(data):
     if not data:
         desc = "⚠️  데이터를 가져올 수 없습니다."
     else:
-        rank = data.get("rank")
         players = data.get("players")
         
         # 이전 데이터와 비교
-        prev_rank = prev_data.get("rank")
         prev_players = prev_data.get("players")
-        
-        rank_diff = format_diff(rank, prev_rank)
-        
-        rank_display = f"`{rank}위`"
-        if rank_diff:
-            rank_display += f" ({rank_diff})"
         
         players_display = f"`{format_number(players)}`"
         if prev_players:
@@ -238,19 +199,18 @@ def send_discord(data):
             elif player_change < 0:
                 players_display += f" ({format_number(player_change)})"
         
-        desc = f"**Steam 게임 순위**: {rank_display}\n"
-        desc += f"**현재 동접자**: {players_display}"
+        desc = f"**현재 동접자**: {players_display}"
     
     # 그래프 생성
     graph_buf = create_rank_graph()
     
     # Discord embed
     embed = {
-        "title": "🎮 Black Desert Online - Steam 순위",
+        "title": "🎮 Black Desert Online - Steam 동접자",
         "description": desc,
         "color": 0xFF6B00,
         "timestamp": datetime.utcnow().isoformat(),
-        "footer": {"text": "Steam Charts Tracker"}
+        "footer": {"text": "Steam API Tracker"}
     }
     
     try:
@@ -276,16 +236,13 @@ def send_discord(data):
 
 def main():
     print("=" * 60)
-    print("🎮 Black Desert Online Steam 순위 추적")
+    print("🎮 Black Desert Online Steam 동접자 추적")
     print("=" * 60)
     
     start_time = time.time()
-    driver = setup_driver()
     
-    try:
-        data = crawl_mmo_rank(driver)
-    finally:
-        driver.quit()
+    # Steam API는 크롤링 불필요
+    data = crawl_mmo_rank()
     
     elapsed = (time.time() - start_time) / 60
     print(f"\n⏱️  소요 시간: {elapsed:.1f}분")
@@ -296,7 +253,6 @@ def main():
     print("=" * 60)
     
     if data:
-        print(f"Steam 순위: {data['rank']}위")
         print(f"현재 동접자: {data['players']:,}명")
     else:
         print("데이터를 가져올 수 없습니다.")
