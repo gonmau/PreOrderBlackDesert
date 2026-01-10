@@ -118,36 +118,36 @@ def get_google_trends():
         return None
 
 def get_youtube_trends():
-    """YouTube 검색 트렌드 가져오기 (주요 국가별)"""
+    """YouTube 검색 트렌드 가져오기 (주요 국가별 + 현지 검색어)"""
     if not HAS_PYTRENDS:
         return None
     
     print("🎬 YouTube 검색 트렌드 수집 중...")
     
-    # 주요 시장
+    # 주요 시장 + 현지 검색어
     countries = {
-        'Global': '',      # 전세계
-        'South Korea': 'KR',
-        'United States': 'US',
-        'Japan': 'JP',
-        'United Kingdom': 'GB'
+        'Global': ('', KEYWORD),                    # 전세계 - 영문
+        'South Korea': ('KR', '붉은사막'),          # 한국 - 한글
+        'United States': ('US', KEYWORD),           # 미국 - 영문
+        'Japan': ('JP', '紅の砂漠'),                # 일본 - 일본어
+        'United Kingdom': ('GB', KEYWORD)           # 영국 - 영문
     }
     
     results = {}
     
-    for country_name, geo_code in countries.items():
+    for country_name, (geo_code, keyword) in countries.items():
         try:
-            print(f"  📍 {country_name} 데이터 수집 중...")
+            print(f"  📍 {country_name} (검색어: '{keyword}') 데이터 수집 중...")
             
             # Pytrends 초기화
             pytrends = TrendReq(hl='en-US', tz=360)
             
             # YouTube 검색 트렌드
             pytrends.build_payload(
-                kw_list=[KEYWORD],
+                kw_list=[keyword],
                 cat=0,
                 timeframe='now 7-d',
-                geo=geo_code,  # 국가별
+                geo=geo_code,
                 gprop='youtube'
             )
             
@@ -160,15 +160,15 @@ def get_youtube_trends():
                 continue
             
             # 최신 점수
-            latest_score = int(interest_over_time[KEYWORD].iloc[-1])
-            avg_score = int(interest_over_time[KEYWORD].mean())
+            latest_score = int(interest_over_time[keyword].iloc[-1])
+            avg_score = int(interest_over_time[keyword].mean())
             
             print(f"    ✅ 점수: {latest_score}/100 (평균: {avg_score}/100)")
             
             results[country_name] = {
                 "score": latest_score,
                 "avg_7d": avg_score,
-                "data": interest_over_time
+                "keyword": keyword  # 어떤 검색어를 사용했는지 저장
             }
             
             time.sleep(1)  # Rate limit 방지
@@ -392,13 +392,17 @@ def send_discord(google_data, youtube_data):
             if data:
                 y_score = data['score']
                 y_avg = data['avg_7d']
+                keyword = data.get('keyword', KEYWORD)
                 
                 # 이전 데이터와 비교
                 prev_y_data = prev_data.get('youtube', {}).get(country, {})
                 prev_y_score = prev_y_data.get('score') if isinstance(prev_y_data, dict) else None
                 y_diff = format_diff(y_score, prev_y_score)
                 
-                lines.append(f"• {country}: `{y_score}/100` {f'({y_diff})' if y_diff else ''} (평균: {y_avg})")
+                # 검색어 표시 (영문이 아닌 경우만)
+                keyword_display = f" [{keyword}]" if keyword != KEYWORD else ""
+                
+                lines.append(f"• {country}{keyword_display}: `{y_score}/100` {f'({y_diff})' if y_diff else ''} (평균: {y_avg})")
             else:
                 lines.append(f"• {country}: `데이터 없음`")
     else:
