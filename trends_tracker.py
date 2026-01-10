@@ -161,8 +161,8 @@ def get_youtube_trends():
                 try:
                     print(f"    🔍 '{keyword}' 검색 중...")
                     
-                    # Pytrends 초기화
-                    pytrends = TrendReq(hl='en-US', tz=360)
+                    # Pytrends 초기화 (매번 새로 생성)
+                    pytrends = TrendReq(hl='en-US', tz=360, timeout=(10, 25), retries=2, backoff_factor=0.1)
                     
                     # YouTube 검색 트렌드
                     pytrends.build_payload(
@@ -193,10 +193,11 @@ def get_youtube_trends():
                     else:
                         print(f"      ⚠️  데이터 없음")
                     
-                    time.sleep(1)  # Rate limit 방지
+                    time.sleep(3)  # Rate limit 방지 (1초 → 3초로 증가)
                     
                 except Exception as e:
-                    print(f"      ❌ '{keyword}' 오류: {e}")
+                    print(f"      ❌ '{keyword}' 오류: {str(e)[:100]}")
+                    time.sleep(5)  # 에러 발생 시 더 길게 대기
                     continue
             
             if country_scores:
@@ -216,11 +217,15 @@ def get_youtube_trends():
                 
                 print(f"    ✅ {country_name} 최고 점수: {best['score']}/100 ('{best['keyword']}')")
             else:
-                print(f"    ⚠️  {country_name} 데이터 없음")
+                print(f"    ⚠️  {country_name} 모든 검색어에서 데이터 없음")
                 results[country_name] = None
             
+            time.sleep(2)  # 국가 간 추가 대기
+            
         except Exception as e:
-            print(f"    ❌ {country_name} 전체 오류: {e}")
+            print(f"    ❌ {country_name} 전체 오류: {str(e)[:100]}")
+            import traceback
+            traceback.print_exc()
             results[country_name] = None
             continue
     
@@ -517,7 +522,7 @@ def main():
     
     # Google Trends 수집
     google_data = get_google_trends()
-    time.sleep(2)  # Rate limit 방지
+    time.sleep(5)  # Google과 YouTube 사이 충분한 대기
     
     # YouTube Trends 수집
     youtube_data = get_youtube_trends()
