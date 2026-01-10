@@ -36,86 +36,70 @@ DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 # =============================================================================
 
 def get_google_trends():
-    """Google Trends에서 검색 관심도 가져오기"""
+    """GitHub Actions 안전 Google Trends 수집"""
     if not HAS_PYTRENDS:
         return None
-    
-    print("🔍 Google Trends 데이터 수집 중...")
-    
-    try:
-        # Pytrends 초기화
-        pytrends = TrendReq(hl='en-US', tz=360)
-        
-        # YouTube 검색 트렌드
-        pytrends.build_payload(
-            kw_list=[KEYWORD],
-            cat=0,
-            timeframe='now 1-m',  # 7일 → 1개월로 변경
-            geo='',  # 전세계
-            gprop=''  # 일반 Google 검색
-        )
-        
-        # 시간별 관심도
-        interest_over_time = pytrends.interest_over_time()
-        
-        if interest_over_time.empty:
-            print("  ⚠️  데이터 없음")
-            return None
-        
-        # 최신 점수 (가장 최근 데이터)
-        latest_score = int(interest_over_time[KEYWORD].iloc[-1])
-        avg_score = int(interest_over_time[KEYWORD].mean())
-        
-        print(f"  ✅ 현재 점수: {latest_score}/100")
-        print(f"  📊 7일 평균: {avg_score}/100")
-        
-        # 지역별 관심도
-        try:
-            print("  🌍 지역별 데이터 수집 시도...")
-            interest_by_region = pytrends.interest_by_region(
-                resolution='COUNTRY', 
-                inc_low_vol=True,  # 낮은 검색량도 포함
-                inc_geo_code=False
-            )
-            
-            if interest_by_region.empty:
-                print("  ⚠️  지역별 데이터가 비어있음")
-                top_regions_dict = {}
-            else:
-                # 디버깅: 실제 국가명 출력
-                print(f"  🌍 감지된 국가 수: {len(interest_by_region)}")
-                
-                # 0보다 큰 값만 필터링
-                filtered = interest_by_region[interest_by_region[KEYWORD] > 0]
-                print(f"  🌍 데이터가 있는 국가 수: {len(filtered)}")
-                
-                top_10 = filtered.sort_values(by=KEYWORD, ascending=False).head(10)
-                
-                print(f"  🔝 Top 10 국가:")
-                for country, score in top_10[KEYWORD].items():
-                    print(f"    - '{country}': {score}")
-                
-                # 전체 데이터를 딕셔너리로 저장 (Top 10뿐만 아니라 전체)
-                top_regions_dict = filtered[KEYWORD].to_dict()
-                
-        except Exception as e:
-            print(f"  ⚠️  지역별 데이터 수집 오류: {e}")
-            import traceback
-            traceback.print_exc()
-            top_regions_dict = {}
-        
-        return {
-            "score": latest_score,
-            "avg_7d": avg_score,
-            "top_regions": top_regions_dict,
-            "data": interest_over_time
+
+    IS_GITHUB = os.getenv("GITHUB_ACTIONS") == "true"
+
+    print("🔍 Google Trends 데이터 수집 중 (Actions 안전모드)...")
+
+    pytrends = TrendReq(
+        hl='en-US',
+        tz=360,
+        requests_args={
+            'headers': {
+                'User-Agent': (
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                    'AppleWebKit/537.36 (KHTML, like Gecko) '
+                    'Chrome/120.0.0.0 Safari/537.36'
+                )
+            }
         }
-        
-    except Exception as e:
-        print(f"  ❌ Google Trends 오류: {e}")
-        import traceback
-        traceback.print_exc()
-        return None
+    )
+
+    timeframe = 'today 3-m'
+
+    for attempt in range(3):
+        try:
+            print(f"  ⏳ 시도 {attempt + 1}/3")
+
+            pytrends.build_payload(
+                kw_list=[KEYWORD],
+                cat=0,
+                timeframe=timeframe,
+                geo='',
+                gprop=''
+            )
+
+            interest_over_time = pytrends.interest_over_time()
+
+            if interest_over_time.empty:
+                print("  ⚠️ 데이터 없음")
+                return None
+
+            latest_score = int(interest_over_time[KEYWORD].iloc[-1])
+            avg_score = int(interest_over_time[KEYWORD].mean())
+
+            print(f"  ✅ 현재 점수: {latest_score}/100")
+            print(f"  📊 평균 점수: {avg_score}/100")
+
+            return {
+                "score": latest_score,
+                "avg_7d": avg_score,
+                "top_regions": {},  # Actions 안전모드: 지역별 비활성
+                "data": interest_over_time
+            }
+
+        except Exception as e:
+            print(f"  ❌ 오류 발생: {e}")
+            if attempt < 2:
+                print("  💤 30초 대기 후 재시도...")
+                time.sleep(30)
+            else:
+                print("  ❌ 모든 재시도 실패")
+                return None
+
 
 def get_youtube_trends():
     """YouTube 검색 트렌드 가져오기 (주요 국가별 + 다국어)"""
