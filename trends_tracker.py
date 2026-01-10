@@ -118,63 +118,109 @@ def get_google_trends():
         return None
 
 def get_youtube_trends():
-    """YouTube 검색 트렌드 가져오기 (주요 국가별 + 현지 검색어)"""
+    """YouTube 검색 트렌드 가져오기 (주요 국가별 + 다국어)"""
     if not HAS_PYTRENDS:
         return None
     
     print("🎬 YouTube 검색 트렌드 수집 중...")
     
-    # 주요 시장 + 현지 검색어
-    countries = {
-        'Global': ('', KEYWORD),                    # 전세계 - 영문
-        'South Korea': ('KR', '붉은사막'),          # 한국 - 한글
-        'United States': ('US', KEYWORD),           # 미국 - 영문
-        'Japan': ('JP', '紅の砂漠'),                # 일본 - 일본어
-        'United Kingdom': ('GB', KEYWORD)           # 영국 - 영문
+    # 주요 시장별 검색어 (현지어 + 영어)
+    search_configs = {
+        'Global': [
+            ('', 'Crimson Desert'),
+            ('', '붉은사막'),
+            ('', '紅の砂漠'),
+            ('', '红色沙漠')  # 중국어 간체
+        ],
+        'South Korea': [
+            ('KR', '붉은사막'),
+            ('KR', 'Crimson Desert')
+        ],
+        'United States': [
+            ('US', 'Crimson Desert')
+        ],
+        'Japan': [
+            ('JP', '紅の砂漠'),
+            ('JP', 'Crimson Desert')
+        ],
+        'United Kingdom': [
+            ('GB', 'Crimson Desert')
+        ]
     }
     
     results = {}
     
-    for country_name, (geo_code, keyword) in countries.items():
+    for country_name, configs in search_configs.items():
         try:
-            print(f"  📍 {country_name} (검색어: '{keyword}') 데이터 수집 중...")
+            print(f"  📍 {country_name} 데이터 수집 중...")
             
-            # Pytrends 초기화
-            pytrends = TrendReq(hl='en-US', tz=360)
+            country_scores = []
+            keywords_used = []
             
-            # YouTube 검색 트렌드
-            pytrends.build_payload(
-                kw_list=[keyword],
-                cat=0,
-                timeframe='now 7-d',
-                geo=geo_code,
-                gprop='youtube'
-            )
+            for geo_code, keyword in configs:
+                try:
+                    print(f"    🔍 '{keyword}' 검색 중...")
+                    
+                    # Pytrends 초기화
+                    pytrends = TrendReq(hl='en-US', tz=360)
+                    
+                    # YouTube 검색 트렌드
+                    pytrends.build_payload(
+                        kw_list=[keyword],
+                        cat=0,
+                        timeframe='now 7-d',
+                        geo=geo_code,
+                        gprop='youtube'
+                    )
+                    
+                    # 시간별 관심도
+                    interest_over_time = pytrends.interest_over_time()
+                    
+                    if not interest_over_time.empty:
+                        latest_score = int(interest_over_time[keyword].iloc[-1])
+                        avg_score = int(interest_over_time[keyword].mean())
+                        
+                        if latest_score > 0:  # 0보다 큰 경우만
+                            country_scores.append({
+                                'keyword': keyword,
+                                'score': latest_score,
+                                'avg': avg_score
+                            })
+                            keywords_used.append(keyword)
+                            print(f"      ✅ {latest_score}/100 (평균: {avg_score})")
+                        else:
+                            print(f"      ⚠️  0점")
+                    else:
+                        print(f"      ⚠️  데이터 없음")
+                    
+                    time.sleep(1)  # Rate limit 방지
+                    
+                except Exception as e:
+                    print(f"      ❌ '{keyword}' 오류: {e}")
+                    continue
             
-            # 시간별 관심도
-            interest_over_time = pytrends.interest_over_time()
-            
-            if interest_over_time.empty:
+            if country_scores:
+                # 가장 높은 점수 사용
+                best = max(country_scores, key=lambda x: x['score'])
+                
+                # 여러 검색어의 평균도 계산
+                total_score = sum(s['score'] for s in country_scores)
+                avg_of_all = sum(s['avg'] for s in country_scores) // len(country_scores)
+                
+                results[country_name] = {
+                    "score": best['score'],  # 최고 점수
+                    "avg_7d": avg_of_all,
+                    "keywords": keywords_used,
+                    "all_scores": country_scores  # 모든 검색어 점수 저장
+                }
+                
+                print(f"    ✅ {country_name} 최고 점수: {best['score']}/100 ('{best['keyword']}')")
+            else:
                 print(f"    ⚠️  {country_name} 데이터 없음")
                 results[country_name] = None
-                continue
-            
-            # 최신 점수
-            latest_score = int(interest_over_time[keyword].iloc[-1])
-            avg_score = int(interest_over_time[keyword].mean())
-            
-            print(f"    ✅ 점수: {latest_score}/100 (평균: {avg_score}/100)")
-            
-            results[country_name] = {
-                "score": latest_score,
-                "avg_7d": avg_score,
-                "keyword": keyword  # 어떤 검색어를 사용했는지 저장
-            }
-            
-            time.sleep(1)  # Rate limit 방지
             
         except Exception as e:
-            print(f"    ❌ {country_name} 오류: {e}")
+            print(f"    ❌ {country_name} 전체 오류: {e}")
             results[country_name] = None
             continue
     
@@ -204,14 +250,15 @@ def save_history(google_data, youtube_data):
             "top_regions": google_data.get("top_regions", {})
         }
     
-    # YouTube 데이터 (DataFrame 제외)
+    # YouTube 데이터 (all_scores 제외하고 저장)
     youtube_entry = {}
     if youtube_data:
         for country, data in youtube_data.items():
             if data:
                 youtube_entry[country] = {
                     "score": data.get("score"),
-                    "avg_7d": data.get("avg_7d")
+                    "avg_7d": data.get("avg_7d"),
+                    "keywords": data.get("keywords", [])
                 }
             else:
                 youtube_entry[country] = None
@@ -392,17 +439,30 @@ def send_discord(google_data, youtube_data):
             if data:
                 y_score = data['score']
                 y_avg = data['avg_7d']
-                keyword = data.get('keyword', KEYWORD)
+                keywords = data.get('keywords', [])
+                all_scores = data.get('all_scores', [])
                 
                 # 이전 데이터와 비교
                 prev_y_data = prev_data.get('youtube', {}).get(country, {})
                 prev_y_score = prev_y_data.get('score') if isinstance(prev_y_data, dict) else None
                 y_diff = format_diff(y_score, prev_y_score)
                 
-                # 검색어 표시 (영문이 아닌 경우만)
-                keyword_display = f" [{keyword}]" if keyword != KEYWORD else ""
+                # 검색어 표시
+                if len(keywords) > 1:
+                    keyword_display = f" [{'·'.join(keywords)}]"
+                elif len(keywords) == 1 and keywords[0] != KEYWORD:
+                    keyword_display = f" [{keywords[0]}]"
+                else:
+                    keyword_display = ""
                 
-                lines.append(f"• {country}{keyword_display}: `{y_score}/100` {f'({y_diff})' if y_diff else ''} (평균: {y_avg})")
+                main_line = f"• {country}{keyword_display}: `{y_score}/100` {f'({y_diff})' if y_diff else ''}"
+                
+                # 여러 검색어가 있으면 상세 표시
+                if len(all_scores) > 1:
+                    details = ", ".join([f"{s['keyword']}: {s['score']}" for s in all_scores])
+                    main_line += f"\n  ({details})"
+                
+                lines.append(main_line)
             else:
                 lines.append(f"• {country}: `데이터 없음`")
     else:
