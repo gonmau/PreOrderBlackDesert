@@ -26,9 +26,9 @@ DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 
 # Crimson Desert 공식 영상 ID들
 VIDEO_IDS = {
-    "Release Date Reveal Trailer": "VIDEO_ID_1",     # 2025년 출시일 공개 트레일러
-    "Gameplay Trailer": "VIDEO_ID_2",                # 게임플레이 트레일러
-    "Exclusive Interview NGP 2026": "VIDEO_ID_3",    # New Game+ 인터뷰
+    "출시일 공개 트레일러": "ua_7lmxiVV8",
+    "50분 게임플레이": "1ItNYP9U1M0",
+    "개발자 인터뷰": "aEX6hjTSlOk",
     # 추가 영상이 있으면 여기에 추가
     # YouTube URL에서 v= 뒤의 ID를 복사해서 입력하세요
 }
