@@ -16,5 +16,23 @@
       "score": 50,
       "avg_7d": 23
     }
+  },
+  {
+    "timestamp": "2026-01-10T10:45:04.541602",
+    "google": {
+      "score": 59,
+      "avg_7d": 20,
+      "top_regions": {
+        "Puerto Rico": 100,
+        "Czechia": 86,
+        "Portugal": 84,
+        "France": 84,
+        "Finland": 80
+      }
+    },
+    "youtube": {
+      "score": 48,
+      "avg_7d": 23
+    }
   }
 ]
