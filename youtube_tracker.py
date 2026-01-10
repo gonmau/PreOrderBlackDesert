@@ -24,11 +24,13 @@ except ImportError:
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 
-# Crimson Desert 공식 트레일러 영상 ID들
+# Crimson Desert 공식 영상 ID들
 VIDEO_IDS = {
-    "Official Trailer": "n1igh_q0Wc",  # 2024년 12월 공개
-    "50분 초반 플레이": "1ItNYP9U1M0",  # 2024년 9월 공
-    # 추가 트레일러가 있으면 여기에 추가
+    "Release Date Reveal Trailer": "VIDEO_ID_1",     # 2025년 출시일 공개 트레일러
+    "Gameplay Trailer": "VIDEO_ID_2",                # 게임플레이 트레일러
+    "Exclusive Interview NGP 2026": "VIDEO_ID_3",    # New Game+ 인터뷰
+    # 추가 영상이 있으면 여기에 추가
+    # YouTube URL에서 v= 뒤의 ID를 복사해서 입력하세요
 }
 
 # =============================================================================
