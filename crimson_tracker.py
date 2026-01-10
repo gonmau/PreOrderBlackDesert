@@ -55,6 +55,25 @@ URLS = {
     "한국": "https://store.playstation.com/ko-kr/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1"
 }
 
+FLAGS = {
+    "미국": "🇺🇸",
+    "영국": "🇬🇧",
+    "일본": "🇯🇵",
+    "독일": "🇩🇪",
+    "프랑스": "🇫🇷",
+    "캐나다": "🇨🇦",
+    "스페인": "🇪🇸",
+    "이탈리아": "🇮🇹",
+    "호주": "🇦🇺",
+    "한국": "🇰🇷",
+    "브라질": "🇧🇷",
+    "멕시코": "🇲🇽",
+    "네덜란드": "🇳🇱",
+    "사우디아라비아": "🇸🇦",
+    "아랍에미리트": "🇦🇪",
+    "중국": "🇨🇳",
+}
+
 SEARCH_TERMS = {
     "미국": ["crimson desert"], "영국": ["crimson desert"], "프랑스": ["crimson desert"], "독일": ["crimson desert"],
     "일본": ["crimson desert", "紅の砂漠"],
@@ -180,11 +199,13 @@ def send_discord(results, combined_avg):
         c_part = f"{curr_combined or '-'}{'(' + c_diff + ')' if c_diff else ''}"
         
         store_url = URLS.get(c)
-        country_label = f"[{c}]({store_url})" if store_url else c
+        flag = FLAGS.get(c, "")
+        country_label = f"{flag} [{c}]({store_url})" if store_url else f"{flag} {c}"
 
         lines.append(
             f"**{country_label}**: S `{s_part}` / D `{d_part}` → `{c_part}`"
-        )    
+        )
+
 
     # 평균 변동폭
     prev_combined_avg = prev_run['averages'].get('combined') if prev_run else None
