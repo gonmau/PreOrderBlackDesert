@@ -18,5 +18,28 @@
       "Gameplay Trailer": null,
       "Exclusive Interview NGP 2026": null
     }
+  },
+  {
+    "timestamp": "2026-01-10T03:51:23.640153",
+    "videos": {
+      "출시일 공개 트레일러": {
+        "title": "Crimson Desert - Release Date Reveal Trailer",
+        "views": 194173,
+        "likes": 6266,
+        "comments": 731
+      },
+      "50분 게임플레이": {
+        "title": "Crimson Desert – 50 Minutes of Early Gameplay",
+        "views": 1299323,
+        "likes": 29137,
+        "comments": 3959
+      },
+      "개발자 인터뷰": {
+        "title": "Crimson Desert Exclusive Interview | New Game+ Showcase 2026",
+        "views": 13120,
+        "likes": 423,
+        "comments": 219
+      }
+    }
   }
 ]
