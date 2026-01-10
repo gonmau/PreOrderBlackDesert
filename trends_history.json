@@ -34,5 +34,28 @@
       "score": 48,
       "avg_7d": 23
     }
+  },
+  {
+    "timestamp": "2026-01-10T10:48:20.295176",
+    "google": {
+      "score": 61,
+      "avg_7d": 20,
+      "top_regions": {
+        "Portugal": 100,
+        "Luxembourg": 100,
+        "France": 99,
+        "Czechia": 95,
+        "Hungary": 95,
+        "Norway": 91,
+        "Finland": 87,
+        "Australia": 85,
+        "Canada": 85,
+        "Albania": 83
+      }
+    },
+    "youtube": {
+      "score": 45,
+      "avg_7d": 23
+    }
   }
 ]
