@@ -162,7 +162,7 @@ def get_youtube_trends():
                     print(f"    🔍 '{keyword}' 검색 중...")
                     
                     # Pytrends 초기화 (매번 새로 생성)
-                    pytrends = TrendReq(hl='en-US', tz=360, timeout=(10, 25), retries=2, backoff_factor=0.1)
+                    pytrends = TrendReq(hl='en-US', tz=360)
                     
                     # YouTube 검색 트렌드
                     pytrends.build_payload(
