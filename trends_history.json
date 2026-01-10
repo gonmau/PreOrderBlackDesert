@@ -246,5 +246,101 @@
       "score": 49,
       "avg_7d": 23
     }
+  },
+  {
+    "timestamp": "2026-01-10T11:57:35.728233",
+    "google": {
+      "score": 66,
+      "avg_7d": 20,
+      "top_regions": {
+        "Algeria": 2,
+        "Argentina": 3,
+        "Australia": 7,
+        "Austria": 5,
+        "Belarus": 2,
+        "Belgium": 6,
+        "Brazil": 4,
+        "Bulgaria": 5,
+        "Canada": 7,
+        "Chile": 2,
+        "China": 2,
+        "Colombia": 1,
+        "Costa Rica": 2,
+        "Croatia": 6,
+        "Czechia": 8,
+        "Denmark": 5,
+        "Dominican Republic": 1,
+        "Ecuador": 1,
+        "Egypt": 2,
+        "Finland": 7,
+        "France": 8,
+        "Georgia": 3,
+        "Germany": 5,
+        "Greece": 4,
+        "Hong Kong": 2,
+        "Hungary": 8,
+        "India": 1,
+        "Indonesia": 1,
+        "Iran": 1,
+        "Iraq": 1,
+        "Ireland": 6,
+        "Israel": 3,
+        "Italy": 4,
+        "Kazakhstan": 1,
+        "Kuwait": 3,
+        "Lithuania": 3,
+        "Malaysia": 2,
+        "Mexico": 2,
+        "Netherlands": 5,
+        "New Zealand": 6,
+        "Norway": 8,
+        "Pakistan": 1,
+        "Peru": 1,
+        "Philippines": 2,
+        "Poland": 6,
+        "Portugal": 8,
+        "Puerto Rico": 4,
+        "Romania": 5,
+        "Russia": 4,
+        "Saudi Arabia": 2,
+        "Serbia": 4,
+        "Singapore": 3,
+        "Slovakia": 5,
+        "Slovenia": 6,
+        "South Africa": 2,
+        "South Korea": 2,
+        "Spain": 7,
+        "St. Barthélemy": 100,
+        "Sweden": 7,
+        "Switzerland": 5,
+        "Thailand": 2,
+        "Türkiye": 2,
+        "Ukraine": 2,
+        "United Arab Emirates": 3,
+        "United Kingdom": 7,
+        "United States": 6,
+        "Venezuela": 1,
+        "Vietnam": 1
+      }
+    },
+    "youtube": {
+      "Global": {
+        "score": 50,
+        "avg_7d": 23
+      },
+      "South Korea": {
+        "score": 0,
+        "avg_7d": 3
+      },
+      "United States": {
+        "score": 56,
+        "avg_7d": 20
+      },
+      "Japan": null,
+      "United Kingdom": {
+        "score": 0,
+        "avg_7d": 9
+      }
+    }
   }
 ]
