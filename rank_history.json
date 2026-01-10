@@ -3521,5 +3521,77 @@
         "deluxe": null
       }
     }
+  },
+  {
+    "timestamp": "2026-01-10T17:40:11.840109",
+    "averages": {
+      "combined": 17.07808857808858
+    },
+    "raw_results": {
+      "\ubbf8\uad6d": {
+        "standard": 24,
+        "deluxe": 16
+      },
+      "\uc601\uad6d": {
+        "standard": 28,
+        "deluxe": 16
+      },
+      "\uc77c\ubcf8": {
+        "standard": 38,
+        "deluxe": 22
+      },
+      "\ub3c5\uc77c": {
+        "standard": 20,
+        "deluxe": 16
+      },
+      "\ud504\ub791\uc2a4": {
+        "standard": 22,
+        "deluxe": 20
+      },
+      "\uce90\ub098\ub2e4": {
+        "standard": 24,
+        "deluxe": 19
+      },
+      "\uc2a4\ud398\uc778": {
+        "standard": 15,
+        "deluxe": 16
+      },
+      "\uc774\ud0c8\ub9ac\uc544": {
+        "standard": 24,
+        "deluxe": 19
+      },
+      "\ud638\uc8fc": {
+        "standard": 25,
+        "deluxe": 18
+      },
+      "\ud55c\uad6d": {
+        "standard": 11,
+        "deluxe": 14
+      },
+      "\ube0c\ub77c\uc9c8": {
+        "standard": 14,
+        "deluxe": 12
+      },
+      "\uba55\uc2dc\ucf54": {
+        "standard": 22,
+        "deluxe": 14
+      },
+      "\ub124\ub35c\ub780\ub4dc": {
+        "standard": 28,
+        "deluxe": 15
+      },
+      "\uc0ac\uc6b0\ub514\uc544\ub77c\ube44\uc544": {
+        "standard": 15,
+        "deluxe": 13
+      },
+      "\uc544\ub78d\uc5d0\ubbf8\ub9ac\ud2b8": {
+        "standard": 41,
+        "deluxe": 40
+      },
+      "\uc911\uad6d": {
+        "standard": null,
+        "deluxe": null
+      }
+    }
   }
 ]
