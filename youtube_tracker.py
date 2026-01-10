@@ -29,6 +29,8 @@ VIDEO_IDS = {
     "출시일 공개 트레일러": "ua_7lmxiVV8",
     "50분 게임플레이": "1ItNYP9U1M0",
     "개발자 인터뷰": "aEX6hjTSlOk",
+    "All new Boss Play": "8saO1BqrJz0",
+    "IGN Map size": "6msVTLXp7jk",
     # 추가 영상이 있으면 여기에 추가
     # YouTube URL에서 v= 뒤의 ID를 복사해서 입력하세요
 }
