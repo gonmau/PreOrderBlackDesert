@@ -248,7 +248,7 @@ def save_history(google_data, youtube_data):
     """히스토리 저장"""
     history = load_history()
     
-    # Google 데이터 (DataFrame 제외)
+    # Google 데이터만 저장
     google_entry = None
     if google_data:
         google_entry = {
@@ -257,23 +257,9 @@ def save_history(google_data, youtube_data):
             "top_regions": google_data.get("top_regions", {})
         }
     
-    # YouTube 데이터 (all_scores 제외하고 저장)
-    youtube_entry = {}
-    if youtube_data:
-        for country, data in youtube_data.items():
-            if data:
-                youtube_entry[country] = {
-                    "score": data.get("score"),
-                    "avg_7d": data.get("avg_7d"),
-                    "keywords": data.get("keywords", [])
-                }
-            else:
-                youtube_entry[country] = None
-    
     entry = {
         "timestamp": datetime.now().isoformat(),
-        "google": google_entry,
-        "youtube": youtube_entry
+        "google": google_entry
     }
     
     history.append(entry)
@@ -288,7 +274,7 @@ def save_history(google_data, youtube_data):
     print("✅ trends_history.json 저장 완료")
 
 def create_trends_graph():
-    """트렌드 그래프 생성"""
+    """트렌드 그래프 생성 (Google만)"""
     if not HAS_MATPLOTLIB:
         print("⚠️  matplotlib 없음 - 그래프 생략")
         return None
@@ -301,17 +287,14 @@ def create_trends_graph():
     # 데이터 파싱
     timestamps = []
     google_scores = []
-    youtube_scores = []
     
     for entry in history:
         try:
             dt = datetime.fromisoformat(entry['timestamp'])
             g_score = entry.get('google', {}).get('score')
-            y_score = entry.get('youtube', {}).get('score')
             
             timestamps.append(dt)
             google_scores.append(g_score if g_score else 0)
-            youtube_scores.append(y_score if y_score else 0)
         except:
             continue
     
@@ -324,12 +307,10 @@ def create_trends_graph():
     
     plt.plot(timestamps, google_scores, marker='o', linewidth=2, 
             markersize=6, label='Google Search', color='#4285F4')
-    plt.plot(timestamps, youtube_scores, marker='s', linewidth=2, 
-            markersize=6, label='YouTube Search', color='#FF0000')
     
     plt.xlabel('Date', fontsize=12, fontweight='bold')
     plt.ylabel('Interest Score (0-100)', fontsize=12, fontweight='bold')
-    plt.title('Crimson Desert - Search Trends', 
+    plt.title('Crimson Desert - Google Search Trends', 
              fontsize=14, fontweight='bold', pad=20)
     plt.legend(loc='best', fontsize=11)
     plt.grid(True, alpha=0.3)
@@ -375,7 +356,7 @@ def send_discord(google_data, youtube_data):
     # Discord 메시지 구성
     lines = []
     
-    # Google Trends
+    # Google Trends만
     if google_data:
         g_score = google_data['score']
         g_avg = google_data['avg_7d']
@@ -390,10 +371,9 @@ def send_discord(google_data, youtube_data):
         if google_data.get('top_regions'):
             regions = google_data['top_regions']
             
-            # 실제 국가명 확인용 디버깅
             print(f"📍 전체 지역 데이터 수: {len(regions)}")
             
-            # 주요 시장 국가명 (정확한 매칭)
+            # 주요 시장 국가명
             major_market_keys = {
                 'South Korea': 'South Korea',
                 'United States': 'United States', 
@@ -436,45 +416,6 @@ def send_discord(google_data, youtube_data):
     else:
         lines.append("**🔍 Google 검색**: 데이터 없음")
     
-    lines.append("")
-    
-    # YouTube Trends (국가별)
-    if youtube_data:
-        lines.append(f"**🎬 YouTube 검색 (최근 1개월)**")
-        
-        for country, data in youtube_data.items():
-            if data:
-                y_score = data['score']
-                y_avg = data['avg_7d']
-                keywords = data.get('keywords', [])
-                all_scores = data.get('all_scores', [])
-                
-                # 이전 데이터와 비교
-                prev_y_data = prev_data.get('youtube', {}).get(country, {})
-                prev_y_score = prev_y_data.get('score') if isinstance(prev_y_data, dict) else None
-                y_diff = format_diff(y_score, prev_y_score)
-                
-                # 검색어 표시
-                if len(keywords) > 1:
-                    keyword_display = f" [{'·'.join(keywords)}]"
-                elif len(keywords) == 1 and keywords[0] != KEYWORD:
-                    keyword_display = f" [{keywords[0]}]"
-                else:
-                    keyword_display = ""
-                
-                main_line = f"• {country}{keyword_display}: `{y_score}/100` {f'({y_diff})' if y_diff else ''}"
-                
-                # 여러 검색어가 있으면 상세 표시
-                if len(all_scores) > 1:
-                    details = ", ".join([f"{s['keyword']}: {s['score']}" for s in all_scores])
-                    main_line += f"\n  ({details})"
-                
-                lines.append(main_line)
-            else:
-                lines.append(f"• {country}: `데이터 없음`")
-    else:
-        lines.append("**🎬 YouTube 검색 (최근 1개월)**: 데이터 없음")
-    
     desc = "\n".join(lines)
     
     # 그래프 생성
@@ -482,7 +423,7 @@ def send_discord(google_data, youtube_data):
     
     # Discord embed
     embed = {
-        "title": "📊 Crimson Desert - 검색 트렌드",
+        "title": "📊 Crimson Desert - Google 검색 트렌드",
         "description": desc,
         "color": 0x4285F4,
         "timestamp": datetime.utcnow().isoformat(),
@@ -522,12 +463,8 @@ def main():
     
     start_time = time.time()
     
-    # Google Trends 수집
+    # Google Trends만 수집
     google_data = get_google_trends()
-    time.sleep(5)  # Google과 YouTube 사이 충분한 대기
-    
-    # YouTube Trends 수집
-    youtube_data = get_youtube_trends()
     
     elapsed = (time.time() - start_time) / 60
     print(f"\n⏱️  소요 시간: {elapsed:.1f}분")
@@ -538,25 +475,19 @@ def main():
     print("=" * 60)
     
     if google_data:
-        print(f"Google 검색 관심도: {google_data['score']}/100 (7일 평균: {google_data['avg_7d']})")
+        print(f"Google 검색 관심도: {google_data['score']}/100 (평균: {google_data['avg_7d']})")
+        if google_data.get('top_regions'):
+            print(f"\n인기 지역 Top 5:")
+            for idx, (region, score) in enumerate(list(google_data['top_regions'].items())[:5], 1):
+                print(f"  {idx}. {region}: {score}/100")
     else:
         print("Google 검색 관심도: 데이터 없음")
     
-    if youtube_data:
-        print(f"\nYouTube 검색 관심도:")
-        for country, data in youtube_data.items():
-            if data:
-                print(f"  {country}: {data['score']}/100 (평균: {data['avg_7d']})")
-            else:
-                print(f"  {country}: 데이터 없음")
-    else:
-        print("YouTube 검색 관심도: 데이터 없음")
+    # 히스토리 저장 (YouTube 데이터 없이)
+    save_history(google_data, None)
     
-    # 히스토리 저장
-    save_history(google_data, youtube_data)
-    
-    # Discord 전송
-    send_discord(google_data, youtube_data)
+    # Discord 전송 (YouTube 데이터 없이)
+    send_discord(google_data, None)
 
 if __name__ == "__main__":
     main()
