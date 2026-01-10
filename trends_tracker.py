@@ -118,50 +118,67 @@ def get_google_trends():
         return None
 
 def get_youtube_trends():
-    """YouTube 검색 트렌드 가져오기"""
+    """YouTube 검색 트렌드 가져오기 (주요 국가별)"""
     if not HAS_PYTRENDS:
         return None
     
     print("🎬 YouTube 검색 트렌드 수집 중...")
     
-    try:
-        # Pytrends 초기화
-        pytrends = TrendReq(hl='en-US', tz=360)
-        
-        # YouTube 검색 트렌드
-        pytrends.build_payload(
-            kw_list=[KEYWORD],
-            cat=0,
-            timeframe='now 7-d',
-            geo='',
-            gprop='youtube'  # YouTube 필터
-        )
-        
-        # 시간별 관심도
-        interest_over_time = pytrends.interest_over_time()
-        
-        if interest_over_time.empty:
-            print("  ⚠️  데이터 없음")
-            return None
-        
-        # 최신 점수
-        latest_score = int(interest_over_time[KEYWORD].iloc[-1])
-        avg_score = int(interest_over_time[KEYWORD].mean())
-        
-        print(f"  ✅ 현재 점수: {latest_score}/100")
-        print(f"  📊 7일 평균: {avg_score}/100")
-        
-        return {
-            "score": latest_score,
-            "avg_7d": avg_score,
-            "data": interest_over_time
-        }
-        
-    except Exception as e:
-        print(f"  ❌ YouTube Trends 오류: {e}")
-        import traceback
-        traceback.print_exc()
-        return None
+    # 주요 시장
+    countries = {
+        'Global': '',      # 전세계
+        'South Korea': 'KR',
+        'United States': 'US',
+        'Japan': 'JP',
+        'United Kingdom': 'GB'
+    }
+    
+    results = {}
+    
+    for country_name, geo_code in countries.items():
+        try:
+            print(f"  📍 {country_name} 데이터 수집 중...")
+            
+            # Pytrends 초기화
+            pytrends = TrendReq(hl='en-US', tz=360)
+            
+            # YouTube 검색 트렌드
+            pytrends.build_payload(
+                kw_list=[KEYWORD],
+                cat=0,
+                timeframe='now 7-d',
+                geo=geo_code,  # 국가별
+                gprop='youtube'
+            )
+            
+            # 시간별 관심도
+            interest_over_time = pytrends.interest_over_time()
+            
+            if interest_over_time.empty:
+                print(f"    ⚠️  {country_name} 데이터 없음")
+                results[country_name] = None
+                continue
+            
+            # 최신 점수
+            latest_score = int(interest_over_time[KEYWORD].iloc[-1])
+            avg_score = int(interest_over_time[KEYWORD].mean())
+            
+            print(f"    ✅ 점수: {latest_score}/100 (평균: {avg_score}/100)")
+            
+            results[country_name] = {
+                "score": latest_score,
+                "avg_7d": avg_score,
+                "data": interest_over_time
+            }
+            
+            time.sleep(1)  # Rate limit 방지
+            
+        except Exception as e:
+            print(f"    ❌ {country_name} 오류: {e}")
+            results[country_name] = None
+            continue
+    
+    return results
 
 def load_history():
     """기존 히스토리 로드"""
@@ -185,10 +202,7 @@ def save_history(google_data, youtube_data):
             "avg_7d": google_data.get("avg_7d") if google_data else None,
             "top_regions": google_data.get("top_regions") if google_data else {}
         },
-        "youtube": {
-            "score": youtube_data.get("score") if youtube_data else None,
-            "avg_7d": youtube_data.get("avg_7d") if youtube_data else None
-        }
+        "youtube": youtube_data if youtube_data else {}
     }
     
     history.append(entry)
@@ -353,16 +367,23 @@ def send_discord(google_data, youtube_data):
     
     lines.append("")
     
-    # YouTube Trends
+    # YouTube Trends (국가별)
     if youtube_data:
-        y_score = youtube_data['score']
-        y_avg = youtube_data['avg_7d']
-        prev_y_score = prev_data.get('youtube', {}).get('score')
-        y_diff = format_diff(y_score, prev_y_score)
-        
         lines.append(f"**🎬 YouTube 검색**")
-        lines.append(f"현재 관심도: `{y_score}/100` {f'({y_diff})' if y_diff else ''}")
-        lines.append(f"7일 평균: `{y_avg}/100`")
+        
+        for country, data in youtube_data.items():
+            if data:
+                y_score = data['score']
+                y_avg = data['avg_7d']
+                
+                # 이전 데이터와 비교
+                prev_y_data = prev_data.get('youtube', {}).get(country, {})
+                prev_y_score = prev_y_data.get('score') if isinstance(prev_y_data, dict) else None
+                y_diff = format_diff(y_score, prev_y_score)
+                
+                lines.append(f"• {country}: `{y_score}/100` {f'({y_diff})' if y_diff else ''} (평균: {y_avg})")
+            else:
+                lines.append(f"• {country}: `데이터 없음`")
     else:
         lines.append("**🎬 YouTube 검색**: 데이터 없음")
     
@@ -434,7 +455,12 @@ def main():
         print("Google 검색 관심도: 데이터 없음")
     
     if youtube_data:
-        print(f"YouTube 검색 관심도: {youtube_data['score']}/100 (7일 평균: {youtube_data['avg_7d']})")
+        print(f"\nYouTube 검색 관심도:")
+        for country, data in youtube_data.items():
+            if data:
+                print(f"  {country}: {data['score']}/100 (평균: {data['avg_7d']})")
+            else:
+                print(f"  {country}: 데이터 없음")
     else:
         print("YouTube 검색 관심도: 데이터 없음")
     
