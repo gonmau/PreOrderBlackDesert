@@ -445,5 +445,112 @@
         "avg_7d": 7
       }
     }
+  },
+  {
+    "timestamp": "2026-01-10T12:03:57.318352",
+    "google": {
+      "score": 100,
+      "avg_7d": 20,
+      "top_regions": {
+        "Algeria": 28,
+        "Argentina": 31,
+        "Australia": 81,
+        "Austria": 62,
+        "Bangladesh": 4,
+        "Belarus": 18,
+        "Belgium": 71,
+        "Brazil": 49,
+        "Bulgaria": 54,
+        "Canada": 81,
+        "Chile": 30,
+        "Colombia": 18,
+        "Costa Rica": 29,
+        "Croatia": 66,
+        "Cyprus": 61,
+        "Czechia": 100,
+        "Denmark": 55,
+        "Dominican Republic": 19,
+        "Ecuador": 11,
+        "Egypt": 19,
+        "Finland": 89,
+        "France": 95,
+        "Georgia": 46,
+        "Germany": 58,
+        "Greece": 44,
+        "Honduras": 42,
+        "Hong Kong": 21,
+        "Hungary": 91,
+        "India": 7,
+        "Indonesia": 7,
+        "Iran": 9,
+        "Iraq": 30,
+        "Ireland": 77,
+        "Israel": 34,
+        "Italy": 55,
+        "Japan": 5,
+        "Kazakhstan": 22,
+        "Latvia": 50,
+        "Libya": 84,
+        "Lithuania": 70,
+        "Malaysia": 23,
+        "Mexico": 19,
+        "Moldova": 49,
+        "Netherlands": 62,
+        "New Zealand": 71,
+        "Norway": 87,
+        "Pakistan": 16,
+        "Peru": 6,
+        "Philippines": 28,
+        "Poland": 81,
+        "Portugal": 96,
+        "Puerto Rico": 87,
+        "Romania": 49,
+        "Russia": 47,
+        "Saudi Arabia": 24,
+        "Serbia": 56,
+        "Singapore": 31,
+        "Slovakia": 40,
+        "South Africa": 18,
+        "South Korea": 24,
+        "Spain": 80,
+        "Sweden": 81,
+        "Switzerland": 55,
+        "Syria": 29,
+        "Taiwan": 3,
+        "Thailand": 28,
+        "Türkiye": 28,
+        "Ukraine": 24,
+        "United Arab Emirates": 26,
+        "United Kingdom": 77,
+        "United States": 74,
+        "Uruguay": 28,
+        "Uzbekistan": 14,
+        "Venezuela": 8,
+        "Vietnam": 11,
+        "Zambia": 49
+      }
+    },
+    "youtube": {
+      "Global": {
+        "score": 0,
+        "avg_7d": 22
+      },
+      "South Korea": {
+        "score": 0,
+        "avg_7d": 18
+      },
+      "United States": {
+        "score": 0,
+        "avg_7d": 20
+      },
+      "Japan": {
+        "score": 0,
+        "avg_7d": 6
+      },
+      "United Kingdom": {
+        "score": 0,
+        "avg_7d": 9
+      }
+    }
   }
 ]
