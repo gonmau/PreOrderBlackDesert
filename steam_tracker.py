@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+def crawl_steam_wishlist(driver):
+    """Steam Wishlist 순위 크롤링"""
+    print("🎮 Steam Wishlist 순위 크롤링 시작...")#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import time
@@ -27,6 +29,7 @@ except ImportError:
 # =============================================================================
 
 STEAM_WISHLIST_URL = "https://store.steampowered.com/search/?filter=popularwishlist"
+STEAMDB_HISTORY_URL = "https://steamdb.info/app/3321460/history/"  # Crimson Desert 업데이트 히스토리
 SEARCH_TERM = "crimson desert"
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 MAX_PAGES = 3
@@ -44,7 +47,53 @@ def setup_driver():
     service = Service(ChromeDriverManager().install())
     return webdriver.Chrome(service=service, options=options)
 
-def crawl_steam_wishlist(driver):
+def check_steamdb_updates(driver):
+    """SteamDB에서 오늘 날짜 업데이트 확인"""
+    print("🔍 SteamDB 업데이트 히스토리 확인 중...")
+    
+    try:
+        driver.get(STEAMDB_HISTORY_URL)
+        time.sleep(4)
+        
+        # 오늘 날짜
+        today = datetime.now().strftime("%d %B %Y")  # 예: "10 January 2026"
+        
+        # 페이지 텍스트에서 오늘 날짜 찾기
+        page_text = driver.find_element(By.TAG_NAME, "body").text
+        
+        # 오늘 날짜가 포함되어 있으면
+        if today in page_text:
+            # 업데이트 항목 찾기
+            try:
+                # SteamDB는 <tr> 테이블 형식
+                rows = driver.find_elements(By.CSS_SELECTOR, "table tbody tr")
+                today_updates = []
+                
+                for row in rows[:10]:  # 최근 10개만 확인
+                    row_text = row.text
+                    if today in row_text:
+                        # 변경 사항 추출
+                        cells = row.find_elements(By.TAG_NAME, "td")
+                        if len(cells) >= 3:
+                            change_type = cells[1].text if len(cells) > 1 else ""
+                            change_value = cells[2].text if len(cells) > 2 else ""
+                            today_updates.append(f"{change_type}: {change_value}")
+                
+                if today_updates:
+                    print(f"  ✅ 오늘 업데이트 발견: {len(today_updates)}건")
+                    return today_updates[:5]  # 최대 5개만
+                else:
+                    print("  ℹ️  오늘 날짜는 있지만 상세 변경사항 파싱 실패")
+                    return ["오늘 업데이트 있음 (상세 확인 필요)"]
+            except:
+                return ["오늘 업데이트 있음"]
+        else:
+            print("  ℹ️  오늘 업데이트 없음")
+            return None
+            
+    except Exception as e:
+        print(f"  ⚠️  SteamDB 확인 오류: {e}")
+        return None
     """Steam Wishlist 순위 크롤링"""
     print("🎮 Steam Wishlist 순위 크롤링 시작...")
     
@@ -188,7 +237,7 @@ def format_diff(current, previous):
     else:
         return "="
 
-def send_discord(rank):
+def send_discord(rank, steamdb_updates=None):
     """Discord로 결과 전송 (그래프 포함)"""
     if not DISCORD_WEBHOOK:
         print("⚠️  DISCORD_WEBHOOK 환경변수 없음")
@@ -208,6 +257,12 @@ def send_discord(rank):
     
     if not rank:
         desc += "\n\n⚠️  상위 75개 게임 내에서 발견되지 않았습니다."
+    
+    # SteamDB 업데이트 정보 추가
+    if steamdb_updates:
+        desc += "\n\n🔔 **오늘의 SteamDB 업데이트**:"
+        for update in steamdb_updates:
+            desc += f"\n• {update}"
     
     # 그래프 생성
     graph_buf = create_rank_graph()
@@ -253,7 +308,12 @@ def main():
     driver = setup_driver()
     
     try:
+        # 1. Wishlist 순위 확인
         rank = crawl_steam_wishlist(driver)
+        
+        # 2. SteamDB 업데이트 확인
+        steamdb_updates = check_steamdb_updates(driver)
+        
     finally:
         driver.quit()
     
@@ -266,11 +326,18 @@ def main():
     print("=" * 60)
     print(f"Steam Wishlist 순위: {rank if rank else '찾을 수 없음'}위")
     
+    if steamdb_updates:
+        print(f"\nSteamDB 업데이트: {len(steamdb_updates)}건")
+        for update in steamdb_updates:
+            print(f"  • {update}")
+    else:
+        print("\nSteamDB 업데이트: 없음")
+    
     # 히스토리 저장
     save_history(rank)
     
     # Discord 전송
-    send_discord(rank)
+    send_discord(rank, steamdb_updates)
 
 if __name__ == "__main__":
     main()
