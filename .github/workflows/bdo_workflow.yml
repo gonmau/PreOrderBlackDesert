@@ -23,7 +23,7 @@ jobs:
     
     - name: Install Dependencies
       run: |
-        pip install selenium webdriver-manager requests matplotlib
+        pip install requests matplotlib
     
     - name: Run BDO Tracker
       env:
