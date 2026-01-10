@@ -342,5 +342,108 @@
         "avg_7d": 9
       }
     }
+  },
+  {
+    "timestamp": "2026-01-10T11:59:43.485237",
+    "google": {
+      "score": 66,
+      "avg_7d": 20,
+      "top_regions": {
+        "Algeria": 27,
+        "Argentina": 33,
+        "Australia": 83,
+        "Austria": 62,
+        "Belarus": 19,
+        "Belgium": 75,
+        "Bosnia & Herzegovina": 37,
+        "Brazil": 50,
+        "Bulgaria": 47,
+        "Canada": 84,
+        "Chile": 32,
+        "China": 16,
+        "Colombia": 12,
+        "Costa Rica": 29,
+        "Croatia": 65,
+        "Cyprus": 67,
+        "Czechia": 100,
+        "Denmark": 61,
+        "Dominican Republic": 17,
+        "Egypt": 19,
+        "El Salvador": 33,
+        "Finland": 86,
+        "France": 99,
+        "Georgia": 45,
+        "Germany": 59,
+        "Greece": 45,
+        "Hong Kong": 18,
+        "Hungary": 95,
+        "India": 7,
+        "Indonesia": 8,
+        "Iran": 9,
+        "Iraq": 14,
+        "Ireland": 76,
+        "Israel": 37,
+        "Italy": 53,
+        "Japan": 5,
+        "Jordan": 21,
+        "Kazakhstan": 14,
+        "Latvia": 42,
+        "Libya": 46,
+        "Lithuania": 75,
+        "Malaysia": 26,
+        "Mexico": 19,
+        "Moldova": 45,
+        "Morocco": 8,
+        "Netherlands": 62,
+        "New Zealand": 72,
+        "Nigeria": 5,
+        "Norway": 92,
+        "Pakistan": 15,
+        "Peru": 10,
+        "Philippines": 30,
+        "Poland": 79,
+        "Portugal": 96,
+        "Puerto Rico": 79,
+        "Romania": 58,
+        "Russia": 49,
+        "Saudi Arabia": 24,
+        "Serbia": 47,
+        "Singapore": 34,
+        "Slovakia": 57,
+        "South Africa": 21,
+        "South Korea": 26,
+        "Spain": 81,
+        "Sweden": 81,
+        "Switzerland": 56,
+        "Taiwan": 4,
+        "Thailand": 28,
+        "Türkiye": 29,
+        "Ukraine": 25,
+        "United Arab Emirates": 26,
+        "United Kingdom": 80,
+        "United States": 73,
+        "Venezuela": 11,
+        "Vietnam": 11
+      }
+    },
+    "youtube": {
+      "Global": {
+        "score": 52,
+        "avg_7d": 23
+      },
+      "South Korea": {
+        "score": 0,
+        "avg_7d": 1
+      },
+      "United States": {
+        "score": 69,
+        "avg_7d": 21
+      },
+      "Japan": null,
+      "United Kingdom": {
+        "score": 0,
+        "avg_7d": 7
+      }
+    }
   }
 ]
