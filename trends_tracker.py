@@ -274,11 +274,33 @@ def send_discord(google_data, youtube_data):
         lines.append(f"현재 관심도: `{g_score}/100` {f'({g_diff})' if g_diff else ''}")
         lines.append(f"7일 평균: `{g_avg}/100`")
         
-        # Top 지역
+        # 지역별 관심도
         if google_data.get('top_regions'):
-            lines.append(f"\n**인기 지역 Top 3:**")
-            for idx, (region, score) in enumerate(list(google_data['top_regions'].items())[:3], 1):
-                lines.append(f"{idx}. {region}: `{score}/100`")
+            regions = google_data['top_regions']
+            
+            # 주요 시장 (미국, 영국, 일본, 한국)
+            major_markets = {
+                'South Korea': regions.get('South Korea', 0),
+                'United States': regions.get('United States', 0),
+                'United Kingdom': regions.get('United Kingdom', 0),
+                'Japan': regions.get('Japan', 0)
+            }
+            
+            lines.append(f"\n**📍 주요 시장:**")
+            for country, score in major_markets.items():
+                if score > 0:
+                    lines.append(f"• {country}: `{score}/100`")
+                else:
+                    lines.append(f"• {country}: `데이터 없음`")
+            
+            # Top 3 (주요 시장 제외)
+            top_others = {k: v for k, v in regions.items() 
+                         if k not in major_markets.keys()}
+            
+            if top_others:
+                lines.append(f"\n**🏆 기타 인기 지역 Top 3:**")
+                for idx, (region, score) in enumerate(list(top_others.items())[:3], 1):
+                    lines.append(f"{idx}. {region}: `{score}/100`")
     else:
         lines.append("**🔍 Google 검색**: 데이터 없음")
     
