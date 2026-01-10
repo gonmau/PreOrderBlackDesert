@@ -179,7 +179,12 @@ def send_discord(results, combined_avg):
         d_part = f"{curr_d or '-'}{'(' + d_diff + ')' if d_diff else ''}"
         c_part = f"{curr_combined or '-'}{'(' + c_diff + ')' if c_diff else ''}"
         
-        lines.append(f"**{c}**: S `{s_part}` / D `{d_part}` → `{c_part}`")
+        store_url = URLS.get(c)
+        country_label = f"[{c}]({store_url})" if store_url else c
+
+        lines.append(
+            f"**{country_label}**: S `{s_part}` / D `{d_part}` → `{c_part}`"
+        )    
 
     # 평균 변동폭
     prev_combined_avg = prev_run['averages'].get('combined') if prev_run else None
