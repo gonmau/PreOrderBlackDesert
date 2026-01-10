@@ -69,20 +69,39 @@ def get_google_trends():
         print(f"  ✅ 현재 점수: {latest_score}/100")
         print(f"  📊 7일 평균: {avg_score}/100")
         
-        # 지역별 관심도 (Top 5)
+        # 지역별 관심도
         try:
-            interest_by_region = pytrends.interest_by_region(resolution='COUNTRY', inc_low_vol=True, inc_geo_code=False)
+            print("  🌍 지역별 데이터 수집 시도...")
+            interest_by_region = pytrends.interest_by_region(
+                resolution='COUNTRY', 
+                inc_low_vol=True,  # 낮은 검색량도 포함
+                inc_geo_code=False
+            )
             
-            # 디버깅: 실제 국가명 출력
-            print(f"  🌍 감지된 국가 수: {len(interest_by_region)}")
-            top_10 = interest_by_region.sort_values(by=KEYWORD, ascending=False).head(10)
-            print(f"  🔝 Top 10 국가:")
-            for country, score in top_10[KEYWORD].items():
-                print(f"    - {country}: {score}")
-            
-            top_regions_dict = top_10[KEYWORD].to_dict()
+            if interest_by_region.empty:
+                print("  ⚠️  지역별 데이터가 비어있음")
+                top_regions_dict = {}
+            else:
+                # 디버깅: 실제 국가명 출력
+                print(f"  🌍 감지된 국가 수: {len(interest_by_region)}")
+                
+                # 0보다 큰 값만 필터링
+                filtered = interest_by_region[interest_by_region[KEYWORD] > 0]
+                print(f"  🌍 데이터가 있는 국가 수: {len(filtered)}")
+                
+                top_10 = filtered.sort_values(by=KEYWORD, ascending=False).head(10)
+                
+                print(f"  🔝 Top 10 국가:")
+                for country, score in top_10[KEYWORD].items():
+                    print(f"    - '{country}': {score}")
+                
+                # 전체 Top 10을 딕셔너리로 저장
+                top_regions_dict = top_10[KEYWORD].to_dict()
+                
         except Exception as e:
             print(f"  ⚠️  지역별 데이터 수집 오류: {e}")
+            import traceback
+            traceback.print_exc()
             top_regions_dict = {}
         
         return {
