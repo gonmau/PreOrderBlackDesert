@@ -26,8 +26,8 @@ except ImportError:
 # 설정
 # =============================================================================
 
-STEAM_CHARTS_URL = "https://steamcharts.com/top"
 BDO_STEAM_ID = "582660"  # Black Desert Online Steam App ID
+STEAM_API_URL = f"https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid={BDO_STEAM_ID}"
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 
 # =============================================================================
