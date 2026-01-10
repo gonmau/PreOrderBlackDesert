@@ -26,7 +26,8 @@ except ImportError:
 # 설정
 # =============================================================================
 
-MMO_POPULATION_URL = "https://mmo-population.com/today"
+STEAM_CHARTS_URL = "https://steamcharts.com/top"
+BDO_STEAM_ID = "582660"  # Black Desert Online Steam App ID
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 
 # =============================================================================
@@ -43,58 +44,51 @@ def setup_driver():
     return webdriver.Chrome(service=service, options=options)
 
 def crawl_mmo_rank(driver):
-    """MMO Populations 사이트에서 검은사막 순위 크롤링"""
-    print("🎮 MMO 인기 순위 크롤링 시작...")
+    """Steam Charts에서 검은사막 순위 크롤링"""
+    print("🎮 Steam 동접자 순위 크롤링 시작...")
     
     try:
-        driver.get(MMO_POPULATION_URL)
-        time.sleep(5)  # 페이지 로딩 대기
+        driver.get(STEAM_CHARTS_URL)
+        time.sleep(4)
         
-        # 테이블에서 모든 게임 찾기
-        rows = driver.find_elements(By.CSS_SELECTOR, "tr")
+        # 순위 테이블 찾기
+        rows = driver.find_elements(By.CSS_SELECTOR, "table tbody tr")
         
-        rank = 0
-        bdo_data = None
-        
-        for row in rows:
+        for idx, row in enumerate(rows, 1):
             try:
                 # 게임 이름 찾기
-                game_name_elem = row.find_element(By.CSS_SELECTOR, "td")
-                game_name = game_name_elem.text.lower()
+                game_link = row.find_element(By.CSS_SELECTOR, "td.game-name a")
+                game_name = game_link.text.strip()
                 
-                if "black desert" in game_name:
-                    # 순위 추출 (첫 번째 td의 텍스트에서)
-                    rank_text = row.find_element(By.CSS_SELECTOR, "td:first-child").text
-                    rank = int(rank_text.strip().replace("#", "").replace(".", ""))
-                    
-                    # 플레이어 수 추출
+                # Black Desert 찾기
+                if "Black Desert" in game_name:
+                    # 현재 플레이어 수 추출
                     try:
-                        player_elem = row.find_element(By.CSS_SELECTOR, "td:nth-child(2)")
-                        player_text = player_elem.text.replace(",", "")
-                        players = int(player_text)
+                        current_players_elem = row.find_element(By.CSS_SELECTOR, "td:nth-child(2)")
+                        players_text = current_players_elem.text.strip().replace(",", "")
+                        players = int(players_text) if players_text.isdigit() else None
                     except:
                         players = None
                     
                     bdo_data = {
-                        "rank": rank,
+                        "rank": idx,
                         "players": players,
-                        "game_name": game_name_elem.text.strip()
+                        "game_name": game_name
                     }
                     
-                    print(f"  ✅ 발견: {rank}위 - {players:,} 플레이어")
-                    break
+                    print(f"  ✅ 발견: {idx}위 - {players:,}명 동접" if players else f"  ✅ 발견: {idx}위")
+                    return bdo_data
                     
             except Exception as e:
                 continue
         
-        if not bdo_data:
-            print("  ❌ Black Desert를 찾을 수 없음")
-            return None
-        
-        return bdo_data
+        print("  ❌ Black Desert를 찾을 수 없음")
+        return None
         
     except Exception as e:
         print(f"  ❌ 크롤링 오류: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 def load_history():
@@ -167,8 +161,8 @@ def create_rank_graph():
     
     plt.gca().invert_yaxis()  # 순위는 낮을수록 좋음
     plt.xlabel('Date', fontsize=12, fontweight='bold')
-    plt.ylabel('MMO Ranking', fontsize=12, fontweight='bold')
-    plt.title('Black Desert Online - MMO Popularity Ranking Trend', 
+    plt.ylabel('Steam Ranking', fontsize=12, fontweight='bold')
+    plt.title('Black Desert Online - Steam Ranking Trend', 
              fontsize=14, fontweight='bold', pad=20)
     plt.legend(loc='best', fontsize=11)
     plt.grid(True, alpha=0.3)
@@ -244,19 +238,19 @@ def send_discord(data):
             elif player_change < 0:
                 players_display += f" ({format_number(player_change)})"
         
-        desc = f"**MMO 인기 순위**: {rank_display}\n"
-        desc += f"**활성 플레이어**: {players_display}"
+        desc = f"**Steam 게임 순위**: {rank_display}\n"
+        desc += f"**현재 동접자**: {players_display}"
     
     # 그래프 생성
     graph_buf = create_rank_graph()
     
     # Discord embed
     embed = {
-        "title": "🎮 Black Desert Online - MMO 순위",
+        "title": "🎮 Black Desert Online - Steam 순위",
         "description": desc,
         "color": 0xFF6B00,
         "timestamp": datetime.utcnow().isoformat(),
-        "footer": {"text": "MMO Popularity Tracker"}
+        "footer": {"text": "Steam Charts Tracker"}
     }
     
     try:
@@ -282,7 +276,7 @@ def send_discord(data):
 
 def main():
     print("=" * 60)
-    print("🎮 Black Desert Online MMO 순위 추적")
+    print("🎮 Black Desert Online Steam 순위 추적")
     print("=" * 60)
     
     start_time = time.time()
@@ -302,8 +296,8 @@ def main():
     print("=" * 60)
     
     if data:
-        print(f"MMO 순위: {data['rank']}위")
-        print(f"활성 플레이어: {data['players']:,}명")
+        print(f"Steam 순위: {data['rank']}위")
+        print(f"현재 동접자: {data['players']:,}명")
     else:
         print("데이터를 가져올 수 없습니다.")
     
