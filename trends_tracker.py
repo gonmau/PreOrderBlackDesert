@@ -46,11 +46,11 @@ def get_google_trends():
         # Pytrends 초기화
         pytrends = TrendReq(hl='en-US', tz=360)
         
-        # 검색어 설정 (최근 7일)
+        # YouTube 검색 트렌드
         pytrends.build_payload(
             kw_list=[KEYWORD],
             cat=0,
-            timeframe='now 7-d',  # 최근 7일
+            timeframe='now 1-m',  # 7일 → 1개월로 변경
             geo='',  # 전세계
             gprop=''  # 일반 Google 검색
         )
@@ -168,7 +168,7 @@ def get_youtube_trends():
                     pytrends.build_payload(
                         kw_list=[keyword],
                         cat=0,
-                        timeframe='now 7-d',
+                        timeframe='now 1-m',  # 7일 → 1개월로 변경
                         geo=geo_code,
                         gprop='youtube'
                     )
@@ -180,16 +180,18 @@ def get_youtube_trends():
                         latest_score = int(interest_over_time[keyword].iloc[-1])
                         avg_score = int(interest_over_time[keyword].mean())
                         
-                        if latest_score > 0:  # 0보다 큰 경우만
-                            country_scores.append({
-                                'keyword': keyword,
-                                'score': latest_score,
-                                'avg': avg_score
-                            })
-                            keywords_used.append(keyword)
+                        # 0점이라도 데이터가 있으면 저장
+                        country_scores.append({
+                            'keyword': keyword,
+                            'score': latest_score,
+                            'avg': avg_score
+                        })
+                        keywords_used.append(keyword)
+                        
+                        if latest_score > 0:
                             print(f"      ✅ {latest_score}/100 (평균: {avg_score})")
                         else:
-                            print(f"      ⚠️  0점")
+                            print(f"      ℹ️  0점 (하지만 데이터 있음)")
                     else:
                         print(f"      ⚠️  데이터 없음")
                     
@@ -380,9 +382,9 @@ def send_discord(google_data, youtube_data):
         prev_g_score = prev_data.get('google', {}).get('score')
         g_diff = format_diff(g_score, prev_g_score)
         
-        lines.append(f"**🔍 Google 검색**")
+        lines.append(f"**🔍 Google 검색 (최근 1개월)**")
         lines.append(f"현재 관심도: `{g_score}/100` {f'({g_diff})' if g_diff else ''}")
-        lines.append(f"7일 평균: `{g_avg}/100`")
+        lines.append(f"평균: `{g_avg}/100`")
         
         # 지역별 관심도
         if google_data.get('top_regions'):
@@ -438,7 +440,7 @@ def send_discord(google_data, youtube_data):
     
     # YouTube Trends (국가별)
     if youtube_data:
-        lines.append(f"**🎬 YouTube 검색**")
+        lines.append(f"**🎬 YouTube 검색 (최근 1개월)**")
         
         for country, data in youtube_data.items():
             if data:
@@ -471,7 +473,7 @@ def send_discord(google_data, youtube_data):
             else:
                 lines.append(f"• {country}: `데이터 없음`")
     else:
-        lines.append("**🎬 YouTube 검색**: 데이터 없음")
+        lines.append("**🎬 YouTube 검색 (최근 1개월)**: 데이터 없음")
     
     desc = "\n".join(lines)
     
