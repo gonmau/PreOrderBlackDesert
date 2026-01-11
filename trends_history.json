@@ -809,5 +809,13 @@
       "avg_7d": 17,
       "top_regions": {}
     }
+  },
+  {
+    "timestamp": "2026-01-11T02:35:19.303553",
+    "google": {
+      "score": 85,
+      "avg_7d": 17,
+      "top_regions": {}
+    }
   }
 ]
