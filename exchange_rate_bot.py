@@ -54,7 +54,7 @@ class ExchangeRateBot:
     
     def send_discord_message(self, exchange_info):
         """디스코드 메시지 전송"""
-        if not DISCORD_WEBHOOK_URL:
+        if not DISCORD_WEBHOOK:
             print("Discord Webhook URL이 설정되지 않았습니다.")
             print(f"현재 환율: {exchange_info['rate']:,.2f}원")
             return
