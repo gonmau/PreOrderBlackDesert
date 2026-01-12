@@ -2,7 +2,7 @@ name: Trends Tracker
 
 on:
   schedule:
-    - cron: '0 */12 * * *'  # 12시간마다 실행
+    - cron: '0 23 * * *'  # 매일 아침 8시 (KST)
   workflow_dispatch:        # 수동 실행 가능
 
 permissions:
