@@ -148,7 +148,7 @@ SEARCH_TERMS = {
     "중국": ["crimson desert", "红之沙漠"],
     "한국": ["crimson desert", "붉은사막"],
     "홍콩": ["crimson desert", "赤血沙漠"],
-    "대만": ["crimson desert", "緋紅沙漠"],
+    "대만": ["crimson desert", "赤血沙漠"],
 }
 
 # 모든 국가에 대해 기본 검색어 추가
