@@ -1,4 +1,3 @@
-#다음 코드를 github에 붙여 넣을 수 있게 문법에 맞게 해서 줘. 
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -29,15 +28,38 @@ except ImportError:
 # =============================================================================
 
 MARKET_WEIGHTS = {
+    # 기존 국가들
     "미국": 30.0, "영국": 8.5, "일본": 8.0, "독일": 6.5, "프랑스": 6.0,
     "캐나다": 4.5, "스페인": 4.0, "이탈리아": 3.5, "호주": 3.0, "한국": 2.8,
     "브라질": 2.5, "멕시코": 2.0, "네덜란드": 1.8, "사우디아라비아": 1.5,
-    "아랍에미리트": 1.2, "중국": 0.2
+    "아랍에미리트": 1.2, "중국": 0.2,
+    
+    # 새로 추가되는 국가들
+    # Europe & Middle East
+    "슬로바키아": 0.3, "남아공": 0.8, "슬로베니아": 0.3, "루마니아": 0.6,
+    "포르투갈": 0.8, "우크라이나": 0.5, "핀란드": 0.8, "네팔": 0.2,
+    "폴란드": 1.2, "덴마크": 0.9, "사우디": 1.5, "영국": 8.5,
+    "헝가리": 0.5, "스위스": 1.0, "폴란드": 1.2, "스페인": 4.0,
+    "독일": 6.5, "그리스": 0.5, "체코": 0.7, "노르웨이": 0.8,
+    "이탈리아": 3.5, "스웨덴": 1.0,
+    
+    # Americas
+    "우루과이": 0.3, "칠레": 0.8, "브라질": 2.5, "콜롬비아": 0.7,
+    "아르헨티나": 0.9, "멕시코": 2.0, "도미니카": 0.2, "미국": 30.0,
+    "나이지리아": 0.4, "캐나다": 4.5, "볼리비아": 0.2, "온두라스": 0.2,
+    "과테말라": 0.2, "페루": 0.4,
+    
+    # Asia & Oceania
+    "태국": 0.9, "뉴질랜드": 0.6, "인도": 2.0, "한국": 2.8,
+    "베트남": 0.7, "마카오": 0.2, "브루나이": 0.1, "라오스": 0.1,
+    "필리핀": 0.6, "호주": 3.0, "싱가포르": 0.8, "말레이시아": 0.7,
+    "홍콩": 0.9, "일본": 8.0, "대만": 1.0, "인도네시아": 0.8
 }
 
 COUNTRIES = sorted(MARKET_WEIGHTS.keys(), key=lambda x: MARKET_WEIGHTS[x], reverse=True)
 
 URLS = {
+    # 기존 URL들
     "미국": "https://store.playstation.com/en-us/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
     "영국": "https://store.playstation.com/en-gb/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
     "프랑스": "https://store.playstation.com/fr-fr/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
@@ -53,34 +75,94 @@ URLS = {
     "멕시코": "https://store.playstation.com/es-mx/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
     "중국": "https://store.playstation.com/zh-cn/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
     "네덜란드": "https://store.playstation.com/nl-nl/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-    "한국": "https://store.playstation.com/ko-kr/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1"
+    "한국": "https://store.playstation.com/ko-kr/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    
+    # 새로 추가되는 URL들
+    # Europe & Middle East
+    "슬로바키아": "https://store.playstation.com/sk-sk/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "남아공": "https://store.playstation.com/en-za/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "슬로베니아": "https://store.playstation.com/sl-si/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "루마니아": "https://store.playstation.com/ro-ro/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "포르투갈": "https://store.playstation.com/pt-pt/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "우크라이나": "https://store.playstation.com/uk-ua/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "핀란드": "https://store.playstation.com/fi-fi/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "폴란드": "https://store.playstation.com/pl-pl/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "덴마크": "https://store.playstation.com/da-dk/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "헝가리": "https://store.playstation.com/hu-hu/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "스위스": "https://store.playstation.com/de-ch/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "그리스": "https://store.playstation.com/el-gr/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "체코": "https://store.playstation.com/cs-cz/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "노르웨이": "https://store.playstation.com/no-no/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "스웨덴": "https://store.playstation.com/sv-se/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    
+    # Americas
+    "우루과이": "https://store.playstation.com/es-uy/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "칠레": "https://store.playstation.com/es-cl/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "콜롬비아": "https://store.playstation.com/es-co/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "아르헨티나": "https://store.playstation.com/es-ar/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "페루": "https://store.playstation.com/es-pe/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "볼리비아": "https://store.playstation.com/es-bo/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "과테말라": "https://store.playstation.com/es-gt/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "온두라스": "https://store.playstation.com/es-hn/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    
+    # Asia & Oceania
+    "태국": "https://store.playstation.com/th-th/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "뉴질랜드": "https://store.playstation.com/en-nz/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "인도": "https://store.playstation.com/en-in/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "베트남": "https://store.playstation.com/vi-vn/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "싱가포르": "https://store.playstation.com/en-sg/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "말레이시아": "https://store.playstation.com/en-my/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "홍콩": "https://store.playstation.com/zh-hk/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "대만": "https://store.playstation.com/zh-tw/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "인도네시아": "https://store.playstation.com/id-id/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+    "필리핀": "https://store.playstation.com/en-ph/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
 }
 
 FLAGS = {
-    "미국": "🇺🇸",
-    "영국": "🇬🇧",
-    "일본": "🇯🇵",
-    "독일": "🇩🇪",
-    "프랑스": "🇫🇷",
-    "캐나다": "🇨🇦",
-    "스페인": "🇪🇸",
-    "이탈리아": "🇮🇹",
-    "호주": "🇦🇺",
-    "한국": "🇰🇷",
-    "브라질": "🇧🇷",
-    "멕시코": "🇲🇽",
-    "네덜란드": "🇳🇱",
-    "사우디아라비아": "🇸🇦",
-    "아랍에미리트": "🇦🇪",
-    "중국": "🇨🇳",
+    # 기존 플래그들
+    "미국": "🇺🇸", "영국": "🇬🇧", "일본": "🇯🇵", "독일": "🇩🇪",
+    "프랑스": "🇫🇷", "캐나다": "🇨🇦", "스페인": "🇪🇸", "이탈리아": "🇮🇹",
+    "호주": "🇦🇺", "한국": "🇰🇷", "브라질": "🇧🇷", "멕시코": "🇲🇽",
+    "네덜란드": "🇳🇱", "사우디아라비아": "🇸🇦", "아랍에미리트": "🇦🇪", "중국": "🇨🇳",
+    
+    # 새로 추가되는 플래그들
+    "슬로바키아": "🇸🇰", "남아공": "🇿🇦", "슬로베니아": "🇸🇮", "루마니아": "🇷🇴",
+    "포르투갈": "🇵🇹", "우크라이나": "🇺🇦", "핀란드": "🇫🇮", "네팔": "🇳🇵",
+    "폴란드": "🇵🇱", "덴마크": "🇩🇰", "헝가리": "🇭🇺", "스위스": "🇨🇭",
+    "그리스": "🇬🇷", "체코": "🇨🇿", "노르웨이": "🇳🇴", "스웨덴": "🇸🇪",
+    "우루과이": "🇺🇾", "칠레": "🇨🇱", "콜롬비아": "🇨🇴", "아르헨티나": "🇦🇷",
+    "도미니카": "🇩🇴", "나이지리아": "🇳🇬", "볼리비아": "🇧🇴", "온두라스": "🇭🇳",
+    "과테말라": "🇬🇹", "페루": "🇵🇪", "태국": "🇹🇭", "뉴질랜드": "🇳🇿",
+    "인도": "🇮🇳", "베트남": "🇻🇳", "마카오": "🇲🇴", "브루나이": "🇧🇳",
+    "라오스": "🇱🇦", "필리핀": "🇵🇭", "싱가포르": "🇸🇬", "말레이시아": "🇲🇾",
+    "홍콩": "🇭🇰", "대만": "🇹🇼", "인도네시아": "🇮🇩",
 }
 
 SEARCH_TERMS = {
-    "미국": ["crimson desert"], "영국": ["crimson desert"], "프랑스": ["crimson desert"], "독일": ["crimson desert"],
-    "일본": ["crimson desert", "紅の砂漠"],
+    # 기존 검색어들
+    "미국": ["crimson desert"], "영국": ["crimson desert"], "프랑스": ["crimson desert"],
+    "독일": ["crimson desert"], "일본": ["crimson desert", "紅の砂漠"],
     "스페인": ["crimson desert"], "캐나다": ["crimson desert"], "호주": ["crimson desert"],
-    "이탈리아": ["crimson desert"], "브라질": ["crimson desert"], "사우디아라비아": ["crimson desert"], "아랍에미리트": ["crimson desert"],
-    "멕시코": ["crimson desert"], "중국": ["crimson desert", "红之沙漠"], "네덜란드": ["crimson desert"], "한국": ["crimson desert", "붉은사막"]
+    "이탈리아": ["crimson desert"], "브라질": ["crimson desert"], "사우디아라비아": ["crimson desert"],
+    "아랍에미리트": ["crimson desert"], "멕시코": ["crimson desert"],
+    "중국": ["crimson desert", "红之沙漠"], "네덜란드": ["crimson desert"],
+    "한국": ["crimson desert", "붉은사막"],
+    
+    # 새로운 국가들 (기본적으로 "crimson desert" 사용)
+    "슬로바키아": ["crimson desert"], "남아공": ["crimson desert"], "슬로베니아": ["crimson desert"],
+    "루마니아": ["crimson desert"], "포르투갈": ["crimson desert"], "우크라이나": ["crimson desert"],
+    "핀란드": ["crimson desert"], "네팔": ["crimson desert"], "폴란드": ["crimson desert"],
+    "덴마크": ["crimson desert"], "헝가리": ["crimson desert"], "스위스": ["crimson desert"],
+    "그리스": ["crimson desert"], "체코": ["crimson desert"], "노르웨이": ["crimson desert"],
+    "스웨덴": ["crimson desert"], "우루과이": ["crimson desert"], "칠레": ["crimson desert"],
+    "콜롬비아": ["crimson desert"], "아르헨티나": ["crimson desert"], "도미니카": ["crimson desert"],
+    "나이지리아": ["crimson desert"], "볼리비아": ["crimson desert"], "온두라스": ["crimson desert"],
+    "과테말라": ["crimson desert"], "페루": ["crimson desert"], "태국": ["crimson desert"],
+    "뉴질랜드": ["crimson desert"], "인도": ["crimson desert"], "베트남": ["crimson desert"],
+    "마카오": ["crimson desert"], "브루나이": ["crimson desert"], "라오스": ["crimson desert"],
+    "필리핀": ["crimson desert"], "싱가포르": ["crimson desert"], "말레이시아": ["crimson desert"],
+    "홍콩": ["crimson desert", "紅之沙漠"], "대만": ["crimson desert", "緋紅沙漠"],
+    "인도네시아": ["crimson desert"],
 }
 
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
@@ -112,16 +194,21 @@ def crawl_country(driver, country, url):
                 try:
                     link_el = item if item.tag_name == 'a' else item.find_element(By.CSS_SELECTOR, "a")
                     href = link_el.get_attribute("href")
-                    if not href or "/product/" not in href: continue
+                    if not href or "/product/" not in href:
+                        continue
                     total_rank += 1
                     label = (link_el.get_attribute("aria-label") or "").lower()
                     text = (item.text or "").lower()
                     if any(t.lower() in label or t.lower() in text for t in terms):
                         found_products.append({'rank': total_rank})
-                        if len(found_products) >= 2: break
-                except: continue
-            if len(found_products) >= 2: break
-        except: continue
+                        if len(found_products) >= 2:
+                            break
+                except:
+                    continue
+            if len(found_products) >= 2:
+                break
+        except:
+            continue
 
     res = {"standard": None, "deluxe": None}
     if len(found_products) >= 2:
@@ -157,20 +244,26 @@ def format_diff(current, previous):
     """순위 수치 증감 포맷팅"""
     if previous is None or current is None:
         return ""
-    diff = previous - current # 작아질수록 순위 상승
-    if diff > 0: return f"▲{diff}"
-    elif diff < 0: return f"▼{abs(diff)}"
-    else: return "0"
+    diff = previous - current  # 작아질수록 순위 상승
+    if diff > 0:
+        return f"▲{diff}"
+    elif diff < 0:
+        return f"▼{abs(diff)}"
+    else:
+        return "0"
 
 def send_discord(results, combined_avg):
-    if not DISCORD_WEBHOOK: return
+    if not DISCORD_WEBHOOK:
+        return
     
     history_file = "rank_history.json"
     history = []
     if os.path.exists(history_file):
         with open(history_file, "r", encoding="utf-8") as f:
-            try: history = json.load(f)
-            except: history = []
+            try:
+                history = json.load(f)
+            except:
+                history = []
 
     # 이전 실행 데이터
     prev_run = history[-1] if history else None
@@ -207,7 +300,6 @@ def send_discord(results, combined_avg):
             f"**{country_label}**: S `{s_part}` / D `{d_part}` → `{c_part}`"
         )
 
-
     # 평균 변동폭
     prev_combined_avg = prev_run['averages'].get('combined') if prev_run else None
     combined_diff_text = format_diff(combined_avg, prev_combined_avg)
@@ -241,13 +333,16 @@ def send_discord(results, combined_avg):
             plt.title("Crimson Desert - PlayStation Store Ranking", fontsize=14, fontweight='bold')
             plt.xlabel('Date', fontsize=12)
             plt.ylabel('Rank (weighted avg)', fontsize=12)
-            plt.legend(); plt.grid(True, alpha=0.2)
+            plt.legend()
+            plt.grid(True, alpha=0.2)
             plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
             plt.gcf().autofmt_xdate()
             plt.tight_layout()
             
             img_buf = BytesIO()
-            plt.savefig(img_buf, format='png', dpi=150); img_buf.seek(0); plt.close()
+            plt.savefig(img_buf, format='png', dpi=150)
+            img_buf.seek(0)
+            plt.close()
 
     payload = {"payload_json": json.dumps({
         "embeds": [{
@@ -274,13 +369,18 @@ def main():
     
     try:
         for country in COUNTRIES:
-            url = URLS[country]
-            results[country] = crawl_country(driver, country, url)
+            url = URLS.get(country)
+            if url:
+                print(f"크롤링 중: {country}...")
+                results[country] = crawl_country(driver, country, url)
+            else:
+                print(f"URL 없음: {country}")
+                results[country] = {"standard": None, "deluxe": None}
     finally:
         driver.quit()
     
     elapsed = (time.time() - start_time) / 60
-    print(f"\n⏱️  소요 시간: {elapsed:.1f}분")
+    print(f"\n⏱️ 소요 시간: {elapsed:.1f}분")
     
     # Combined 평균 계산
     combined_avg = calculate_avg(results)
