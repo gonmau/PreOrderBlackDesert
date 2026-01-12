@@ -2,7 +2,7 @@ name: Steam Wishlist Tracker
 
 on:
   schedule:
-    - cron: '0 */2 * * *'  # 2시간마다 실행
+    - cron: '0 22 * * *'  # 오전 7시 1회 실행
   workflow_dispatch:      # 수동 실행 가능
 
 permissions:
