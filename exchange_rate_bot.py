@@ -4,7 +4,7 @@ from datetime import datetime
 import pytz
 
 # 환경 변수
-DISCORD_WEBHOOK_URL = os.environ.get('DISCORD_WEBHOOK_URL')
+DISCORD_WEBHOOK = os.environ.get('DISCORD_WEBHOOK')
 
 class ExchangeRateBot:
     def __init__(self):
