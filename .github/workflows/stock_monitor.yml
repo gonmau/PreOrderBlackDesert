@@ -1,0 +1,66 @@
+name: Stock Monitor
+
+on:
+  schedule:
+    # 오전 8시 5분 (KST = UTC+9, 즉 UTC 23:05 전날)
+    - cron: '5 23 * * 0-4'  # 일-목 23:05 UTC (월-금 08:05 KST)
+    
+    # 오전 9시부터 오후 4시까지 1시간 간격 모니터링
+    - cron: '0 0-7 * * 1-5'  # 월-금 00:00-07:00 UTC (09:00-16:00 KST)
+    
+  workflow_dispatch:  # 수동 실행 가능
+
+jobs:
+  morning-report:
+    runs-on: ubuntu-latest
+    # 오전 8시 5분에만 실행
+    if: github.event.schedule == '5 23 * * 0-4' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        pip install requests pytz
+        
+    - name: Run morning report
+      env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
+        KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
+        DART_API_KEY: ${{ secrets.DART_API_KEY }}
+      run: |
+        python stock_monitor.py morning
+
+  price-monitor:
+    runs-on: ubuntu-latest
+    # 9시-16시 1시간 간격 모니터링
+    if: github.event.schedule == '0 0-7 * * 1-5' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        pip install requests pytz
+        
+    - name: Run price monitor
+      env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
+        KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
+        DART_API_KEY: ${{ secrets.DART_API_KEY }}
+      run: |
+        python stock_monitor.py monitor
