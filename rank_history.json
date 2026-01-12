@@ -1876,7 +1876,11 @@
     }
   },
   {
+<<<<<<< Updated upstream
     "timestamp": "2026-01-12T10:52:46.913875",
+=======
+    "timestamp": "2026-01-12T10:57:55.193257",
+>>>>>>> Stashed changes
     "averages": {
       "combined": 13.663560111835977
     },
