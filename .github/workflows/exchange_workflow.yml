@@ -26,6 +26,6 @@ jobs:
         
     - name: Send exchange rate to Discord
       env:
-        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       run: |
         python exchange_rate_bot.py
