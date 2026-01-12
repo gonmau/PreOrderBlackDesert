@@ -115,7 +115,7 @@ class ExchangeRateBot:
         }
         
         try:
-            res = requests.post(DISCORD_WEBHOOK_URL, json=data)
+            res = requests.post(DISCORD_WEBHOOK, json=data)
             if res.status_code == 204:
                 print("메시지 전송 성공")
             else:
