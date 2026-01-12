@@ -302,10 +302,10 @@ def main():
     try:
         for country in COUNTRIES:
             url = URLS.get(country)
-        if not url:
-            print(f"⚠️ PS Store 미지원 국가 스킵: {country}")
-            results[country] = {"standard": None, "deluxe": None}
-            continue
+            if not url:
+                print(f"⚠️ PS Store 미지원 국가 스킵: {country}")
+                results[country] = {"standard": None, "deluxe": None}
+                continue
 
         results[country] = crawl_country(driver, country, url)
     finally:
