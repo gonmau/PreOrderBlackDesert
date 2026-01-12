@@ -2,8 +2,7 @@ name: Exchange Rate Alert
 
 on:
   schedule:
-    # 매일 아침 8시 (KST = UTC+9, 즉 UTC 23:00 전날)
-    - cron: '0 23 * * *'  # 매일 23:00 UTC = 08:00 KST
+    - cron: '0 23,11 * * *'
     
   workflow_dispatch:  # 수동 실행 가능
 
