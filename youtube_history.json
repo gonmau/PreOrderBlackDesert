@@ -1429,5 +1429,40 @@
         "comments": 240
       }
     }
+  },
+  {
+    "timestamp": "2026-01-15T23:25:51.451227",
+    "videos": {
+      "출시일 공개 트레일러": {
+        "title": "Crimson Desert - Release Date Reveal Trailer",
+        "views": 197447,
+        "likes": 6334,
+        "comments": 734
+      },
+      "50분 게임플레이": {
+        "title": "Crimson Desert – 50 Minutes of Early Gameplay",
+        "views": 1305177,
+        "likes": 29215,
+        "comments": 3962
+      },
+      "개발자 인터뷰": {
+        "title": "Crimson Desert Exclusive Interview | New Game+ Showcase 2026",
+        "views": 28405,
+        "likes": 708,
+        "comments": 351
+      },
+      "All new Boss Play": {
+        "title": "CRIMSON DESERT ALL New Gameplay Boss Fights 4K DEMO | ULTRA Realistic Graphics (4K 60FPS HDR)",
+        "views": 136224,
+        "likes": 2352,
+        "comments": 420
+      },
+      "IGN Map size": {
+        "title": "Crimson Desert's Open World Map is Bigger Than Skyrim and Red Dead Redemption 2 - IGN Daily Fix",
+        "views": 53113,
+        "likes": 925,
+        "comments": 240
+      }
+    }
   }
 ]
