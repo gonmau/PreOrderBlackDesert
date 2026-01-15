@@ -40,11 +40,16 @@ def check_steamdb_updates(driver):
     
     try:
         driver.get(STEAMDB_HISTORY_URL)
-        time.sleep(5)
+        print("  ⏳ 페이지 로딩 대기 중... (10초)")
+        time.sleep(10)  # 더 긴 대기 시간
         
         # 페이지 스크롤 (테이블 로딩 대기)
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(3)
+        
+        # JavaScript 실행 완료 대기
+        driver.execute_script("return document.readyState") 
+        time.sleep(2)
         
         # 오늘 날짜 (여러 형식 시도) - 영어 로케일 강제
         import locale
@@ -91,36 +96,84 @@ def check_steamdb_updates(driver):
         
         # 테이블에서 업데이트 찾기
         try:
+            # 먼저 페이지 전체 텍스트로 오늘 날짜 확인
+            page_text = driver.find_element(By.TAG_NAME, "body").text
+            print(f"  📄 페이지 텍스트 길이: {len(page_text)} 문자")
+            
+            # 오늘 날짜 또는 최근 시간이 있는지 확인
+            has_today = any(date_format.lower() in page_text.lower() for date_format in today_formats)
+            has_recent = any(rel_time in page_text.lower() for rel_time in relative_times)
+            
+            if has_today:
+                print(f"  ✅ 페이지에 오늘 날짜 발견!")
+            if has_recent:
+                print(f"  ✅ 페이지에 최근 업데이트 시간 발견!")
+            
+            if not has_today and not has_recent:
+                print("  ℹ️  페이지에 오늘 날짜나 최근 시간이 없음")
+                return None
+            
             # 여러 선택자 시도 - SteamDB는 특수한 구조 사용
             selectors = [
+                "*",  # 모든 요소 (폴백)
+                "div",  # 모든 div
                 ".history-change",  # SteamDB의 실제 히스토리 항목 클래스
                 "div[class*='change']",
+                "div[class*='history']",
                 "table.table-products tbody tr",
-                "table.history-table tbody tr",
-                "#table-history tbody tr",
                 "table tbody tr",
-                ".history-row",
-                "tr[data-time]",  # 시간 속성이 있는 행
+                "tr",
             ]
             
             rows = []
             for selector in selectors:
                 try:
-                    rows = driver.find_elements(By.CSS_SELECTOR, selector)
-                    if rows and len(rows) > 0:
-                        print(f"  ✓ '{selector}' 선택자로 {len(rows)}개 행 발견")
-                        break
+                    elements = driver.find_elements(By.CSS_SELECTOR, selector)
+                    if elements and len(elements) > 0:
+                        # 텍스트가 있는 요소만 필터링
+                        rows = [el for el in elements if el.text.strip() and len(el.text.strip()) > 10]
+                        if len(rows) > 0:
+                            print(f"  ✓ '{selector}' 선택자로 {len(rows)}개 유효한 요소 발견")
+                            break
                 except:
                     continue
             
             if not rows:
-                print("  ❌ 테이블 행을 찾을 수 없음")
-                # 페이지 HTML 샘플 저장 (디버깅용)
-                if DEBUG_MODE:
-                    with open("steamdb_debug.html", "w", encoding="utf-8") as f:
-                        f.write(driver.page_source[:5000])
-                    print("  📄 디버그 HTML 저장: steamdb_debug.html")
-                return None
+                print("  ⚠️  구조화된 요소를 찾을 수 없음 - 페이지 전체 텍스트 사용")
+                
+                # 최후의 수단: 페이지 전체에서 날짜가 포함된 줄 찾기
+                lines = page_text.split('\n')
+                today_updates = []
+                
+                for line in lines:
+                    line = line.strip()
+                    if not line or len(line) < 10:
+                        continue
+                    
+                    # 오늘 날짜 또는 최근 시간 포함 여부
+                    has_date = any(date_format.lower() in line.lower() for date_format in today_formats)
+                    has_time = any(rel_time in line.lower() for rel_time in relative_times)
+                    
+                    if has_date or has_time:
+                        # 시간 정보 필터링 (24시간 이내만)
+                        if "hour" in line.lower():
+                            import re
+                            match = re.search(r'(\d+)\s+hours?\s+ago', line.lower())
+                            if match and int(match.group(1)) >= 24:
+                                continue  # 24시간 이상은 제외
+                        
+                        today_updates.append({
+                            "timestamp": "오늘",
+                            "info": line[:200]
+                        })
+                        print(f"  ✅ 업데이트 발견: {line[:80]}")
+                
+                if today_updates:
+                    print(f"  ✅ 총 {len(today_updates)}건의 오늘 업데이트 발견")
+                    return today_updates
+                else:
+                    print("  ℹ️  업데이트를 파싱하지 못함")
+                    return None
             
             today_updates = []
             
