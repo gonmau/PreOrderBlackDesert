@@ -29,27 +29,62 @@ def setup_driver():
     options.add_argument('--headless=new')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--disable-blink-features=AutomationControlled')
     options.add_argument('--window-size=1920,1080')
-    options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+    
+    # 더 현실적인 User-Agent
+    options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36')
+    
+    # 봇 감지 우회
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option('useAutomationExtension', False)
+    
+    # Cloudflare 우회를 위한 추가 설정
+    prefs = {
+        "profile.default_content_setting_values.notifications": 2,
+        "profile.default_content_settings.popups": 0,
+    }
+    options.add_experimental_option("prefs", prefs)
+    
     service = Service(ChromeDriverManager().install())
-    return webdriver.Chrome(service=service, options=options)
+    driver = webdriver.Chrome(service=service, options=options)
+    
+    # webdriver 속성 숨기기
+    driver.execute_cdp_cmd('Network.setUserAgentOverride', {
+        "userAgent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+    })
+    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+    
+    return driver
 
 def check_steamdb_updates(driver):
     """SteamDB에서 오늘 날짜 업데이트 확인"""
     print("🔍 SteamDB 업데이트 히스토리 확인 중...")
     
     try:
+        print("  ⏳ 페이지 접속 중...")
         driver.get(STEAMDB_HISTORY_URL)
-        print("  ⏳ 페이지 로딩 대기 중... (10초)")
-        time.sleep(10)  # 더 긴 대기 시간
+        
+        # Cloudflare/봇 체크 대기
+        print("  ⏳ 초기 로딩 대기 중... (15초)")
+        time.sleep(15)
+        
+        # 페이지가 실제로 로드되었는지 확인
+        page_text_initial = driver.find_element(By.TAG_NAME, "body").text
+        print(f"  📄 초기 텍스트 길이: {len(page_text_initial)} 문자")
+        
+        if len(page_text_initial) < 500:
+            print("  ⚠️  페이지가 제대로 로드되지 않음 - 추가 대기")
+            time.sleep(10)
         
         # 페이지 스크롤 (테이블 로딩 대기)
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(3)
+        driver.execute_script("window.scrollTo(0, 0);")
+        time.sleep(2)
         
         # JavaScript 실행 완료 대기
-        driver.execute_script("return document.readyState") 
-        time.sleep(2)
+        driver.execute_script("return document.readyState")
         
         # 오늘 날짜 (여러 형식 시도) - 영어 로케일 강제
         import locale
@@ -98,7 +133,22 @@ def check_steamdb_updates(driver):
         try:
             # 먼저 페이지 전체 텍스트로 오늘 날짜 확인
             page_text = driver.find_element(By.TAG_NAME, "body").text
-            print(f"  📄 페이지 텍스트 길이: {len(page_text)} 문자")
+            print(f"  📄 최종 페이지 텍스트 길이: {len(page_text)} 문자")
+            
+            # 디버깅: 페이지 텍스트 샘플 출력
+            if DEBUG_MODE:
+                print(f"  📝 페이지 텍스트 샘플 (처음 500자):\n{page_text[:500]}\n")
+            
+            # 페이지가 너무 짧으면 로딩 실패
+            if len(page_text) < 500:
+                print("  ❌ 페이지 로딩 실패 - Cloudflare 또는 봇 감지 가능성")
+                print("  💡 팁: headless 모드를 끄고 수동으로 테스트해보세요")
+                
+                # 에러 페이지 내용 저장
+                with open("steamdb_error.txt", "w", encoding="utf-8") as f:
+                    f.write(page_text)
+                print("  📄 에러 내용 저장: steamdb_error.txt")
+                return None
             
             # 오늘 날짜 또는 최근 시간이 있는지 확인
             has_today = any(date_format.lower() in page_text.lower() for date_format in today_formats)
