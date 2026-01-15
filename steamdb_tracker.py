@@ -46,18 +46,32 @@ def check_steamdb_updates(driver):
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(3)
         
-        # 오늘 날짜 (여러 형식 시도)
+        # 오늘 날짜 (여러 형식 시도) - 영어 로케일 강제
+        import locale
+        try:
+            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+        except:
+            try:
+                locale.setlocale(locale.LC_TIME, 'C')
+            except:
+                pass
+        
         now = datetime.now()
+        
+        # SteamDB는 "15 January 2026" 형식 사용 (일에 선행 0 없음)
+        today_day = now.day  # 15
+        today_month = now.strftime("%B")  # "January"
+        today_year = now.year  # 2026
+        
         today_formats = [
-            now.strftime("%d %B %Y"),      # "15 January 2026"
+            f"{today_day} {today_month} {today_year}",  # "15 January 2026"
+            f"{today_day:02d} {today_month} {today_year}",  # "15 January 2026"
+            now.strftime("%d %B %Y"),      # 폴백
             now.strftime("%d %b %Y"),       # "15 Jan 2026"
-            now.strftime("%-d %B %Y"),      # "15 January 2026" (선행 0 제거)
-            now.strftime("%-d %b %Y"),      # "15 Jan 2026" (선행 0 제거)
-            now.strftime("%Y-%m-%d"),       # "2026-01-15"
-            now.strftime("%d/%m/%Y"),       # "15/01/2026"
         ]
         
-        # 상대 시간도 체크 (SteamDB는 "2 hours ago" 같은 형식 사용)
+        # 상대 시간도 체크 (SteamDB는 "5 hours ago" 같은 형식 사용)
+        # 24시간 이내면 오늘 업데이트로 간주
         relative_times = [
             "hour ago", "hours ago", 
             "minute ago", "minutes ago", 
@@ -77,8 +91,10 @@ def check_steamdb_updates(driver):
         
         # 테이블에서 업데이트 찾기
         try:
-            # 여러 선택자 시도
+            # 여러 선택자 시도 - SteamDB는 특수한 구조 사용
             selectors = [
+                ".history-change",  # SteamDB의 실제 히스토리 항목 클래스
+                "div[class*='change']",
                 "table.table-products tbody tr",
                 "table.history-table tbody tr",
                 "#table-history tbody tr",
@@ -122,8 +138,43 @@ def check_steamdb_updates(driver):
                         print(f"  🔍 행 {idx}: {row_text[:120]}")
                     
                     # 오늘 날짜 또는 상대 시간이 포함된 행 찾기
-                    is_today = any(date_format in row_text for date_format in today_formats)
-                    is_recent = any(rel_time in row_text.lower() for rel_time in relative_times)
+                    # "5 hours ago · 15 January 2026" 형식 체크
+                    is_today = False
+                    is_recent = False
+                    
+                    # 1. 오늘 날짜가 정확히 포함되어 있는지 확인
+                    for date_format in today_formats:
+                        if date_format.lower() in row_text.lower():
+                            is_today = True
+                            if DEBUG_MODE:
+                                print(f"    ✓ 날짜 매칭: '{date_format}'")
+                            break
+                    
+                    # 2. 상대 시간 확인 (24시간 이내)
+                    text_lower = row_text.lower()
+                    for rel_time in relative_times:
+                        if rel_time in text_lower:
+                            # "X hours ago" 형식에서 숫자 추출
+                            if "hour" in rel_time:
+                                try:
+                                    # "20 hours ago"에서 20 추출
+                                    import re
+                                    match = re.search(r'(\d+)\s+hours?\s+ago', text_lower)
+                                    if match:
+                                        hours = int(match.group(1))
+                                        if hours < 24:  # 24시간 이내만
+                                            is_recent = True
+                                            if DEBUG_MODE:
+                                                print(f"    ✓ 시간 매칭: {hours} hours ago")
+                                            break
+                                except:
+                                    is_recent = True
+                                    break
+                            else:
+                                is_recent = True
+                                if DEBUG_MODE:
+                                    print(f"    ✓ 시간 매칭: '{rel_time}'")
+                                break
                     
                     if is_today or is_recent:
                         # 셀 데이터 추출
