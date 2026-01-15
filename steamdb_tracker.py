@@ -18,6 +18,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 STEAMDB_HISTORY_URL = "https://steamdb.info/app/3321460/history/"
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
+DEBUG_MODE = True  # 디버깅 모드
 
 # =============================================================================
 # 함수들
@@ -29,6 +30,7 @@ def setup_driver():
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--window-size=1920,1080')
+    options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
     service = Service(ChromeDriverManager().install())
     return webdriver.Chrome(service=service, options=options)
 
@@ -42,85 +44,165 @@ def check_steamdb_updates(driver):
         
         # 페이지 스크롤 (테이블 로딩 대기)
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(2)
+        time.sleep(3)
         
         # 오늘 날짜 (여러 형식 시도)
         now = datetime.now()
         today_formats = [
-            now.strftime("%d %B %Y"),      # "10 January 2026"
-            now.strftime("%d %b %Y"),       # "10 Jan 2026"
-            now.strftime("%Y-%m-%d"),       # "2026-01-10"
-            now.strftime("%d/%m/%Y"),       # "10/01/2026"
+            now.strftime("%d %B %Y"),      # "15 January 2026"
+            now.strftime("%d %b %Y"),       # "15 Jan 2026"
+            now.strftime("%-d %B %Y"),      # "15 January 2026" (선행 0 제거)
+            now.strftime("%-d %b %Y"),      # "15 Jan 2026" (선행 0 제거)
+            now.strftime("%Y-%m-%d"),       # "2026-01-15"
+            now.strftime("%d/%m/%Y"),       # "15/01/2026"
+        ]
+        
+        # 상대 시간도 체크 (SteamDB는 "2 hours ago" 같은 형식 사용)
+        relative_times = [
+            "hour ago", "hours ago", 
+            "minute ago", "minutes ago", 
+            "just now", "a moment ago",
+            "second ago", "seconds ago"
         ]
         
         print(f"  📅 오늘 날짜: {today_formats[0]}")
         
+        # 디버깅: 페이지 스크린샷 저장
+        if DEBUG_MODE:
+            try:
+                driver.save_screenshot("steamdb_page.png")
+                print("  📸 스크린샷 저장: steamdb_page.png")
+            except:
+                pass
+        
         # 테이블에서 업데이트 찾기
         try:
-            # SteamDB 히스토리 테이블
-            rows = driver.find_elements(By.CSS_SELECTOR, "table.table-products tbody tr")
+            # 여러 선택자 시도
+            selectors = [
+                "table.table-products tbody tr",
+                "table.history-table tbody tr",
+                "#table-history tbody tr",
+                "table tbody tr",
+                ".history-row",
+                "tr[data-time]",  # 시간 속성이 있는 행
+            ]
+            
+            rows = []
+            for selector in selectors:
+                try:
+                    rows = driver.find_elements(By.CSS_SELECTOR, selector)
+                    if rows and len(rows) > 0:
+                        print(f"  ✓ '{selector}' 선택자로 {len(rows)}개 행 발견")
+                        break
+                except:
+                    continue
             
             if not rows:
-                # 다른 선택자 시도
-                rows = driver.find_elements(By.CSS_SELECTOR, "table tbody tr")
-            
-            print(f"  📊 테이블 행 수: {len(rows)}")
+                print("  ❌ 테이블 행을 찾을 수 없음")
+                # 페이지 HTML 샘플 저장 (디버깅용)
+                if DEBUG_MODE:
+                    with open("steamdb_debug.html", "w", encoding="utf-8") as f:
+                        f.write(driver.page_source[:5000])
+                    print("  📄 디버그 HTML 저장: steamdb_debug.html")
+                return None
             
             today_updates = []
             
-            for row in rows[:20]:  # 최근 20개만 확인
+            print(f"  🔍 {len(rows)}개 행 검사 중...")
+            
+            for idx, row in enumerate(rows[:50]):  # 최근 50개 확인
                 try:
-                    row_text = row.text
+                    row_text = row.text.strip()
                     
-                    # 오늘 날짜가 포함된 행 찾기
+                    if not row_text or len(row_text) < 3:  # 빈 행 스킵
+                        continue
+                    
+                    # 디버깅: 처음 5개 행 출력
+                    if DEBUG_MODE and idx < 5:
+                        print(f"  🔍 행 {idx}: {row_text[:120]}")
+                    
+                    # 오늘 날짜 또는 상대 시간이 포함된 행 찾기
                     is_today = any(date_format in row_text for date_format in today_formats)
+                    is_recent = any(rel_time in row_text.lower() for rel_time in relative_times)
                     
-                    if is_today:
+                    if is_today or is_recent:
                         # 셀 데이터 추출
                         cells = row.find_elements(By.TAG_NAME, "td")
                         
-                        if len(cells) >= 3:
-                            # 일반적으로: [시간] [변경항목] [변경값] [...]
-                            timestamp = cells[0].text.strip() if len(cells) > 0 else ""
-                            change_key = cells[1].text.strip() if len(cells) > 1 else ""
-                            change_old = cells[2].text.strip() if len(cells) > 2 else ""
-                            change_new = cells[3].text.strip() if len(cells) > 3 else ""
+                        if len(cells) >= 2:
+                            # 모든 셀 텍스트 수집
+                            cell_texts = [cell.text.strip() for cell in cells if cell.text.strip()]
                             
-                            # 업데이트 정보 구성
-                            if change_new and change_new != change_old:
-                                update_info = f"{change_key}: {change_old} → {change_new}"
-                            elif change_key and change_old:
-                                update_info = f"{change_key}: {change_old}"
+                            # 일반적으로: [시간] [변경항목] [이전값] [새값]
+                            timestamp = cell_texts[0] if len(cell_texts) > 0 else "오늘"
+                            
+                            # 나머지 정보 결합
+                            if len(cell_texts) > 1:
+                                change_info = " | ".join(cell_texts[1:])
                             else:
-                                update_info = row_text[:100]  # 전체 텍스트 일부
+                                change_info = row_text
                             
-                            today_updates.append({
+                            # 너무 긴 정보는 자르기
+                            if len(change_info) > 200:
+                                change_info = change_info[:200] + "..."
+                            
+                            update_entry = {
                                 "timestamp": timestamp,
-                                "info": update_info
-                            })
+                                "info": change_info
+                            }
                             
-                            print(f"  ✅ 업데이트 발견: {update_info[:80]}")
+                            # 중복 체크
+                            if update_entry not in today_updates:
+                                today_updates.append(update_entry)
+                                print(f"  ✅ 업데이트 발견: [{timestamp}] {change_info[:70]}")
+                        else:
+                            # 셀이 적으면 전체 텍스트 사용
+                            update_entry = {
+                                "timestamp": "오늘",
+                                "info": row_text[:200]
+                            }
+                            if update_entry not in today_updates:
+                                today_updates.append(update_entry)
+                                print(f"  ✅ 업데이트 발견 (단순): {row_text[:70]}")
+                            
                 except Exception as e:
+                    if DEBUG_MODE and idx < 5:  # 처음 몇 개만 에러 출력
+                        print(f"  ⚠️  행 {idx} 처리 오류: {e}")
                     continue
             
             if today_updates:
                 print(f"  ✅ 총 {len(today_updates)}건의 오늘 업데이트 발견")
                 return today_updates
             else:
-                print("  ℹ️  오늘 업데이트 없음")
+                print("  ℹ️  테이블에서 오늘 업데이트를 찾지 못함")
+                
+                # 폴백: 페이지 전체 텍스트 검사
+                try:
+                    page_text = driver.find_element(By.TAG_NAME, "body").text
+                    print(f"  📄 페이지 전체 텍스트 길이: {len(page_text)} 문자")
+                    
+                    # 오늘 날짜 검색
+                    for date_format in today_formats:
+                        if date_format in page_text:
+                            print(f"  ⚠️  페이지에 '{date_format}' 발견 - 파싱 로직 확인 필요")
+                            return [{"timestamp": "오늘", "info": "업데이트 감지됨 (파싱 실패, 수동 확인 필요)"}]
+                    
+                    # 상대 시간 검색
+                    for rel_time in relative_times:
+                        if rel_time in page_text.lower():
+                            print(f"  ⚠️  페이지에 '{rel_time}' 발견 - 파싱 로직 확인 필요")
+                            return [{"timestamp": "최근", "info": "최근 업데이트 감지됨 (파싱 실패, 수동 확인 필요)"}]
+                    
+                    print("  ℹ️  페이지 전체에서도 오늘 날짜/최근 시간을 찾지 못함")
+                except Exception as e:
+                    print(f"  ⚠️  페이지 텍스트 검사 실패: {e}")
+                
                 return None
                 
         except Exception as e:
             print(f"  ⚠️  테이블 파싱 오류: {e}")
-            
-            # 폴백: 페이지 전체 텍스트에서 오늘 날짜 찾기
-            page_text = driver.find_element(By.TAG_NAME, "body").text
-            
-            for date_format in today_formats:
-                if date_format in page_text:
-                    print(f"  ⚠️  오늘 날짜 '{date_format}' 발견했지만 상세 파싱 실패")
-                    return [{"timestamp": "오늘", "info": "업데이트 있음 (상세 확인 필요)"}]
-            
+            import traceback
+            traceback.print_exc()
             return None
             
     except Exception as e:
@@ -147,7 +229,8 @@ def save_history(updates):
     entry = {
         "timestamp": datetime.now().isoformat(),
         "date": datetime.now().strftime("%Y-%m-%d"),
-        "updates": updates if updates else []
+        "updates": updates if updates else [],
+        "found_updates": len(updates) if updates else 0
     }
     
     history.append(entry)
@@ -241,6 +324,11 @@ def main():
     
     # Discord 전송
     send_discord(updates)
+    
+    print("\n" + "=" * 60)
+    print("완료! SteamDB URL을 직접 확인하려면:")
+    print(f"{STEAMDB_HISTORY_URL}")
+    print("=" * 60)
 
 if __name__ == "__main__":
     main()
