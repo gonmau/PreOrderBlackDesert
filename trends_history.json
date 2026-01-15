@@ -965,5 +965,13 @@
   {
     "timestamp": "2026-01-15T14:01:33.474283",
     "google": null
+  },
+  {
+    "timestamp": "2026-01-15T21:30:28.728162",
+    "google": {
+      "score": 34,
+      "avg_7d": 17,
+      "top_regions": {}
+    }
   }
 ]
