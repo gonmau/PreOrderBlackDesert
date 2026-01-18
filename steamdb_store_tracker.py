@@ -373,15 +373,22 @@ def main():
     graph_buffer = create_stats_graph(history)
     
     # Discord Embed
-    stats_text = "📊 **Steam Stats**\n"
-    if wishlist_activity_rank:
-        stats_text += f"⭐ Wishlist Activity: **#{wishlist_activity_rank}**\n"
-    if followers:
-        stats_text += f"👥 Followers: **{followers:,}**\n"
-    if review_stats.get("review_count") is not None and review_stats["review_count"] >= 0:
-        stats_text += f"📝 Reviews: **{review_stats['review_count']:,}**\n"
+    stats_text = ""
+    
+    if wishlist_activity_rank is not None:
+        stats_text += f"⭐ **Wishlist Activity**: #{wishlist_activity_rank}\n"
+    
+    if followers is not None:
+        stats_text += f"👥 **Followers**: {followers:,}\n"
+    
+    if review_stats.get("review_count") is not None:
+        stats_text += f"📝 **Reviews**: {review_stats['review_count']:,}\n"
+    
     if steamspy_stats.get("owners"):
-        stats_text += f"🎮 Owners: **{steamspy_stats['owners']}**\n"
+        stats_text += f"🎮 **Owners**: {steamspy_stats['owners']}\n"
+    
+    if not stats_text:
+        stats_text = "데이터 수집 중...\n"
     
     # 디버깅 출력
     print(f"\n📊 Discord 전송 데이터:")
@@ -389,11 +396,13 @@ def main():
     print(f"  - Followers: {followers}")
     print(f"  - Reviews: {review_stats.get('review_count')}")
     print(f"  - Owners: {steamspy_stats.get('owners')}")
+    print(f"  - Stats Text:\n{stats_text}")
     
     embed = {
         "title": "📊 Crimson Desert Complete Tracker",
         "description": (
             f"📅 **출시일**: 2026-03-19 ({dday})\n\n"
+            f"📊 **Steam Stats**\n"
             f"{stats_text}\n"
             f"📈 **총 {len(history)}개 히스토리**\n\n"
             f"🔗 [Steam]({STEAM_URL}) | [SteamDB]({STEAMDB_URL}) | [Steambase]({STEAMBASE_URL})\n\n"
