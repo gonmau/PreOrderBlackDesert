@@ -114,13 +114,20 @@ def get_steambase_followers():
             print(f"  ⚠️ Steambase 응답 실패: {r.status_code}")
             return None
         
-        # "61,890 community hub followers" 패턴 찾기
-        match = re.search(r'([\d,]+)\s+community hub followers', r.text, re.IGNORECASE)
-        if match:
-            followers_str = match.group(1).replace(',', '')
-            followers = int(followers_str)
-            print(f"  ✅ Followers: {followers:,}")
-            return followers
+        # "It currently has 61,890 community hub followers" 패턴 찾기
+        patterns = [
+            r'It currently has\s+([\d,]+)\s+community hub followers',
+            r'currently has\s+([\d,]+)\s+community hub followers',
+            r'([\d,]+)\s+community hub followers'
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, r.text, re.IGNORECASE)
+            if match:
+                followers_str = match.group(1).replace(',', '')
+                followers = int(followers_str)
+                print(f"  ✅ Followers: {followers:,}")
+                return followers
         
         print(f"  ⚠️ Followers 텍스트를 찾을 수 없음")
         return None
@@ -375,11 +382,11 @@ def main():
     # Discord Embed
     stats_lines = []
     
-    if wishlist_activity_rank is not None:
-        stats_lines.append(f"⭐ **Wishlist Activity**: #{wishlist_activity_rank}")
+    if display_rank is not None:
+        stats_lines.append(f"⭐ **Wishlist Activity**: #{display_rank}")
     
-    if followers is not None:
-        stats_lines.append(f"👥 **Followers**: {followers:,}")
+    if display_followers is not None:
+        stats_lines.append(f"👥 **Followers**: {display_followers:,}")
     
     if review_stats.get("review_count") is not None:
         stats_lines.append(f"📝 **Reviews**: {review_stats['review_count']:,}")
@@ -393,6 +400,8 @@ def main():
     print(f"\n📊 Discord 전송 데이터:")
     print(f"  - Wishlist Activity Rank: {wishlist_activity_rank} (type: {type(wishlist_activity_rank)})")
     print(f"  - Followers: {followers} (type: {type(followers)})")
+    print(f"  - Display Rank (히스토리 포함): {display_rank}")
+    print(f"  - Display Followers (히스토리 포함): {display_followers}")
     print(f"  - Reviews: {review_stats.get('review_count')} (type: {type(review_stats.get('review_count'))})")
     print(f"  - Owners: {steamspy_stats.get('owners')} (type: {type(steamspy_stats.get('owners'))})")
     print(f"  - Stats Lines: {stats_lines}")
