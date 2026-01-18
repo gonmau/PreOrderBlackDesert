@@ -284,7 +284,7 @@ def send_discord(results, combined_avg):
         "raw_results": results
     })
     with open(history_file, "w", encoding="utf-8") as f:
-        json.dump(history[-100:], f, indent=2)
+        json.dump(history[:], f, indent=2)
 
     # 그래프 생성
     img_buf = None
