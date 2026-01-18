@@ -4,5 +4,5 @@
   "gamestop_detected": true,
   "xbox_detected": true,
   "xbox_preorder_open": true,
-  "sop_detected": false
+  "sop_detected": true
 }
