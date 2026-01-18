@@ -109,9 +109,14 @@ def create_wishlist_graph(history):
     if len(history) < 2:
         return None
     
-    # 데이터 준비
-    dates = [datetime.fromisoformat(entry["timestamp"]) for entry in history]
-    wishlists = [entry["wishlist"] for entry in history]
+    # 데이터 준비 - wishlist 키가 있는 항목만 필터링
+    valid_entries = [entry for entry in history if "wishlist" in entry and "timestamp" in entry]
+    
+    if len(valid_entries) < 2:
+        return None
+    
+    dates = [datetime.fromisoformat(entry["timestamp"]) for entry in valid_entries]
+    wishlists = [entry["wishlist"] for entry in valid_entries]
     
     # 그래프 생성
     plt.figure(figsize=(12, 6))
@@ -237,7 +242,8 @@ def main():
 
     # 그래프 생성
     history = load_history()
-    graph_buffer = create_wishlist_graph(history) if len(history) >= 2 else None
+    valid_history = [entry for entry in history if "wishlist" in entry and "timestamp" in entry]
+    graph_buffer = create_wishlist_graph(valid_history) if len(valid_history) >= 2 else None
 
     wishlist_text = f"📊 **Steam 위시리스트**: {wishlist_count:,}개" if wishlist_count else "📊 **Steam 위시리스트**: 수집 실패"
 
@@ -246,7 +252,7 @@ def main():
         "description": (
             f"📅 **출시일**: 2026-03-19 ({dday})\n\n"
             f"{wishlist_text}\n"
-            f"📈 **총 {len(history)}개 히스토리 기록**\n\n"
+            f"📈 **총 {len(valid_history)}개 히스토리 기록**\n\n"
             f"🔗 **플랫폼 바로가기**\n"
             f"[SteamDB]({STEAMDB_URL}) | "
             f"[PlayStation US]({PS_US_CATEGORY_URL}) | "
