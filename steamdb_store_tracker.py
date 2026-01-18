@@ -236,8 +236,10 @@ def create_stats_graph(history):
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
     fig.suptitle('Crimson Desert - Steam Stats History', fontsize=16, fontweight='bold')
     
-    # 1. Wishlist 순위
-    wishlist_data = [(d, e.get("wishlist_rank")) for d, e in zip(dates, valid_entries) if e.get("wishlist_rank")]
+    # 1. Wishlist 순위 (기존 키 호환: rank, wishlist_rank, wishlist)
+    wishlist_data = [(d, e.get("rank") or e.get("wishlist_rank") or e.get("wishlist")) 
+                     for d, e in zip(dates, valid_entries) 
+                     if e.get("rank") or e.get("wishlist_rank") or e.get("wishlist")]
     if wishlist_data:
         d, v = zip(*wishlist_data)
         ax1.plot(d, v, marker='o', linewidth=2, color='#4ECDC4')
@@ -355,9 +357,9 @@ def main():
     review_stats = get_steam_review_stats()
     steamspy_stats = get_steamspy_stats()
     
-    # 통합 stats
+    # 통합 stats (기존 키 이름 호환: rank)
     all_stats = {
-        "wishlist_rank": wishlist_rank,
+        "rank": wishlist_rank,  # 기존 키 이름 'rank' 유지
         "followers": followers,
         **review_stats,
         **steamspy_stats
@@ -391,9 +393,9 @@ def main():
         stats_text += f"⭐ Wishlist: **#{wishlist_rank}**\n"
     if followers:
         stats_text += f"👥 Followers: **{followers:,}**\n"
-    if review_stats["review_count"]:
+    if review_stats.get("review_count") is not None:
         stats_text += f"📝 Reviews: **{review_stats['review_count']:,}**\n"
-    if steamspy_stats["owners"]:
+    if steamspy_stats.get("owners"):
         stats_text += f"🎮 Owners: **{steamspy_stats['owners']}**\n"
     
     embed = {
