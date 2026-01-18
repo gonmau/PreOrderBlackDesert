@@ -7,6 +7,9 @@ on:
     # 오후 7시 (UTC 10시)
     - cron: '0 10 * * *'
   workflow_dispatch:  # 수동 실행 가능
+  push:
+    paths:
+      - 'manual_data.json'  # manual_data.json 변경 시 자동 실행
 
 permissions:
   contents: write
@@ -28,12 +31,22 @@ jobs:
       run: |
         pip install requests matplotlib
     
-    - name: Run SteamDB Store Tracker
+    - name: Try Auto Scraping First
+      id: auto_scrape
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       run: |
-        python steamdb_store_tracker.py
-        echo "Script execution completed"
+        echo "🔄 자동 스크래핑 시도 중..."
+        python steamdb_store_tracker.py || echo "scrape_failed=true" >> $GITHUB_OUTPUT
+      continue-on-error: true
+    
+    - name: Fallback to Manual Data
+      if: steps.auto_scrape.outputs.scrape_failed == 'true' || failure()
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      run: |
+        echo "📝 수동 데이터 방식으로 전환..."
+        python manual_data_tracker.py
     
     - name: Check for changes
       id: check_changes
@@ -53,7 +66,7 @@ jobs:
         git add store_data_history.json
         
         if git diff --staged --quiet; then
-          echo "No changes to commit"
+          echo "변경사항 없음"
           exit 0
         fi
         
