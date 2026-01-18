@@ -1,75 +1,37 @@
-name: SteamDB Store Data Tracker
+name: SteamDB Store Daily Tracker
 
 on:
   schedule:
-    # 오전 7시 (UTC 22시)
-    - cron: '0 22 * * *'
-    # 오후 7시 (UTC 10시)
-    - cron: '0 10 * * *'
-  workflow_dispatch:  # 수동 실행 가능
-  push:
-    paths:
-      - 'manual_data.json'  # manual_data.json 변경 시 자동 실행
-
-permissions:
-  contents: write
+    - cron: "0 22 * * *"  # UTC 22:00 = KST 07:00
+  workflow_dispatch:
 
 jobs:
   track:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-    
-    - name: Install Dependencies
-      run: |
-        pip install requests matplotlib
-    
-    - name: Try Auto Scraping First
-      id: auto_scrape
-      env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-      run: |
-        echo "🔄 자동 스크래핑 시도 중..."
-        python steamdb_store_tracker.py || echo "scrape_failed=true" >> $GITHUB_OUTPUT
-      continue-on-error: true
-    
-    - name: Fallback to Manual Data
-      if: steps.auto_scrape.outputs.scrape_failed == 'true' || failure()
-      env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-      run: |
-        echo "📝 수동 데이터 방식으로 전환..."
-        python manual_data_tracker.py
-    
-    - name: Check for changes
-      id: check_changes
-      run: |
-        if [ -f "store_data_history.json" ]; then
-          echo "file_exists=true" >> $GITHUB_OUTPUT
-        else
-          echo "file_exists=false" >> $GITHUB_OUTPUT
-        fi
-    
-    - name: Commit and Push changes
-      if: steps.check_changes.outputs.file_exists == 'true'
-      run: |
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
-        
-        git add store_data_history.json
-        
-        if git diff --staged --quiet; then
-          echo "변경사항 없음"
-          exit 0
-        fi
-        
-        git commit -m "Update store data history [skip ci]" || exit 0
-        git pull --rebase origin main || exit 0
-        git push origin main || exit 0
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4 matplotlib
+
+      - name: Run SteamDB tracker
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          python steamdb_store_tracker.py
+
+      - name: Commit history data
+        run: |
+          git config --global user.name "steamdb-bot"
+          git config --global user.email "steamdb-bot@users.noreply.github.com"
+          git add steamdb_store_history.json steamdb_store_trend.png
+          git commit -m "Daily SteamDB store update" || echo "No changes"
+          git push
