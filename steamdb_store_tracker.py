@@ -1,162 +1,156 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Crimson Desert Store Tracker
+- SteamDB: 링크 카드만 사용 (차단 회피)
+- PlayStation US: 고정 링크
+- Xbox: 검색 기반 Pre-order 오픈 감지 (정식)
+- GameStop: 검색 기반 감지
+- D-Day 계산 포함
+- 변경 감지 시에만 Discord 알림
+- GitHub Actions Safe
+"""
+
 import json
 import os
+from datetime import datetime, date
 import requests
-from datetime import date
-from urllib.parse import quote_plus
 
-# =========================
+# ======================
 # 기본 설정
-# =========================
-
+# ======================
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 
 APP_NAME = "Crimson Desert"
-STEAM_APP_ID = "3321460"
-
 RELEASE_DATE = date(2026, 3, 19)
+
+STEAMDB_URL = "https://steamdb.info/app/3321460/charts/"
+STEAM_URL = "https://store.steampowered.com/app/3321460"
+PS_US_URL = "https://store.playstation.com/en-us/concept/10010482"
+XBOX_SEARCH_URL = "https://www.xbox.com/en-US/search?q=Crimson+Desert"
+GAMESTOP_SEARCH_URL = "https://www.gamestop.com/search/?q=Crimson+Desert"
 
 STATE_FILE = "store_state.json"
 
-STEAMDB_URL = f"https://steamdb.info/app/{STEAM_APP_ID}/charts/"
-STEAM_URL = f"https://store.steampowered.com/app/{STEAM_APP_ID}"
-PS_US_URL = "https://store.playstation.com/en-us"
-XBOX_SEARCH_URL = "https://www.xbox.com/en-US/search"
-GAMESTOP_SEARCH_URL = "https://www.gamestop.com/search/"
-
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; GitHubActions/1.0)"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
 }
 
-# =========================
+# ======================
 # 유틸
-# =========================
-
+# ======================
 def load_state():
-    default_state = {
-        "gamestop_detected": False,
-        "xbox_detected": False
-    }
-
     if not os.path.exists(STATE_FILE):
-        return default_state
-
+        return {
+            "xbox_preorder_open": False,
+            "gamestop_detected": False
+        }
     with open(STATE_FILE, "r", encoding="utf-8") as f:
-        state = json.load(f)
-
-    # 🔧 누락 키 보정
-    for key, value in default_state.items():
-        if key not in state:
-            state[key] = value
-
-    return state
-
+        return json.load(f)
 
 def save_state(state):
     with open(STATE_FILE, "w", encoding="utf-8") as f:
-        json.dump(state, f, indent=2)
+        json.dump(state, f, indent=2, ensure_ascii=False)
 
-def get_dday_label():
+def calc_dday():
     today = date.today()
     delta = (RELEASE_DATE - today).days
-
     if delta > 0:
         return f"D-{delta}"
     elif delta == 0:
-        return "🎉 TODAY"
+        return "D-DAY"
     else:
-        return "✅ 출시됨"
+        return f"D+{abs(delta)}"
 
-# =========================
-# GameStop 검색 기반 감지
-# =========================
+# ======================
+# Xbox 예구 감지 (검색 기반)
+# ======================
+def detect_xbox_preorder():
+    try:
+        r = requests.get(XBOX_SEARCH_URL, headers=HEADERS, timeout=15)
+        if r.status_code != 200:
+            return False
 
-def check_gamestop():
-    query = quote_plus(APP_NAME)
-    url = f"https://www.google.com/search?q=site:gamestop.com+{query}"
+        text = r.text.lower()
+        keywords = ["pre-order", "preorder", "buy", "purchase"]
 
-    r = requests.get(url, headers=HEADERS, timeout=10)
-    if r.status_code != 200:
+        return any(k in text for k in keywords)
+    except Exception:
         return False
 
-    return "gamestop.com" in r.text.lower()
+# ======================
+# GameStop 검색 감지
+# ======================
+def detect_gamestop():
+    try:
+        r = requests.get(GAMESTOP_SEARCH_URL, headers=HEADERS, timeout=15)
+        if r.status_code != 200:
+            return False
 
-# =========================
-# Xbox 검색 기반 감지
-# =========================
-
-def check_xbox():
-    query = quote_plus(APP_NAME)
-    url = f"https://www.google.com/search?q=site:xbox.com+{query}"
-
-    r = requests.get(url, headers=HEADERS, timeout=10)
-    if r.status_code != 200:
+        text = r.text.lower()
+        return "crimson desert" in text
+    except Exception:
         return False
 
-    return "xbox.com" in r.text.lower()
+# ======================
+# Discord 알림
+# ======================
+def send_discord(message, embed=None):
+    payload = {"content": message}
+    if embed:
+        payload["embeds"] = [embed]
 
-# =========================
-# Discord 전송
-# =========================
+    requests.post(DISCORD_WEBHOOK, json=payload, timeout=10)
 
-def send_discord(message, embed):
-    payload = {
-        "content": message,
-        "embeds": [embed]
-    }
-    requests.post(DISCORD_WEBHOOK, json=payload)
-
-# =========================
+# ======================
 # 메인
-# =========================
-
+# ======================
 def main():
     state = load_state()
-
-    dday = get_dday_label()
-
-    gamestop_open = check_gamestop()
-    xbox_open = check_xbox()
-
+    changed = False
     alerts = []
 
-    if gamestop_open and not state["gamestop_detected"]:
-        alerts.append("🛒 **GameStop 예구 페이지 감지됨**")
-        state["gamestop_detected"] = True
+    # Xbox
+    xbox_open = detect_xbox_preorder()
+    if xbox_open and not state["xbox_preorder_open"]:
+        alerts.append("🟢 **Xbox 예구 오픈 (검색 기반)**")
+        state["xbox_preorder_open"] = True
+        changed = True
 
-    if xbox_open and not state["xbox_detected"]:
-        alerts.append("🟢 **Xbox 스토어 페이지 감지됨**")
-        state["xbox_detected"] = True
+    # GameStop
+    gamestop_open = detect_gamestop()
+    if gamestop_open and not state["gamestop_detected"]:
+        alerts.append("🛒 **GameStop 검색 페이지 감지**")
+        state["gamestop_detected"] = True
+        changed = True
+
+    # 항상 보내는 상태 카드
+    dday = calc_dday()
+    now_utc = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
     embed = {
-        "title": f"📊 {APP_NAME} 스토어 추적",
-        "url": STEAMDB_URL,
-        "color": 0xE74C3C,
-        "fields": [
-            {
-                "name": "📅 출시일",
-                "value": f"2026-03-19 ({dday})",
-                "inline": True
-            },
-            {
-                "name": "🔗 플랫폼 링크",
-                "value": (
-                    f"[SteamDB]({STEAMDB_URL}) | "
-                    f"[PlayStation US]({PS_US_URL}) | "
-                    f"[Xbox]({XBOX_SEARCH_URL}) | "
-                    f"[Steam]({STEAM_URL}) | "
-                    f"[GameStop]({GAMESTOP_SEARCH_URL})"
-                ),
-                "inline": False
-            }
-        ],
-        "footer": {
-            "text": "차단 회피: 검색 기반 감지 / GitHub Actions Safe"
-        }
+        "title": "📊 Crimson Desert 스토어 추적",
+        "description": (
+            f"📅 **출시일**: 2026-03-19 ({dday})\n\n"
+            f"🔗 **플랫폼 바로가기**\n"
+            f"[SteamDB]({STEAMDB_URL}) | "
+            f"[PlayStation US]({PS_US_URL}) | "
+            f"[Xbox]({XBOX_SEARCH_URL}) | "
+            f"[Steam]({STEAM_URL}) | "
+            f"[GameStop 검색]({GAMESTOP_SEARCH_URL})\n\n"
+            f"🟢 **Xbox**: {'예구 오픈' if xbox_open else '미감지'}\n"
+            f"🟢 **GameStop**: {'감지됨' if gamestop_open else '미감지'}\n\n"
+            f"자동 추적 · {now_utc}"
+        ),
+        "color": 0x2ecc71 if xbox_open else 0xe67e22
     }
 
-    content = "\n".join(alerts) if alerts else None
+    if alerts:
+        send_discord("🚨 **스토어 변경 감지 발생**\n" + "\n".join(alerts), embed)
+    else:
+        send_discord("🔔 **Crimson Desert 스토어 상태 업데이트**", embed)
 
-    send_discord(content, embed)
     save_state(state)
 
 if __name__ == "__main__":
