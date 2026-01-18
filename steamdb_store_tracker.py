@@ -3,7 +3,8 @@
 
 """
 Crimson Desert Complete Store Tracker
-- SteamDB Charts: wishlist 순위, wishlist activity, top sellers, followers
+- Steam App Details API: 가격, 리뷰 수, 출시일 확인
+- SteamSpy API: 대략적인 소유자 수 (무료)
 - Xbox: 검색 기반 예구 오픈
 - SOP(State of Play): PlayStation Blog 감지
 - 모든 데이터 히스토리 저장 및 그래프 생성
@@ -15,12 +16,6 @@ import time
 from datetime import datetime, date
 import requests
 from io import BytesIO
-
-# Selenium
-import undetected_chromedriver as uc
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
 # Matplotlib
 try:
@@ -39,8 +34,12 @@ DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 
 RELEASE_DATE = date(2026, 3, 19)
 
-STEAMDB_URL = "https://steamdb.info/app/3321460/charts/"
-STEAM_URL = "https://store.steampowered.com/app/3321460"
+STEAM_APP_ID = "3321460"
+STEAM_APP_DETAILS_URL = f"https://store.steampowered.com/api/appdetails?appids={STEAM_APP_ID}"
+STEAMSPY_URL = f"https://steamspy.com/api.php?request=appdetails&appid={STEAM_APP_ID}"
+STEAM_REVIEWS_URL = f"https://store.steampowered.com/appreviews/{STEAM_APP_ID}?json=1&language=all&purchase_type=all"
+STEAM_URL = f"https://store.steampowered.com/app/{STEAM_APP_ID}"
+STEAMDB_URL = f"https://steamdb.info/app/{STEAM_APP_ID}/charts/"
 
 PS_US_CATEGORY_URL = (
     "https://store.playstation.com/en-us/category/"
@@ -54,114 +53,56 @@ STATE_FILE = "store_state.json"
 HISTORY_FILE = "steam_history.json"
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 }
 
 # ======================
-# Selenium 설정
+# Steam 데이터 수집
 # ======================
-def setup_driver():
-    options = uc.ChromeOptions()
-    options.add_argument('--headless=new')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--disable-gpu')
-    options.add_argument('--window-size=1920,1080')
+def get_steam_stats():
+    """Steam 공식 API와 SteamSpy에서 데이터 수집"""
+    print("🎮 Steam 데이터 수집 중...")
     
-    # undetected-chromedriver로 Cloudflare 우회
-    driver = uc.Chrome(options=options, version_main=None)
-    return driver
-
-# ======================
-# SteamDB 데이터 수집
-# ======================
-def get_steamdb_stats():
-    """SteamDB Charts에서 모든 지표 수집"""
-    print("🎮 SteamDB Charts 데이터 수집 중...")
-    
-    driver = setup_driver()
     stats = {
-        "top_sellers_rank": None,
-        "wishlist_rank": None,
-        "wishlist_activity_rank": None,
-        "followers": None
+        "review_count": None,
+        "positive_reviews": None,
+        "negative_reviews": None,
+        "owners": None,
+        "players_2weeks": None
     }
     
+    # Steam Reviews API
     try:
-        driver.get(STEAMDB_URL)
-        print(f"  ⏳ Cloudflare 우회 대기 (최대 30초)...")
-        
-        # 명시적 대기: ul.app-chart-numbers가 나타날 때까지 최대 30초 대기
-        wait = WebDriverWait(driver, 30)
-        
-        try:
-            chart_list = wait.until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "ul.app-chart-numbers"))
-            )
-            print(f"  ✅ app-chart-numbers 발견!")
-            
-            list_items = chart_list.find_elements(By.TAG_NAME, "li")
-            print(f"  🔍 발견된 차트 항목: {len(list_items)}개")
-            
-            for idx, item in enumerate(list_items):
-                try:
-                    # <strong> 태그에서 숫자 추출
-                    strong = item.find_element(By.TAG_NAME, "strong")
-                    number_text = strong.text.strip().replace('#', '').replace(',', '')
-                    
-                    # 전체 텍스트와 HTML 확인
-                    full_text = item.text.lower()
-                    inner_html = item.get_attribute('innerHTML').lower()
-                    
-                    print(f"  📝 항목 {idx+1}: {item.text[:80]}")
-                    
-                    if "in top sellers" in full_text or "globaltopsellers" in inner_html:
-                        stats["top_sellers_rank"] = int(number_text)
-                        print(f"    ✅ Top Sellers: #{stats['top_sellers_rank']}")
-                    
-                    elif "in top wishlists" in full_text or "mostwished" in inner_html:
-                        stats["wishlist_rank"] = int(number_text)
-                        print(f"    ✅ Wishlist: #{stats['wishlist_rank']}")
-                    
-                    elif "in wishlist activity" in full_text or "wishlistactivity" in inner_html:
-                        stats["wishlist_activity_rank"] = int(number_text)
-                        print(f"    ✅ Wishlist Activity: #{stats['wishlist_activity_rank']}")
-                    
-                    elif "followers" in full_text or "mostfollowed" in inner_html:
-                        stats["followers"] = int(number_text)
-                        print(f"    ✅ Followers: {stats['followers']:,}")
-                
-                except Exception as e:
-                    print(f"    ⚠️ 항목 {idx+1} 파싱 실패: {e}")
-                    continue
-        
-        except Exception as e:
-            print(f"  ❌ app-chart-numbers 타임아웃: {e}")
-            print(f"  ℹ️ 페이지 소스 길이: {len(driver.page_source)} bytes")
-            
-            # 페이지 소스에서 직접 찾기 시도
-            page_source = driver.page_source
-            if "app-chart-numbers" in page_source:
-                print(f"  ⚠️ app-chart-numbers는 소스에 있지만 렌더링 안됨")
-            else:
-                print(f"  ⚠️ app-chart-numbers가 페이지 소스에 없음")
-        
-        # 스크린샷 저장
-        try:
-            screenshot_path = "steamdb_debug.png"
-            driver.save_screenshot(screenshot_path)
-            print(f"  📸 스크린샷 저장: {screenshot_path}")
-        except Exception as e:
-            print(f"  ⚠️ 스크린샷 실패: {e}")
-        
+        print("  📊 Steam Reviews 수집...")
+        r = requests.get(STEAM_REVIEWS_URL, headers=HEADERS, timeout=15)
+        if r.status_code == 200:
+            data = r.json()
+            if 'query_summary' in data:
+                summary = data['query_summary']
+                stats["review_count"] = summary.get('total_reviews', 0)
+                stats["positive_reviews"] = summary.get('total_positive', 0)
+                stats["negative_reviews"] = summary.get('total_negative', 0)
+                print(f"  ✅ 리뷰 수: {stats['review_count']:,}")
+                print(f"    👍 긍정: {stats['positive_reviews']:,} | 👎 부정: {stats['negative_reviews']:,}")
     except Exception as e:
-        print(f"  ❌ SteamDB 수집 오류: {e}")
-        import traceback
-        traceback.print_exc()
-    finally:
-        driver.quit()
+        print(f"  ⚠️ Steam Reviews 실패: {e}")
     
-    print(f"  📊 최종 수집 결과: {stats}")
+    # SteamSpy API (무료, 대략적인 수치)
+    try:
+        print("  📊 SteamSpy 데이터 수집...")
+        r = requests.get(STEAMSPY_URL, headers=HEADERS, timeout=15)
+        if r.status_code == 200:
+            data = r.json()
+            # owners: "0 .. 20,000" 형식
+            owners_str = data.get('owners', '0')
+            stats["owners"] = owners_str
+            stats["players_2weeks"] = data.get('players_2weeks', 0)
+            print(f"  ✅ 소유자: {owners_str}")
+            print(f"  ✅ 최근 2주 플레이어: {stats['players_2weeks']:,}")
+    except Exception as e:
+        print(f"  ⚠️ SteamSpy 실패: {e}")
+    
+    print(f"  📊 Steam 수집 결과: {stats}")
     return stats
 
 # ======================
@@ -208,7 +149,7 @@ def add_history_entry(stats):
 # 그래프 생성
 # ======================
 def create_stats_graph(history):
-    """모든 지표를 한 그래프에 표시"""
+    """리뷰 수와 플레이어 수 그래프"""
     if not HAS_MATPLOTLIB or len(history) < 2:
         return None
     
@@ -219,60 +160,43 @@ def create_stats_graph(history):
     
     dates = [datetime.fromisoformat(e["timestamp"]) for e in valid_entries]
     
-    # 4개의 서브플롯 생성
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
-    fig.suptitle('Crimson Desert - SteamDB Stats History', fontsize=16, fontweight='bold')
+    # 2x1 서브플롯
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+    fig.suptitle('Crimson Desert - Steam Stats History', fontsize=16, fontweight='bold')
     
-    # 1. Top Sellers Rank
-    sellers_data = [(d, e.get("top_sellers_rank")) for d, e in zip(dates, valid_entries) 
-                    if e.get("top_sellers_rank")]
-    if sellers_data:
-        d, v = zip(*sellers_data)
-        ax1.plot(d, v, marker='o', linewidth=2, color='#FF6B6B', label='Top Sellers')
-        ax1.invert_yaxis()
-        ax1.set_title('Top Sellers Rank', fontweight='bold')
-        ax1.set_ylabel('Rank')
+    # 1. 리뷰 수 (긍정/부정)
+    review_data = [(d, e.get("review_count"), e.get("positive_reviews"), e.get("negative_reviews")) 
+                   for d, e in zip(dates, valid_entries) 
+                   if e.get("review_count")]
+    if review_data:
+        d, total, pos, neg = zip(*review_data)
+        ax1.plot(d, total, marker='o', linewidth=2, color='#1B2838', label='Total Reviews')
+        if pos and any(pos):
+            ax1.plot(d, pos, marker='s', linewidth=1.5, color='#5C9F5E', label='Positive', alpha=0.7)
+        if neg and any(neg):
+            ax1.plot(d, neg, marker='s', linewidth=1.5, color='#D75452', label='Negative', alpha=0.7)
+        ax1.set_title('Steam Reviews', fontweight='bold')
+        ax1.set_ylabel('Count')
+        ax1.legend()
         ax1.grid(True, alpha=0.3)
         ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+        ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
     
-    # 2. Wishlist Rank
-    wishlist_data = [(d, e.get("wishlist_rank")) for d, e in zip(dates, valid_entries)
-                     if e.get("wishlist_rank")]
-    if wishlist_data:
-        d, v = zip(*wishlist_data)
-        ax2.plot(d, v, marker='o', linewidth=2, color='#4ECDC4', label='Wishlist')
-        ax2.invert_yaxis()
-        ax2.set_title('Wishlist Rank', fontweight='bold')
-        ax2.set_ylabel('Rank')
+    # 2. 최근 2주 플레이어
+    players_data = [(d, e.get("players_2weeks")) for d, e in zip(dates, valid_entries)
+                    if e.get("players_2weeks")]
+    if players_data:
+        d, v = zip(*players_data)
+        ax2.plot(d, v, marker='o', linewidth=2, color='#4ECDC4', label='Players (2 weeks)')
+        ax2.set_title('Active Players (Last 2 Weeks)', fontweight='bold')
+        ax2.set_ylabel('Count')
+        ax2.legend()
         ax2.grid(True, alpha=0.3)
         ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-    
-    # 3. Wishlist Activity Rank
-    activity_data = [(d, e.get("wishlist_activity_rank")) for d, e in zip(dates, valid_entries)
-                     if e.get("wishlist_activity_rank")]
-    if activity_data:
-        d, v = zip(*activity_data)
-        ax3.plot(d, v, marker='o', linewidth=2, color='#95E1D3', label='Activity')
-        ax3.invert_yaxis()
-        ax3.set_title('Wishlist Activity Rank', fontweight='bold')
-        ax3.set_ylabel('Rank')
-        ax3.grid(True, alpha=0.3)
-        ax3.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-    
-    # 4. Followers
-    followers_data = [(d, e.get("followers")) for d, e in zip(dates, valid_entries)
-                      if e.get("followers")]
-    if followers_data:
-        d, v = zip(*followers_data)
-        ax4.plot(d, v, marker='o', linewidth=2, color='#F38181', label='Followers')
-        ax4.set_title('Followers', fontweight='bold')
-        ax4.set_ylabel('Count')
-        ax4.grid(True, alpha=0.3)
-        ax4.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-        ax4.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
+        ax2.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
     
     # 날짜 레이블 회전
-    for ax in [ax1, ax2, ax3, ax4]:
+    for ax in [ax1, ax2]:
         plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
     
     plt.tight_layout()
@@ -363,9 +287,9 @@ def main():
 
     alerts = []
 
-    # SteamDB 데이터 수집
-    steam_stats = get_steamdb_stats()
-    if any(steam_stats.values()):
+    # Steam 데이터 수집
+    steam_stats = get_steam_stats()
+    if any(v for v in steam_stats.values() if v):
         history = add_history_entry(steam_stats)
         print(f"✅ 히스토리 저장 완료 (총 {len(history)}개)")
 
@@ -389,15 +313,16 @@ def main():
     graph_buffer = create_stats_graph(history)
 
     # 통계 텍스트
-    stats_text = "📊 **SteamDB Stats**\n"
-    if steam_stats["top_sellers_rank"]:
-        stats_text += f"🔥 Top Sellers: **#{steam_stats['top_sellers_rank']}**\n"
-    if steam_stats["wishlist_rank"]:
-        stats_text += f"⭐ Wishlist: **#{steam_stats['wishlist_rank']}**\n"
-    if steam_stats["wishlist_activity_rank"]:
-        stats_text += f"📈 Activity: **#{steam_stats['wishlist_activity_rank']}**\n"
-    if steam_stats["followers"]:
-        stats_text += f"👥 Followers: **{steam_stats['followers']:,}**\n"
+    stats_text = "📊 **Steam Stats**\n"
+    if steam_stats["review_count"]:
+        positive_pct = 0
+        if steam_stats["review_count"] > 0:
+            positive_pct = (steam_stats["positive_reviews"] / steam_stats["review_count"]) * 100
+        stats_text += f"⭐ 리뷰: **{steam_stats['review_count']:,}개** (👍 {positive_pct:.1f}%)\n"
+    if steam_stats["owners"]:
+        stats_text += f"👥 소유자: **{steam_stats['owners']}**\n"
+    if steam_stats["players_2weeks"]:
+        stats_text += f"🎮 최근 플레이어: **{steam_stats['players_2weeks']:,}명**\n"
 
     embed = {
         "title": "📊 Crimson Desert Complete Tracker",
@@ -406,15 +331,15 @@ def main():
             f"{stats_text}\n"
             f"📈 **총 {len(history)}개 히스토리 기록**\n\n"
             f"🔗 **플랫폼 바로가기**\n"
-            f"[SteamDB Charts]({STEAMDB_URL}) | "
+            f"[Steam]({STEAM_URL}) | "
+            f"[SteamDB]({STEAMDB_URL}) | "
             f"[PlayStation US]({PS_US_CATEGORY_URL}) | "
-            f"[Xbox]({XBOX_SEARCH_URL}) | "
-            f"[Steam]({STEAM_URL})\n\n"
+            f"[Xbox]({XBOX_SEARCH_URL})\n\n"
             f"🟢 **Steam**: 예구 오픈\n"
             f"🟢 **PlayStation US**: 예구 오픈\n"
             f"🟢 **Xbox**: 예구 오픈 (검색 기반)\n"
             f"🎥 [**SOP: {'감지됨' if state['sop_detected'] else '미감지'}**]({PS_BLOG_URL})\n\n"
-            f"자동 추적 · {now}"
+            f"_Steam API & SteamSpy 기반 · {now}_"
         ),
         "color": 0x1B2838
     }
