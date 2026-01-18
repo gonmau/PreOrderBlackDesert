@@ -179,8 +179,18 @@ def create_stats_graph(history):
     
     dates = [datetime.fromisoformat(e["timestamp"]) for e in valid_entries]
     
-    # 2x2 서브플롯
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
+    # 출시 여부 확인
+    is_released = date.today() >= RELEASE_DATE
+    
+    if is_released:
+        # 출시 후: 2x2 (전체)
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
+        axes = [ax1, ax2, ax3, ax4]
+    else:
+        # 출시 전: 1x2 (Wishlist + Followers만)
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+        axes = [ax1, ax2]
+    
     fig.suptitle('Crimson Desert - Steam Stats History', fontsize=16, fontweight='bold')
     
     # 1. Wishlist Activity 순위
@@ -207,29 +217,31 @@ def create_stats_graph(history):
         ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
         ax2.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
     
-    # 3. 리뷰 수
-    review_data = [(d, e.get("review_count")) for d, e in zip(dates, valid_entries) if e.get("review_count")]
-    if review_data:
-        d, v = zip(*review_data)
-        ax3.plot(d, v, marker='o', linewidth=2, color='#1B2838')
-        ax3.set_title('Total Reviews', fontweight='bold')
-        ax3.set_ylabel('Count')
-        ax3.grid(True, alpha=0.3)
-        ax3.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-        ax3.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
+    # 출시 후에만 리뷰와 플레이어 그래프 표시
+    if is_released:
+        # 3. 리뷰 수
+        review_data = [(d, e.get("review_count")) for d, e in zip(dates, valid_entries) if e.get("review_count")]
+        if review_data:
+            d, v = zip(*review_data)
+            ax3.plot(d, v, marker='o', linewidth=2, color='#1B2838')
+            ax3.set_title('Total Reviews', fontweight='bold')
+            ax3.set_ylabel('Count')
+            ax3.grid(True, alpha=0.3)
+            ax3.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+            ax3.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
+        
+        # 4. 최근 플레이어
+        players_data = [(d, e.get("players_2weeks")) for d, e in zip(dates, valid_entries) if e.get("players_2weeks")]
+        if players_data:
+            d, v = zip(*players_data)
+            ax4.plot(d, v, marker='o', linewidth=2, color='#95E1D3')
+            ax4.set_title('Players (Last 2 Weeks)', fontweight='bold')
+            ax4.set_ylabel('Count')
+            ax4.grid(True, alpha=0.3)
+            ax4.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+            ax4.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
     
-    # 4. 최근 플레이어
-    players_data = [(d, e.get("players_2weeks")) for d, e in zip(dates, valid_entries) if e.get("players_2weeks")]
-    if players_data:
-        d, v = zip(*players_data)
-        ax4.plot(d, v, marker='o', linewidth=2, color='#95E1D3')
-        ax4.set_title('Players (Last 2 Weeks)', fontweight='bold')
-        ax4.set_ylabel('Count')
-        ax4.grid(True, alpha=0.3)
-        ax4.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-        ax4.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
-    
-    for ax in [ax1, ax2, ax3, ax4]:
+    for ax in axes:
         plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
     
     plt.tight_layout()
