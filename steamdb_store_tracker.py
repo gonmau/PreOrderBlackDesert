@@ -404,8 +404,8 @@ def main():
             f"📅 **출시일**: 2026-03-19 ({dday})\n\n"
             f"📊 **Steam Stats**\n"
             f"{stats_text}\n"
-            f"📈 **총 {len(history)}개 히스토리**\n\n"
-            f"🔗 [Steam]({STEAM_URL}) | [SteamDB]({STEAMDB_URL}) | [Steambase]({STEAMBASE_URL})\n\n"
+            f"📈 총 {len(history)}개 히스토리 기록\n\n"
+            f"🔗 [Steam]({STEAM_URL}) | [SteamDB]({STEAMDB_URL})\n\n"
             f"🟢 Steam: 예구 오픈 | 🟢 PS: 예구 오픈 | 🟢 Xbox: 예구 오픈\n"
             f"🎥 SOP: {'감지됨' if state['sop_detected'] else '미감지'}\n\n"
             f"_SteamDB + Steambase · {now}_"
@@ -414,7 +414,11 @@ def main():
     }
     
     if graph_buffer:
-        embed["image"] = {"url": "attachment://stats_graph.png"}
+        # 그래프는 제거하고 텍스트만
+        pass
+    else:
+        # 그래프가 없을 때만 image 필드 제거
+        pass
     
     if alerts:
         send_discord("🚨 **변경 감지**\n" + "\n".join(alerts), embed, graph_buffer, "stats_graph.png" if graph_buffer else None)
