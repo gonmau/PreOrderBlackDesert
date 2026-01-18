@@ -80,11 +80,12 @@ def save_history(data):
     }
     
     history.append(entry)
-    
+
+    #------------주석 처리 함 2026-01-18 ---
     # 최근 200개만 유지
-    if len(history) > 200:
-        history = history[-200:]
-    
+    #if len(history) > 200:
+    #    history = history[-200:]
+    #----------------------------------
     with open("bdo_history.json", "w", encoding="utf-8") as f:
         json.dump(history, f, ensure_ascii=False, indent=2)
     
