@@ -1,125 +1,152 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-"""
-Crimson Desert 스토어 오픈 감지 & 링크 알림 봇
-- SteamDB: 링크만 제공 (차단 회피)
-- PlayStation: US 스토어 링크
-- Xbox: 예구 페이지 오픈 감지
-- GameStop: Google 검색 기반 감지 (차단 회피)
-"""
-
-import os
 import json
+import os
 import requests
-from datetime import datetime
+from datetime import date
+from urllib.parse import quote_plus
+
+# =========================
+# 기본 설정
+# =========================
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 
 APP_NAME = "Crimson Desert"
+STEAM_APP_ID = "3321460"
 
-STEAMDB_URL = "https://steamdb.info/app/3321460/charts/"
-STEAM_URL = "https://store.steampowered.com/app/3321460"
-PS_US_URL = "https://store.playstation.com/en-us/concept/10005050"
-XBOX_SEARCH_URL = "https://www.xbox.com/en-us/search?q=Crimson+Desert"
-GAMESTOP_SEARCH_URL = "https://www.gamestop.com/search/?q=Crimson+Desert"
+RELEASE_DATE = date(2026, 3, 19)
 
 STATE_FILE = "store_state.json"
 
+STEAMDB_URL = f"https://steamdb.info/app/{STEAM_APP_ID}/charts/"
+STEAM_URL = f"https://store.steampowered.com/app/{STEAM_APP_ID}"
+PS_US_URL = "https://store.playstation.com/en-us"
+XBOX_SEARCH_URL = "https://www.xbox.com/en-US/search"
+GAMESTOP_SEARCH_URL = "https://www.gamestop.com/search/"
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (compatible; GitHubActions/1.0)"
+}
+
+# =========================
+# 유틸
+# =========================
 
 def load_state():
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
     return {
-        "xbox_open": False,
-        "gamestop_open": False,
+        "gamestop_detected": False,
+        "xbox_detected": False
     }
-
 
 def save_state(state):
     with open(STATE_FILE, "w", encoding="utf-8") as f:
-        json.dump(state, f, ensure_ascii=False, indent=2)
+        json.dump(state, f, indent=2)
 
+def get_dday_label():
+    today = date.today()
+    delta = (RELEASE_DATE - today).days
 
-def google_search_contains(keyword: str) -> bool:
-    """
-    Google HTML 검색 결과에 키워드 존재 여부만 확인
-    (페이지 접근 X, 검색 결과만 사용)
-    """
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
-    query = f"site:gamestop.com \"{keyword}\""
-    url = f"https://www.google.com/search?q={query}"
+    if delta > 0:
+        return f"D-{delta}"
+    elif delta == 0:
+        return "🎉 TODAY"
+    else:
+        return "✅ 출시됨"
 
-    r = requests.get(url, headers=headers, timeout=15)
-    return keyword.lower() in r.text.lower()
+# =========================
+# GameStop 검색 기반 감지
+# =========================
 
+def check_gamestop():
+    query = quote_plus(APP_NAME)
+    url = f"https://www.google.com/search?q=site:gamestop.com+{query}"
 
-def xbox_search_open() -> bool:
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
-    r = requests.get(XBOX_SEARCH_URL, headers=headers, timeout=15)
-    return "Crimson Desert" in r.text
+    r = requests.get(url, headers=HEADERS, timeout=10)
+    if r.status_code != 200:
+        return False
 
+    return "gamestop.com" in r.text.lower()
 
-def send_discord(embed):
+# =========================
+# Xbox 검색 기반 감지
+# =========================
+
+def check_xbox():
+    query = quote_plus(APP_NAME)
+    url = f"https://www.google.com/search?q=site:xbox.com+{query}"
+
+    r = requests.get(url, headers=HEADERS, timeout=10)
+    if r.status_code != 200:
+        return False
+
+    return "xbox.com" in r.text.lower()
+
+# =========================
+# Discord 전송
+# =========================
+
+def send_discord(message, embed):
     payload = {
+        "content": message,
         "embeds": [embed]
     }
     requests.post(DISCORD_WEBHOOK, json=payload)
 
+# =========================
+# 메인
+# =========================
 
 def main():
     state = load_state()
-    notifications = []
 
-    # Xbox 감지
-    xbox_now_open = xbox_search_open()
-    if xbox_now_open and not state["xbox_open"]:
-        notifications.append("🟢 Xbox 예구/스토어 페이지 감지")
-        state["xbox_open"] = True
+    dday = get_dday_label()
 
-    # GameStop 감지 (검색 기반)
-    gamestop_now_open = google_search_contains(APP_NAME)
-    if gamestop_now_open and not state["gamestop_open"]:
-        notifications.append("🟢 GameStop 예구 페이지 검색 감지")
-        state["gamestop_open"] = True
+    gamestop_open = check_gamestop()
+    xbox_open = check_xbox()
 
-    save_state(state)
+    alerts = []
 
-    # 매일 기본 카드 (오픈 여부 포함)
-    description_lines = [
-        "🔔 **스토어 상태 자동 추적**",
-        "",
-        "🔗 **플랫폼 바로가기**",
-        f"[SteamDB]({STEAMDB_URL})",
-        f"[PlayStation US]({PS_US_URL})",
-        f"[Xbox]({XBOX_SEARCH_URL})",
-        f"[Steam]({STEAM_URL})",
-        f"[GameStop 검색]({GAMESTOP_SEARCH_URL})",
-        "",
-        "🟢 Xbox: " + ("오픈" if state["xbox_open"] else "미오픈"),
-        "🟢 GameStop: " + ("검색 감지됨" if state["gamestop_open"] else "미감지"),
-    ]
+    if gamestop_open and not state["gamestop_detected"]:
+        alerts.append("🛒 **GameStop 예구 페이지 감지됨**")
+        state["gamestop_detected"] = True
 
-    if notifications:
-        description_lines.insert(0, "🚨 **변경 감지 발생**")
-        description_lines.insert(1, "\n".join(notifications))
+    if xbox_open and not state["xbox_detected"]:
+        alerts.append("🟢 **Xbox 스토어 페이지 감지됨**")
+        state["xbox_detected"] = True
 
     embed = {
-        "title": "Crimson Desert 스토어 추적",
-        "description": "\n".join(description_lines),
-        "color": 0x2ecc71,
+        "title": f"📊 {APP_NAME} 스토어 추적",
+        "url": STEAMDB_URL,
+        "color": 0xE74C3C,
+        "fields": [
+            {
+                "name": "📅 출시일",
+                "value": f"2026-03-19 ({dday})",
+                "inline": True
+            },
+            {
+                "name": "🔗 플랫폼 링크",
+                "value": (
+                    f"[SteamDB]({STEAMDB_URL}) | "
+                    f"[PlayStation US]({PS_US_URL}) | "
+                    f"[Xbox]({XBOX_SEARCH_URL}) | "
+                    f"[Steam]({STEAM_URL}) | "
+                    f"[GameStop]({GAMESTOP_SEARCH_URL})"
+                ),
+                "inline": False
+            }
+        ],
         "footer": {
-            "text": f"자동 추적 · {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}"
+            "text": "차단 회피: 검색 기반 감지 / GitHub Actions Safe"
         }
     }
 
-    send_discord(embed)
+    content = "\n".join(alerts) if alerts else None
 
+    send_discord(content, embed)
+    save_state(state)
 
 if __name__ == "__main__":
     main()
