@@ -26,7 +26,7 @@ jobs:
     
     - name: Install Dependencies
       run: |
-        pip install requests beautifulsoup4 matplotlib
+        pip install requests matplotlib
     
     - name: Run SteamDB Store Tracker
       env:
