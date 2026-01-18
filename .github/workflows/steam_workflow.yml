@@ -31,19 +31,33 @@ jobs:
     - name: Run SteamDB Store Tracker
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-      run: python steamdb_store_tracker.py
+      run: |
+        python steamdb_store_tracker.py
+        echo "Script execution completed"
+    
+    - name: Check for changes
+      id: check_changes
+      run: |
+        if [ -f "store_data_history.json" ]; then
+          echo "file_exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "file_exists=false" >> $GITHUB_OUTPUT
+        fi
     
     - name: Commit and Push changes
+      if: steps.check_changes.outputs.file_exists == 'true'
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
         
-        git stash
-        git pull origin main --rebase
-        git stash pop || echo "No changes to pop"
-        
         git add store_data_history.json
-        git commit -m "Update store data history [skip ci]" || exit 0
-        git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main
+        
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Update store data history [skip ci]"
+          git pull --rebase origin main
+          git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main
+        fi
