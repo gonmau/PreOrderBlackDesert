@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from io import BytesIO
 import re
+import time
 
 STEAMDB_CHARTS_URL = "https://steamdb.info/app/3321460/charts/"
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
@@ -21,92 +22,107 @@ def scrape_store_data():
     print(f"   URL: {STEAMDB_CHARTS_URL}")
     
     try:
+        # 더 정교한 헤더 설정으로 봇 차단 우회
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9,ko;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
             'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Cache-Control': 'max-age=0',
         }
         
         print("   📥 페이지 다운로드 중...")
-        response = requests.get(STEAMDB_CHARTS_URL, headers=headers, timeout=30)
-        response.raise_for_status()
-        print(f"   ✅ 페이지 다운로드 완료 ({len(response.content)} bytes)")
+        session = requests.Session()
+        
+        # 재시도 로직 (최대 3번)
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                if attempt > 0:
+                    wait_time = 2 ** attempt  # 지수 백오프
+                    print(f"   ⏳ {wait_time}초 대기 후 재시도 ({attempt + 1}/{max_retries})...")
+                    time.sleep(wait_time)
+                
+                response = session.get(STEAMDB_CHARTS_URL, headers=headers, timeout=30, allow_redirects=True)
+                
+                if response.status_code == 403:
+                    print(f"   ⚠️  403 오류 발생 (시도 {attempt + 1}/{max_retries})")
+                    if attempt < max_retries - 1:
+                        continue
+                    else:
+                        print("   ❌ 모든 재시도 실패 - SteamDB가 접근을 차단했습니다.")
+                        print("   💡 해결 방법: SteamDB API 또는 공식 데이터 소스 사용을 권장합니다.")
+                        return None
+                
+                response.raise_for_status()
+                print(f"   ✅ 페이지 다운로드 완료 ({len(response.content)} bytes)")
+                break
+                
+            except requests.exceptions.RequestException as e:
+                if attempt < max_retries - 1:
+                    print(f"   ⚠️  오류 발생: {e}")
+                    continue
+                else:
+                    raise
         
         soup = BeautifulSoup(response.text, 'html.parser')
         store_data = {}
         
-        # Store data 섹션 찾기
-        # SteamDB의 구조: <div class="app-data"> 안에 있음
+        # HTML 구조에 맞게 파싱
+        # <ul class="app-chart-numbers"> 안에 데이터가 있음
         print("   🔍 데이터 파싱 중...")
         
-        # 방법 1: 링크 텍스트로 찾기
         try:
-            # "in top sellers" 링크 찾기
-            sellers_link = soup.find('a', string=re.compile(r'in top sellers', re.IGNORECASE))
-            if sellers_link:
-                # 형제 요소에서 숫자 찾기
-                parent = sellers_link.find_parent()
-                if parent:
-                    rank_elem = parent.find(string=re.compile(r'#\d+'))
-                    if rank_elem:
-                        rank = re.search(r'#(\d+)', rank_elem)
-                        if rank:
-                            store_data['top_sellers'] = int(rank.group(1))
-                            print(f"   📈 Top Sellers: #{rank.group(1)}")
-        except Exception as e:
-            print(f"   ⚠️  Top Sellers 파싱 실패: {e}")
-            store_data['top_sellers'] = None
+            # app-chart-numbers 클래스 찾기
+            chart_numbers = soup.find('ul', class_='app-chart-numbers')
+            
+            if chart_numbers:
+                # 모든 li 태그 찾기
+                list_items = chart_numbers.find_all('li')
+                
+                for li in list_items:
+                    # strong 태그에서 숫자 추출
+                    strong = li.find('strong')
+                    # a 태그에서 텍스트 추출
+                    link = li.find('a')
+                    
+                    if strong and link:
+                        number_text = strong.get_text().strip()
+                        link_text = link.get_text().strip().lower()
+                        
+                        # # 제거하고 숫자만 추출
+                        if number_text.startswith('#'):
+                            number = int(number_text[1:].replace(',', ''))
+                        else:
+                            number = int(number_text.replace(',', ''))
+                        
+                        # 링크 텍스트로 구분
+                        if 'top sellers' in link_text:
+                            store_data['top_sellers'] = number
+                            print(f"   📈 Top Sellers: #{number}")
+                        elif 'top wishlists' in link_text:
+                            store_data['top_wishlists'] = number
+                            print(f"   💚 Top Wishlists: #{number}")
+                        elif 'wishlist activity' in link_text:
+                            store_data['wishlist_activity'] = number
+                            print(f"   🔥 Wishlist Activity: #{number}")
+                        elif 'followers' in link_text:
+                            store_data['followers'] = number
+                            print(f"   👥 Followers: {number:,}")
+            
+            else:
+                print("   ⚠️  app-chart-numbers 클래스를 찾을 수 없습니다.")
         
-        try:
-            # "in top wishlists" 찾기
-            wishlists_link = soup.find('a', string=re.compile(r'in top wishlists', re.IGNORECASE))
-            if wishlists_link:
-                parent = wishlists_link.find_parent()
-                if parent:
-                    rank_elem = parent.find(string=re.compile(r'#\d+'))
-                    if rank_elem:
-                        rank = re.search(r'#(\d+)', rank_elem)
-                        if rank:
-                            store_data['top_wishlists'] = int(rank.group(1))
-                            print(f"   💚 Top Wishlists: #{rank.group(1)}")
         except Exception as e:
-            print(f"   ⚠️  Top Wishlists 파싱 실패: {e}")
-            store_data['top_wishlists'] = None
-        
-        try:
-            # "in wishlist activity" 찾기
-            activity_link = soup.find('a', string=re.compile(r'in wishlist activity', re.IGNORECASE))
-            if activity_link:
-                parent = activity_link.find_parent()
-                if parent:
-                    rank_elem = parent.find(string=re.compile(r'#\d+'))
-                    if rank_elem:
-                        rank = re.search(r'#(\d+)', rank_elem)
-                        if rank:
-                            store_data['wishlist_activity'] = int(rank.group(1))
-                            print(f"   🔥 Wishlist Activity: #{rank.group(1)}")
-        except Exception as e:
-            print(f"   ⚠️  Wishlist Activity 파싱 실패: {e}")
-            store_data['wishlist_activity'] = None
-        
-        try:
-            # "followers" 찾기
-            followers_link = soup.find('a', string=re.compile(r'followers', re.IGNORECASE))
-            if followers_link:
-                parent = followers_link.find_parent()
-                if parent:
-                    # 숫자에 쉼표가 있을 수 있음
-                    count_elem = parent.find(string=re.compile(r'[\d,]+'))
-                    if count_elem:
-                        count = re.search(r'([\d,]+)', count_elem)
-                        if count:
-                            followers_count = count.group(1).replace(',', '')
-                            store_data['followers'] = int(followers_count)
-                            print(f"   👥 Followers: {count.group(1)}")
-        except Exception as e:
-            print(f"   ⚠️  Followers 파싱 실패: {e}")
-            store_data['followers'] = None
+            print(f"   ⚠️  구조 파싱 실패: {e}")
+            import traceback
+            traceback.print_exc()
         
         # 방법 2: 모든 텍스트에서 패턴 찾기 (백업)
         if not any(store_data.values()):
