@@ -33,7 +33,8 @@ PS_US_CATEGORY_URL = (
 )
 
 XBOX_SEARCH_URL = "https://www.xbox.com/en-US/search?q=Crimson+Desert"
-PS_BLOG_URL = "https://blog.playstation.com/"
+PS_BLOG_URL = "https://blog.playstation.com/tag/state-of-play/"
+
 
 STATE_FILE = "store_state.json"
 
@@ -144,7 +145,7 @@ def main():
             f"🟢 **Steam**: 예구 오픈\n"
             f"🟢 **PlayStation US**: 예구 오픈\n"
             f"🟢 **Xbox**: 예구 오픈 (검색 기반)\n"
-            f"🎥 **SOP**: {'감지됨' if state['sop_detected'] else '미감지'} "
+            f"🎥 [**SOP: {'감지됨' if state['sop_detected'] else '미감지'}**]({PS_BLOG_URL})\n"
             f"([PlayStation Blog]({PS_BLOG_URL}))\n\n"
             f"자동 추적 · {now}"
         ),
