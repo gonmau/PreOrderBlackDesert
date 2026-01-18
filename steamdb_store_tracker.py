@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+실용적인 해결책: 수동 데이터 입력 방식
+
+사용 방법:
+1. SteamDB에서 직접 확인한 데이터를 manual_data.json에 작성
+2. Git에 커밋하면 자동으로 Discord에 전송 및 그래프 생성
+"""
+
 import os
 import json
 import requests
@@ -8,80 +16,69 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from io import BytesIO
-import re
 
-STEAMDB_CHARTS_URL = "https://steamdb.info/app/3321460/charts/"
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 HISTORY_FILE = "store_data_history.json"
+MANUAL_DATA_FILE = "manual_data.json"
 
-def scrape_store_data():
-    """SteamDB 페이지에서 # 뒤의 숫자만 간단히 추출"""
-    print(f"📊 SteamDB Store data 수집 중...")
-    print(f"   URL: {STEAMDB_CHARTS_URL}")
+def get_manual_data():
+    """manual_data.json에서 최신 데이터 읽기"""
+    print("📊 수동 입력 데이터 읽기 중...")
+    
+    if not os.path.exists(MANUAL_DATA_FILE):
+        print(f"   ❌ {MANUAL_DATA_FILE} 파일이 없습니다.")
+        print("\n   📝 다음 내용으로 manual_data.json 파일을 만들어주세요:")
+        print("""
+{
+  "top_sellers": 408,
+  "top_wishlists": 25,
+  "wishlist_activity": 36,
+  "followers": 61663,
+  "updated_at": "2026-01-18 15:30"
+}
+""")
+        return None
     
     try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        with open(MANUAL_DATA_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        
+        store_data = {
+            'top_sellers': data.get('top_sellers'),
+            'top_wishlists': data.get('top_wishlists'),
+            'wishlist_activity': data.get('wishlist_activity'),
+            'followers': data.get('followers'),
         }
         
-        print("   📥 페이지 다운로드 중...")
-        response = requests.get(STEAMDB_CHARTS_URL, headers=headers, timeout=30)
-        
-        if response.status_code == 403:
-            print("   ⚠️  403 오류 - 접근 차단")
-            print("   💡 Cloudflare 또는 봇 차단이 활성화되어 있습니다.")
+        # 데이터 검증
+        if not any(v is not None for v in store_data.values()):
+            print("   ⚠️  유효한 데이터가 없습니다.")
             return None
         
-        response.raise_for_status()
-        print(f"   ✅ 페이지 다운로드 완료 ({len(response.content)} bytes)")
+        print(f"   ✅ {MANUAL_DATA_FILE}에서 데이터 로드")
+        updated_at = data.get('updated_at', 'Unknown')
+        print(f"   📅 업데이트 시간: {updated_at}")
         
-        # 단순히 텍스트에서 패턴 찾기
-        text = response.text
-        store_data = {}
+        for key, label in [
+            ('top_sellers', '📈 Top Sellers'),
+            ('top_wishlists', '💚 Top Wishlists'),
+            ('wishlist_activity', '🔥 Wishlist Activity'),
+            ('followers', '👥 Followers')
+        ]:
+            value = store_data.get(key)
+            if value is not None:
+                if key == 'followers':
+                    print(f"   {label}: {value:,}")
+                else:
+                    print(f"   {label}: #{value}")
         
-        print("   🔍 데이터 추출 중...")
+        return store_data
         
-        # #408 in top sellers 패턴 찾기
-        sellers_match = re.search(r'#(\d+)\s+in top sellers', text, re.IGNORECASE)
-        if sellers_match:
-            store_data['top_sellers'] = int(sellers_match.group(1))
-            print(f"   📈 Top Sellers: #{sellers_match.group(1)}")
-        
-        # #25 in top wishlists 패턴 찾기
-        wishlists_match = re.search(r'#(\d+)\s+in top wishlists', text, re.IGNORECASE)
-        if wishlists_match:
-            store_data['top_wishlists'] = int(wishlists_match.group(1))
-            print(f"   💚 Top Wishlists: #{wishlists_match.group(1)}")
-        
-        # #36 in wishlist activity 패턴 찾기
-        activity_match = re.search(r'#(\d+)\s+in wishlist activity', text, re.IGNORECASE)
-        if activity_match:
-            store_data['wishlist_activity'] = int(activity_match.group(1))
-            print(f"   🔥 Wishlist Activity: #{activity_match.group(1)}")
-        
-        # 61,663 followers 패턴 찾기
-        followers_match = re.search(r'([\d,]+)\s+followers', text, re.IGNORECASE)
-        if followers_match:
-            followers_count = followers_match.group(1).replace(',', '')
-            store_data['followers'] = int(followers_count)
-            print(f"   👥 Followers: {followers_match.group(1)}")
-        
-        # 데이터가 있는지 확인
-        if store_data:
-            print("   ✅ 데이터 추출 완료")
-            return store_data
-        else:
-            print("   ⚠️  데이터를 찾을 수 없습니다.")
-            # 디버깅용으로 텍스트 일부 저장
-            with open("debug_output.txt", "w", encoding="utf-8") as f:
-                f.write(text[:3000])
-            print("   💾 debug_output.txt에 페이지 일부 저장됨")
-            return None
-            
+    except json.JSONDecodeError as e:
+        print(f"   ❌ JSON 파싱 오류: {e}")
+        return None
     except Exception as e:
-        print(f"   ❌ 오류: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"   ❌ 파일 읽기 오류: {e}")
         return None
 
 def load_history():
@@ -97,6 +94,13 @@ def load_history():
 def save_history(store_data):
     """히스토리에 데이터 추가 및 저장"""
     history = load_history()
+    
+    # 중복 방지: 마지막 데이터와 동일하면 저장 안 함
+    if history:
+        last_data = history[-1].get('data', {})
+        if last_data == store_data:
+            print("   ℹ️  이전 데이터와 동일하여 저장하지 않습니다.")
+            return history
     
     entry = {
         "timestamp": datetime.now().isoformat(),
@@ -151,14 +155,11 @@ def create_graph(history):
         print("   ⚠️  유효한 데이터가 없습니다.")
         return None
     
-    # 한글 폰트 설정
     plt.rcParams['font.family'] = 'DejaVu Sans'
     
-    # 2x2 서브플롯 생성
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 12))
     fig.suptitle('Crimson Desert - SteamDB Store Data Tracking', fontsize=16, fontweight='bold')
     
-    # 순위는 낮을수록 좋으므로 y축 반전
     # Top Sellers
     if any(x is not None for x in top_sellers):
         ax1.plot(timestamps, top_sellers, marker='o', linewidth=2, markersize=6, color='#1f77b4')
@@ -189,7 +190,7 @@ def create_graph(history):
         ax3.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d %H:%M'))
         plt.setp(ax3.xaxis.get_majorticklabels(), rotation=45, ha='right')
     
-    # Followers (절대값이므로 y축 반전 안함)
+    # Followers
     if any(x is not None for x in followers):
         ax4.plot(timestamps, followers, marker='o', linewidth=2, markersize=6, color='#d62728')
         ax4.set_title('Followers Count', fontsize=12, fontweight='bold')
@@ -197,13 +198,10 @@ def create_graph(history):
         ax4.grid(True, alpha=0.3)
         ax4.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d %H:%M'))
         plt.setp(ax4.xaxis.get_majorticklabels(), rotation=45, ha='right')
-        
-        # 팔로워 수에 천 단위 구분 추가
         ax4.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
     
     plt.tight_layout()
     
-    # 이미지를 바이트로 변환
     buf = BytesIO()
     plt.savefig(buf, format='png', dpi=100, bbox_inches='tight')
     buf.seek(0)
@@ -220,7 +218,6 @@ def send_discord(store_data, history, graph_buffer):
     
     print("📤 Discord 전송 중...")
     
-    # 현재 데이터
     current_data = f"""
 **📊 현재 Store Data** (KST {datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
 
@@ -246,14 +243,12 @@ def send_discord(store_data, history, graph_buffer):
             
             if curr is not None and prev is not None:
                 if key == 'followers':
-                    # 팔로워는 증가가 긍정적
                     diff = curr - prev
                     if diff > 0:
                         changes.append(f"{label}: +{diff:,} ⬆️")
                     elif diff < 0:
                         changes.append(f"{label}: {diff:,} ⬇️")
                 else:
-                    # 순위는 감소(숫자가 작아짐)가 긍정적
                     diff = curr - prev
                     if diff < 0:
                         changes.append(f"{label}: {abs(diff)} 상승 ⬆️")
@@ -263,27 +258,24 @@ def send_discord(store_data, history, graph_buffer):
         if changes:
             current_data += "\n**📈 변화:**\n" + "\n".join(changes)
     
+    current_data += "\n\n📝 *수동 입력 데이터*"
+    
     embed = {
         "title": "🎮 Crimson Desert - SteamDB Store Tracker",
         "description": current_data,
-        "color": 0x5865F2,
-        "url": STEAMDB_CHARTS_URL,
+        "color": 0x00D9FF,
+        "url": "https://steamdb.info/app/3321460/charts/",
         "timestamp": datetime.utcnow().isoformat(),
-        "footer": {"text": f"총 {len(history)}회 추적 | 다음 업데이트: 12시간 후"}
+        "footer": {"text": f"총 {len(history)}회 추적"}
     }
     
     try:
-        # 그래프가 있으면 이미지로 첨부
         files = {}
         if graph_buffer:
-            files = {
-                'file': ('chart.png', graph_buffer, 'image/png')
-            }
+            files = {'file': ('chart.png', graph_buffer, 'image/png')}
             embed["image"] = {"url": "attachment://chart.png"}
         
-        payload = {
-            "embeds": [embed]
-        }
+        payload = {"embeds": [embed]}
         
         response = requests.post(
             DISCORD_WEBHOOK,
@@ -296,24 +288,23 @@ def send_discord(store_data, history, graph_buffer):
             print("   ✅ Discord 전송 성공!")
         else:
             print(f"   ⚠️  Discord 전송 실패: {response.status_code}")
-            print(f"   응답: {response.text}")
-    
     except Exception as e:
         print(f"   ❌ Discord 전송 오류: {e}")
-        import traceback
-        traceback.print_exc()
 
 def main():
     print("=" * 70)
-    print("🎮 Crimson Desert - SteamDB Store Data Tracker")
+    print("🎮 Crimson Desert - Manual Data Tracker")
     print("=" * 70)
     print()
     
-    # 데이터 수집
-    store_data = scrape_store_data()
+    store_data = get_manual_data()
     
-    if store_data is None:
-        print("\n❌ 데이터 수집 실패")
+    if store_data is None or not any(store_data.values()):
+        print("\n❌ 데이터 없음")
+        print("\n💡 해결 방법:")
+        print("   1. SteamDB에서 직접 데이터 확인")
+        print("   2. manual_data.json 파일 생성/수정")
+        print("   3. 이 스크립트 다시 실행")
         return
     
     print()
@@ -321,7 +312,6 @@ def main():
     print("💾 데이터 저장")
     print("=" * 70)
     
-    # 히스토리 저장
     history = save_history(store_data)
     
     print()
@@ -329,7 +319,6 @@ def main():
     print("📊 그래프 생성")
     print("=" * 70)
     
-    # 그래프 생성
     graph_buffer = create_graph(history)
     
     print()
@@ -337,7 +326,6 @@ def main():
     print("📤 Discord 전송")
     print("=" * 70)
     
-    # Discord 전송
     send_discord(store_data, history, graph_buffer)
     
     print()
