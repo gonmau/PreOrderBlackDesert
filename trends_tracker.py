@@ -247,11 +247,12 @@ def save_history(google_data, youtube_data):
     }
     
     history.append(entry)
-    
+
+    # 주석 처리 2026-01-18
     # 최근 200개만 유지
-    if len(history) > 200:
-        history = history[-200:]
-    
+    #if len(history) > 200:
+    #    history = history[-200:]
+    # ------------------------
     with open("trends_history.json", "w", encoding="utf-8") as f:
         json.dump(history, f, ensure_ascii=False, indent=2)
     
