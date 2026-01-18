@@ -1,4 +1,6 @@
 {
   "xbox_open": true,
-  "gamestop_open": false
+  "gamestop_open": false,
+  "gamestop_detected": true,
+  "xbox_detected": true
 }
