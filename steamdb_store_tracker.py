@@ -49,7 +49,15 @@ PS_BLOG_URL = "https://blog.playstation.com/tag/state-of-play/"
 STATE_FILE = "store_state.json"
 HISTORY_FILE = "steam_history.json"
 
-HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Accept-Encoding": "gzip, deflate, br",
+    "DNT": "1",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1"
+}
 
 # ======================
 # SteamDB Wishlist Activity
@@ -60,7 +68,17 @@ def get_wishlist_activity_rank():
     
     try:
         url = "https://steamdb.info/stats/wishlistactivity/"
-        r = requests.get(url, headers=HEADERS, timeout=15)
+        
+        # Session 사용 (쿠키 유지)
+        session = requests.Session()
+        session.headers.update(HEADERS)
+        
+        r = session.get(url, timeout=15)
+        
+        if r.status_code == 403:
+            print(f"  ⚠️ SteamDB 접근 거부 (403) - IP 차단 가능성")
+            print(f"  ℹ️ 대안: 로컬에서 수동으로 확인하거나 프록시 사용 필요")
+            return None
         
         if r.status_code != 200:
             print(f"  ⚠️ SteamDB 응답 실패: {r.status_code}")
