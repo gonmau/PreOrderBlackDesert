@@ -1,9 +1,12 @@
-name: Steam Wishlist Tracker
+name: SteamDB Store Data Tracker
 
 on:
   schedule:
-    - cron: '0 22 * * *'  # 오전 7시 1회 실행
-  workflow_dispatch:      # 수동 실행 가능
+    # 오전 7시 (UTC 22시)
+    - cron: '0 22 * * *'
+    # 오후 7시 (UTC 10시)
+    - cron: '0 10 * * *'
+  workflow_dispatch:  # 수동 실행 가능
 
 permissions:
   contents: write
@@ -25,10 +28,10 @@ jobs:
       run: |
         pip install selenium webdriver-manager requests matplotlib
     
-    - name: Run Steam Tracker
+    - name: Run SteamDB Store Tracker
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-      run: python steam_tracker.py
+      run: python steamdb_store_tracker.py
     
     - name: Commit and Push changes
       env:
@@ -41,6 +44,6 @@ jobs:
         git pull origin main --rebase
         git stash pop || echo "No changes to pop"
         
-        git add steam_history.json
-        git commit -m "Update steam history [skip ci]" || exit 0
+        git add store_data_history.json
+        git commit -m "Update store data history [skip ci]" || exit 0
         git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main
