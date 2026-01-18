@@ -35,7 +35,6 @@ RELEASE_DATE = date(2026, 3, 19)
 STEAM_APP_ID = "3321460"
 
 # URLs
-STEAMDB_WISHLIST_ACTIVITY_URL = "https://steamdb.info/stats/wishlistactivity/"
 STEAMBASE_URL = f"https://steambase.io/games/crimson-desert/steam-charts"
 STEAM_REVIEWS_URL = f"https://store.steampowered.com/appreviews/{STEAM_APP_ID}?json=1&language=all&purchase_type=all"
 STEAMSPY_URL = f"https://steamspy.com/api.php?request=appdetails&appid={STEAM_APP_ID}"
@@ -58,48 +57,6 @@ HEADERS = {
     "Connection": "keep-alive",
     "Upgrade-Insecure-Requests": "1"
 }
-
-# ======================
-# SteamDB Wishlist Activity
-# ======================
-def get_wishlist_activity_rank():
-    """SteamDB Wishlist Activity 통계 페이지에서 순위 찾기"""
-    print("🔍 SteamDB Wishlist Activity 순위 검색 중...")
-    
-    try:
-        url = "https://steamdb.info/stats/wishlistactivity/"
-        
-        # Session 사용 (쿠키 유지)
-        session = requests.Session()
-        session.headers.update(HEADERS)
-        
-        r = session.get(url, timeout=15)
-        
-        if r.status_code == 403:
-            print(f"  ⚠️ SteamDB 접근 거부 (403) - IP 차단 가능성")
-            print(f"  ℹ️ 대안: 로컬에서 수동으로 확인하거나 프록시 사용 필요")
-            return None
-        
-        if r.status_code != 200:
-            print(f"  ⚠️ SteamDB 응답 실패: {r.status_code}")
-            return None
-        
-        # HTML에서 Crimson Desert 찾기
-        # 패턴: <td>65.</td> ... <a href="/app/3321460/">Crimson Desert</a>
-        pattern = r'<td[^>]*>(\d+)\.</td>.*?/app/3321460/.*?Crimson Desert'
-        match = re.search(pattern, r.text, re.DOTALL | re.IGNORECASE)
-        
-        if match:
-            rank = int(match.group(1))
-            print(f"  ✅ Wishlist Activity 순위: #{rank}")
-            return rank
-        
-        print(f"  ⚠️ 순위 100위 안에서 찾지 못함")
-        return None
-        
-    except Exception as e:
-        print(f"  ❌ Wishlist Activity 검색 오류: {e}")
-        return None
 
 # ======================
 # Steambase Followers
@@ -343,15 +300,14 @@ def main():
     
     alerts = []
     
-    # 데이터 수집
-    wishlist_activity_rank = get_wishlist_activity_rank()
+    # 데이터 수집 (SteamDB 제외)
     followers = get_steambase_followers()
     review_stats = get_steam_review_stats()
     steamspy_stats = get_steamspy_stats()
     
-    # 통합 stats (기존 키 이름 호환: rank)
+    # 통합 stats (기존 키 이름 호환: rank는 None으로)
     all_stats = {
-        "rank": wishlist_activity_rank,  # Wishlist Activity 순위
+        "rank": None,  # SteamDB 수집 중단
         "followers": followers,
         **review_stats,
         **steamspy_stats
@@ -398,12 +354,11 @@ def main():
     
     # 디버깅 출력
     print(f"\n📊 Discord 전송 데이터:")
-    print(f"  - Wishlist Activity Rank: {wishlist_activity_rank} (type: {type(wishlist_activity_rank)})")
     print(f"  - Followers: {followers} (type: {type(followers)})")
-    print(f"  - Display Rank (히스토리 포함): {display_rank}")
-    print(f"  - Display Followers (히스토리 포함): {display_followers}")
-    print(f"  - Reviews: {review_stats.get('review_count')} (type: {type(review_stats.get('review_count'))})")
-    print(f"  - Owners: {steamspy_stats.get('owners')} (type: {type(steamspy_stats.get('owners'))})")
+    print(f"  - Display Rank (히스토리): {display_rank}")
+    print(f"  - Display Followers (실시간 또는 히스토리): {display_followers}")
+    print(f"  - Reviews: {review_stats.get('review_count')}")
+    print(f"  - Owners: {steamspy_stats.get('owners')}")
     print(f"  - Stats Lines: {stats_lines}")
     print(f"  - Final Stats Text:\n{stats_text}")
     
