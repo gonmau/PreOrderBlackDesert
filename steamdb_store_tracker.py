@@ -91,65 +91,46 @@ def get_steamdb_stats():
     try:
         driver.get(STEAMDB_URL)
         print(f"  ⏳ 페이지 로딩 대기 (10초)...")
-        time.sleep(10)  # 대기 시간 증가
+        time.sleep(10)
         
-        # 페이지 소스 확인
-        page_source = driver.page_source
-        print(f"  📄 페이지 길이: {len(page_source)} bytes")
-        
-        # CSS Selector로 시도
+        # app-chart-numbers 리스트 찾기
         try:
-            # Store data 영역 전체 가져오기
-            store_elements = driver.find_elements(By.CSS_SELECTOR, ".app-chart")
-            print(f"  🔍 발견된 차트 요소: {len(store_elements)}개")
+            chart_list = driver.find_element(By.CSS_SELECTOR, "ul.app-chart-numbers")
+            list_items = chart_list.find_elements(By.TAG_NAME, "li")
+            print(f"  🔍 발견된 차트 항목: {len(list_items)}개")
             
-            for elem in store_elements:
-                text = elem.text
-                print(f"  📝 차트 텍스트: {text[:200]}")
+            for item in list_items:
+                try:
+                    # <strong> 태그에서 숫자 추출
+                    strong = item.find_element(By.TAG_NAME, "strong")
+                    number_text = strong.text.strip().replace('#', '').replace(',', '')
+                    
+                    # 텍스트에서 어떤 항목인지 판단
+                    full_text = item.text.lower()
+                    print(f"  📝 항목: {item.text[:50]}")
+                    
+                    if "in top sellers" in full_text:
+                        stats["top_sellers_rank"] = int(number_text)
+                        print(f"  ✅ Top Sellers: #{stats['top_sellers_rank']}")
+                    
+                    elif "in top wishlists" in full_text or "mostwished" in item.get_attribute('innerHTML'):
+                        stats["wishlist_rank"] = int(number_text)
+                        print(f"  ✅ Wishlist: #{stats['wishlist_rank']}")
+                    
+                    elif "in wishlist activity" in full_text or "wishlistactivity" in item.get_attribute('innerHTML'):
+                        stats["wishlist_activity_rank"] = int(number_text)
+                        print(f"  ✅ Wishlist Activity: #{stats['wishlist_activity_rank']}")
+                    
+                    elif "followers" in full_text or "mostfollowed" in item.get_attribute('innerHTML'):
+                        stats["followers"] = int(number_text)
+                        print(f"  ✅ Followers: {stats['followers']:,}")
+                
+                except Exception as e:
+                    print(f"  ⚠️ 항목 파싱 실패: {e}")
+                    continue
+        
         except Exception as e:
-            print(f"  ⚠️ CSS 선택자 실패: {e}")
-        
-        # 정규표현식으로 페이지 전체에서 추출
-        import re
-        
-        # #384 in top sellers
-        match = re.search(r'#(\d+)\s+in top sellers', page_source, re.IGNORECASE)
-        if match:
-            stats["top_sellers_rank"] = int(match.group(1))
-            print(f"  ✅ Top Sellers: #{stats['top_sellers_rank']}")
-        else:
-            print(f"  ⚠️ Top Sellers 매칭 실패")
-        
-        # #24 in top wishlists
-        match = re.search(r'#(\d+)\s+in top wishlists', page_source, re.IGNORECASE)
-        if match:
-            stats["wishlist_rank"] = int(match.group(1))
-            print(f"  ✅ Wishlist: #{stats['wishlist_rank']}")
-        else:
-            print(f"  ⚠️ Wishlist 매칭 실패")
-        
-        # #33 in wishlist activity
-        match = re.search(r'#(\d+)\s+in wishlist activity', page_source, re.IGNORECASE)
-        if match:
-            stats["wishlist_activity_rank"] = int(match.group(1))
-            print(f"  ✅ Wishlist Activity: #{stats['wishlist_activity_rank']}")
-        else:
-            print(f"  ⚠️ Activity 매칭 실패")
-        
-        # 61,663 followers
-        match = re.search(r'([\d,]+)\s+followers', page_source, re.IGNORECASE)
-        if match:
-            followers_text = match.group(1).replace(',', '')
-            stats["followers"] = int(followers_text)
-            print(f"  ✅ Followers: {stats['followers']:,}")
-        else:
-            print(f"  ⚠️ Followers 매칭 실패")
-        
-        # 디버깅: 관련 텍스트 찾기
-        if 'top sellers' in page_source.lower():
-            print(f"  ℹ️ 'top sellers' 텍스트 발견됨")
-        else:
-            print(f"  ⚠️ 'top sellers' 텍스트 없음 - JavaScript 렌더링 대기 필요")
+            print(f"  ❌ app-chart-numbers 찾기 실패: {e}")
         
         # 스크린샷 저장
         try:
