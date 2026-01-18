@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """
-Crimson Desert Store & SOP Tracker (Final)
-- Steam / PS / Xbox 예구 상태
-- PS / Xbox: 검색 기반 Buy 링크 사용
-- SteamDB: 참고용 링크만 사용
+Crimson Desert Store & SOP Tracker (Final Stable)
+- Steam / PS / Xbox 예구 상태 기준 고정
+- PlayStation US: 카테고리 기반 링크 사용
+- Xbox: 검색 기반 예구 오픈
+- SteamDB: 참고 링크만 사용
 - SOP(State of Play): PlayStation Blog 감지
 - 변경 감지 시 Discord 알림
 """
@@ -25,9 +26,13 @@ RELEASE_DATE = date(2026, 3, 19)
 STEAMDB_URL = "https://steamdb.info/app/3321460/charts/"
 STEAM_URL = "https://store.steampowered.com/app/3321460"
 
-PS_SEARCH_URL = "https://store.playstation.com/en-us/search/crimson%20desert"
-XBOX_SEARCH_URL = "https://www.xbox.com/en-US/search?q=Crimson+Desert"
+# 🔴 변경된 PS US 링크 (카테고리 기준)
+PS_US_CATEGORY_URL = (
+    "https://store.playstation.com/en-us/category/"
+    "3bf499d7-7acf-4931-97dd-2667494ee2c9/1"
+)
 
+XBOX_SEARCH_URL = "https://www.xbox.com/en-US/search?q=Crimson+Desert"
 PS_BLOG_URL = "https://blog.playstation.com/"
 
 STATE_FILE = "store_state.json"
@@ -66,7 +71,7 @@ def calc_dday():
     return f"D+{abs(diff)}"
 
 # ======================
-# Xbox 예구 감지
+# Xbox 예구 감지 (검색 기반)
 # ======================
 def detect_xbox_preorder():
     try:
@@ -79,7 +84,7 @@ def detect_xbox_preorder():
         return False
 
 # ======================
-# SOP 감지
+# SOP 감지 (PlayStation Blog)
 # ======================
 def detect_sop():
     try:
@@ -133,7 +138,7 @@ def main():
             f"📅 **출시일**: 2026-03-19 ({dday})\n\n"
             f"🔗 **플랫폼 바로가기**\n"
             f"[SteamDB]({STEAMDB_URL}) | "
-            f"[PlayStation US]({PS_SEARCH_URL}) | "
+            f"[PlayStation US]({PS_US_CATEGORY_URL}) | "
             f"[Xbox]({XBOX_SEARCH_URL}) | "
             f"[Steam]({STEAM_URL})\n\n"
             f"🟢 **Steam**: 예구 오픈\n"
