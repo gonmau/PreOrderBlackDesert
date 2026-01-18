@@ -373,30 +373,30 @@ def main():
     graph_buffer = create_stats_graph(history)
     
     # Discord Embed
-    stats_text = ""
+    stats_lines = []
     
     if wishlist_activity_rank is not None:
-        stats_text += f"⭐ **Wishlist Activity**: #{wishlist_activity_rank}\n"
+        stats_lines.append(f"⭐ **Wishlist Activity**: #{wishlist_activity_rank}")
     
     if followers is not None:
-        stats_text += f"👥 **Followers**: {followers:,}\n"
+        stats_lines.append(f"👥 **Followers**: {followers:,}")
     
     if review_stats.get("review_count") is not None:
-        stats_text += f"📝 **Reviews**: {review_stats['review_count']:,}\n"
+        stats_lines.append(f"📝 **Reviews**: {review_stats['review_count']:,}")
     
     if steamspy_stats.get("owners"):
-        stats_text += f"🎮 **Owners**: {steamspy_stats['owners']}\n"
+        stats_lines.append(f"🎮 **Owners**: {steamspy_stats['owners']}")
     
-    if not stats_text:
-        stats_text = "데이터 수집 중...\n"
+    stats_text = "\n".join(stats_lines) if stats_lines else "데이터 수집 중..."
     
     # 디버깅 출력
     print(f"\n📊 Discord 전송 데이터:")
-    print(f"  - Wishlist Activity Rank: {wishlist_activity_rank}")
-    print(f"  - Followers: {followers}")
-    print(f"  - Reviews: {review_stats.get('review_count')}")
-    print(f"  - Owners: {steamspy_stats.get('owners')}")
-    print(f"  - Stats Text:\n{stats_text}")
+    print(f"  - Wishlist Activity Rank: {wishlist_activity_rank} (type: {type(wishlist_activity_rank)})")
+    print(f"  - Followers: {followers} (type: {type(followers)})")
+    print(f"  - Reviews: {review_stats.get('review_count')} (type: {type(review_stats.get('review_count'))})")
+    print(f"  - Owners: {steamspy_stats.get('owners')} (type: {type(steamspy_stats.get('owners'))})")
+    print(f"  - Stats Lines: {stats_lines}")
+    print(f"  - Final Stats Text:\n{stats_text}")
     
     embed = {
         "title": "📊 Crimson Desert Complete Tracker",
