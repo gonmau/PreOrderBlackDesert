@@ -21,6 +21,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
 # Matplotlib
@@ -90,47 +92,62 @@ def get_steamdb_stats():
     
     try:
         driver.get(STEAMDB_URL)
-        print(f"  ⏳ 페이지 로딩 대기 (10초)...")
-        time.sleep(10)
+        print(f"  ⏳ 페이지 로딩 및 JavaScript 렌더링 대기...")
         
-        # app-chart-numbers 리스트 찾기
+        # 명시적 대기: ul.app-chart-numbers가 나타날 때까지 최대 20초 대기
+        wait = WebDriverWait(driver, 20)
+        
         try:
-            chart_list = driver.find_element(By.CSS_SELECTOR, "ul.app-chart-numbers")
+            chart_list = wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "ul.app-chart-numbers"))
+            )
+            print(f"  ✅ app-chart-numbers 발견!")
+            
             list_items = chart_list.find_elements(By.TAG_NAME, "li")
             print(f"  🔍 발견된 차트 항목: {len(list_items)}개")
             
-            for item in list_items:
+            for idx, item in enumerate(list_items):
                 try:
                     # <strong> 태그에서 숫자 추출
                     strong = item.find_element(By.TAG_NAME, "strong")
                     number_text = strong.text.strip().replace('#', '').replace(',', '')
                     
-                    # 텍스트에서 어떤 항목인지 판단
+                    # 전체 텍스트와 HTML 확인
                     full_text = item.text.lower()
-                    print(f"  📝 항목: {item.text[:50]}")
+                    inner_html = item.get_attribute('innerHTML').lower()
                     
-                    if "in top sellers" in full_text:
+                    print(f"  📝 항목 {idx+1}: {item.text[:80]}")
+                    
+                    if "in top sellers" in full_text or "globaltopsellers" in inner_html:
                         stats["top_sellers_rank"] = int(number_text)
-                        print(f"  ✅ Top Sellers: #{stats['top_sellers_rank']}")
+                        print(f"    ✅ Top Sellers: #{stats['top_sellers_rank']}")
                     
-                    elif "in top wishlists" in full_text or "mostwished" in item.get_attribute('innerHTML'):
+                    elif "in top wishlists" in full_text or "mostwished" in inner_html:
                         stats["wishlist_rank"] = int(number_text)
-                        print(f"  ✅ Wishlist: #{stats['wishlist_rank']}")
+                        print(f"    ✅ Wishlist: #{stats['wishlist_rank']}")
                     
-                    elif "in wishlist activity" in full_text or "wishlistactivity" in item.get_attribute('innerHTML'):
+                    elif "in wishlist activity" in full_text or "wishlistactivity" in inner_html:
                         stats["wishlist_activity_rank"] = int(number_text)
-                        print(f"  ✅ Wishlist Activity: #{stats['wishlist_activity_rank']}")
+                        print(f"    ✅ Wishlist Activity: #{stats['wishlist_activity_rank']}")
                     
-                    elif "followers" in full_text or "mostfollowed" in item.get_attribute('innerHTML'):
+                    elif "followers" in full_text or "mostfollowed" in inner_html:
                         stats["followers"] = int(number_text)
-                        print(f"  ✅ Followers: {stats['followers']:,}")
+                        print(f"    ✅ Followers: {stats['followers']:,}")
                 
                 except Exception as e:
-                    print(f"  ⚠️ 항목 파싱 실패: {e}")
+                    print(f"    ⚠️ 항목 {idx+1} 파싱 실패: {e}")
                     continue
         
         except Exception as e:
-            print(f"  ❌ app-chart-numbers 찾기 실패: {e}")
+            print(f"  ❌ app-chart-numbers 타임아웃: {e}")
+            print(f"  ℹ️ 페이지 소스 길이: {len(driver.page_source)} bytes")
+            
+            # 페이지 소스에서 직접 찾기 시도
+            page_source = driver.page_source
+            if "app-chart-numbers" in page_source:
+                print(f"  ⚠️ app-chart-numbers는 소스에 있지만 렌더링 안됨")
+            else:
+                print(f"  ⚠️ app-chart-numbers가 페이지 소스에 없음")
         
         # 스크린샷 저장
         try:
