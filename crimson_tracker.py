@@ -236,7 +236,7 @@ def calculate_avg(results):
     return combined_sum / combined_w if combined_w > 0 else None
 
 def format_diff(current, previous):
-    """순위 수치 증감 포맷팅"""
+    """순위 숫자 증감 포맷팅"""
     if previous is None or current is None:
         return ""
     diff = previous - current  # 작아질수록 순위 상승
@@ -246,6 +246,16 @@ def format_diff(current, previous):
         return f"▼{abs(diff)}"
     else:
         return "0"
+
+def get_emoji(diff_text):
+    """순위 변동에 따른 이모지 반환"""
+    if not diff_text or diff_text == "0":
+        return "⚪"  # 변동 없음
+    elif "▲" in diff_text:
+        return "🟢"  # 상승 (순위가 좋아짐)
+    elif "▼" in diff_text:
+        return "🔴"  # 하락 (순위가 나빠짐)
+    return ""
 
 def send_discord(results, combined_avg):
     if not DISCORD_WEBHOOK:
@@ -307,7 +317,7 @@ def send_discord(results, combined_avg):
 
     # 요약 메시지 (그래프 포함)
     summary_desc = f"📊 **전체 가중 평균**: `{combined_avg:.1f}위` {'(' + combined_diff_text + ')' if combined_diff_text else ''}\n"
-    summary_desc += f"🌍 **추적 중인 국가**: {len(results)}개국\n\n"
+    summary_desc += f"🌐 **추적 중인 국가**: {len(results)}개국\n\n"
     
     # 지역별 평균 계산
     for region_name in ["Americas", "Europe & Middle East", "Asia & Oceania"]:
@@ -366,23 +376,28 @@ def send_discord(results, combined_avg):
             d_diff = format_diff(curr_d, prev_d)
             c_diff = format_diff(curr_combined, prev_combined)
             
-            s_part = f"{curr_s or '-'}{'(' + s_diff + ')' if s_diff else ''}"
-            d_part = f"{curr_d or '-'}{'(' + d_diff + ')' if d_diff else ''}"
-            c_part = f"{curr_combined or '-'}{'(' + c_diff + ')' if c_diff else ''}"
+            # 이모지 추가
+            s_emoji = get_emoji(s_diff)
+            d_emoji = get_emoji(d_diff)
+            c_emoji = get_emoji(c_diff)
+            
+            s_part = f"{curr_s or '-'} {s_diff}" if s_diff else f"{curr_s or '-'}"
+            d_part = f"{curr_d or '-'} {d_diff}" if d_diff else f"{curr_d or '-'}"
+            c_part = f"{curr_combined or '-'} {c_diff}" if c_diff else f"{curr_combined or '-'}"
             
             store_url = URLS.get(c)
             flag = FLAGS.get(c, "")
             country_label = f"{flag} [{c}]({store_url})" if store_url else f"{flag} {c}"
 
             lines.append(
-                f"**{country_label}**: S `{s_part}` / D `{d_part}` → `{c_part}`"
+                f"**{country_label}**: {s_emoji}S `{s_part}` / {d_emoji}D `{d_part}` → {c_emoji}`{c_part}`"
             )
         
         if lines:
             region_desc = "\n".join(lines)
             region_payload = {
                 "embeds": [{
-                    "title": f"🌍 {region_name}",
+                    "title": f"🌐 {region_name}",
                     "description": region_desc,
                     "color": 0x00B0F4,
                     "timestamp": datetime.utcnow().isoformat()
