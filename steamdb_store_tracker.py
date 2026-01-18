@@ -5,107 +5,156 @@ import os
 import json
 import requests
 from datetime import datetime
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
+from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from io import BytesIO
-import base64
+import re
 
 STEAMDB_CHARTS_URL = "https://steamdb.info/app/3321460/charts/"
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 HISTORY_FILE = "store_data_history.json"
 
-def setup_driver():
-    """Selenium 드라이버 설정"""
-    print("🔧 Chrome 드라이버 설정 중...")
-    chrome_options = Options()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('--window-size=1920,1080')
-    chrome_options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
-    
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-    return driver
-
 def scrape_store_data():
-    """SteamDB에서 Store data 스크래핑"""
+    """SteamDB에서 Store data 스크래핑 (requests + BeautifulSoup 사용)"""
     print(f"📊 SteamDB Store data 수집 중...")
     print(f"   URL: {STEAMDB_CHARTS_URL}")
     
-    driver = None
     try:
-        driver = setup_driver()
-        driver.get(STEAMDB_CHARTS_URL)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Connection': 'keep-alive',
+        }
         
-        # 페이지 로딩 대기
-        wait = WebDriverWait(driver, 20)
-        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "app-data")))
+        print("   📥 페이지 다운로드 중...")
+        response = requests.get(STEAMDB_CHARTS_URL, headers=headers, timeout=30)
+        response.raise_for_status()
+        print(f"   ✅ 페이지 다운로드 완료 ({len(response.content)} bytes)")
         
-        print("   ✅ 페이지 로딩 완료")
-        
-        # Store data 섹션 찾기
+        soup = BeautifulSoup(response.text, 'html.parser')
         store_data = {}
         
+        # Store data 섹션 찾기
+        # SteamDB의 구조: <div class="app-data"> 안에 있음
+        print("   🔍 데이터 파싱 중...")
+        
+        # 방법 1: 링크 텍스트로 찾기
         try:
-            # in top sellers
-            sellers_elem = driver.find_element(By.XPATH, "//a[contains(text(), 'in top sellers')]")
-            sellers_rank = sellers_elem.find_element(By.XPATH, "./preceding-sibling::*[1]").text.strip('#')
-            store_data['top_sellers'] = int(sellers_rank)
-            print(f"   📈 Top Sellers: #{sellers_rank}")
-        except:
-            print("   ⚠️  Top Sellers 정보 없음")
+            # "in top sellers" 링크 찾기
+            sellers_link = soup.find('a', string=re.compile(r'in top sellers', re.IGNORECASE))
+            if sellers_link:
+                # 형제 요소에서 숫자 찾기
+                parent = sellers_link.find_parent()
+                if parent:
+                    rank_elem = parent.find(string=re.compile(r'#\d+'))
+                    if rank_elem:
+                        rank = re.search(r'#(\d+)', rank_elem)
+                        if rank:
+                            store_data['top_sellers'] = int(rank.group(1))
+                            print(f"   📈 Top Sellers: #{rank.group(1)}")
+        except Exception as e:
+            print(f"   ⚠️  Top Sellers 파싱 실패: {e}")
             store_data['top_sellers'] = None
         
         try:
-            # in top wishlists
-            wishlists_elem = driver.find_element(By.XPATH, "//a[contains(text(), 'in top wishlists')]")
-            wishlists_rank = wishlists_elem.find_element(By.XPATH, "./preceding-sibling::*[1]").text.strip('#')
-            store_data['top_wishlists'] = int(wishlists_rank)
-            print(f"   💚 Top Wishlists: #{wishlists_rank}")
-        except:
-            print("   ⚠️  Top Wishlists 정보 없음")
+            # "in top wishlists" 찾기
+            wishlists_link = soup.find('a', string=re.compile(r'in top wishlists', re.IGNORECASE))
+            if wishlists_link:
+                parent = wishlists_link.find_parent()
+                if parent:
+                    rank_elem = parent.find(string=re.compile(r'#\d+'))
+                    if rank_elem:
+                        rank = re.search(r'#(\d+)', rank_elem)
+                        if rank:
+                            store_data['top_wishlists'] = int(rank.group(1))
+                            print(f"   💚 Top Wishlists: #{rank.group(1)}")
+        except Exception as e:
+            print(f"   ⚠️  Top Wishlists 파싱 실패: {e}")
             store_data['top_wishlists'] = None
         
         try:
-            # in wishlist activity
-            activity_elem = driver.find_element(By.XPATH, "//a[contains(text(), 'in wishlist activity')]")
-            activity_rank = activity_elem.find_element(By.XPATH, "./preceding-sibling::*[1]").text.strip('#')
-            store_data['wishlist_activity'] = int(activity_rank)
-            print(f"   🔥 Wishlist Activity: #{activity_rank}")
-        except:
-            print("   ⚠️  Wishlist Activity 정보 없음")
+            # "in wishlist activity" 찾기
+            activity_link = soup.find('a', string=re.compile(r'in wishlist activity', re.IGNORECASE))
+            if activity_link:
+                parent = activity_link.find_parent()
+                if parent:
+                    rank_elem = parent.find(string=re.compile(r'#\d+'))
+                    if rank_elem:
+                        rank = re.search(r'#(\d+)', rank_elem)
+                        if rank:
+                            store_data['wishlist_activity'] = int(rank.group(1))
+                            print(f"   🔥 Wishlist Activity: #{rank.group(1)}")
+        except Exception as e:
+            print(f"   ⚠️  Wishlist Activity 파싱 실패: {e}")
             store_data['wishlist_activity'] = None
         
         try:
-            # followers
-            followers_elem = driver.find_element(By.XPATH, "//a[contains(text(), 'followers')]")
-            followers_count = followers_elem.find_element(By.XPATH, "./preceding-sibling::*[1]").text.replace(',', '')
-            store_data['followers'] = int(followers_count)
-            print(f"   👥 Followers: {followers_count}")
-        except:
-            print("   ⚠️  Followers 정보 없음")
+            # "followers" 찾기
+            followers_link = soup.find('a', string=re.compile(r'followers', re.IGNORECASE))
+            if followers_link:
+                parent = followers_link.find_parent()
+                if parent:
+                    # 숫자에 쉼표가 있을 수 있음
+                    count_elem = parent.find(string=re.compile(r'[\d,]+'))
+                    if count_elem:
+                        count = re.search(r'([\d,]+)', count_elem)
+                        if count:
+                            followers_count = count.group(1).replace(',', '')
+                            store_data['followers'] = int(followers_count)
+                            print(f"   👥 Followers: {count.group(1)}")
+        except Exception as e:
+            print(f"   ⚠️  Followers 파싱 실패: {e}")
             store_data['followers'] = None
         
-        return store_data
+        # 방법 2: 모든 텍스트에서 패턴 찾기 (백업)
+        if not any(store_data.values()):
+            print("   🔄 대체 파싱 방법 시도...")
+            text = soup.get_text()
+            
+            # Top sellers
+            sellers_match = re.search(r'#(\d+)\s+in top sellers', text, re.IGNORECASE)
+            if sellers_match:
+                store_data['top_sellers'] = int(sellers_match.group(1))
+                print(f"   📈 Top Sellers: #{sellers_match.group(1)}")
+            
+            # Top wishlists
+            wishlists_match = re.search(r'#(\d+)\s+in top wishlists', text, re.IGNORECASE)
+            if wishlists_match:
+                store_data['top_wishlists'] = int(wishlists_match.group(1))
+                print(f"   💚 Top Wishlists: #{wishlists_match.group(1)}")
+            
+            # Wishlist activity
+            activity_match = re.search(r'#(\d+)\s+in wishlist activity', text, re.IGNORECASE)
+            if activity_match:
+                store_data['wishlist_activity'] = int(activity_match.group(1))
+                print(f"   🔥 Wishlist Activity: #{activity_match.group(1)}")
+            
+            # Followers
+            followers_match = re.search(r'([\d,]+)\s+followers', text, re.IGNORECASE)
+            if followers_match:
+                followers_count = followers_match.group(1).replace(',', '')
+                store_data['followers'] = int(followers_count)
+                print(f"   👥 Followers: {followers_match.group(1)}")
         
+        # 최소한 하나의 데이터라도 있는지 확인
+        if any(v is not None for v in store_data.values()):
+            print("   ✅ 데이터 수집 성공")
+            return store_data
+        else:
+            print("   ⚠️  데이터를 찾을 수 없습니다. HTML 구조가 변경되었을 수 있습니다.")
+            # 디버깅을 위해 HTML 일부 저장
+            with open("debug_page.html", "w", encoding="utf-8") as f:
+                f.write(response.text[:5000])
+            print("   💾 debug_page.html에 페이지 일부 저장됨")
+            return None
+            
     except Exception as e:
         print(f"   ❌ 스크래핑 오류: {e}")
         import traceback
         traceback.print_exc()
         return None
-    finally:
-        if driver:
-            driver.quit()
-            print("   🔚 드라이버 종료")
 
 def load_history():
     """저장된 히스토리 로드"""
@@ -173,6 +222,9 @@ def create_graph(history):
     if not timestamps:
         print("   ⚠️  유효한 데이터가 없습니다.")
         return None
+    
+    # 한글 폰트 설정 (GitHub Actions 환경 고려)
+    plt.rcParams['font.family'] = 'DejaVu Sans'
     
     # 2x2 서브플롯 생성
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 12))
