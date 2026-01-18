@@ -2,20 +2,36 @@
 # -*- coding: utf-8 -*-
 
 """
-Crimson Desert Store & SOP Tracker + Wishlist History Graph
-- Steam 위시리스트 수집 및 히스토리 저장
-- matplotlib으로 그래프 생성
-- Discord에 그래프 이미지 전송
+Crimson Desert Complete Store Tracker
+- SteamDB Charts: wishlist 순위, wishlist activity, top sellers, followers
+- Xbox: 검색 기반 예구 오픈
+- SOP(State of Play): PlayStation Blog 감지
+- 모든 데이터 히스토리 저장 및 그래프 생성
 """
 
 import json
 import os
+import time
 from datetime import datetime, date
 import requests
-import re
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 from io import BytesIO
+
+# Selenium
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+
+# Matplotlib
+try:
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    import matplotlib.dates as mdates
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
 
 # ======================
 # 환경 설정
@@ -26,7 +42,6 @@ RELEASE_DATE = date(2026, 3, 19)
 
 STEAMDB_URL = "https://steamdb.info/app/3321460/charts/"
 STEAM_URL = "https://store.steampowered.com/app/3321460"
-STEAM_API_URL = "https://store.steampowered.com/appreviews/3321460?json=1&filter=all&language=all&day_range=9223372036854775807&num_per_page=0"
 
 PS_US_CATEGORY_URL = (
     "https://store.playstation.com/en-us/category/"
@@ -42,6 +57,88 @@ HISTORY_FILE = "steam_history.json"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
 }
+
+# ======================
+# Selenium 설정
+# ======================
+def setup_driver():
+    options = Options()
+    options.add_argument('--headless=new')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--window-size=1920,1080')
+    options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+    
+    service = Service(ChromeDriverManager().install())
+    return webdriver.Chrome(service=service, options=options)
+
+# ======================
+# SteamDB 데이터 수집
+# ======================
+def get_steamdb_stats():
+    """SteamDB Charts에서 모든 지표 수집"""
+    print("🎮 SteamDB Charts 데이터 수집 중...")
+    
+    driver = setup_driver()
+    stats = {
+        "top_sellers_rank": None,
+        "wishlist_rank": None,
+        "wishlist_activity_rank": None,
+        "followers": None
+    }
+    
+    try:
+        driver.get(STEAMDB_URL)
+        time.sleep(5)  # 페이지 로딩 대기
+        
+        # Store data 섹션 찾기
+        try:
+            # #384 in top sellers
+            sellers_elem = driver.find_element(By.XPATH, 
+                "//*[contains(text(), 'in top sellers')]/preceding-sibling::*[1]")
+            sellers_text = sellers_elem.text.strip().replace('#', '').replace(',', '')
+            stats["top_sellers_rank"] = int(sellers_text)
+            print(f"  ✅ Top Sellers: #{stats['top_sellers_rank']}")
+        except:
+            print("  ⚠️ Top Sellers 순위 없음")
+        
+        try:
+            # #24 in top wishlists
+            wishlist_elem = driver.find_element(By.XPATH,
+                "//*[contains(text(), 'in top wishlists')]/preceding-sibling::*[1]")
+            wishlist_text = wishlist_elem.text.strip().replace('#', '').replace(',', '')
+            stats["wishlist_rank"] = int(wishlist_text)
+            print(f"  ✅ Wishlist: #{stats['wishlist_rank']}")
+        except:
+            print("  ⚠️ Wishlist 순위 없음")
+        
+        try:
+            # #33 in wishlist activity
+            activity_elem = driver.find_element(By.XPATH,
+                "//*[contains(text(), 'in wishlist activity')]/preceding-sibling::*[1]")
+            activity_text = activity_elem.text.strip().replace('#', '').replace(',', '')
+            stats["wishlist_activity_rank"] = int(activity_text)
+            print(f"  ✅ Wishlist Activity: #{stats['wishlist_activity_rank']}")
+        except:
+            print("  ⚠️ Wishlist Activity 순위 없음")
+        
+        try:
+            # 61,663 followers
+            followers_elem = driver.find_element(By.XPATH,
+                "//*[contains(text(), 'followers')]/preceding-sibling::*[1]")
+            followers_text = followers_elem.text.strip().replace(',', '')
+            stats["followers"] = int(followers_text)
+            print(f"  ✅ Followers: {stats['followers']:,}")
+        except:
+            print("  ⚠️ Followers 없음")
+        
+    except Exception as e:
+        print(f"  ❌ SteamDB 수집 오류: {e}")
+    finally:
+        driver.quit()
+    
+    return stats
 
 # ======================
 # 상태 관리
@@ -73,100 +170,91 @@ def save_history(history):
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=2, ensure_ascii=False)
 
-def add_history_entry(wishlist_count):
+def add_history_entry(stats):
     history = load_history()
     entry = {
         "timestamp": datetime.utcnow().isoformat(),
-        "wishlist": wishlist_count
+        **stats
     }
     history.append(entry)
     save_history(history)
     return history
 
 # ======================
-# Steam 위시리스트 수집
-# ======================
-def get_steam_wishlist():
-    """Steam Store API로 리뷰 수 기반 추정 또는 스토어 페이지 크롤링"""
-    try:
-        # 방법 1: Steam Store 페이지에서 직접 추출
-        r = requests.get(STEAM_URL, headers=HEADERS, timeout=15)
-        if r.status_code == 200:
-            # 위시리스트 수가 페이지에 표시되는 경우
-            patterns = [
-                r'(\d+(?:,\d+)*)\s+people\s+(?:have\s+)?(?:added\s+)?(?:this\s+)?(?:to\s+)?(?:their\s+)?wishlist',
-                r'wishlist[^<>]*?(\d+(?:,\d+)*)',
-                r'data-wishlist[^>]*?(\d+(?:,\d+)*)',
-            ]
-            
-            for pattern in patterns:
-                match = re.search(pattern, r.text, re.IGNORECASE)
-                if match:
-                    count_str = match.group(1).replace(',', '')
-                    try:
-                        count = int(count_str)
-                        if count > 100:  # 유효한 숫자인지 확인
-                            print(f"Steam wishlist found: {count:,}")
-                            return count
-                    except ValueError:
-                        continue
-        
-        # 방법 2: Steam API로 리뷰 수 확인 (참고용)
-        r2 = requests.get(STEAM_API_URL, headers=HEADERS, timeout=15)
-        if r2.status_code == 200:
-            data = r2.json()
-            if 'query_summary' in data and 'total_reviews' in data['query_summary']:
-                review_count = data['query_summary']['total_reviews']
-                print(f"Steam review count: {review_count:,}")
-                # 위시리스트는 보통 리뷰의 5-20배 정도
-                # 하지만 정확한 수는 아니므로 None 반환
-        
-        print(f"Steam wishlist parsing failed")
-        return None
-        
-    except Exception as e:
-        print(f"Steam wishlist error: {e}")
-        return None
-
-# ======================
 # 그래프 생성
 # ======================
-def create_wishlist_graph(history):
-    if len(history) < 2:
+def create_stats_graph(history):
+    """모든 지표를 한 그래프에 표시"""
+    if not HAS_MATPLOTLIB or len(history) < 2:
         return None
     
-    # 데이터 준비 - wishlist 키가 있는 항목만 필터링
-    valid_entries = [entry for entry in history if "wishlist" in entry and "timestamp" in entry]
-    
+    # 유효한 데이터만 필터링
+    valid_entries = [e for e in history if "timestamp" in e]
     if len(valid_entries) < 2:
         return None
     
-    dates = [datetime.fromisoformat(entry["timestamp"]) for entry in valid_entries]
-    wishlists = [entry["wishlist"] for entry in valid_entries]
+    dates = [datetime.fromisoformat(e["timestamp"]) for e in valid_entries]
     
-    # 그래프 생성
-    plt.figure(figsize=(12, 6))
-    plt.plot(dates, wishlists, marker='o', linewidth=2, markersize=6, color='#1b2838')
+    # 4개의 서브플롯 생성
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
+    fig.suptitle('Crimson Desert - SteamDB Stats History', fontsize=16, fontweight='bold')
     
-    plt.title('Crimson Desert - Steam Wishlist History', fontsize=16, fontweight='bold')
-    plt.xlabel('Date', fontsize=12)
-    plt.ylabel('Wishlist Count', fontsize=12)
-    plt.grid(True, alpha=0.3)
+    # 1. Top Sellers Rank
+    sellers_data = [(d, e.get("top_sellers_rank")) for d, e in zip(dates, valid_entries) 
+                    if e.get("top_sellers_rank")]
+    if sellers_data:
+        d, v = zip(*sellers_data)
+        ax1.plot(d, v, marker='o', linewidth=2, color='#FF6B6B', label='Top Sellers')
+        ax1.invert_yaxis()
+        ax1.set_title('Top Sellers Rank', fontweight='bold')
+        ax1.set_ylabel('Rank')
+        ax1.grid(True, alpha=0.3)
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
     
-    # 날짜 포맷
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-    plt.gca().xaxis.set_major_locator(mdates.AutoDateLocator())
-    plt.gcf().autofmt_xdate()
+    # 2. Wishlist Rank
+    wishlist_data = [(d, e.get("wishlist_rank")) for d, e in zip(dates, valid_entries)
+                     if e.get("wishlist_rank")]
+    if wishlist_data:
+        d, v = zip(*wishlist_data)
+        ax2.plot(d, v, marker='o', linewidth=2, color='#4ECDC4', label='Wishlist')
+        ax2.invert_yaxis()
+        ax2.set_title('Wishlist Rank', fontweight='bold')
+        ax2.set_ylabel('Rank')
+        ax2.grid(True, alpha=0.3)
+        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
     
-    # y축 포맷 (천 단위 콤마)
-    ax = plt.gca()
-    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
+    # 3. Wishlist Activity Rank
+    activity_data = [(d, e.get("wishlist_activity_rank")) for d, e in zip(dates, valid_entries)
+                     if e.get("wishlist_activity_rank")]
+    if activity_data:
+        d, v = zip(*activity_data)
+        ax3.plot(d, v, marker='o', linewidth=2, color='#95E1D3', label='Activity')
+        ax3.invert_yaxis()
+        ax3.set_title('Wishlist Activity Rank', fontweight='bold')
+        ax3.set_ylabel('Rank')
+        ax3.grid(True, alpha=0.3)
+        ax3.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+    
+    # 4. Followers
+    followers_data = [(d, e.get("followers")) for d, e in zip(dates, valid_entries)
+                      if e.get("followers")]
+    if followers_data:
+        d, v = zip(*followers_data)
+        ax4.plot(d, v, marker='o', linewidth=2, color='#F38181', label='Followers')
+        ax4.set_title('Followers', fontweight='bold')
+        ax4.set_ylabel('Count')
+        ax4.grid(True, alpha=0.3)
+        ax4.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+        ax4.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
+    
+    # 날짜 레이블 회전
+    for ax in [ax1, ax2, ax3, ax4]:
+        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
     
     plt.tight_layout()
     
-    # 이미지를 메모리에 저장
     buf = BytesIO()
-    plt.savefig(buf, format='png', dpi=100, bbox_inches='tight')
+    plt.savefig(buf, format='png', dpi=120, bbox_inches='tight')
     buf.seek(0)
     plt.close()
     
@@ -216,6 +304,9 @@ def detect_sop():
 # Discord
 # ======================
 def send_discord(msg, embed=None, file_data=None, filename=None):
+    if not DISCORD_WEBHOOK:
+        return
+    
     files = None
     if file_data and filename:
         files = {"file": (filename, file_data, "image/png")}
@@ -225,7 +316,6 @@ def send_discord(msg, embed=None, file_data=None, filename=None):
         payload["embeds"] = [embed]
     
     if files:
-        # multipart/form-data로 전송
         requests.post(
             DISCORD_WEBHOOK,
             data={"payload_json": json.dumps(payload)},
@@ -239,17 +329,21 @@ def send_discord(msg, embed=None, file_data=None, filename=None):
 # 메인
 # ======================
 def main():
+    print("=" * 60)
+    print("🎮 Crimson Desert Complete Tracker")
+    print("=" * 60)
+    
     state = load_state()
     ensure_key(state, "xbox_preorder_open", False)
     ensure_key(state, "sop_detected", False)
 
     alerts = []
 
-    # Steam 위시리스트 수집
-    wishlist_count = get_steam_wishlist()
-    if wishlist_count is not None:
-        history = add_history_entry(wishlist_count)
-        alerts.append(f"📊 **Steam 위시리스트**: {wishlist_count:,}개")
+    # SteamDB 데이터 수집
+    steam_stats = get_steamdb_stats()
+    if any(steam_stats.values()):
+        history = add_history_entry(steam_stats)
+        print(f"✅ 히스토리 저장 완료 (총 {len(history)}개)")
 
     # Xbox
     xbox_open = detect_xbox_preorder()
@@ -268,51 +362,59 @@ def main():
 
     # 그래프 생성
     history = load_history()
-    valid_history = [entry for entry in history if "wishlist" in entry and "timestamp" in entry]
-    graph_buffer = create_wishlist_graph(valid_history) if len(valid_history) >= 2 else None
+    graph_buffer = create_stats_graph(history)
 
-    wishlist_text = f"📊 **Steam 위시리스트**: {wishlist_count:,}개" if wishlist_count else "📊 **Steam 위시리스트**: 수집 실패"
+    # 통계 텍스트
+    stats_text = "📊 **SteamDB Stats**\n"
+    if steam_stats["top_sellers_rank"]:
+        stats_text += f"🔥 Top Sellers: **#{steam_stats['top_sellers_rank']}**\n"
+    if steam_stats["wishlist_rank"]:
+        stats_text += f"⭐ Wishlist: **#{steam_stats['wishlist_rank']}**\n"
+    if steam_stats["wishlist_activity_rank"]:
+        stats_text += f"📈 Activity: **#{steam_stats['wishlist_activity_rank']}**\n"
+    if steam_stats["followers"]:
+        stats_text += f"👥 Followers: **{steam_stats['followers']:,}**\n"
 
     embed = {
-        "title": "📊 Crimson Desert 스토어 / SOP 추적",
+        "title": "📊 Crimson Desert Complete Tracker",
         "description": (
             f"📅 **출시일**: 2026-03-19 ({dday})\n\n"
-            f"{wishlist_text}\n"
-            f"📈 **총 {len(valid_history)}개 히스토리 기록**\n\n"
+            f"{stats_text}\n"
+            f"📈 **총 {len(history)}개 히스토리 기록**\n\n"
             f"🔗 **플랫폼 바로가기**\n"
-            f"[SteamDB]({STEAMDB_URL}) | "
+            f"[SteamDB Charts]({STEAMDB_URL}) | "
             f"[PlayStation US]({PS_US_CATEGORY_URL}) | "
             f"[Xbox]({XBOX_SEARCH_URL}) | "
             f"[Steam]({STEAM_URL})\n\n"
             f"🟢 **Steam**: 예구 오픈\n"
             f"🟢 **PlayStation US**: 예구 오픈\n"
             f"🟢 **Xbox**: 예구 오픈 (검색 기반)\n"
-            f"🎥 [**SOP: {'감지됨' if state['sop_detected'] else '미감지'}**]({PS_BLOG_URL})\n"
-            f"([PlayStation Blog]({PS_BLOG_URL}))\n\n"
+            f"🎥 [**SOP: {'감지됨' if state['sop_detected'] else '미감지'}**]({PS_BLOG_URL})\n\n"
             f"자동 추적 · {now}"
         ),
-        "color": 0x2ecc71
+        "color": 0x1B2838
     }
 
     if graph_buffer:
-        embed["image"] = {"url": "attachment://wishlist_graph.png"}
+        embed["image"] = {"url": "attachment://stats_graph.png"}
 
     if alerts:
         send_discord(
             "🚨 **변경 감지 발생**\n" + "\n".join(alerts),
             embed,
             graph_buffer,
-            "wishlist_graph.png" if graph_buffer else None
+            "stats_graph.png" if graph_buffer else None
         )
     else:
         send_discord(
             "🔔 **Crimson Desert 상태 업데이트**",
             embed,
             graph_buffer,
-            "wishlist_graph.png" if graph_buffer else None
+            "stats_graph.png" if graph_buffer else None
         )
 
     save_state(state)
+    print("✅ 완료!")
 
 if __name__ == "__main__":
     main()
