@@ -1,58 +1,38 @@
-name: Crimson Desert Countdown Notifier
+name: Steam Store Tracker
 
 on:
   schedule:
-    - cron: "0 22 * * *"   # UTC 22:00 = KST 07:00
+    - cron: "0 22 * * *"   # 한국 오전 7시
   workflow_dispatch:
 
 jobs:
-  notify:
+  track:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Calculate D-Day
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
         run: |
-          RELEASE_DATE="2026-03-19"
-          TODAY=$(date -u +"%Y-%m-%d")
+          python -m pip install --upgrade pip
+          pip install requests
 
-          RELEASE_TS=$(date -d "$RELEASE_DATE" +%s)
-          TODAY_TS=$(date -d "$TODAY" +%s)
-
-          DAYS_LEFT=$(( (RELEASE_TS - TODAY_TS) / 86400 ))
-
-          if [ "$DAYS_LEFT" -lt 0 ]; then
-            MESSAGE="🚀 출시 완료"
-          elif [ "$DAYS_LEFT" -eq 0 ]; then
-            MESSAGE="🚀 오늘 출시!"
-          elif [ "$DAYS_LEFT" -le 30 ]; then
-            MESSAGE="🔥 출시 임박 D-$DAYS_LEFT"
-          else
-            MESSAGE="⏳ 출시까지 D-$DAYS_LEFT"
-          fi
-
-          echo "MESSAGE=$MESSAGE" >> $GITHUB_ENV
-
-      - name: Send Discord Embed
+      - name: Run tracker
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"embeds\": [{
-                \"title\": \"🎮 Crimson Desert 출시 카운트다운\",
-                \"description\": \"📅 출시일: 2026-03-19\\n${MESSAGE}\",
-                \"color\": 16729344,
-                \"thumbnail\": {
-                  \"url\": \"https://cdn.cloudflare.steamstatic.com/steam/apps/3321460/header.jpg\"
-                },
-                \"fields\": [
-                  {
-                    \"name\": \"🔗 플랫폼 링크\",
-                    \"value\": \"[SteamDB](https://steamdb.info/app/3321460/charts/) | [PlayStation (US)](https://store.playstation.com/en-us) | [Xbox](https://www.xbox.com) | [Steam](https://store.steampowered.com/app/3321460)\"
-                  }
-                ],
-                \"footer\": {
-                  \"text\": \"자동 알림 · GitHub Actions\"
-                }
-              }]
-            }" \
-            ${{ secrets.DISCORD_WEBHOOK }}
+          python steamdb_store_tracker.py
+
+      - name: Commit state
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add store_state.json
+          git commit -m "Update store state" || echo "No changes"
+          git push
