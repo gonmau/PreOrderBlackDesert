@@ -11,7 +11,6 @@ jobs:
 
     steps:
       - name: Calculate D-Day
-        id: dday
         run: |
           RELEASE_DATE="2026-03-19"
           TODAY=$(date -u +"%Y-%m-%d")
@@ -22,16 +21,15 @@ jobs:
           DAYS_LEFT=$(( (RELEASE_TS - TODAY_TS) / 86400 ))
 
           if [ "$DAYS_LEFT" -lt 0 ]; then
-            MESSAGE="🚀 오늘 출시!"
+            MESSAGE="🚀 출시 완료"
           elif [ "$DAYS_LEFT" -eq 0 ]; then
-            MESSAGE="🚀 출시일!"
+            MESSAGE="🚀 오늘 출시!"
           elif [ "$DAYS_LEFT" -le 30 ]; then
             MESSAGE="🔥 출시 임박 D-$DAYS_LEFT"
           else
-            MESSAGE="⏳ D-$DAYS_LEFT"
+            MESSAGE="⏳ 출시까지 D-$DAYS_LEFT"
           fi
 
-          echo "DAYS_LEFT=$DAYS_LEFT" >> $GITHUB_ENV
           echo "MESSAGE=$MESSAGE" >> $GITHUB_ENV
 
       - name: Send Discord Embed
@@ -49,11 +47,11 @@ jobs:
                 \"fields\": [
                   {
                     \"name\": \"🔗 플랫폼 링크\",
-                    \"value": "[SteamDB](https://steamdb.info/app/3321460/charts/) | [PlayStation](https://store.playstation.com) | [Xbox](https://www.xbox.com) | [Steam](https://store.steampowered.com/app/3321460)"
+                    \"value\": \"[SteamDB](https://steamdb.info/app/3321460/charts/) | [PlayStation](https://store.playstation.com) | [Xbox](https://www.xbox.com) | [Steam](https://store.steampowered.com/app/3321460)\"
                   }
                 ],
                 \"footer\": {
-                  \"text\": \"자동 알림 시스템\"
+                  \"text\": \"자동 알림 · GitHub Actions\"
                 }
               }]
             }" \
