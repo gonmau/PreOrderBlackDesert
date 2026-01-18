@@ -11,20 +11,10 @@ Crimson Desert Complete Store Tracker
 
 import json
 import os
-import time
 import re
 from datetime import datetime, date
 import requests
 from io import BytesIO
-
-# Selenium (Wishlist 검색용)
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
 
 # Matplotlib
 try:
@@ -43,10 +33,9 @@ DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 RELEASE_DATE = date(2026, 3, 19)
 
 STEAM_APP_ID = "3321460"
-SEARCH_TERM = "crimson desert"
 
 # URLs
-STEAM_WISHLIST_URL = "https://store.steampowered.com/search/?filter=popularwishlist"
+STEAMDB_WISHLIST_ACTIVITY_URL = "https://steamdb.info/stats/wishlistactivity/"
 STEAMBASE_URL = f"https://steambase.io/games/crimson-desert/steam-charts"
 STEAM_REVIEWS_URL = f"https://store.steampowered.com/appreviews/{STEAM_APP_ID}?json=1&language=all&purchase_type=all"
 STEAMSPY_URL = f"https://steamspy.com/api.php?request=appdetails&appid={STEAM_APP_ID}"
@@ -59,62 +48,40 @@ PS_BLOG_URL = "https://blog.playstation.com/tag/state-of-play/"
 
 STATE_FILE = "store_state.json"
 HISTORY_FILE = "steam_history.json"
-MAX_PAGES = 3  # Wishlist 검색 최대 페이지
 
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 
 # ======================
-# Selenium 설정
+# SteamDB Wishlist Activity
 # ======================
-def setup_driver():
-    options = Options()
-    options.add_argument('--headless=new')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--disable-gpu')
-    options.add_argument('--window-size=1920,1080')
-    service = Service(ChromeDriverManager().install())
-    return webdriver.Chrome(service=service, options=options)
-
-# ======================
-# Steam Wishlist 순위
-# ======================
-def get_wishlist_rank():
-    """Steam 공식 wishlist 검색에서 순위 찾기"""
-    print("🔍 Steam Wishlist 순위 검색 중...")
-    driver = setup_driver()
+def get_wishlist_activity_rank():
+    """SteamDB Wishlist Activity 통계 페이지에서 순위 찾기"""
+    print("🔍 SteamDB Wishlist Activity 순위 검색 중...")
     
     try:
-        rank = 0
-        for page in range(MAX_PAGES):
-            url = f"{STEAM_WISHLIST_URL}&page={page + 1}"
-            driver.get(url)
-            time.sleep(3)
-            
-            items = driver.find_elements(By.CSS_SELECTOR, "a.search_result_row")
-            
-            for item in items:
-                rank += 1
-                try:
-                    title_elem = item.find_element(By.CSS_SELECTOR, ".title")
-                    title = title_elem.text.lower()
-                    
-                    if SEARCH_TERM.lower() in title:
-                        print(f"  ✅ Wishlist 순위: #{rank}")
-                        return rank
-                except:
-                    continue
-            
-            print(f"  📄 페이지 {page + 1} 완료 (현재까지 {rank}개)")
+        url = "https://steamdb.info/stats/wishlistactivity/"
+        r = requests.get(url, headers=HEADERS, timeout=15)
         
-        print(f"  ⚠️ {MAX_PAGES}페이지 내에서 찾지 못함")
+        if r.status_code != 200:
+            print(f"  ⚠️ SteamDB 응답 실패: {r.status_code}")
+            return None
+        
+        # HTML에서 Crimson Desert 찾기
+        # 패턴: <td>65.</td> ... <a href="/app/3321460/">Crimson Desert</a>
+        pattern = r'<td[^>]*>(\d+)\.</td>.*?/app/3321460/.*?Crimson Desert'
+        match = re.search(pattern, r.text, re.DOTALL | re.IGNORECASE)
+        
+        if match:
+            rank = int(match.group(1))
+            print(f"  ✅ Wishlist Activity 순위: #{rank}")
+            return rank
+        
+        print(f"  ⚠️ 순위 100위 안에서 찾지 못함")
         return None
         
     except Exception as e:
-        print(f"  ❌ Wishlist 검색 오류: {e}")
+        print(f"  ❌ Wishlist Activity 검색 오류: {e}")
         return None
-    finally:
-        driver.quit()
 
 # ======================
 # Steambase Followers
@@ -236,7 +203,7 @@ def create_stats_graph(history):
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
     fig.suptitle('Crimson Desert - Steam Stats History', fontsize=16, fontweight='bold')
     
-    # 1. Wishlist 순위 (기존 키 호환: rank, wishlist_rank, wishlist)
+    # 1. Wishlist Activity 순위 (기존 키 호환: rank, wishlist_rank, wishlist)
     wishlist_data = [(d, e.get("rank") or e.get("wishlist_rank") or e.get("wishlist")) 
                      for d, e in zip(dates, valid_entries) 
                      if e.get("rank") or e.get("wishlist_rank") or e.get("wishlist")]
@@ -244,7 +211,7 @@ def create_stats_graph(history):
         d, v = zip(*wishlist_data)
         ax1.plot(d, v, marker='o', linewidth=2, color='#4ECDC4')
         ax1.invert_yaxis()
-        ax1.set_title('Wishlist Rank', fontweight='bold')
+        ax1.set_title('Wishlist Activity Rank', fontweight='bold')
         ax1.set_ylabel('Rank')
         ax1.grid(True, alpha=0.3)
         ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
@@ -352,14 +319,14 @@ def main():
     alerts = []
     
     # 데이터 수집
-    wishlist_rank = get_wishlist_rank()
+    wishlist_activity_rank = get_wishlist_activity_rank()
     followers = get_steambase_followers()
     review_stats = get_steam_review_stats()
     steamspy_stats = get_steamspy_stats()
     
     # 통합 stats (기존 키 이름 호환: rank)
     all_stats = {
-        "rank": wishlist_rank,  # 기존 키 이름 'rank' 유지
+        "rank": wishlist_activity_rank,  # Wishlist Activity 순위
         "followers": followers,
         **review_stats,
         **steamspy_stats
@@ -389,8 +356,8 @@ def main():
     
     # Discord Embed
     stats_text = "📊 **Steam Stats**\n"
-    if wishlist_rank:
-        stats_text += f"⭐ Wishlist: **#{wishlist_rank}**\n"
+    if wishlist_activity_rank:
+        stats_text += f"⭐ Wishlist Activity: **#{wishlist_activity_rank}**\n"
     if followers:
         stats_text += f"👥 Followers: **{followers:,}**\n"
     if review_stats.get("review_count") is not None:
@@ -407,7 +374,7 @@ def main():
             f"🔗 [Steam]({STEAM_URL}) | [SteamDB]({STEAMDB_URL}) | [Steambase]({STEAMBASE_URL})\n\n"
             f"🟢 Steam: 예구 오픈 | 🟢 PS: 예구 오픈 | 🟢 Xbox: 예구 오픈\n"
             f"🎥 SOP: {'감지됨' if state['sop_detected'] else '미감지'}\n\n"
-            f"_Steam + Steambase · {now}_"
+            f"_SteamDB + Steambase · {now}_"
         ),
         "color": 0x1B2838
     }
