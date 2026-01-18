@@ -32,13 +32,24 @@ HEADERS = {
 # =========================
 
 def load_state():
-    if os.path.exists(STATE_FILE):
-        with open(STATE_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {
+    default_state = {
         "gamestop_detected": False,
         "xbox_detected": False
     }
+
+    if not os.path.exists(STATE_FILE):
+        return default_state
+
+    with open(STATE_FILE, "r", encoding="utf-8") as f:
+        state = json.load(f)
+
+    # 🔧 누락 키 보정
+    for key, value in default_state.items():
+        if key not in state:
+            state[key] = value
+
+    return state
+
 
 def save_state(state):
     with open(STATE_FILE, "w", encoding="utf-8") as f:
