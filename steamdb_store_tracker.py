@@ -91,12 +91,29 @@ def get_steam_wishlist():
         if r.status_code != 200:
             return None
         
-        # SteamDB에서 위시리스트 수 추출
-        # 예: "123,456 wishlists" 또는 "1,234,567 wishlists"
-        match = re.search(r'([\d,]+)\s+wishlist', r.text, re.IGNORECASE)
-        if match:
-            count_str = match.group(1).replace(',', '')
-            return int(count_str)
+        # SteamDB에서 위시리스트 수 추출 (여러 패턴 시도)
+        patterns = [
+            r'([\d,]+)\s+wishlists?',  # "123,456 wishlists"
+            r'wishlists?[:\s]+([\d,]+)',  # "wishlists: 123,456"
+            r'data-cc-wishlists?="([\d,]+)"',  # 속성값
+            r'"wishlists?":\s*"?([\d,]+)"?',  # JSON 형식
+            r'Wishlists?[:\s]+([\d,]+)',  # 대문자 버전
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, r.text, re.IGNORECASE)
+            if match:
+                count_str = match.group(1).replace(',', '')
+                try:
+                    count = int(count_str)
+                    if count > 0:  # 유효한 숫자인지 확인
+                        return count
+                except ValueError:
+                    continue
+        
+        # 디버깅: 실패 시 HTML 일부 출력 (선택적)
+        print(f"Steam wishlist parsing failed. Page length: {len(r.text)}")
+        
         return None
     except Exception as e:
         print(f"Steam wishlist error: {e}")
