@@ -17,13 +17,10 @@ import requests
 from io import BytesIO
 
 # Selenium
-from selenium import webdriver
+import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
 
 # Matplotlib
 try:
@@ -64,16 +61,16 @@ HEADERS = {
 # Selenium 설정
 # ======================
 def setup_driver():
-    options = Options()
+    options = uc.ChromeOptions()
     options.add_argument('--headless=new')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--disable-gpu')
     options.add_argument('--window-size=1920,1080')
-    options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
     
-    service = Service(ChromeDriverManager().install())
-    return webdriver.Chrome(service=service, options=options)
+    # undetected-chromedriver로 Cloudflare 우회
+    driver = uc.Chrome(options=options, version_main=None)
+    return driver
 
 # ======================
 # SteamDB 데이터 수집
@@ -92,10 +89,10 @@ def get_steamdb_stats():
     
     try:
         driver.get(STEAMDB_URL)
-        print(f"  ⏳ 페이지 로딩 및 JavaScript 렌더링 대기...")
+        print(f"  ⏳ Cloudflare 우회 대기 (최대 30초)...")
         
-        # 명시적 대기: ul.app-chart-numbers가 나타날 때까지 최대 20초 대기
-        wait = WebDriverWait(driver, 20)
+        # 명시적 대기: ul.app-chart-numbers가 나타날 때까지 최대 30초 대기
+        wait = WebDriverWait(driver, 30)
         
         try:
             chart_list = wait.until(
