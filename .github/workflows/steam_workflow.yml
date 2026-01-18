@@ -18,14 +18,9 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Setup Chrome
-        uses: browser-actions/setup-chrome@v1
-        with:
-          chrome-version: stable
-
       - name: Install dependencies
         run: |
-          pip install requests selenium undetected-chromedriver matplotlib
+          pip install requests matplotlib
 
       - name: Run tracker
         env:
