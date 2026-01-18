@@ -118,15 +118,17 @@ def create_views_graph():
         return None
     
     # 데이터 파싱
+    TARGET_VIDEOS = ["All new Boss Play", "IGN Map size"]
+    
     timestamps = []
-    views_data = {name: [] for name in VIDEO_IDS.keys()}
+    views_data = {name: [] for name in TARGET_VIDEOS}
     
     for entry in history:
         try:
             dt = datetime.fromisoformat(entry['timestamp'])
             timestamps.append(dt)
             
-            for name in VIDEO_IDS.keys():
+            for name in TARGET_VIDEOS:
                 video_data = entry['videos'].get(name, {})
                 views = video_data.get('views', 0)
                 views_data[name].append(views)
