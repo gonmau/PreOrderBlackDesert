@@ -360,10 +360,13 @@ def main():
         alerts.append("🟢 **Xbox 예구 오픈**")
         state["xbox_preorder_open"] = True
     
+    # SOP - 매번 체크 (상태 저장 안 함)
     sop_open = detect_sop()
     if sop_open and not state["sop_detected"]:
-        alerts.append("🎥 **State of Play 감지**")
-        state["sop_detected"] = True
+        alerts.append("🎥 **State of Play 2026 일정 발표**")
+    
+    # 표시용 (실시간 체크 결과 사용)
+    sop_status = sop_open
     
     now = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     dday = calc_dday()
@@ -423,7 +426,7 @@ def main():
             f"🟢 **Steam**: 예구 오픈\n"
             f"🟢 **PlayStation US**: 예구 오픈\n"
             f"🟢 **Xbox**: 예구 오픈 (검색 기반)\n"
-            f"🎥 [**SOP**: {'감지됨' if state['sop_detected'] else '소식없음'}]({PS_BLOG_URL})\n\n"
+            f"🎥 [**SOP**: {'감지됨' if sop_status else '소식없음'}]({PS_BLOG_URL})\n\n"
             f"_Steambase · {now}_"
         ),
         "color": 0x1B2838
