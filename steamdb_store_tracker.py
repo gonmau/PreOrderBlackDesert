@@ -378,10 +378,17 @@ def main():
         stats_text += f"⭐ Wishlist Activity: **#{wishlist_activity_rank}**\n"
     if followers:
         stats_text += f"👥 Followers: **{followers:,}**\n"
-    if review_stats.get("review_count") is not None:
+    if review_stats.get("review_count") is not None and review_stats["review_count"] >= 0:
         stats_text += f"📝 Reviews: **{review_stats['review_count']:,}**\n"
     if steamspy_stats.get("owners"):
         stats_text += f"🎮 Owners: **{steamspy_stats['owners']}**\n"
+    
+    # 디버깅 출력
+    print(f"\n📊 Discord 전송 데이터:")
+    print(f"  - Wishlist Activity Rank: {wishlist_activity_rank}")
+    print(f"  - Followers: {followers}")
+    print(f"  - Reviews: {review_stats.get('review_count')}")
+    print(f"  - Owners: {steamspy_stats.get('owners')}")
     
     embed = {
         "title": "📊 Crimson Desert Complete Tracker",
