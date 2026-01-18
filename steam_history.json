@@ -402,5 +402,15 @@
     "negative_reviews": 0,
     "owners": "0 .. 20,000",
     "players_2weeks": 0
+  },
+  {
+    "timestamp": "2026-01-18T13:20:14.472197",
+    "rank": null,
+    "followers": null,
+    "review_count": 0,
+    "positive_reviews": 0,
+    "negative_reviews": 0,
+    "owners": "0 .. 20,000",
+    "players_2weeks": 0
   }
 ]
