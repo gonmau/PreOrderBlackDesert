@@ -20,7 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests
+          pip install requests matplotlib
 
       - name: Run tracker
         env:
@@ -28,12 +28,12 @@ jobs:
         run: |
           python steamdb_store_tracker.py
 
-      - name: Commit state
+      - name: Commit state and history
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add store_state.json
-          git commit -m "Update store state" || echo "No changes"
+          git add store_state.json steam_history.json
+          git commit -m "Update store state and wishlist history" || echo "No changes"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
