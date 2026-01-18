@@ -269,19 +269,33 @@ def detect_sop():
         if "state of play" not in t:
             return False
         
-        # 2026년 날짜 패턴 찾기
-        # 예: "january 2026", "feb 2026", "2026-01", "01/2026" 등
+        # 2026년 날짜 패턴: "January 18, 2026" 형식
+        # 예: "january 18, 2026", "feb 5, 2026", "march 1, 2026"
         year_patterns = [
-            r'january\s+2026', r'february\s+2026', r'march\s+2026', 
-            r'april\s+2026', r'may\s+2026', r'june\s+2026',
-            r'july\s+2026', r'august\s+2026', r'september\s+2026',
-            r'october\s+2026', r'november\s+2026', r'december\s+2026',
-            r'jan\s+2026', r'feb\s+2026', r'mar\s+2026',
-            r'apr\s+2026', r'jun\s+2026', r'jul\s+2026',
-            r'aug\s+2026', r'sep\s+2026', r'oct\s+2026',
-            r'nov\s+2026', r'dec\s+2026',
-            r'2026[-/]\d{1,2}',  # 2026-01 or 2026/01
-            r'\d{1,2}[-/]2026',  # 01-2026 or 01/2026
+            r'january\s+\d{1,2},\s*2026',
+            r'february\s+\d{1,2},\s*2026',
+            r'march\s+\d{1,2},\s*2026',
+            r'april\s+\d{1,2},\s*2026',
+            r'may\s+\d{1,2},\s*2026',
+            r'june\s+\d{1,2},\s*2026',
+            r'july\s+\d{1,2},\s*2026',
+            r'august\s+\d{1,2},\s*2026',
+            r'september\s+\d{1,2},\s*2026',
+            r'october\s+\d{1,2},\s*2026',
+            r'november\s+\d{1,2},\s*2026',
+            r'december\s+\d{1,2},\s*2026',
+            # 축약형
+            r'jan\s+\d{1,2},\s*2026',
+            r'feb\s+\d{1,2},\s*2026',
+            r'mar\s+\d{1,2},\s*2026',
+            r'apr\s+\d{1,2},\s*2026',
+            r'jun\s+\d{1,2},\s*2026',
+            r'jul\s+\d{1,2},\s*2026',
+            r'aug\s+\d{1,2},\s*2026',
+            r'sep\s+\d{1,2},\s*2026',
+            r'oct\s+\d{1,2},\s*2026',
+            r'nov\s+\d{1,2},\s*2026',
+            r'dec\s+\d{1,2},\s*2026',
         ]
         
         for pattern in year_patterns:
