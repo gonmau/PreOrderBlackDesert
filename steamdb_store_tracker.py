@@ -259,14 +259,39 @@ def detect_xbox_preorder():
         return False
 
 def detect_sop():
+    """PlayStation Blog에서 2026년 State of Play 감지"""
     try:
         r = requests.get(PS_BLOG_URL, headers=HEADERS, timeout=15)
         if r.status_code != 200:
             return False
+        
         t = r.text.lower()
         if "state of play" not in t:
             return False
-        return any(k in t for k in ["announce", "broadcast", "watch live", "returns"])
+        
+        # 2026년 날짜 패턴 찾기
+        # 예: "january 2026", "feb 2026", "2026-01", "01/2026" 등
+        year_patterns = [
+            r'january\s+2026', r'february\s+2026', r'march\s+2026', 
+            r'april\s+2026', r'may\s+2026', r'june\s+2026',
+            r'july\s+2026', r'august\s+2026', r'september\s+2026',
+            r'october\s+2026', r'november\s+2026', r'december\s+2026',
+            r'jan\s+2026', r'feb\s+2026', r'mar\s+2026',
+            r'apr\s+2026', r'jun\s+2026', r'jul\s+2026',
+            r'aug\s+2026', r'sep\s+2026', r'oct\s+2026',
+            r'nov\s+2026', r'dec\s+2026',
+            r'2026[-/]\d{1,2}',  # 2026-01 or 2026/01
+            r'\d{1,2}[-/]2026',  # 01-2026 or 01/2026
+        ]
+        
+        for pattern in year_patterns:
+            if re.search(pattern, t):
+                print(f"  ✅ 2026년 SOP 일정 감지")
+                return True
+        
+        print(f"  ℹ️ State of Play 있지만 2026년 일정은 없음")
+        return False
+        
     except:
         return False
 
@@ -384,7 +409,7 @@ def main():
             f"🟢 **Steam**: 예구 오픈\n"
             f"🟢 **PlayStation US**: 예구 오픈\n"
             f"🟢 **Xbox**: 예구 오픈 (검색 기반)\n"
-            f"🎥 [**SOP: {'감지됨' if state['sop_detected'] else '미감지'}**]({PS_BLOG_URL})\n\n"
+            f"🎥 [**SOP**: {'감지됨' if state['sop_detected'] else '소식없음'}]({PS_BLOG_URL})\n\n"
             f"_Steambase · {now}_"
         ),
         "color": 0x1B2838
