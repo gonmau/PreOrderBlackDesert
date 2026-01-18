@@ -26,6 +26,7 @@ RELEASE_DATE = date(2026, 3, 19)
 
 STEAMDB_URL = "https://steamdb.info/app/3321460/charts/"
 STEAM_URL = "https://store.steampowered.com/app/3321460"
+STEAM_API_URL = "https://store.steampowered.com/appreviews/3321460?json=1&filter=all&language=all&day_range=9223372036854775807&num_per_page=0"
 
 PS_US_CATEGORY_URL = (
     "https://store.playstation.com/en-us/category/"
@@ -86,35 +87,43 @@ def add_history_entry(wishlist_count):
 # Steam 위시리스트 수집
 # ======================
 def get_steam_wishlist():
+    """Steam Store API로 리뷰 수 기반 추정 또는 스토어 페이지 크롤링"""
     try:
-        r = requests.get(STEAMDB_URL, headers=HEADERS, timeout=15)
-        if r.status_code != 200:
-            return None
+        # 방법 1: Steam Store 페이지에서 직접 추출
+        r = requests.get(STEAM_URL, headers=HEADERS, timeout=15)
+        if r.status_code == 200:
+            # 위시리스트 수가 페이지에 표시되는 경우
+            patterns = [
+                r'(\d+(?:,\d+)*)\s+people\s+(?:have\s+)?(?:added\s+)?(?:this\s+)?(?:to\s+)?(?:their\s+)?wishlist',
+                r'wishlist[^<>]*?(\d+(?:,\d+)*)',
+                r'data-wishlist[^>]*?(\d+(?:,\d+)*)',
+            ]
+            
+            for pattern in patterns:
+                match = re.search(pattern, r.text, re.IGNORECASE)
+                if match:
+                    count_str = match.group(1).replace(',', '')
+                    try:
+                        count = int(count_str)
+                        if count > 100:  # 유효한 숫자인지 확인
+                            print(f"Steam wishlist found: {count:,}")
+                            return count
+                    except ValueError:
+                        continue
         
-        # SteamDB에서 위시리스트 수 추출 (여러 패턴 시도)
-        patterns = [
-            r'([\d,]+)\s+wishlists?',  # "123,456 wishlists"
-            r'wishlists?[:\s]+([\d,]+)',  # "wishlists: 123,456"
-            r'data-cc-wishlists?="([\d,]+)"',  # 속성값
-            r'"wishlists?":\s*"?([\d,]+)"?',  # JSON 형식
-            r'Wishlists?[:\s]+([\d,]+)',  # 대문자 버전
-        ]
+        # 방법 2: Steam API로 리뷰 수 확인 (참고용)
+        r2 = requests.get(STEAM_API_URL, headers=HEADERS, timeout=15)
+        if r2.status_code == 200:
+            data = r2.json()
+            if 'query_summary' in data and 'total_reviews' in data['query_summary']:
+                review_count = data['query_summary']['total_reviews']
+                print(f"Steam review count: {review_count:,}")
+                # 위시리스트는 보통 리뷰의 5-20배 정도
+                # 하지만 정확한 수는 아니므로 None 반환
         
-        for pattern in patterns:
-            match = re.search(pattern, r.text, re.IGNORECASE)
-            if match:
-                count_str = match.group(1).replace(',', '')
-                try:
-                    count = int(count_str)
-                    if count > 0:  # 유효한 숫자인지 확인
-                        return count
-                except ValueError:
-                    continue
-        
-        # 디버깅: 실패 시 HTML 일부 출력 (선택적)
-        print(f"Steam wishlist parsing failed. Page length: {len(r.text)}")
-        
+        print(f"Steam wishlist parsing failed")
         return None
+        
     except Exception as e:
         print(f"Steam wishlist error: {e}")
         return None
