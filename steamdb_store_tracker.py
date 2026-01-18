@@ -3,10 +3,10 @@
 
 """
 Crimson Desert Complete Store Tracker
-- Steam 공식: Wishlist 순위 (검색 기반)
 - Steambase: Followers 수
 - Steam API: 리뷰 수
 - SteamSpy: 소유자 수
+- 히스토리: Wishlist Activity 순위 (과거 데이터)
 """
 
 import json
@@ -31,11 +31,10 @@ except ImportError:
 # ======================
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 RELEASE_DATE = date(2026, 3, 19)
-
 STEAM_APP_ID = "3321460"
 
 # URLs
-STEAMBASE_URL = f"https://steambase.io/games/crimson-desert/steam-charts"
+STEAMBASE_URL = "https://steambase.io/games/crimson-desert/steam-charts"
 STEAM_REVIEWS_URL = f"https://store.steampowered.com/appreviews/{STEAM_APP_ID}?json=1&language=all&purchase_type=all"
 STEAMSPY_URL = f"https://steamspy.com/api.php?request=appdetails&appid={STEAM_APP_ID}"
 STEAM_URL = f"https://store.steampowered.com/app/{STEAM_APP_ID}"
@@ -71,7 +70,6 @@ def get_steambase_followers():
             print(f"  ⚠️ Steambase 응답 실패: {r.status_code}")
             return None
         
-        # "It currently has 61,890 community hub followers" 패턴 찾기
         patterns = [
             r'It currently has\s+([\d,]+)\s+community hub followers',
             r'currently has\s+([\d,]+)\s+community hub followers',
@@ -185,7 +183,7 @@ def create_stats_graph(history):
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
     fig.suptitle('Crimson Desert - Steam Stats History', fontsize=16, fontweight='bold')
     
-    # 1. Wishlist Activity 순위 (기존 키 호환: rank, wishlist_rank, wishlist)
+    # 1. Wishlist Activity 순위
     wishlist_data = [(d, e.get("rank") or e.get("wishlist_rank") or e.get("wishlist")) 
                      for d, e in zip(dates, valid_entries) 
                      if e.get("rank") or e.get("wishlist_rank") or e.get("wishlist")]
@@ -305,7 +303,7 @@ def main():
     review_stats = get_steam_review_stats()
     steamspy_stats = get_steamspy_stats()
     
-    # 통합 stats (기존 키 이름 호환: rank는 None으로)
+    # 통합 stats
     all_stats = {
         "rank": None,  # SteamDB 수집 중단
         "followers": followers,
@@ -331,8 +329,25 @@ def main():
     now = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     dday = calc_dday()
     
-    # 그래프
+    # 히스토리에서 최신 데이터 가져오기
     history = load_history()
+    latest_rank = None
+    latest_followers = None
+    
+    if history:
+        for entry in reversed(history):
+            if latest_rank is None and (entry.get("rank") or entry.get("wishlist_rank") or entry.get("wishlist")):
+                latest_rank = entry.get("rank") or entry.get("wishlist_rank") or entry.get("wishlist")
+            if latest_followers is None and entry.get("followers"):
+                latest_followers = entry.get("followers")
+            if latest_rank and latest_followers:
+                break
+    
+    # 표시용 데이터 결정
+    display_rank = latest_rank
+    display_followers = followers if followers else latest_followers
+    
+    # 그래프 생성
     graph_buffer = create_stats_graph(history)
     
     # Discord Embed
@@ -352,42 +367,39 @@ def main():
     
     stats_text = "\n".join(stats_lines) if stats_lines else "데이터 수집 중..."
     
-    # 디버깅 출력
     print(f"\n📊 Discord 전송 데이터:")
-    print(f"  - Followers: {followers} (type: {type(followers)})")
-    print(f"  - Display Rank (히스토리): {display_rank}")
-    print(f"  - Display Followers (실시간 또는 히스토리): {display_followers}")
-    print(f"  - Reviews: {review_stats.get('review_count')}")
-    print(f"  - Owners: {steamspy_stats.get('owners')}")
-    print(f"  - Stats Lines: {stats_lines}")
-    print(f"  - Final Stats Text:\n{stats_text}")
+    print(f"  - Display Rank: {display_rank}")
+    print(f"  - Display Followers: {display_followers}")
+    print(f"  - Stats Text:\n{stats_text}")
     
     embed = {
         "title": "📊 Crimson Desert Complete Tracker",
         "description": (
             f"📅 **출시일**: 2026-03-19 ({dday})\n\n"
             f"📊 **Steam Stats**\n"
-            f"{stats_text}\n"
+            f"{stats_text}\n\n"
             f"📈 총 {len(history)}개 히스토리 기록\n\n"
             f"🔗 [Steam]({STEAM_URL}) | [SteamDB]({STEAMDB_URL})\n\n"
             f"🟢 Steam: 예구 오픈 | 🟢 PS: 예구 오픈 | 🟢 Xbox: 예구 오픈\n"
             f"🎥 SOP: {'감지됨' if state['sop_detected'] else '미감지'}\n\n"
-            f"_SteamDB + Steambase · {now}_"
+            f"_Steambase · {now}_"
         ),
         "color": 0x1B2838
     }
     
-    if graph_buffer:
-        # 그래프는 제거하고 텍스트만
-        pass
-    else:
-        # 그래프가 없을 때만 image 필드 제거
-        pass
-    
     if alerts:
-        send_discord("🚨 **변경 감지**\n" + "\n".join(alerts), embed, graph_buffer, "stats_graph.png" if graph_buffer else None)
+        send_discord("🚨 **변경 감지**\n" + "\n".join(alerts), embed)
     else:
-        send_discord("🔔 **상태 업데이트**", embed, graph_buffer, "stats_graph.png" if graph_buffer else None)
+        send_discord("🔔 **상태 업데이트**", embed)
+    
+    # 그래프를 별도 메시지로 전송
+    if graph_buffer:
+        graph_embed = {
+            "title": "📈 Crimson Desert - Steam Stats History",
+            "color": 0x1B2838,
+            "image": {"url": "attachment://stats_graph.png"}
+        }
+        send_discord("", graph_embed, graph_buffer, "stats_graph.png")
     
     save_state(state)
     print("✅ 완료!")
