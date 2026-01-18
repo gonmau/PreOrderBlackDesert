@@ -379,9 +379,12 @@ def main():
             f"📊 **Steam Stats**\n"
             f"{stats_text}\n\n"
             f"📈 총 {len(history)}개 히스토리 기록\n\n"
-            f"🔗 [Steam]({STEAM_URL}) | [SteamDB]({STEAMDB_URL})\n\n"
-            f"🟢 Steam: 예구 오픈 | 🟢 PS: 예구 오픈 | 🟢 Xbox: 예구 오픈\n"
-            f"🎥 SOP: {'감지됨' if state['sop_detected'] else '미감지'}\n\n"
+            f"🔗 **플랫폼 바로가기**\n"
+            f"[Steam]({STEAM_URL}) | [SteamDB]({STEAMDB_URL}) | [PlayStation US]({PS_US_CATEGORY_URL}) | [Xbox]({XBOX_SEARCH_URL})\n\n"
+            f"🟢 **Steam**: 예구 오픈\n"
+            f"🟢 **PlayStation US**: 예구 오픈\n"
+            f"🟢 **Xbox**: 예구 오픈 (검색 기반)\n"
+            f"🎥 [**SOP: {'감지됨' if state['sop_detected'] else '미감지'}**]({PS_BLOG_URL})\n\n"
             f"_Steambase · {now}_"
         ),
         "color": 0x1B2838
