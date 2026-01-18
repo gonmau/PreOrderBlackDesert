@@ -2,18 +2,17 @@
 # -*- coding: utf-8 -*-
 
 """
-Crimson Desert Store & SOP Tracker
-- Steam / PS / Xbox 예구 상태 고정
-- Xbox: 검색 기반 예구 오픈 감지
-- GameStop: 검색 감지
-- SOP(State of Play): PlayStation Blog 기반 감지
+Crimson Desert Store & SOP Tracker (Final)
+- Steam / PS / Xbox 예구 상태
+- PS / Xbox: 검색 기반 Buy 링크 사용
+- SteamDB: 참고용 링크만 사용
+- SOP(State of Play): PlayStation Blog 감지
 - 변경 감지 시 Discord 알림
-- GitHub Actions Safe
 """
 
 import json
 import os
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 import requests
 
 # ======================
@@ -21,14 +20,14 @@ import requests
 # ======================
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 
-APP_NAME = "Crimson Desert"
 RELEASE_DATE = date(2026, 3, 19)
 
 STEAMDB_URL = "https://steamdb.info/app/3321460/charts/"
 STEAM_URL = "https://store.steampowered.com/app/3321460"
-PS_US_URL = "https://store.playstation.com/en-us/concept/10010482"
+
+PS_SEARCH_URL = "https://store.playstation.com/en-us/search/crimson%20desert"
 XBOX_SEARCH_URL = "https://www.xbox.com/en-US/search?q=Crimson+Desert"
-GAMESTOP_SEARCH_URL = "https://www.gamestop.com/search/?q=Crimson+Desert"
+
 PS_BLOG_URL = "https://blog.playstation.com/"
 
 STATE_FILE = "store_state.json"
@@ -38,7 +37,7 @@ HEADERS = {
 }
 
 # ======================
-# 상태 로드 / 저장
+# 상태 관리
 # ======================
 def load_state():
     if not os.path.exists(STATE_FILE):
@@ -50,7 +49,7 @@ def save_state(state):
     with open(STATE_FILE, "w", encoding="utf-8") as f:
         json.dump(state, f, indent=2, ensure_ascii=False)
 
-def safe_state(state, key, default):
+def ensure_key(state, key, default):
     if key not in state:
         state[key] = default
 
@@ -59,16 +58,15 @@ def safe_state(state, key, default):
 # ======================
 def calc_dday():
     today = date.today()
-    delta = (RELEASE_DATE - today).days
-    if delta > 0:
-        return f"D-{delta}"
-    elif delta == 0:
+    diff = (RELEASE_DATE - today).days
+    if diff > 0:
+        return f"D-{diff}"
+    if diff == 0:
         return "D-DAY"
-    else:
-        return f"D+{abs(delta)}"
+    return f"D+{abs(diff)}"
 
 # ======================
-# Xbox 예구 감지 (검색 기반)
+# Xbox 예구 감지
 # ======================
 def detect_xbox_preorder():
     try:
@@ -81,43 +79,25 @@ def detect_xbox_preorder():
         return False
 
 # ======================
-# GameStop 검색 감지
-# ======================
-def detect_gamestop():
-    try:
-        r = requests.get(GAMESTOP_SEARCH_URL, headers=HEADERS, timeout=15)
-        if r.status_code != 200:
-            return False
-        return "crimson desert" in r.text.lower()
-    except Exception:
-        return False
-
-# ======================
-# SOP 감지 (PlayStation Blog)
+# SOP 감지
 # ======================
 def detect_sop():
     try:
         r = requests.get(PS_BLOG_URL, headers=HEADERS, timeout=15)
         if r.status_code != 200:
-            return None
-
-        text = r.text.lower()
-        if "state of play" not in text:
-            return None
-
-        # 행사 발표에 쓰이는 키워드
-        if not any(k in text for k in ["announce", "broadcast", "watch live", "returns"]):
-            return None
-
-        return PS_BLOG_URL
+            return False
+        t = r.text.lower()
+        if "state of play" not in t:
+            return False
+        return any(k in t for k in ["announce", "broadcast", "watch live", "returns"])
     except Exception:
-        return None
+        return False
 
 # ======================
-# Discord 전송
+# Discord
 # ======================
-def send_discord(content, embed=None):
-    payload = {"content": content}
+def send_discord(msg, embed=None):
+    payload = {"content": msg}
     if embed:
         payload["embeds"] = [embed]
     requests.post(DISCORD_WEBHOOK, json=payload, timeout=10)
@@ -127,11 +107,8 @@ def send_discord(content, embed=None):
 # ======================
 def main():
     state = load_state()
-
-    # 기존 state.json 호환
-    safe_state(state, "xbox_preorder_open", False)
-    safe_state(state, "gamestop_detected", False)
-    safe_state(state, "sop_detected", False)
+    ensure_key(state, "xbox_preorder_open", False)
+    ensure_key(state, "sop_detected", False)
 
     alerts = []
 
@@ -141,21 +118,14 @@ def main():
         alerts.append("🟢 **Xbox 예구 오픈 (검색 기반)**")
         state["xbox_preorder_open"] = True
 
-    # GameStop
-    gamestop_open = detect_gamestop()
-    if gamestop_open and not state["gamestop_detected"]:
-        alerts.append("🛒 **GameStop 검색 감지**")
-        state["gamestop_detected"] = True
-
     # SOP
-    sop_url = detect_sop()
-    if sop_url and not state["sop_detected"]:
+    sop_open = detect_sop()
+    if sop_open and not state["sop_detected"]:
         alerts.append("🎥 **State of Play 행사 감지**")
         state["sop_detected"] = True
 
-    # 공통 카드
+    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     dday = calc_dday()
-    now_utc = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
     embed = {
         "title": "📊 Crimson Desert 스토어 / SOP 추적",
@@ -163,18 +133,16 @@ def main():
             f"📅 **출시일**: 2026-03-19 ({dday})\n\n"
             f"🔗 **플랫폼 바로가기**\n"
             f"[SteamDB]({STEAMDB_URL}) | "
-            f"[PlayStation US]({PS_US_URL}) | "
+            f"[PlayStation US]({PS_SEARCH_URL}) | "
             f"[Xbox]({XBOX_SEARCH_URL}) | "
-            f"[Steam]({STEAM_URL}) | "
-            f"[GameStop 검색]({GAMESTOP_SEARCH_URL})\n\n"
+            f"[Steam]({STEAM_URL})\n\n"
             f"🟢 **Steam**: 예구 오픈\n"
             f"🟢 **PlayStation US**: 예구 오픈\n"
             f"🟢 **Xbox**: 예구 오픈 (검색 기반)\n"
-            f"🟡 **GameStop**: {'감지됨' if gamestop_open else '미감지'}\n"
             f"🎥 **SOP**: {'감지됨' if state['sop_detected'] else '미감지'}\n\n"
-            f"자동 추적 · {now_utc}"
+            f"자동 추적 · {now}"
         ),
-        "color": 0x5865F2
+        "color": 0x2ecc71
     }
 
     if alerts:
