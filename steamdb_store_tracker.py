@@ -144,7 +144,8 @@ def main():
             f"🟢 **Steam**: 예구 오픈\n"
             f"🟢 **PlayStation US**: 예구 오픈\n"
             f"🟢 **Xbox**: 예구 오픈 (검색 기반)\n"
-            f"🎥 **SOP**: {'감지됨' if state['sop_detected'] else '미감지'}\n\n"
+            f"🎥 **SOP**: {'감지됨' if state['sop_detected'] else '미감지'} "
+            f"([PlayStation Blog]({PS_BLOG_URL}))\n\n"
             f"자동 추적 · {now}"
         ),
         "color": 0x2ecc71
