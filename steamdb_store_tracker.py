@@ -3,7 +3,7 @@
 
 """
 Crimson Desert Wishlist Tracker
-- SteamDB: Wishlist 순위
+- SteamDB: Wishlist 순위만 추적
 - PlayStation Blog: State of Play 감지
 """
 
@@ -58,22 +58,19 @@ def get_wishlist_rank():
     print("🔍 SteamDB Wishlist 순위 수집 중...")
     
     try:
-        r = requests.get(STEAMDB_MOSTWISHED_URL, headers=HEADERS, timeout=15)
+        r = requests.get(STEAMDB_MOSTWISHED_URL, headers=HEADERS, timeout=30)
         if r.status_code != 200:
             print(f"  ⚠️ SteamDB 응답 실패: {r.status_code}")
             return None
         
         # Crimson Desert 앱 ID로 검색
-        # HTML 패턴: <tr>...<td>순위</td>...<a href="/app/3321460/">Crimson Desert</a>...</tr>
-        
-        # 방법 1: 앱 ID로 행 찾기
         app_pattern = rf'/app/{STEAM_APP_ID}/'
         if app_pattern in r.text:
             # 해당 앱이 포함된 tr 태그 찾기
             lines = r.text.split('\n')
             for i, line in enumerate(lines):
                 if app_pattern in line:
-                    # 위쪽 라인들에서 순위 찾기 (보통 같은 행이나 바로 위에 있음)
+                    # 위쪽 라인들에서 순위 찾기
                     for j in range(max(0, i-10), i+5):
                         # 순위는 보통 <td> 태그 안에 숫자로만 있음
                         rank_match = re.search(r'<td[^>]*>\s*(\d+)\s*\.\s*</td>', lines[j])
@@ -87,7 +84,6 @@ def get_wishlist_rank():
         name_match = re.search(name_pattern, r.text, re.IGNORECASE)
         if name_match:
             start_pos = name_match.start()
-            # 이전 텍스트에서 가장 가까운 순위 번호 찾기
             prev_text = r.text[:start_pos]
             rank_matches = list(re.finditer(r'>(\d+)\.<', prev_text))
             if rank_matches:
@@ -262,7 +258,7 @@ def main():
     
     alerts = []
     
-    # 데이터 수집
+    # 데이터 수집 - Wishlist 순위만!
     rank = get_wishlist_rank()
     
     # 히스토리 저장
@@ -295,12 +291,13 @@ def main():
     # 그래프 생성
     graph_buffer = create_rank_graph(history)
     
-    # Discord Embed
+    # Discord Embed - Wishlist 순위만!
     rank_text = f"⭐ **Wishlist Rank**: #{display_rank}" if display_rank else "데이터 수집 중..."
     
     print(f"\n📊 Discord 전송 데이터:")
-    print(f"  - Display Rank: {display_rank}")
+    print(f"  - Wishlist Rank: #{display_rank}")
     print(f"  - SOP Detected: {sop_detected}")
+    print(f"  - History Count: {len(history)}")
     
     embed = {
         "title": "📊 Crimson Desert Wishlist Tracker",
@@ -309,9 +306,9 @@ def main():
             f"{rank_text}\n\n"
             f"📈 총 {len(history)}개 히스토리 기록\n\n"
             f"🔗 **링크**\n"
-            f"[Steam]({STEAM_URL}) | [SteamDB]({STEAMDB_URL})\n\n"
+            f"[Steam Store]({STEAM_URL}) | [SteamDB]({STEAMDB_URL})\n\n"
             f"🎥 [**State of Play**: {'감지됨 ✅' if sop_detected else '소식없음'}]({PS_BLOG_URL})\n\n"
-            f"_SteamDB · {now}_"
+            f"_SteamDB Most Wished · {now}_"
         ),
         "color": 0x1B2838
     }
