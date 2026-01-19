@@ -2,11 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Crimson Desert Complete Store Tracker
-- Steambase: Followers 수
-- Steam API: 리뷰 수
-- SteamSpy: 소유자 수
-- 히스토리: Wishlist Activity 순위 (과거 데이터)
+Crimson Desert Wishlist Tracker
+- SteamDB: Wishlist 순위
+- PlayStation Blog: State of Play 감지
 """
 
 import json
@@ -34,14 +32,9 @@ RELEASE_DATE = date(2026, 3, 19)
 STEAM_APP_ID = "3321460"
 
 # URLs
-STEAMBASE_URL = "https://steambase.io/games/crimson-desert/steam-charts"
-STEAM_REVIEWS_URL = f"https://store.steampowered.com/appreviews/{STEAM_APP_ID}?json=1&language=all&purchase_type=all"
-STEAMSPY_URL = f"https://steamspy.com/api.php?request=appdetails&appid={STEAM_APP_ID}"
+STEAMDB_MOSTWISHED_URL = "https://steamdb.info/stats/mostwished/"
 STEAM_URL = f"https://store.steampowered.com/app/{STEAM_APP_ID}"
 STEAMDB_URL = f"https://steamdb.info/app/{STEAM_APP_ID}/charts/"
-
-PS_US_CATEGORY_URL = "https://store.playstation.com/en-us/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1"
-XBOX_SEARCH_URL = "https://www.xbox.com/en-US/search?q=Crimson+Desert"
 PS_BLOG_URL = "https://blog.playstation.com/tag/state-of-play/"
 
 STATE_FILE = "store_state.json"
@@ -58,78 +51,56 @@ HEADERS = {
 }
 
 # ======================
-# Steambase Followers
+# Wishlist 순위 수집
 # ======================
-def get_steambase_followers():
-    """Steambase에서 Followers 수 크롤링"""
-    print("👥 Steambase Followers 수집 중...")
+def get_wishlist_rank():
+    """SteamDB Most Wished에서 Crimson Desert 순위 추출"""
+    print("🔍 SteamDB Wishlist 순위 수집 중...")
     
     try:
-        r = requests.get(STEAMBASE_URL, headers=HEADERS, timeout=15)
+        r = requests.get(STEAMDB_MOSTWISHED_URL, headers=HEADERS, timeout=15)
         if r.status_code != 200:
-            print(f"  ⚠️ Steambase 응답 실패: {r.status_code}")
+            print(f"  ⚠️ SteamDB 응답 실패: {r.status_code}")
             return None
         
-        patterns = [
-            r'It currently has\s+([\d,]+)\s+community hub followers',
-            r'currently has\s+([\d,]+)\s+community hub followers',
-            r'([\d,]+)\s+community hub followers'
-        ]
+        # Crimson Desert 앱 ID로 검색
+        # HTML 패턴: <tr>...<td>순위</td>...<a href="/app/3321460/">Crimson Desert</a>...</tr>
         
-        for pattern in patterns:
-            match = re.search(pattern, r.text, re.IGNORECASE)
-            if match:
-                followers_str = match.group(1).replace(',', '')
-                followers = int(followers_str)
-                print(f"  ✅ Followers: {followers:,}")
-                return followers
+        # 방법 1: 앱 ID로 행 찾기
+        app_pattern = rf'/app/{STEAM_APP_ID}/'
+        if app_pattern in r.text:
+            # 해당 앱이 포함된 tr 태그 찾기
+            lines = r.text.split('\n')
+            for i, line in enumerate(lines):
+                if app_pattern in line:
+                    # 위쪽 라인들에서 순위 찾기 (보통 같은 행이나 바로 위에 있음)
+                    for j in range(max(0, i-10), i+5):
+                        # 순위는 보통 <td> 태그 안에 숫자로만 있음
+                        rank_match = re.search(r'<td[^>]*>\s*(\d+)\s*\.\s*</td>', lines[j])
+                        if rank_match:
+                            rank = int(rank_match.group(1))
+                            print(f"  ✅ Wishlist 순위: #{rank}")
+                            return rank
         
-        print(f"  ⚠️ Followers 텍스트를 찾을 수 없음")
+        # 방법 2: 게임 이름으로 직접 검색
+        name_pattern = r'Crimson Desert.*?</a>'
+        name_match = re.search(name_pattern, r.text, re.IGNORECASE)
+        if name_match:
+            start_pos = name_match.start()
+            # 이전 텍스트에서 가장 가까운 순위 번호 찾기
+            prev_text = r.text[:start_pos]
+            rank_matches = list(re.finditer(r'>(\d+)\.<', prev_text))
+            if rank_matches:
+                rank = int(rank_matches[-1].group(1))
+                print(f"  ✅ Wishlist 순위: #{rank}")
+                return rank
+        
+        print(f"  ⚠️ Crimson Desert를 찾을 수 없음")
         return None
         
     except Exception as e:
-        print(f"  ❌ Steambase 오류: {e}")
+        print(f"  ❌ SteamDB 오류: {e}")
         return None
-
-# ======================
-# Steam 리뷰 & SteamSpy
-# ======================
-def get_steam_review_stats():
-    """Steam Reviews API에서 리뷰 수집"""
-    print("📊 Steam Reviews 수집 중...")
-    stats = {"review_count": None, "positive_reviews": None, "negative_reviews": None}
-    
-    try:
-        r = requests.get(STEAM_REVIEWS_URL, headers=HEADERS, timeout=15)
-        if r.status_code == 200:
-            data = r.json()
-            if 'query_summary' in data:
-                summary = data['query_summary']
-                stats["review_count"] = summary.get('total_reviews', 0)
-                stats["positive_reviews"] = summary.get('total_positive', 0)
-                stats["negative_reviews"] = summary.get('total_negative', 0)
-                print(f"  ✅ 리뷰: {stats['review_count']:,} (👍 {stats['positive_reviews']:,} | 👎 {stats['negative_reviews']:,})")
-    except Exception as e:
-        print(f"  ⚠️ Steam Reviews 실패: {e}")
-    
-    return stats
-
-def get_steamspy_stats():
-    """SteamSpy에서 소유자/플레이어 수집"""
-    print("📊 SteamSpy 데이터 수집 중...")
-    stats = {"owners": None, "players_2weeks": None}
-    
-    try:
-        r = requests.get(STEAMSPY_URL, headers=HEADERS, timeout=15)
-        if r.status_code == 200:
-            data = r.json()
-            stats["owners"] = data.get('owners', '0')
-            stats["players_2weeks"] = data.get('players_2weeks', 0)
-            print(f"  ✅ 소유자: {stats['owners']} | 플레이어(2주): {stats['players_2weeks']:,}")
-    except Exception as e:
-        print(f"  ⚠️ SteamSpy 실패: {e}")
-    
-    return stats
 
 # ======================
 # 상태/히스토리 관리
@@ -144,10 +115,6 @@ def save_state(state):
     with open(STATE_FILE, "w", encoding="utf-8") as f:
         json.dump(state, f, indent=2, ensure_ascii=False)
 
-def ensure_key(state, key, default):
-    if key not in state:
-        state[key] = default
-
 def load_history():
     if not os.path.exists(HISTORY_FILE):
         return []
@@ -158,9 +125,12 @@ def save_history(history):
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=2, ensure_ascii=False)
 
-def add_history_entry(stats):
+def add_history_entry(rank):
     history = load_history()
-    entry = {"timestamp": datetime.utcnow().isoformat(), **stats}
+    entry = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "rank": rank
+    }
     history.append(entry)
     save_history(history)
     return history
@@ -168,82 +138,29 @@ def add_history_entry(stats):
 # ======================
 # 그래프 생성
 # ======================
-def create_stats_graph(history):
-    """Wishlist 순위, Followers, 리뷰 그래프"""
+def create_rank_graph(history):
+    """Wishlist 순위 그래프"""
     if not HAS_MATPLOTLIB or len(history) < 2:
         return None
     
-    valid_entries = [e for e in history if "timestamp" in e]
+    valid_entries = [e for e in history if e.get("rank") is not None]
     if len(valid_entries) < 2:
         return None
     
     dates = [datetime.fromisoformat(e["timestamp"]) for e in valid_entries]
+    ranks = [e["rank"] for e in valid_entries]
     
-    # 출시 여부 확인
-    is_released = date.today() >= RELEASE_DATE
+    fig, ax = plt.subplots(figsize=(12, 6))
     
-    if is_released:
-        # 출시 후: 2x2 (전체)
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
-        axes = [ax1, ax2, ax3, ax4]
-    else:
-        # 출시 전: 1x2 (Wishlist + Followers만)
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
-        axes = [ax1, ax2]
+    ax.plot(dates, ranks, marker='o', linewidth=2, color='#4ECDC4', markersize=6)
+    ax.invert_yaxis()  # 순위는 낮을수록 좋으므로 Y축 반전
+    ax.set_title('Crimson Desert - Wishlist Activity Rank', fontsize=16, fontweight='bold')
+    ax.set_ylabel('Rank', fontsize=12)
+    ax.set_xlabel('Date', fontsize=12)
+    ax.grid(True, alpha=0.3)
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
     
-    fig.suptitle('Crimson Desert - Steam Stats History', fontsize=16, fontweight='bold')
-    
-    # 1. Wishlist Activity 순위
-    wishlist_data = [(d, e.get("rank") or e.get("wishlist_rank") or e.get("wishlist")) 
-                     for d, e in zip(dates, valid_entries) 
-                     if e.get("rank") or e.get("wishlist_rank") or e.get("wishlist")]
-    if wishlist_data:
-        d, v = zip(*wishlist_data)
-        ax1.plot(d, v, marker='o', linewidth=2, color='#4ECDC4')
-        ax1.invert_yaxis()
-        ax1.set_title('Wishlist Activity Rank', fontweight='bold')
-        ax1.set_ylabel('Rank')
-        ax1.grid(True, alpha=0.3)
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-    
-    # 2. Followers
-    followers_data = [(d, e.get("followers")) for d, e in zip(dates, valid_entries) if e.get("followers")]
-    if followers_data:
-        d, v = zip(*followers_data)
-        ax2.plot(d, v, marker='o', linewidth=2, color='#F38181')
-        ax2.set_title('Steam Followers', fontweight='bold')
-        ax2.set_ylabel('Count')
-        ax2.grid(True, alpha=0.3)
-        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-        ax2.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
-    
-    # 출시 후에만 리뷰와 플레이어 그래프 표시
-    if is_released:
-        # 3. 리뷰 수
-        review_data = [(d, e.get("review_count")) for d, e in zip(dates, valid_entries) if e.get("review_count")]
-        if review_data:
-            d, v = zip(*review_data)
-            ax3.plot(d, v, marker='o', linewidth=2, color='#1B2838')
-            ax3.set_title('Total Reviews', fontweight='bold')
-            ax3.set_ylabel('Count')
-            ax3.grid(True, alpha=0.3)
-            ax3.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-            ax3.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
-        
-        # 4. 최근 플레이어
-        players_data = [(d, e.get("players_2weeks")) for d, e in zip(dates, valid_entries) if e.get("players_2weeks")]
-        if players_data:
-            d, v = zip(*players_data)
-            ax4.plot(d, v, marker='o', linewidth=2, color='#95E1D3')
-            ax4.set_title('Players (Last 2 Weeks)', fontweight='bold')
-            ax4.set_ylabel('Count')
-            ax4.grid(True, alpha=0.3)
-            ax4.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-            ax4.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
-    
-    for ax in axes:
-        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
-    
+    plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
     plt.tight_layout()
     
     buf = BytesIO()
@@ -261,28 +178,21 @@ def calc_dday():
     diff = (RELEASE_DATE - today).days
     return f"D-{diff}" if diff > 0 else "D-DAY" if diff == 0 else f"D+{abs(diff)}"
 
-def detect_xbox_preorder():
-    try:
-        r = requests.get(XBOX_SEARCH_URL, headers=HEADERS, timeout=15)
-        if r.status_code != 200:
-            return False
-        return any(k in r.text.lower() for k in ["pre-order", "preorder", "buy", "purchase"])
-    except:
-        return False
-
 def detect_sop():
     """PlayStation Blog에서 2026년 State of Play 감지"""
+    print("🎥 State of Play 감지 중...")
     try:
         r = requests.get(PS_BLOG_URL, headers=HEADERS, timeout=15)
         if r.status_code != 200:
+            print(f"  ⚠️ PS Blog 응답 실패: {r.status_code}")
             return False
         
         t = r.text.lower()
         if "state of play" not in t:
+            print(f"  ℹ️ State of Play 포스트 없음")
             return False
         
-        # 2026년 날짜 패턴: "January 18, 2026" 형식
-        # 예: "january 18, 2026", "feb 5, 2026", "march 1, 2026"
+        # 2026년 날짜 패턴
         year_patterns = [
             r'january\s+\d{1,2},\s*2026',
             r'february\s+\d{1,2},\s*2026',
@@ -296,7 +206,6 @@ def detect_sop():
             r'october\s+\d{1,2},\s*2026',
             r'november\s+\d{1,2},\s*2026',
             r'december\s+\d{1,2},\s*2026',
-            # 축약형
             r'jan\s+\d{1,2},\s*2026',
             r'feb\s+\d{1,2},\s*2026',
             r'mar\s+\d{1,2},\s*2026',
@@ -312,13 +221,14 @@ def detect_sop():
         
         for pattern in year_patterns:
             if re.search(pattern, t):
-                print(f"  ✅ 2026년 SOP 일정 감지")
+                print(f"  ✅ 2026년 SOP 일정 감지!")
                 return True
         
         print(f"  ℹ️ State of Play 있지만 2026년 일정은 없음")
         return False
         
-    except:
+    except Exception as e:
+        print(f"  ❌ PS Blog 오류: {e}")
         return False
 
 def send_discord(msg, embed=None, file_data=None, filename=None):
@@ -330,133 +240,96 @@ def send_discord(msg, embed=None, file_data=None, filename=None):
     if embed:
         payload["embeds"] = [embed]
     
-    if files:
-        requests.post(DISCORD_WEBHOOK, data={"payload_json": json.dumps(payload)}, files=files, timeout=10)
-    else:
-        requests.post(DISCORD_WEBHOOK, json=payload, timeout=10)
+    try:
+        if files:
+            requests.post(DISCORD_WEBHOOK, data={"payload_json": json.dumps(payload)}, files=files, timeout=10)
+        else:
+            requests.post(DISCORD_WEBHOOK, json=payload, timeout=10)
+    except Exception as e:
+        print(f"  ❌ Discord 전송 실패: {e}")
 
 # ======================
 # 메인
 # ======================
 def main():
     print("=" * 60)
-    print("🎮 Crimson Desert Complete Tracker")
+    print("🎮 Crimson Desert Wishlist Tracker")
     print("=" * 60)
     
     state = load_state()
-    ensure_key(state, "xbox_preorder_open", False)
-    ensure_key(state, "sop_detected", False)
+    if "sop_detected" not in state:
+        state["sop_detected"] = False
     
     alerts = []
     
-    # 데이터 수집 (SteamDB 제외)
-    followers = get_steambase_followers()
-    review_stats = get_steam_review_stats()
-    steamspy_stats = get_steamspy_stats()
+    # 데이터 수집
+    rank = get_wishlist_rank()
     
-    # 통합 stats
-    all_stats = {
-        "rank": None,  # SteamDB 수집 중단
-        "followers": followers,
-        **review_stats,
-        **steamspy_stats
-    }
-    
-    if any(v for v in all_stats.values() if v):
-        history = add_history_entry(all_stats)
+    # 히스토리 저장
+    if rank is not None:
+        history = add_history_entry(rank)
         print(f"✅ 히스토리 저장 완료 (총 {len(history)}개)")
+    else:
+        history = load_history()
+        print(f"⚠️ 순위 수집 실패, 기존 히스토리 사용 (총 {len(history)}개)")
     
-    # Xbox / SOP
-    xbox_open = detect_xbox_preorder()
-    if xbox_open and not state["xbox_preorder_open"]:
-        alerts.append("🟢 **Xbox 예구 오픈**")
-        state["xbox_preorder_open"] = True
+    # SOP 감지
+    sop_detected = detect_sop()
+    if sop_detected and not state["sop_detected"]:
+        alerts.append("🎥 **State of Play 2026 일정 발표!**")
+        state["sop_detected"] = True
     
-    # SOP - 매번 체크 (상태 저장 안 함)
-    sop_open = detect_sop()
-    if sop_open and not state["sop_detected"]:
-        alerts.append("🎥 **State of Play 2026 일정 발표**")
-    
-    # 표시용 (실시간 체크 결과 사용)
-    sop_status = sop_open
-    
+    # 현재 시간
     now = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     dday = calc_dday()
     
-    # 히스토리에서 최신 데이터 가져오기
-    history = load_history()
+    # 최신 순위 (히스토리에서 가져오기)
     latest_rank = None
-    latest_followers = None
+    for entry in reversed(history):
+        if entry.get("rank") is not None:
+            latest_rank = entry["rank"]
+            break
     
-    if history:
-        for entry in reversed(history):
-            if latest_rank is None and (entry.get("rank") or entry.get("wishlist_rank") or entry.get("wishlist")):
-                latest_rank = entry.get("rank") or entry.get("wishlist_rank") or entry.get("wishlist")
-            if latest_followers is None and entry.get("followers"):
-                latest_followers = entry.get("followers")
-            if latest_rank and latest_followers:
-                break
-    
-    # 표시용 데이터 결정
-    display_rank = latest_rank
-    display_followers = followers if followers else latest_followers
+    display_rank = rank if rank is not None else latest_rank
     
     # 그래프 생성
-    graph_buffer = create_stats_graph(history)
+    graph_buffer = create_rank_graph(history)
     
     # Discord Embed
-    stats_lines = []
-    
-    if display_rank is not None:
-        stats_lines.append(f"⭐ **Wishlist Activity**: #{display_rank}")
-    
-    if display_followers is not None:
-        stats_lines.append(f"👥 **Followers**: {display_followers:,}")
-    
-    if review_stats.get("review_count") is not None:
-        stats_lines.append(f"📝 **Reviews**: {review_stats['review_count']:,}")
-    
-    if steamspy_stats.get("owners"):
-        stats_lines.append(f"🎮 **Owners**: {steamspy_stats['owners']}")
-    
-    stats_text = "\n".join(stats_lines) if stats_lines else "데이터 수집 중..."
+    rank_text = f"⭐ **Wishlist Rank**: #{display_rank}" if display_rank else "데이터 수집 중..."
     
     print(f"\n📊 Discord 전송 데이터:")
     print(f"  - Display Rank: {display_rank}")
-    print(f"  - Display Followers: {display_followers}")
-    print(f"  - Stats Text:\n{stats_text}")
+    print(f"  - SOP Detected: {sop_detected}")
     
     embed = {
-        "title": "📊 Crimson Desert Complete Tracker",
+        "title": "📊 Crimson Desert Wishlist Tracker",
         "description": (
             f"📅 **출시일**: 2026-03-19 ({dday})\n\n"
-            f"📊 **Steam Stats**\n"
-            f"{stats_text}\n\n"
+            f"{rank_text}\n\n"
             f"📈 총 {len(history)}개 히스토리 기록\n\n"
-            f"🔗 **플랫폼 바로가기**\n"
-            f"[Steam]({STEAM_URL}) | [SteamDB]({STEAMDB_URL}) | [PlayStation US]({PS_US_CATEGORY_URL}) | [Xbox]({XBOX_SEARCH_URL})\n\n"
-            f"🟢 **Steam**: 예구 오픈\n"
-            f"🟢 **PlayStation US**: 예구 오픈\n"
-            f"🟢 **Xbox**: 예구 오픈 (검색 기반)\n"
-            f"🎥 [**SOP**: {'감지됨' if sop_status else '소식없음'}]({PS_BLOG_URL})\n\n"
-            f"_Steambase · {now}_"
+            f"🔗 **링크**\n"
+            f"[Steam]({STEAM_URL}) | [SteamDB]({STEAMDB_URL})\n\n"
+            f"🎥 [**State of Play**: {'감지됨 ✅' if sop_detected else '소식없음'}]({PS_BLOG_URL})\n\n"
+            f"_SteamDB · {now}_"
         ),
         "color": 0x1B2838
     }
     
+    # 알림 전송
     if alerts:
         send_discord("🚨 **변경 감지**\n" + "\n".join(alerts), embed)
     else:
-        send_discord("🔔 **상태 업데이트**", embed)
+        send_discord("📢 **상태 업데이트**", embed)
     
     # 그래프를 별도 메시지로 전송
     if graph_buffer:
         graph_embed = {
-            "title": "📈 Crimson Desert - Steam Stats History",
+            "title": "📈 Crimson Desert - Wishlist Rank History",
             "color": 0x1B2838,
-            "image": {"url": "attachment://stats_graph.png"}
+            "image": {"url": "attachment://rank_graph.png"}
         }
-        send_discord("", graph_embed, graph_buffer, "stats_graph.png")
+        send_discord("", graph_embed, graph_buffer, "rank_graph.png")
     
     save_state(state)
     print("✅ 완료!")
