@@ -32,7 +32,7 @@ RELEASE_DATE = date(2026, 3, 19)
 STEAM_APP_ID = "3321460"
 
 # URLs
-GAMES_POPULARITY_API = f"https://games-popularity.com/api/games/{STEAM_APP_ID}"
+GAMES_POPULARITY_API = "https://games-popularity.com/swagger/api/top-wishlist"
 STEAM_URL = f"https://store.steampowered.com/app/{STEAM_APP_ID}"
 STEAMDB_URL = f"https://steamdb.info/app/{STEAM_APP_ID}/charts/"
 PS_BLOG_URL = "https://blog.playstation.com/tag/state-of-play/"
@@ -61,19 +61,16 @@ def get_wishlist_rank():
         
         data = r.json()
         
-        # API 응답 구조 확인
-        if 'wishlistPosition' in data:
-            rank = data['wishlistPosition']
-            print(f"  ✅ Wishlist 순위: #{rank}")
-            return rank
-        elif 'topWishlistPosition' in data:
-            rank = data['topWishlistPosition']
-            print(f"  ✅ Wishlist 순위: #{rank}")
-            return rank
-        else:
-            print(f"  ⚠️ 순위 데이터 없음")
-            print(f"  📋 API 응답: {data}")
-            return None
+        # Top Wishlist에서 Crimson Desert 찾기
+        if 'data' in data:
+            for game in data['data']:
+                if game.get('steamId') == STEAM_APP_ID:
+                    rank = game.get('position')
+                    print(f"  ✅ Wishlist 순위: #{rank}")
+                    return rank
+        
+        print(f"  ⚠️ Crimson Desert를 찾을 수 없음")
+        return None
         
     except requests.exceptions.Timeout:
         print(f"  ❌ API 타임아웃")
