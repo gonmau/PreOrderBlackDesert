@@ -3,7 +3,7 @@
 
 """
 Crimson Desert Wishlist Tracker
-- SteamDB: Wishlist 순위만 추적
+- Games-Popularity API: Wishlist 순위
 - PlayStation Blog: State of Play 감지
 """
 
@@ -32,7 +32,7 @@ RELEASE_DATE = date(2026, 3, 19)
 STEAM_APP_ID = "3321460"
 
 # URLs
-STEAMDB_MOSTWISHED_URL = "https://steamdb.info/stats/mostwished/"
+GAMES_POPULARITY_API = f"https://games-popularity.com/api/games/{STEAM_APP_ID}"
 STEAM_URL = f"https://store.steampowered.com/app/{STEAM_APP_ID}"
 STEAMDB_URL = f"https://steamdb.info/app/{STEAM_APP_ID}/charts/"
 PS_BLOG_URL = "https://blog.playstation.com/tag/state-of-play/"
@@ -42,60 +42,50 @@ HISTORY_FILE = "steam_history.json"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept": "application/json,text/html,application/xhtml+xml",
     "Accept-Language": "en-US,en;q=0.5",
-    "Accept-Encoding": "gzip, deflate, br",
-    "DNT": "1",
-    "Connection": "keep-alive",
-    "Upgrade-Insecure-Requests": "1"
 }
 
 # ======================
 # Wishlist 순위 수집
 # ======================
 def get_wishlist_rank():
-    """SteamDB Most Wished에서 Crimson Desert 순위 추출"""
-    print("🔍 SteamDB Wishlist 순위 수집 중...")
+    """Games-Popularity API에서 Wishlist 순위 가져오기"""
+    print("🔍 Wishlist 순위 수집 중 (Games-Popularity API)...")
     
     try:
-        r = requests.get(STEAMDB_MOSTWISHED_URL, headers=HEADERS, timeout=30)
+        r = requests.get(GAMES_POPULARITY_API, headers=HEADERS, timeout=15)
         if r.status_code != 200:
-            print(f"  ⚠️ SteamDB 응답 실패: {r.status_code}")
+            print(f"  ⚠️ API 응답 실패: {r.status_code}")
             return None
         
-        # Crimson Desert 앱 ID로 검색
-        app_pattern = rf'/app/{STEAM_APP_ID}/'
-        if app_pattern in r.text:
-            # 해당 앱이 포함된 tr 태그 찾기
-            lines = r.text.split('\n')
-            for i, line in enumerate(lines):
-                if app_pattern in line:
-                    # 위쪽 라인들에서 순위 찾기
-                    for j in range(max(0, i-10), i+5):
-                        # 순위는 보통 <td> 태그 안에 숫자로만 있음
-                        rank_match = re.search(r'<td[^>]*>\s*(\d+)\s*\.\s*</td>', lines[j])
-                        if rank_match:
-                            rank = int(rank_match.group(1))
-                            print(f"  ✅ Wishlist 순위: #{rank}")
-                            return rank
+        data = r.json()
         
-        # 방법 2: 게임 이름으로 직접 검색
-        name_pattern = r'Crimson Desert.*?</a>'
-        name_match = re.search(name_pattern, r.text, re.IGNORECASE)
-        if name_match:
-            start_pos = name_match.start()
-            prev_text = r.text[:start_pos]
-            rank_matches = list(re.finditer(r'>(\d+)\.<', prev_text))
-            if rank_matches:
-                rank = int(rank_matches[-1].group(1))
-                print(f"  ✅ Wishlist 순위: #{rank}")
-                return rank
+        # API 응답 구조 확인
+        if 'wishlistPosition' in data:
+            rank = data['wishlistPosition']
+            print(f"  ✅ Wishlist 순위: #{rank}")
+            return rank
+        elif 'topWishlistPosition' in data:
+            rank = data['topWishlistPosition']
+            print(f"  ✅ Wishlist 순위: #{rank}")
+            return rank
+        else:
+            print(f"  ⚠️ 순위 데이터 없음")
+            print(f"  📋 API 응답: {data}")
+            return None
         
-        print(f"  ⚠️ Crimson Desert를 찾을 수 없음")
+    except requests.exceptions.Timeout:
+        print(f"  ❌ API 타임아웃")
         return None
-        
+    except requests.exceptions.RequestException as e:
+        print(f"  ❌ API 요청 오류: {e}")
+        return None
+    except json.JSONDecodeError as e:
+        print(f"  ❌ JSON 파싱 오류: {e}")
+        return None
     except Exception as e:
-        print(f"  ❌ SteamDB 오류: {e}")
+        print(f"  ❌ 예상치 못한 오류: {e}")
         return None
 
 # ======================
@@ -104,8 +94,12 @@ def get_wishlist_rank():
 def load_state():
     if not os.path.exists(STATE_FILE):
         return {}
-    with open(STATE_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(STATE_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        print("⚠️ state 파일 손상, 초기화")
+        return {}
 
 def save_state(state):
     with open(STATE_FILE, "w", encoding="utf-8") as f:
@@ -114,8 +108,27 @@ def save_state(state):
 def load_history():
     if not os.path.exists(HISTORY_FILE):
         return []
-    with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            # 기존 데이터가 리스트가 아니면 빈 리스트 반환
+            if not isinstance(data, list):
+                print("⚠️ 히스토리 형식 오류, 초기화")
+                return []
+            return data
+    except json.JSONDecodeError as e:
+        print(f"⚠️ 히스토리 파일 손상, 초기화 (에러: {e})")
+        # 백업 생성
+        backup_file = f"steam_history_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        try:
+            with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+                content = f.read()
+            with open(backup_file, "w", encoding="utf-8") as f:
+                f.write(content)
+            print(f"  📁 손상된 파일 백업: {backup_file}")
+        except:
+            pass
+        return []
 
 def save_history(history):
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
@@ -150,8 +163,8 @@ def create_rank_graph(history):
     
     ax.plot(dates, ranks, marker='o', linewidth=2, color='#4ECDC4', markersize=6)
     ax.invert_yaxis()  # 순위는 낮을수록 좋으므로 Y축 반전
-    ax.set_title('Crimson Desert - Wishlist Activity Rank', fontsize=16, fontweight='bold')
-    ax.set_ylabel('Rank', fontsize=12)
+    ax.set_title('Crimson Desert - Wishlist Rank Trend', fontsize=16, fontweight='bold')
+    ax.set_ylabel('Rank (lower is better)', fontsize=12)
     ax.set_xlabel('Date', fontsize=12)
     ax.grid(True, alpha=0.3)
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
@@ -292,7 +305,7 @@ def main():
     graph_buffer = create_rank_graph(history)
     
     # Discord Embed - Wishlist 순위만!
-    rank_text = f"⭐ **Wishlist Rank**: #{display_rank}" if display_rank else "데이터 수집 중..."
+    rank_text = f"⭐ **Wishlist Rank**: #{display_rank}" if display_rank else "⚠️ 데이터 수집 중..."
     
     print(f"\n📊 Discord 전송 데이터:")
     print(f"  - Wishlist Rank: #{display_rank}")
@@ -308,7 +321,7 @@ def main():
             f"🔗 **링크**\n"
             f"[Steam Store]({STEAM_URL}) | [SteamDB]({STEAMDB_URL})\n\n"
             f"🎥 [**State of Play**: {'감지됨 ✅' if sop_detected else '소식없음'}]({PS_BLOG_URL})\n\n"
-            f"_SteamDB Most Wished · {now}_"
+            f"_Games-Popularity API · {now}_"
         ),
         "color": 0x1B2838
     }
