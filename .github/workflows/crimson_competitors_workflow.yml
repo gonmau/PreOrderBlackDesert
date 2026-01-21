@@ -1,0 +1,46 @@
+name: Crimson Desert Competitors Tracker
+
+on:
+  schedule:
+    - cron: '0 23,11 * * *'  # 오전 8시, 오후 8시 (KST)
+  workflow_dispatch:          # 수동 실행 가능
+
+permissions:
+  contents: write
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install Dependencies
+      run: |
+        pip install selenium webdriver-manager requests
+    
+    - name: Run Competitors Tracker
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      run: python crimson_competitors_tracker.py
+    
+    - name: Commit and Push changes
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        
+        git stash
+        git pull origin main --rebase
+        git stash pop || echo "No changes to pop"
+        
+        git add crimson_competitors_history.json
+        git commit -m "Update Crimson Desert competitors history [skip ci]" || exit 0
+        git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main
