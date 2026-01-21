@@ -1,0 +1,92 @@
+name: Run All Trackers
+
+on:
+  workflow_dispatch:
+
+jobs:
+  trigger-all:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger BDO Tracker
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'bdo_workflow.yml',
+              ref: 'main'
+            });
+      
+      - name: Wait 2 seconds
+        run: sleep 2
+      
+      - name: Trigger Exchange Rate
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'exchange_workflow.yml',
+              ref: 'main'
+            });
+      
+      - name: Wait 2 seconds
+        run: sleep 2
+      
+      - name: Trigger PS Tracker
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'ps_tracker.yml',
+              ref: 'main'
+            });
+      
+      - name: Wait 2 seconds
+        run: sleep 2
+      
+      - name: Trigger Steam Tracker
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'steam_workflow.yml',
+              ref: 'main'
+            });
+      
+      - name: Wait 2 seconds
+        run: sleep 2
+      
+      - name: Trigger Trends Tracker
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'trends_workflow.yml',
+              ref: 'main'
+            });
+      
+      - name: Wait 2 seconds
+        run: sleep 2
+      
+      - name: Trigger YouTube Tracker
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'youtube_workflow.yml',
+              ref: 'main'
+            });
+      
+      - name: All workflows triggered
+        run: echo "✅ All 6 trackers have been triggered successfully!"
