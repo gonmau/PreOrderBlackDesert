@@ -131,6 +131,9 @@ for country in ALL_COUNTRIES:
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 HISTORY_FILE = 'crimson_competitors_history.json'
 
+# 알림 임계값 설정
+RANK_CHANGE_THRESHOLD = 3  # 순위 변동이 이 값 이상일 때만 알림
+
 # =============================================================================
 # 유틸리티
 # =============================================================================
@@ -207,6 +210,58 @@ def save_history(history):
     with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
         json.dump(history, f, indent=2, ensure_ascii=False)
 
+def find_true_new_entries(current_games, current_rank, previous_games, previous_rank):
+    """진짜 신규 진입 게임만 찾기"""
+    if previous_rank is None:
+        # 첫 실행: 모든 게임을 신규로 간주하지 않음
+        return []
+    
+    # Crimson Desert 순위 변동
+    rank_diff = current_rank - previous_rank
+    
+    if rank_diff <= 0:
+        # 순위가 올라갔거나 동일 → 현재 리스트에서 이전에 없던 게임들이 진짜 신규
+        new_entries = [game for game in current_games if game not in previous_games]
+    else:
+        # 순위가 밀렸을 때
+        # 예: 5위→7위 (2칸 하락), 앞선 게임 4개→6개 (2개 증가)
+        # → 증가한 2개 중 Crimson이 밀린 2칸은 기존 게임이 포함된 것
+        # → 실제 신규 진입 = 0개
+        
+        game_count_increase = len(current_games) - len(previous_games)
+        true_new_count = game_count_increase - rank_diff
+        
+        if true_new_count <= 0:
+            # 모든 증가가 Crimson이 밀려서 포함된 것
+            return []
+        else:
+            # 진짜 신규 진입 게임 찾기
+            # 현재 게임 중 이전에 없던 것들
+            potential_new = [game for game in current_games if game not in previous_games]
+            
+            # 상위부터 true_new_count개만 진짜 신규로 판단
+            # (하위는 Crimson이 밀려서 포함된 것일 가능성 높음)
+            new_entries = []
+            for game in current_games:
+                if game in potential_new and len(new_entries) < true_new_count:
+                    new_entries.append(game)
+            
+            return new_entries
+    
+    return new_entries
+
+def format_rank_change(current, previous):
+    """순위 변동 포맷팅"""
+    if previous is None:
+        return ""
+    diff = current - previous
+    if diff > 0:
+        return f"▼{diff}"
+    elif diff < 0:
+        return f"▲{abs(diff)}"
+    else:
+        return "="
+
 def send_discord_message(content):
     """디스코드로 메시지 전송"""
     if not DISCORD_WEBHOOK:
@@ -236,115 +291,64 @@ def main():
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S KST')
     
     new_history = {}
-    has_new_entries = False
+    countries_with_changes = []  # 변화가 있는 국가들
     
     try:
-        # 각 지역별로 처리
-        for region_name, region_countries in REGIONS.items():
-            print(f"\n=== {region_name} ===")
+        # 모든 국가 크롤링
+        all_countries = []
+        for region_countries in REGIONS.values():
+            all_countries.extend(region_countries)
+        
+        for country in all_countries:
+            url = URLS.get(country)
+            if not url:
+                print(f"  URL 없음: {country}")
+                continue
             
-            region_report = f"\n{'='*50}\n"
-            region_report += f"## 🌍 {region_name}\n\n"
+            print(f"  크롤링 중: {country}...")
             
-            for country in region_countries:
-                url = URLS.get(country)
-                if not url:
-                    print(f"  URL 없음: {country}")
-                    continue
-                
-                print(f"  크롤링 중: {country}...")
-                
-                games_above, crimson_rank = get_games_above_crimson(driver, country, url)
-                
-                if crimson_rank is None:
-                    print(f"    Crimson Desert를 찾을 수 없음")
-                    continue
-                
-                # 게임 이름 목록 (비교용)
-                current_games = games_above
-                previous_games = history.get(country, [])
-                
-                # 신규 진입 게임 찾기
-                new_entries = [game for game in current_games if game not in previous_games]
-                
-                if new_entries:
-                    has_new_entries = True
-                
-                # 히스토리 업데이트
-                new_history[country] = current_games
-                
-                # 국가별 리포트 생성
-                flag = FLAGS.get(country, "")
-                store_url = url
-                country_label = f"{flag} [{country}]({store_url})"
-                
-                region_report += f"### {country_label}\n"
-                region_report += f"📍 **Crimson Desert 현재 순위: {crimson_rank}위**\n\n"
-                
-                if not games_above:
-                    region_report += f"✨ Crimson Desert가 1위입니다!\n\n"
-                else:
-                    region_report += f"**Crimson Desert보다 앞선 게임 ({len(games_above)}개):**\n"
-                    for i, game in enumerate(games_above, 1):
-                        # 신규 진입 게임 강조
-                        if game in new_entries:
-                            region_report += f"🆕 **{i}위: {game}** ⬅️ 신규 진입!\n"
-                        else:
-                            region_report += f"{i}위: {game}\n"
-                    region_report += "\n"
+            games_above, crimson_rank = get_games_above_crimson(driver, country, url)
             
-            # 지역별 메시지 전송 (2000자 제한 고려)
-            if len(region_report) > 1900:
-                # 메시지가 너무 길면 국가별로 분할
-                country_messages = []
-                current_msg = f"\n{'='*50}\n## 🌍 {region_name}\n\n"
-                
-                for country in region_countries:
-                    url = URLS.get(country)
-                    if not url or country not in new_history:
-                        continue
-                    
-                    games_above = new_history[country]
-                    previous_games = history.get(country, [])
-                    new_entries = [game for game in games_above if game not in previous_games]
-                    
-                    # Crimson rank 재계산 필요 (저장하지 않았으므로)
-                    # 간단하게 게임 수 + 1로 근사
-                    crimson_rank = len(games_above) + 1
-                    
-                    flag = FLAGS.get(country, "")
-                    country_label = f"{flag} [{country}]({url})"
-                    
-                    country_block = f"### {country_label}\n"
-                    country_block += f"📍 **Crimson Desert: {crimson_rank}위**\n\n"
-                    
-                    if not games_above:
-                        country_block += f"✨ 1위입니다!\n\n"
-                    else:
-                        country_block += f"**앞선 게임 ({len(games_above)}개):**\n"
-                        for i, game in enumerate(games_above, 1):
-                            if game in new_entries:
-                                country_block += f"🆕 **{i}위: {game}**\n"
-                            else:
-                                country_block += f"{i}위: {game}\n"
-                        country_block += "\n"
-                    
-                    # 메시지 길이 체크
-                    if len(current_msg) + len(country_block) > 1900:
-                        country_messages.append(current_msg)
-                        current_msg = country_block
-                    else:
-                        current_msg += country_block
-                
-                if current_msg:
-                    country_messages.append(current_msg)
-                
-                for msg in country_messages:
-                    send_discord_message(msg)
-                    time.sleep(1)
-            else:
-                send_discord_message(region_report)
-                time.sleep(1)
+            if crimson_rank is None:
+                print(f"    Crimson Desert를 찾을 수 없음")
+                continue
+            
+            # 이전 데이터
+            previous_data = history.get(country, {})
+            previous_games = previous_data.get('games', [])
+            previous_rank = previous_data.get('crimson_rank')
+            
+            # 진짜 신규 진입 게임 찾기
+            true_new_entries = find_true_new_entries(
+                games_above, crimson_rank, 
+                previous_games, previous_rank
+            )
+            
+            # 순위 변동
+            rank_change = None
+            if previous_rank is not None:
+                rank_change = crimson_rank - previous_rank
+            
+            # 히스토리 업데이트
+            new_history[country] = {
+                'games': games_above,
+                'crimson_rank': crimson_rank
+            }
+            
+            # 변화 감지: 신규 진입이 있거나 순위가 크게 변동된 경우
+            has_new_entries = len(true_new_entries) > 0
+            has_big_rank_change = rank_change is not None and abs(rank_change) >= RANK_CHANGE_THRESHOLD
+            
+            if has_new_entries or has_big_rank_change:
+                countries_with_changes.append({
+                    'country': country,
+                    'crimson_rank': crimson_rank,
+                    'previous_rank': previous_rank,
+                    'rank_change': rank_change,
+                    'games_above': games_above,
+                    'new_entries': true_new_entries
+                })
+                print(f"    ✓ 변화 감지: 신규 {len(true_new_entries)}개, 순위변동 {rank_change}")
     
     finally:
         driver.quit()
@@ -354,17 +358,105 @@ def main():
     
     elapsed = (time.time() - start_time) / 60
     print(f"\n⏱️ 소요 시간: {elapsed:.1f}분")
+    print(f"📊 변화 감지: {len(countries_with_changes)}개국")
     
-    # 헤더 메시지
-    header = f"# 🎮 Crimson Desert 경쟁 게임 현황\n"
-    header += f"⏰ {current_time}\n"
-    header += f"🌐 추적 중인 국가: {len(new_history)}개국\n"
-    
-    if has_new_entries:
-        header += f"🆕 **신규 진입 게임 감지!**\n"
-    
-    send_discord_message(header)
-    time.sleep(1)
+    # 디스코드 알림 (변화가 있을 때만)
+    if countries_with_changes:
+        # 헤더 메시지
+        header = f"# 🎮 Crimson Desert 경쟁 게임 변화 감지\n"
+        header += f"⏰ {current_time}\n"
+        header += f"🌐 변화 감지: **{len(countries_with_changes)}개국**\n"
+        header += f"📊 전체 추적: {len(new_history)}개국\n\n"
+        
+        send_discord_message(header)
+        time.sleep(1)
+        
+        # 지역별로 그룹화
+        for region_name, region_countries in REGIONS.items():
+            region_changes = [c for c in countries_with_changes if c['country'] in region_countries]
+            
+            if not region_changes:
+                continue
+            
+            region_msg = f"## 🌍 {region_name}\n\n"
+            
+            for change_data in region_changes:
+                country = change_data['country']
+                crimson_rank = change_data['crimson_rank']
+                previous_rank = change_data['previous_rank']
+                rank_change = change_data['rank_change']
+                new_entries = change_data['new_entries']
+                games_above = change_data['games_above']
+                
+                flag = FLAGS.get(country, "")
+                url = URLS.get(country)
+                country_label = f"{flag} [{country}]({url})"
+                
+                # 순위 변동 표시
+                rank_change_text = format_rank_change(crimson_rank, previous_rank)
+                if previous_rank:
+                    rank_info = f"{previous_rank}위→{crimson_rank}위 {rank_change_text}"
+                else:
+                    rank_info = f"{crimson_rank}위"
+                
+                region_msg += f"### {country_label} (Crimson: {rank_info})\n"
+                
+                # 신규 진입 게임 표시
+                if new_entries:
+                    region_msg += f"🆕 **신규 진입: {len(new_entries)}개**\n"
+                    for game in new_entries:
+                        # 게임의 현재 순위 찾기
+                        game_rank = games_above.index(game) + 1 if game in games_above else "?"
+                        region_msg += f"  • **{game_rank}위: {game}**\n"
+                
+                # 순위 변동만 있고 신규 진입이 없는 경우
+                elif abs(rank_change) >= RANK_CHANGE_THRESHOLD:
+                    region_msg += f"📉 순위 변동만 발생 (신규 진입 없음)\n"
+                
+                region_msg += "\n"
+            
+            # 메시지 전송 (2000자 제한 고려)
+            if len(region_msg) > 1900:
+                # 국가별로 분할
+                for change_data in region_changes:
+                    country = change_data['country']
+                    crimson_rank = change_data['crimson_rank']
+                    previous_rank = change_data['previous_rank']
+                    new_entries = change_data['new_entries']
+                    games_above = change_data['games_above']
+                    
+                    flag = FLAGS.get(country, "")
+                    url = URLS.get(country)
+                    country_label = f"{flag} [{country}]({url})"
+                    
+                    rank_change_text = format_rank_change(crimson_rank, previous_rank)
+                    if previous_rank:
+                        rank_info = f"{previous_rank}위→{crimson_rank}위 {rank_change_text}"
+                    else:
+                        rank_info = f"{crimson_rank}위"
+                    
+                    country_msg = f"### {country_label} (Crimson: {rank_info})\n"
+                    
+                    if new_entries:
+                        country_msg += f"🆕 **신규 진입: {len(new_entries)}개**\n"
+                        for game in new_entries:
+                            game_rank = games_above.index(game) + 1 if game in games_above else "?"
+                            country_msg += f"  • **{game_rank}위: {game}**\n"
+                    
+                    send_discord_message(country_msg)
+                    time.sleep(1)
+            else:
+                send_discord_message(region_msg)
+                time.sleep(1)
+    else:
+        # 변화가 없을 때
+        no_change_msg = f"# ✅ Crimson Desert 순위 안정\n"
+        no_change_msg += f"⏰ {current_time}\n"
+        no_change_msg += f"📊 {len(new_history)}개국 추적 중\n"
+        no_change_msg += f"🔹 신규 진입 게임 없음\n"
+        no_change_msg += f"🔹 큰 순위 변동(±{RANK_CHANGE_THRESHOLD}) 없음\n"
+        
+        send_discord_message(no_change_msg)
     
     print("\n=== 추적 완료 ===")
 
