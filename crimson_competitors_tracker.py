@@ -313,10 +313,16 @@ def main():
                 print(f"    Crimson Desert를 찾을 수 없음")
                 continue
             
-            # 이전 데이터
+            # 이전 데이터 (이전 버전 호환성 처리)
             previous_data = history.get(country, {})
-            previous_games = previous_data.get('games', [])
-            previous_rank = previous_data.get('crimson_rank')
+            
+            # 이전 버전이 리스트 형식인 경우 처리
+            if isinstance(previous_data, list):
+                previous_games = previous_data
+                previous_rank = None
+            else:
+                previous_games = previous_data.get('games', [])
+                previous_rank = previous_data.get('crimson_rank')
             
             # 진짜 신규 진입 게임 찾기
             true_new_entries = find_true_new_entries(
