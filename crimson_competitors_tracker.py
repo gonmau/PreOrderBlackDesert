@@ -132,7 +132,7 @@ DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 HISTORY_FILE = 'crimson_competitors_history.json'
 
 # 알림 임계값 설정
-RANK_CHANGE_THRESHOLD = 3  # 순위 변동이 이 값 이상일 때만 알림
+RANK_CHANGE_THRESHOLD = 2  # 순위 변동이 이 값 이상일 때만 알림
 
 # =============================================================================
 # 유틸리티
