@@ -1325,5 +1325,13 @@
       "avg_7d": 20,
       "top_regions": {}
     }
+  },
+  {
+    "timestamp": "2026-01-22T13:22:59.698174",
+    "google": {
+      "score": 49,
+      "avg_7d": 19,
+      "top_regions": {}
+    }
   }
 ]
