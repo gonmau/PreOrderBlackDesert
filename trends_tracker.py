@@ -54,9 +54,7 @@ def get_google_trends():
     pytrends = TrendReq(
         hl='en-US',
         tz=360,
-        timeout=(10, 30),  # 타임아웃 증가
-        retries=2,
-        backoff_factor=2,
+        timeout=(10, 30),
         requests_args={
             'headers': {
                 'User-Agent': (
@@ -144,8 +142,15 @@ def get_console_markets_trends():
                     hl='en-US', 
                     tz=360,
                     timeout=(10, 30),
-                    retries=1,
-                    backoff_factor=2
+                    requests_args={
+                        'headers': {
+                            'User-Agent': (
+                                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                                'AppleWebKit/537.36 (KHTML, like Gecko) '
+                                'Chrome/120.0.0.0 Safari/537.36'
+                            )
+                        }
+                    }
                 )
                 
                 # 최근 1개월 Google 검색 트렌드
