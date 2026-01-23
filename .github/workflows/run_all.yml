@@ -1,8 +1,6 @@
 name: Run All Trackers
-
 on:
   workflow_dispatch:
-
 jobs:
   trigger-all:
     runs-on: ubuntu-latest
@@ -10,6 +8,7 @@ jobs:
       - name: Trigger BDO Tracker
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.PAT_TOKEN }}  # 추가
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
@@ -24,6 +23,7 @@ jobs:
       - name: Trigger Exchange Rate
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.PAT_TOKEN }}  # 추가
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
@@ -38,6 +38,7 @@ jobs:
       - name: Trigger PS Tracker
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.PAT_TOKEN }}  # 추가
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
@@ -52,6 +53,7 @@ jobs:
       - name: Trigger Steam Tracker
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.PAT_TOKEN }}  # 추가
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
@@ -66,6 +68,7 @@ jobs:
       - name: Trigger Trends Tracker
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.PAT_TOKEN }}  # 추가
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
@@ -80,6 +83,7 @@ jobs:
       - name: Trigger YouTube Tracker
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.PAT_TOKEN }}  # 추가
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
@@ -94,6 +98,7 @@ jobs:
       - name: Trigger Crimson Competitors Tracker
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.PAT_TOKEN }}  # 추가
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
