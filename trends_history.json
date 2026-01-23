@@ -1362,5 +1362,25 @@
     "timestamp": "2026-01-23T08:00:51.027658",
     "google": null,
     "console_markets": {}
+  },
+  {
+    "timestamp": "2026-01-23T08:06:54.241050",
+    "google": {
+      "score": 61,
+      "avg_7d": 19,
+      "top_regions": {}
+    },
+    "console_markets": {
+      "United States": {
+        "score": 68,
+        "avg_1m": 31,
+        "geo_code": "US"
+      },
+      "Japan": {
+        "score": 0,
+        "avg_1m": 21,
+        "geo_code": "JP"
+      }
+    }
   }
 ]
