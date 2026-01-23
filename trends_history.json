@@ -1422,5 +1422,20 @@
     "timestamp": "2026-01-23T11:30:53.317138",
     "google": null,
     "console_markets": {}
+  },
+  {
+    "timestamp": "2026-01-23T12:40:15.009749",
+    "google": {
+      "score": 60,
+      "avg_7d": 19,
+      "top_regions": {}
+    },
+    "console_markets": {
+      "United States": {
+        "score": 0,
+        "avg_1m": 29,
+        "geo_code": "US"
+      }
+    }
   }
 ]
