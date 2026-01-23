@@ -111,7 +111,7 @@ def get_google_trends():
 
 
 def get_console_markets_trends():
-    """콘솔게임 주요 5개국 Google 검색 트렌드 (Rate Limit 대응)"""
+    """콘솔게임 주요 5개국 Google 검색 트렌드 (Rate Limit 대응 강화)"""
     if not HAS_PYTRENDS:
         return None
     
@@ -121,15 +121,15 @@ def get_console_markets_trends():
     failed_count = 0
     
     for idx, (country_name, geo_code) in enumerate(CONSOLE_MARKETS.items()):
-        # Rate limit 방지: 처음부터 긴 대기
+        # Rate limit 방지: 국가 간 긴 대기 (처음 제외)
         if idx > 0:
-            wait_time = 10  # 국가 간 10초 대기
+            wait_time = 30  # 10초 → 30초로 증가
             print(f"  ⏰ {wait_time}초 대기 중...")
             time.sleep(wait_time)
         
         # 연속 실패 시 중단
-        if failed_count >= 3:
-            print(f"  ⚠️ 연속 실패 3회 - 나머지 국가 스킵")
+        if failed_count >= 2:  # 3회 → 2회로 변경 (더 빠른 포기)
+            print(f"  ⚠️ 연속 실패 {failed_count}회 - 나머지 국가 스킵")
             for remaining_country in list(CONSOLE_MARKETS.keys())[idx:]:
                 results[remaining_country] = None
             break
@@ -190,12 +190,15 @@ def get_console_markets_trends():
                     failed_count += 1
                     
                     if attempt < 1:  # 1회 재시도
-                        wait_time = 30 * (attempt + 2)  # 60초, 90초
+                        wait_time = 90  # 60초 → 90초로 증가
                         print(f"    💤 {wait_time}초 대기 후 재시도...")
                         time.sleep(wait_time)
                     else:
-                        print(f"    ❌ {country_name} 최종 실패")
+                        print(f"    ❌ {country_name} 최종 실패 (429 지속)")
                         results[country_name] = None
+                        # 429 에러 시 추가 대기
+                        print(f"    ⏰ 추가 60초 대기 (429 복구)...")
+                        time.sleep(60)
                         break
                 else:
                     print(f"    ❌ {country_name} 오류: {error_msg[:100]}")
@@ -496,8 +499,8 @@ def main():
     google_data = get_google_trends()
     
     # Rate limit 방지: 글로벌 수집 후 충분히 대기
-    print("\n⏰ Rate Limit 방지 대기 (60초)...")
-    time.sleep(60)
+    print("\n⏰ Rate Limit 방지 대기 (90초)...")
+    time.sleep(90)  # 60초 → 90초로 증가
     
     # 2. 콘솔게임 주요 5개국
     console_data = get_console_markets_trends()
