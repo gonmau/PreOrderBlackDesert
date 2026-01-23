@@ -1442,5 +1442,14 @@
     "timestamp": "2026-01-23T14:56:16.599197",
     "google": null,
     "console_markets": {}
+  },
+  {
+    "timestamp": "2026-01-23T15:15:31.135098",
+    "google": {
+      "score": 63,
+      "avg_7d": 19,
+      "top_regions": {}
+    },
+    "console_markets": {}
   }
 ]
