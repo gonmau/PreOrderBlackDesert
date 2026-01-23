@@ -1417,5 +1417,10 @@
         "geo_code": "FR"
       }
     }
+  },
+  {
+    "timestamp": "2026-01-23T11:30:53.317138",
+    "google": null,
+    "console_markets": {}
   }
 ]
