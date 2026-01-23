@@ -336,61 +336,90 @@ def create_trends_graph():
     google_scores = []
     console_scores = {country: [] for country in CONSOLE_MARKETS.keys()}
     
+    # 콘솔 데이터가 있는 항목만 카운트
+    has_console_data = False
+    console_timestamps = []
+    
     for entry in history:
         try:
             dt = datetime.fromisoformat(entry['timestamp'])
-            timestamps.append(dt)
             
-            # Google 글로벌
+            # Google 글로벌 (전체 히스토리)
+            timestamps.append(dt)
             g_score = entry.get('google', {}).get('score')
             google_scores.append(g_score if g_score else 0)
             
-            # 콘솔 주요국
-            console_data = entry.get('console_markets', {})
-            for country in CONSOLE_MARKETS.keys():
-                country_data = console_data.get(country, {})
-                score = country_data.get('score') if country_data else None
-                console_scores[country].append(score if score else 0)
+            # 콘솔 주요국 (console_markets가 있는 경우만)
+            console_data = entry.get('console_markets')
+            if console_data:
+                has_console_data = True
+                console_timestamps.append(dt)
+                for country in CONSOLE_MARKETS.keys():
+                    country_data = console_data.get(country, {})
+                    score = country_data.get('score') if country_data else None
+                    console_scores[country].append(score if score else 0)
         except:
             continue
     
     if not timestamps:
         return None
     
-    # 그래프 생성 (2개 서브플롯)
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
-    plt.style.use('seaborn-v0_8-darkgrid')
-    
-    # 1. Google 글로벌 트렌드
-    ax1.plot(timestamps, google_scores, marker='o', linewidth=2, 
-            markersize=6, label='Global', color='#4285F4')
-    ax1.set_xlabel('Date', fontsize=11, fontweight='bold')
-    ax1.set_ylabel('Interest Score (0-100)', fontsize=11, fontweight='bold')
-    ax1.set_title('Crimson Desert - Google Search Trends (Global)', 
-                 fontsize=13, fontweight='bold', pad=15)
-    ax1.legend(loc='best', fontsize=10)
-    ax1.grid(True, alpha=0.3)
-    ax1.set_ylim(0, 100)
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-    
-    # 2. 콘솔 주요 5개국
-    colors = ['#EA4335', '#34A853', '#FBBC05', '#FF6D01', '#46BDC6']
-    for idx, (country, scores) in enumerate(console_scores.items()):
-        if any(s > 0 for s in scores):  # 데이터가 있는 국가만
-            ax2.plot(timestamps, scores, marker='o', linewidth=2,
-                    markersize=5, label=country, color=colors[idx])
-    
-    ax2.set_xlabel('Date', fontsize=11, fontweight='bold')
-    ax2.set_ylabel('Interest Score (0-100)', fontsize=11, fontweight='bold')
-    ax2.set_title('Crimson Desert - Console Market Trends (Top 5 Countries)', 
-                 fontsize=13, fontweight='bold', pad=15)
-    ax2.legend(loc='best', fontsize=9, ncol=2)
-    ax2.grid(True, alpha=0.3)
-    ax2.set_ylim(0, 100)
-    ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-    
-    fig.autofmt_xdate()
-    plt.tight_layout()
+    # 그래프 생성
+    if has_console_data and len(console_timestamps) >= 2:
+        # 콘솔 데이터가 충분하면 2개 서브플롯
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+        plt.style.use('seaborn-v0_8-darkgrid')
+        
+        # 1. Google 글로벌 트렌드
+        ax1.plot(timestamps, google_scores, marker='o', linewidth=2, 
+                markersize=6, label='Global', color='#4285F4')
+        ax1.set_xlabel('Date', fontsize=11, fontweight='bold')
+        ax1.set_ylabel('Interest Score (0-100)', fontsize=11, fontweight='bold')
+        ax1.set_title('Crimson Desert - Google Search Trends (Global)', 
+                     fontsize=13, fontweight='bold', pad=15)
+        ax1.legend(loc='best', fontsize=10)
+        ax1.grid(True, alpha=0.3)
+        ax1.set_ylim(0, 100)
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+        
+        # 2. 콘솔 주요 5개국
+        colors = ['#EA4335', '#34A853', '#FBBC05', '#FF6D01', '#46BDC6']
+        for idx, (country, scores) in enumerate(console_scores.items()):
+            if any(s > 0 for s in scores):  # 데이터가 있는 국가만
+                ax2.plot(console_timestamps, scores, marker='o', linewidth=2,
+                        markersize=5, label=country, color=colors[idx])
+        
+        ax2.set_xlabel('Date', fontsize=11, fontweight='bold')
+        ax2.set_ylabel('Interest Score (0-100)', fontsize=11, fontweight='bold')
+        ax2.set_title('Crimson Desert - Console Market Trends (Top 5 Countries)', 
+                     fontsize=13, fontweight='bold', pad=15)
+        ax2.legend(loc='best', fontsize=9, ncol=2)
+        ax2.grid(True, alpha=0.3)
+        ax2.set_ylim(0, 100)
+        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+        
+        fig.autofmt_xdate()
+        plt.tight_layout()
+    else:
+        # 콘솔 데이터 부족하면 Google만
+        fig, ax1 = plt.subplots(1, 1, figsize=(12, 6))
+        plt.style.use('seaborn-v0_8-darkgrid')
+        
+        ax1.plot(timestamps, google_scores, marker='o', linewidth=2, 
+                markersize=6, label='Global', color='#4285F4')
+        ax1.set_xlabel('Date', fontsize=11, fontweight='bold')
+        ax1.set_ylabel('Interest Score (0-100)', fontsize=11, fontweight='bold')
+        ax1.set_title('Crimson Desert - Google Search Trends (Global)', 
+                     fontsize=13, fontweight='bold', pad=15)
+        ax1.legend(loc='best', fontsize=10)
+        ax1.grid(True, alpha=0.3)
+        ax1.set_ylim(0, 100)
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+        
+        fig.autofmt_xdate()
+        plt.tight_layout()
+        
+        print("ℹ️  콘솔 데이터 부족 - Google 트렌드만 표시")
     
     # BytesIO로 저장
     buf = BytesIO()
