@@ -3,6 +3,7 @@ import requests
 from datetime import datetime
 import json
 import os
+import time
 
 # 게임 테마주 목록
 GAME_STOCKS = {
@@ -20,35 +21,102 @@ GAME_STOCKS = {
 
 DISCORD_WEBHOOK = os.getenv('DISCORD_WEBHOOK')
 
-def get_stock_data(code):
-    """네이버 금융에서 주식 데이터 크롤링"""
+def get_stock_data_fdr(code):
+    """FinanceDataReader로 주식 데이터 수집"""
     try:
-        url = f'https://m.stock.naver.com/api/stock/{code}/basic'
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        response = requests.get(url, headers=headers, timeout=10)
+        import FinanceDataReader as fdr
         
-        if response.status_code != 200:
-            print(f"  HTTP {response.status_code} 오류")
-            return None
-            
-        data = response.json()
-        
-        price = data.get('closePrice', 0)
-        market_cap = data.get('marketValue', 0)
-        per = data.get('per', 0)
-        pbr = data.get('pbr', 0)
-        
-        # 데이터 검증
-        if not price or not market_cap:
+        # 최근 데이터 가져오기
+        df = fdr.DataReader(code, start='2026-01-01')
+        if df.empty:
             print(f"  데이터 없음")
             return None
         
+        latest = df.iloc[-1]
+        price = int(latest['Close'])
+        
+        # 시가총액 계산을 위해 네이버 페이지에서 추가 정보 수집
+        url = f'https://finance.naver.com/item/main.naver?code={code}'
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+        
+        response = requests.get(url, headers=headers, timeout=10)
+        html = response.text
+        
+        # 시가총액 추출 (간단한 문자열 파싱)
+        market_cap = 0
+        if '시가총액' in html:
+            try:
+                start = html.find('시가총액')
+                if start != -1:
+                    chunk = html[start:start+200]
+                    # 숫자 추출
+                    import re
+                    numbers = re.findall(r'(\d+(?:,\d+)*)\s*조', chunk)
+                    if numbers:
+                        market_cap = float(numbers[0].replace(',', ''))
+            except:
+                pass
+        
         return {
-            'price': int(price),
-            'market_cap': round(market_cap / 1000000000000, 2),  # 조원
-            'per': round(float(per), 2) if per and per > 0 else 0,
-            'pbr': round(float(pbr), 2) if pbr and pbr > 0 else 0
+            'price': price,
+            'market_cap': market_cap,
+            'per': 0,  # FDR에서는 PER 제공 안함
+            'pbr': 0
         }
+    except ImportError:
+        print(f"  FinanceDataReader 설치 필요")
+        return None
+    except Exception as e:
+        print(f"  오류: {e}")
+        return None
+
+def get_stock_data_pykrx(code):
+    """pykrx로 주식 데이터 수집"""
+    try:
+        from pykrx import stock
+        from datetime import datetime, timedelta
+        
+        # 오늘 날짜
+        today = datetime.now().strftime('%Y%m%d')
+        
+        # 최근 주가
+        df = stock.get_market_ohlcv_by_date(today, today, code)
+        if df.empty:
+            # 어제 데이터 시도
+            yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y%m%d')
+            df = stock.get_market_ohlcv_by_date(yesterday, yesterday, code)
+            if df.empty:
+                print(f"  데이터 없음")
+                return None
+        
+        latest = df.iloc[-1]
+        price = int(latest['종가'])
+        
+        # 시가총액 (억원)
+        fundamental = stock.get_market_fundamental(today, today, code)
+        if fundamental.empty:
+            yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y%m%d')
+            fundamental = stock.get_market_fundamental(yesterday, yesterday, code)
+        
+        if not fundamental.empty:
+            fund = fundamental.iloc[-1]
+            market_cap = fund['시가총액'] / 1000000000000  # 조원
+            per = fund['PER'] if fund['PER'] > 0 else 0
+            pbr = fund['PBR'] if fund['PBR'] > 0 else 0
+        else:
+            market_cap = 0
+            per = 0
+            pbr = 0
+        
+        return {
+            'price': price,
+            'market_cap': round(market_cap, 2),
+            'per': round(float(per), 2) if per else 0,
+            'pbr': round(float(pbr), 2) if pbr else 0
+        }
+    except ImportError:
+        print(f"  pykrx 설치 필요")
+        return None
     except Exception as e:
         print(f"  오류: {e}")
         return None
@@ -66,7 +134,7 @@ def send_discord_notification(df, avg_per, avg_pbr, undervalued, leader):
     embed = {
         "title": "🎮 게임테마주 일일 분석 리포트",
         "description": f"**분석 시각**: {datetime.now().strftime('%Y-%m-%d %H:%M')}",
-        "color": 3447003,  # 파란색
+        "color": 3447003,
         "fields": [
             {
                 "name": "📊 섹터 평균",
@@ -162,12 +230,24 @@ def analyze_stocks():
     
     for code, name in GAME_STOCKS.items():
         print(f"분석중: {name}...")
-        data = get_stock_data(code)
+        
+        # pykrx 먼저 시도
+        data = get_stock_data_pykrx(code)
+        
+        # 실패시 FDR 시도
+        if not data:
+            data = get_stock_data_fdr(code)
         
         if data:
             data['code'] = code
             data['name'] = name
             results.append(data)
+        
+        time.sleep(0.5)  # API 부하 방지
+    
+    if not results:
+        print("\n❌ 데이터 수집 실패")
+        return
     
     df = pd.DataFrame(results)
     
@@ -192,7 +272,7 @@ def analyze_stocks():
     print(f"섹터 평균 PBR: {avg_pbr:.2f}배")
     
     print("\n[전체 종목]")
-    print(df.to_string(index=False))
+    print(df[['name', 'price', 'market_cap', 'per', 'pbr', 'undervalued']].to_string(index=False))
     
     print("\n[저평가 종목]")
     undervalued = df[df['undervalued'] == True]
@@ -214,11 +294,11 @@ def analyze_stocks():
         p = pearl.iloc[0]
         print(f"현재가: {int(p['price']):,}원")
         print(f"시가총액: {p['market_cap']}조원")
-        if p['per'] > 0 and not pd.isna(avg_per):
+        if p['per'] > 0 and avg_per > 0:
             print(f"PER: {p['per']}배 (평균 대비 {'저평가' if p['per'] < avg_per else '고평가'})")
         else:
             print(f"PER: {p['per']}배")
-        if p['pbr'] > 0 and not pd.isna(avg_pbr):
+        if p['pbr'] > 0 and avg_pbr > 0:
             print(f"PBR: {p['pbr']}배 (평균 대비 {'저평가' if p['pbr'] < avg_pbr else '고평가'})")
         else:
             print(f"PBR: {p['pbr']}배")
@@ -226,10 +306,7 @@ def analyze_stocks():
     
     # 디스코드 알림 전송
     print("\n" + "=" * 60)
-    if len(results) > 0:
-        send_discord_notification(df, avg_per, avg_pbr, undervalued, leader)
-    else:
-        print("데이터 수집 실패로 디스코드 알림을 보낼 수 없습니다.")
+    send_discord_notification(df, avg_per, avg_pbr, undervalued, leader)
     
     # CSV 저장
     df.to_csv('game_stocks_analysis.csv', index=False, encoding='utf-8-sig')
