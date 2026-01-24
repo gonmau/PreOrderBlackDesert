@@ -70,7 +70,7 @@ def get_stock_data(code):
         low_52w = df_year['Low'].min()
         
         # 현재가 대비 52주 최고가 비율
-        from_high = ((price - high_52w) / high_high) * 100
+        from_high = ((price - high_52w) / high_52w) * 100
         
         # 이동평균선 계산 (5일, 20일, 60일)
         ma5 = df_year['Close'].tail(5).mean() if len(df_year) >= 5 else price
