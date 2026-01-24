@@ -70,7 +70,36 @@ def get_stock_data(code):
         low_52w = df_year['Low'].min()
         
         # 현재가 대비 52주 최고가 비율
-        from_high = ((price - high_52w) / high_52w) * 100
+        from_high = ((price - high_52w) / high_high) * 100
+        
+        # 이동평균선 계산 (5일, 20일, 60일)
+        ma5 = df_year['Close'].tail(5).mean() if len(df_year) >= 5 else price
+        ma20 = df_year['Close'].tail(20).mean() if len(df_year) >= 20 else price
+        ma60 = df_year['Close'].tail(60).mean() if len(df_year) >= 60 else price
+        
+        # 골든크로스/데드크로스 체크
+        if len(df_year) >= 20:
+            ma5_prev = df_year['Close'].tail(6).head(5).mean()
+            ma20_prev = df_year['Close'].tail(21).head(20).mean()
+            
+            if ma5_prev <= ma20_prev and ma5 > ma20:
+                cross_signal = "골든크로스"
+            elif ma5_prev >= ma20_prev and ma5 < ma20:
+                cross_signal = "데드크로스"
+            else:
+                cross_signal = None
+        else:
+            cross_signal = None
+        
+        # RSI 계산 (14일)
+        if len(df_year) >= 15:
+            delta = df_year['Close'].diff()
+            gain = (delta.where(delta > 0, 0)).tail(14).mean()
+            loss = (-delta.where(delta < 0, 0)).tail(14).mean()
+            rs = gain / loss if loss != 0 else 0
+            rsi = 100 - (100 / (1 + rs))
+        else:
+            rsi = 50
         
         # 시가총액 계산 (StockListing에서 상장주식수 가져오기)
         try:
@@ -92,6 +121,64 @@ def get_stock_data(code):
         except:
             market_cap = 0
         
+        # 수급 및 공매도 정보
+        try:
+            from pykrx import stock
+            
+            # 최근 영업일 찾기
+            trade_date = end_date
+            for i in range(7):
+                date_str = (trade_date - timedelta(days=i)).strftime('%Y%m%d')
+                
+                try:
+                    # 투자자별 거래 (외국인, 기관)
+                    investor_df = stock.get_market_trading_value_by_date(date_str, date_str, code)
+                    if not investor_df.empty:
+                        latest_trade = investor_df.iloc[-1]
+                        foreign_net = latest_trade.get('외국인', 0) if '외국인' in latest_trade else 0
+                        institution_net = latest_trade.get('기관', 0) if '기관' in latest_trade else 0
+                        
+                        # 순매수를 거래량으로 나눠서 비율 계산 (간이)
+                        total_value = abs(foreign_net) + abs(institution_net)
+                        foreign_ratio = (foreign_net / total_value * 100) if total_value > 0 else 0
+                        institution_ratio = (institution_net / total_value * 100) if total_value > 0 else 0
+                        break
+                except:
+                    continue
+            else:
+                foreign_ratio = 0
+                institution_ratio = 0
+            
+            # 공매도 잔고 비율
+            try:
+                short_date = end_date
+                for i in range(7):
+                    date_str = (short_date - timedelta(days=i)).strftime('%Y%m%d')
+                    try:
+                        short_df = stock.get_shorting_balance_by_ticker(date_str, code)
+                        if not short_df.empty and code in short_df.index:
+                            short_info = short_df.loc[code]
+                            # 공매도잔고비율 = (공매도잔고 / 상장주식수) * 100
+                            short_balance = short_info.get('공매도잔고', 0) if '공매도잔고' in short_info else 0
+                            short_ratio = short_info.get('공매도잔고비율', 0) if '공매도잔고비율' in short_info else 0
+                            break
+                    except:
+                        continue
+                else:
+                    short_ratio = 0
+            except:
+                short_ratio = 0
+                
+        except ImportError:
+            foreign_ratio = 0
+            institution_ratio = 0
+            short_ratio = 0
+        except Exception as e:
+            print(f"  수급 데이터 오류: {e}")
+            foreign_ratio = 0
+            institution_ratio = 0
+            short_ratio = 0
+        
         return {
             'price': price,
             'volume': volume,
@@ -101,7 +188,15 @@ def get_stock_data(code):
             'month_change': round(month_change, 2),
             'high_52w': int(high_52w),
             'low_52w': int(low_52w),
-            'from_high': round(from_high, 2)
+            'from_high': round(from_high, 2),
+            'ma5': round(ma5, 0),
+            'ma20': round(ma20, 0),
+            'ma60': round(ma60, 0),
+            'cross_signal': cross_signal,
+            'rsi': round(rsi, 1),
+            'short_ratio': round(short_ratio, 2),
+            'foreign_net': round(foreign_ratio, 1),
+            'institution_net': round(institution_ratio, 1)
         }
         
     except ImportError:
@@ -173,6 +268,7 @@ def send_discord_notification(df, leader):
     if pearl is not None:
         pearl_emoji = "🟢" if pearl['day_change'] > 0 else "🔴" if pearl['day_change'] < 0 else "⚪"
         
+        # 기본 정보
         pearl_value = f"{pearl_emoji} **현재가**: {int(pearl['price']):,}원\n"
         pearl_value += f"**일일**: {pearl['day_change']:+.2f}% | **주간**: {pearl['week_change']:+.2f}% | **월간**: {pearl['month_change']:+.2f}%\n"
         pearl_value += f"**시가총액**: {pearl['market_cap']:.2f}조원\n"
@@ -180,8 +276,74 @@ def send_discord_notification(df, leader):
         pearl_value += f"**고점대비**: {pearl['from_high']:+.2f}%"
         
         embed["fields"].append({
-            "name": "⭐ 펄어비스 상세 분석",
+            "name": "⭐ 펄어비스 기본 정보",
             "value": pearl_value,
+            "inline": False
+        })
+        
+        # 차트 분석
+        chart_value = f"**MA5**: {int(pearl['ma5']):,}원 | **MA20**: {int(pearl['ma20']):,}원 | **MA60**: {int(pearl['ma60']):,}원\n"
+        
+        # 이평선 배열
+        if pearl['price'] > pearl['ma5'] > pearl['ma20'] > pearl['ma60']:
+            chart_value += "**이평선 배열**: 정배열 (강세) 📈\n"
+        elif pearl['price'] < pearl['ma5'] < pearl['ma20'] < pearl['ma60']:
+            chart_value += "**이평선 배열**: 역배열 (약세) 📉\n"
+        else:
+            chart_value += "**이평선 배열**: 혼조세\n"
+        
+        # 골든/데드 크로스
+        if pearl['cross_signal']:
+            signal_emoji = "🟢" if pearl['cross_signal'] == "골든크로스" else "🔴"
+            chart_value += f"**신호**: {signal_emoji} {pearl['cross_signal']} 발생!\n"
+        
+        # RSI
+        rsi = pearl['rsi']
+        if rsi >= 70:
+            rsi_status = "과매수 (조정 가능성)"
+        elif rsi <= 30:
+            rsi_status = "과매도 (반등 가능성)"
+        else:
+            rsi_status = "중립"
+        chart_value += f"**RSI(14)**: {rsi:.1f} - {rsi_status}"
+        
+        embed["fields"].append({
+            "name": "📊 펄어비스 차트 분석",
+            "value": chart_value,
+            "inline": False
+        })
+        
+        # 수급 현황
+        supply_value = ""
+        
+        # 외국인/기관 순매수 현황
+        if pearl['foreign_net'] > 0:
+            supply_value += f"**외국인**: 🟢 순매수 {abs(pearl['foreign_net']):.1f}%\n"
+        elif pearl['foreign_net'] < 0:
+            supply_value += f"**외국인**: 🔴 순매도 {abs(pearl['foreign_net']):.1f}%\n"
+        else:
+            supply_value += f"**외국인**: ⚪ 보합\n"
+        
+        if pearl['institution_net'] > 0:
+            supply_value += f"**기관**: 🟢 순매수 {abs(pearl['institution_net']):.1f}%\n"
+        elif pearl['institution_net'] < 0:
+            supply_value += f"**기관**: 🔴 순매도 {abs(pearl['institution_net']):.1f}%\n"
+        else:
+            supply_value += f"**기관**: ⚪ 보합\n"
+        
+        # 공매도 비율
+        if pearl['short_ratio'] > 10:
+            supply_value += f"**공매도 비율**: 🔴 {pearl['short_ratio']:.2f}% (높음)"
+        elif pearl['short_ratio'] > 5:
+            supply_value += f"**공매도 비율**: 🟡 {pearl['short_ratio']:.2f}% (보통)"
+        elif pearl['short_ratio'] > 0:
+            supply_value += f"**공매도 비율**: 🟢 {pearl['short_ratio']:.2f}% (낮음)"
+        else:
+            supply_value += f"**공매도 비율**: 데이터 없음"
+        
+        embed["fields"].append({
+            "name": "💰 펄어비스 수급 현황",
+            "value": supply_value,
             "inline": False
         })
     
@@ -294,6 +456,15 @@ def analyze_stocks():
         print(f"52주 최고가: {int(p['high_52w']):,}원")
         print(f"52주 최저가: {int(p['low_52w']):,}원")
         print(f"고점 대비: {p['from_high']:+.2f}%")
+        print(f"\n[차트 분석]")
+        print(f"MA5: {int(p['ma5']):,}원 | MA20: {int(p['ma20']):,}원 | MA60: {int(p['ma60']):,}원")
+        if p['cross_signal']:
+            print(f"신호: {p['cross_signal']} 발생!")
+        print(f"RSI(14): {p['rsi']:.1f}")
+        print(f"\n[수급 현황]")
+        print(f"외국인 순매수: {p['foreign_net']:+.1f}%")
+        print(f"기관 순매수: {p['institution_net']:+.1f}%")
+        print(f"공매도 잔고비율: {p['short_ratio']:.2f}%")
     
     # 디스코드 알림
     print("\n" + "=" * 70)
