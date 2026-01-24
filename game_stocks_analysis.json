@@ -1,109 +1,93 @@
 {
-  "timestamp": "2026-01-24T13:56:07.671742",
-  "sector_avg": {
-    "per": 0,
-    "pbr": 0
-  },
+  "timestamp": "2026-01-24T14:05:35.071381",
   "stocks": [
     {
-      "price": 227000,
-      "market_cap": 0,
-      "per": 0,
-      "pbr": 0,
-      "code": "036570",
-      "name": "엔씨소프트",
-      "undervalued": false
-    },
-    {
-      "price": 51800,
-      "market_cap": 0,
-      "per": 0,
-      "pbr": 0,
-      "code": "251270",
-      "name": "넷마블",
-      "undervalued": false
-    },
-    {
-      "price": 43950,
-      "market_cap": 0,
-      "per": 0,
-      "pbr": 0,
-      "code": "263750",
-      "name": "펄어비스",
-      "undervalued": false
-    },
-    {
-      "price": 27350,
-      "market_cap": 0,
-      "per": 0,
-      "pbr": 0,
-      "code": "112040",
-      "name": "위메이드",
-      "undervalued": false
-    },
-    {
       "price": 238500,
-      "market_cap": 0,
+      "market_cap": 1130581369.35,
       "per": 0,
       "pbr": 0,
       "code": "259960",
-      "name": "크래프톤",
-      "undervalued": false
+      "name": "크래프톤"
+    },
+    {
+      "price": 227000,
+      "market_cap": 489049299.4,
+      "per": 0,
+      "pbr": 0,
+      "code": "036570",
+      "name": "엔씨소프트"
+    },
+    {
+      "price": 51800,
+      "market_cap": 445239140.36,
+      "per": 0,
+      "pbr": 0,
+      "code": "251270",
+      "name": "넷마블"
+    },
+    {
+      "price": 43950,
+      "market_cap": 282369322.73,
+      "per": 0,
+      "pbr": 0,
+      "code": "263750",
+      "name": "펄어비스"
     },
     {
       "price": 15000,
-      "market_cap": 0,
+      "market_cap": 134680366.5,
       "per": 0,
       "pbr": 0,
       "code": "293490",
-      "name": "카카오게임즈",
-      "undervalued": false
+      "name": "카카오게임즈"
     },
     {
-      "price": 34800,
-      "market_cap": 0,
+      "price": 27350,
+      "market_cap": 92849101.0,
       "per": 0,
       "pbr": 0,
-      "code": "194480",
-      "name": "데브시스터즈",
-      "undervalued": false
+      "code": "112040",
+      "name": "위메이드"
     },
     {
       "price": 12400,
-      "market_cap": 0,
+      "market_cap": 81666615.76,
       "per": 0,
       "pbr": 0,
       "code": "225570",
-      "name": "넥슨게임즈",
-      "undervalued": false
-    },
-    {
-      "price": 26600,
-      "market_cap": 0,
-      "per": 0,
-      "pbr": 0,
-      "code": "095660",
-      "name": "네오위즈",
-      "undervalued": false
+      "name": "넥슨게임즈"
     },
     {
       "price": 34350,
-      "market_cap": 0,
+      "market_cap": 81541424.61,
       "per": 0,
       "pbr": 0,
       "code": "376300",
-      "name": "디어유",
-      "undervalued": false
+      "name": "디어유"
+    },
+    {
+      "price": 26600,
+      "market_cap": 58139130.56,
+      "per": 0,
+      "pbr": 0,
+      "code": "095660",
+      "name": "네오위즈"
+    },
+    {
+      "price": 34800,
+      "market_cap": 42209442.0,
+      "per": 0,
+      "pbr": 0,
+      "code": "194480",
+      "name": "데브시스터즈"
     }
   ],
-  "undervalued": [],
   "leader": {
-    "price": 227000,
-    "market_cap": 0,
+    "price": 238500,
+    "market_cap": 1130581369.35,
     "per": 0,
     "pbr": 0,
-    "code": "036570",
-    "name": "엔씨소프트",
-    "undervalued": false
+    "code": "259960",
+    "name": "크래프톤"
   }
 }
