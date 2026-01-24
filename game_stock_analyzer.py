@@ -76,33 +76,46 @@ def get_stock_data_pykrx(code):
         from pykrx import stock
         from datetime import datetime, timedelta
         
-        # 오늘 날짜
-        today = datetime.now().strftime('%Y%m%d')
+        # 최근 영업일 찾기 (최대 7일 전까지)
+        today = datetime.now()
+        price_data = None
+        fund_data = None
         
-        # 최근 주가
-        df = stock.get_market_ohlcv_by_date(today, today, code)
-        if df.empty:
-            # 어제 데이터 시도
-            yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y%m%d')
-            df = stock.get_market_ohlcv_by_date(yesterday, yesterday, code)
-            if df.empty:
-                print(f"  데이터 없음")
-                return None
+        for i in range(7):
+            date_str = (today - timedelta(days=i)).strftime('%Y%m%d')
+            
+            try:
+                # 주가 데이터
+                if price_data is None:
+                    df = stock.get_market_ohlcv_by_date(date_str, date_str, code)
+                    if not df.empty:
+                        price_data = df.iloc[-1]
+                
+                # 펀더멘탈 데이터
+                if fund_data is None:
+                    # 개별 종목이 아닌 전체 시장에서 해당 종목 찾기
+                    market = 'KOSPI' if code in ['036570', '251270', '259960'] else 'KOSDAQ'
+                    df_fund = stock.get_market_fundamental_by_ticker(date_str, market=market)
+                    
+                    if not df_fund.empty and code in df_fund.index:
+                        fund_data = df_fund.loc[code]
+                
+                if price_data is not None and fund_data is not None:
+                    break
+                    
+            except Exception as e:
+                continue
         
-        latest = df.iloc[-1]
-        price = int(latest['종가'])
+        if price_data is None:
+            print(f"  주가 데이터 없음")
+            return None
         
-        # 시가총액 (억원)
-        fundamental = stock.get_market_fundamental(today, today, code)
-        if fundamental.empty:
-            yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y%m%d')
-            fundamental = stock.get_market_fundamental(yesterday, yesterday, code)
+        price = int(price_data['종가'])
         
-        if not fundamental.empty:
-            fund = fundamental.iloc[-1]
-            market_cap = fund['시가총액'] / 1000000000000  # 조원
-            per = fund['PER'] if fund['PER'] > 0 else 0
-            pbr = fund['PBR'] if fund['PBR'] > 0 else 0
+        if fund_data is not None:
+            market_cap = fund_data['시가총액'] / 1000000000000 if '시가총액' in fund_data else 0
+            per = fund_data['PER'] if 'PER' in fund_data and fund_data['PER'] > 0 else 0
+            pbr = fund_data['PBR'] if 'PBR' in fund_data and fund_data['PBR'] > 0 else 0
         else:
             market_cap = 0
             per = 0
@@ -118,7 +131,7 @@ def get_stock_data_pykrx(code):
         print(f"  pykrx 설치 필요")
         return None
     except Exception as e:
-        print(f"  오류: {e}")
+        print(f"  오류: {str(e)}")
         return None
 
 def send_discord_notification(df, avg_per, avg_pbr, undervalued, leader):
