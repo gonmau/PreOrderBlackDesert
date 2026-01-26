@@ -2201,5 +2201,20 @@
         "geo_code": "FR"
       }
     }
+  },
+  {
+    "timestamp": "2026-01-26T13:05:24.170055",
+    "google": {
+      "score": 38,
+      "avg_7d": 19,
+      "top_regions": {}
+    },
+    "console_markets": {
+      "United States": {
+        "score": 41,
+        "avg_1m": 32,
+        "geo_code": "US"
+      }
+    }
   }
 ]
