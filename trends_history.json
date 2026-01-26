@@ -2116,5 +2116,20 @@
         "geo_code": "FR"
       }
     }
+  },
+  {
+    "timestamp": "2026-01-26T09:02:36.432022",
+    "google": {
+      "score": 39,
+      "avg_7d": 19,
+      "top_regions": {}
+    },
+    "console_markets": {
+      "United States": {
+        "score": 41,
+        "avg_1m": 31,
+        "geo_code": "US"
+      }
+    }
   }
 ]
