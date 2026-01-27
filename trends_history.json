@@ -2386,5 +2386,40 @@
         "geo_code": "GB"
       }
     }
+  },
+  {
+    "timestamp": "2026-01-27T20:28:33.371624",
+    "google": {
+      "score": 37,
+      "avg_7d": 20,
+      "top_regions": {}
+    },
+    "console_markets": {
+      "United States": {
+        "score": 45,
+        "avg_1m": 32,
+        "geo_code": "US"
+      },
+      "Japan": {
+        "score": 63,
+        "avg_1m": 21,
+        "geo_code": "JP"
+      },
+      "United Kingdom": {
+        "score": 24,
+        "avg_1m": 20,
+        "geo_code": "GB"
+      },
+      "Germany": {
+        "score": 60,
+        "avg_1m": 38,
+        "geo_code": "DE"
+      },
+      "France": {
+        "score": 39,
+        "avg_1m": 35,
+        "geo_code": "FR"
+      }
+    }
   }
 ]
