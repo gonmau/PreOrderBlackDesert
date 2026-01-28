@@ -1,5 +1,4 @@
 name: Game Stock Analysis
-
 on:
   schedule:
     - cron: '0 6 * * 1-5'  # 평일 오후 3시 (UTC 6시 = KST 15시, 장 마감 후)
@@ -9,13 +8,13 @@ jobs:
   analyze:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.PAT_TOKEN }}
       
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
       
@@ -28,10 +27,14 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: python game_stock_analyzer.py
       
+      - name: Pull latest changes
+        run: |
+          git config pull.rebase true
+          git pull --rebase --autostash origin ${{ github.ref_name }} || true
+      
       - name: Commit results
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'Update game stock analysis results'
           file_pattern: 'game_stocks_analysis.*'
-          pull_options: '--rebase --autostash'
           push_options: '--force-with-lease'
