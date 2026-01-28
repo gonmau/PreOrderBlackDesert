@@ -20,6 +20,110 @@ GAME_STOCKS = {
 
 DISCORD_WEBHOOK = os.getenv('DISCORD_WEBHOOK')
 
+def get_supply_data(code, end_date):
+    """pykrx로 수급 데이터 수집 - 디버깅 강화 버전"""
+    foreign_net = 0
+    institution_net = 0
+    short_ratio = 0
+    
+    print(f"\n  [수급 데이터 수집 시작]")
+    
+    try:
+        from pykrx import stock
+        print(f"  ✓ pykrx 임포트 성공")
+    except ImportError as e:
+        print(f"  ✗ pykrx 임포트 실패: {e}")
+        return foreign_net, institution_net, short_ratio
+    
+    # 1. 투자자별 매매동향 조회
+    print(f"\n  [1단계] 투자자별 매매동향 조회")
+    for i in range(10):
+        date_str = (end_date - timedelta(days=i)).strftime('%Y%m%d')
+        print(f"    시도: {date_str}", end=" ")
+        
+        try:
+            # 방법: get_market_trading_value_by_investor
+            df = stock.get_market_trading_value_by_investor(
+                fromdate=date_str,
+                todate=date_str,
+                ticker=code,
+                etf=False,
+                etn=False,
+                elw=False
+            )
+            
+            if df is None or df.empty:
+                print("→ 데이터 없음")
+                continue
+            
+            print(f"→ 성공! (shape: {df.shape})")
+            print(f"    Columns: {list(df.columns)}")
+            print(f"    Data:\n{df}")
+            
+            # 마지막 행 추출
+            last_row = df.iloc[-1]
+            
+            # 외국인 순매수
+            if '외국인' in df.columns:
+                foreign_net = last_row['외국인']
+                print(f"    외국인: {foreign_net:,}원")
+            
+            # 기관 순매수
+            if '기관' in df.columns:
+                institution_net = last_row['기관']
+                print(f"    기관: {institution_net:,}원")
+            elif '기관합계' in df.columns:
+                institution_net = last_row['기관합계']
+                print(f"    기관합계: {institution_net:,}원")
+            
+            # 성공하면 루프 종료
+            if foreign_net != 0 or institution_net != 0:
+                print(f"  ✓ 수급 데이터 수집 완료 ({date_str})")
+                break
+                
+        except Exception as e:
+            print(f"→ 오류: {type(e).__name__}: {e}")
+    
+    # 2. 공매도 잔고비율 조회
+    print(f"\n  [2단계] 공매도 잔고비율 조회")
+    for i in range(10):
+        date_str = (end_date - timedelta(days=i)).strftime('%Y%m%d')
+        print(f"    시도: {date_str}", end=" ")
+        
+        try:
+            df = stock.get_shorting_balance_by_date(
+                fromdate=date_str,
+                todate=date_str,
+                ticker=code
+            )
+            
+            if df is None or df.empty:
+                print("→ 데이터 없음")
+                continue
+            
+            print(f"→ 성공! (shape: {df.shape})")
+            print(f"    Columns: {list(df.columns)}")
+            print(f"    Data:\n{df}")
+            
+            last_row = df.iloc[-1]
+            
+            # 공매도잔고비율
+            if '공매도잔고비율' in df.columns:
+                short_ratio = last_row['공매도잔고비율']
+                print(f"    공매도잔고비율: {short_ratio:.2f}%")
+            
+            # 성공하면 루프 종료
+            if short_ratio != 0:
+                print(f"  ✓ 공매도 데이터 수집 완료 ({date_str})")
+                break
+                
+        except Exception as e:
+            print(f"→ 오류: {type(e).__name__}: {e}")
+    
+    print(f"\n  [최종 결과] 외국인: {foreign_net:,}원, 기관: {institution_net:,}원, 공매도: {short_ratio:.2f}%")
+    return foreign_net, institution_net, short_ratio
+
+
 def get_stock_data(code):
     """FinanceDataReader로 주식 데이터 수집 및 분석"""
     try:
@@ -101,16 +205,15 @@ def get_stock_data(code):
         else:
             rsi = 50
         
-        # 시가총액 계산 (StockListing에서 상장주식수 가져오기)
+        # 시가총액 계산
         try:
             stocks_listing = fdr.StockListing('KRX')
             stock_info = stocks_listing[stocks_listing['Code'] == code]
             
             if not stock_info.empty:
-                # Stocks 컬럼 (상장주식수)
                 if 'Stocks' in stock_info.columns:
                     shares = float(stock_info.iloc[0]['Stocks'])
-                    market_cap = (price * shares) / 1000000000000  # 조원
+                    market_cap = (price * shares) / 1000000000000
                 elif 'ListedShares' in stock_info.columns:
                     shares = float(stock_info.iloc[0]['ListedShares'])
                     market_cap = (price * shares) / 1000000000000
@@ -121,101 +224,8 @@ def get_stock_data(code):
         except:
             market_cap = 0
         
-        # 수급 및 공매도 정보
-        foreign_net = 0
-        institution_net = 0
-        short_ratio = 0
-        
-        try:
-            from pykrx import stock
-            
-            # 최근 영업일 찾기 (외국인/기관 순매수)
-            trade_date = end_date
-            for i in range(10):  # 10일까지 확인
-                date_str = (trade_date - timedelta(days=i)).strftime('%Y%m%d')
-                
-                try:
-                    # 투자자별 순매수 금액 조회 (개별 종목)
-                    # fromdate, todate, ticker
-                    investor_df = stock.get_market_trading_value_by_date(date_str, date_str, code, detail=True)
-                    
-                    if investor_df is not None and not investor_df.empty:
-                        latest_trade = investor_df.iloc[-1]
-                        
-                        # 외국인 순매수 = 매수 - 매도
-                        if '외국인매수' in investor_df.columns and '외국인매도' in investor_df.columns:
-                            foreign_net = latest_trade['외국인매수'] - latest_trade['외국인매도']
-                        elif '외국인순매수' in investor_df.columns:
-                            foreign_net = latest_trade['외국인순매수']
-                        
-                        # 기관 순매수
-                        if '기관매수' in investor_df.columns and '기관매도' in investor_df.columns:
-                            institution_net = latest_trade['기관매수'] - latest_trade['기관매도']
-                        elif '기관순매수' in investor_df.columns:
-                            institution_net = latest_trade['기관순매수']
-                        
-                        print(f"  수급: 외국인 {foreign_net:,}원, 기관 {institution_net:,}원 ({date_str})")
-                        break
-                except Exception as e:
-                    # detail=True가 안 되면 다른 방식 시도
-                    try:
-                        # 방법 2: get_market_net_purchases_of_equities (전체 시장)
-                        df_all = stock.get_market_net_purchases_of_equities(date_str, date_str, "KOSDAQ")
-                        if df_all is not None and not df_all.empty and code in df_all.index:
-                            stock_data = df_all.loc[code]
-                            
-                            if '외국인' in df_all.columns:
-                                foreign_net = stock_data['외국인']
-                            if '기관' in df_all.columns:
-                                institution_net = stock_data['기관']
-                            
-                            print(f"  수급: 외국인 {foreign_net:,}원, 기관 {institution_net:,}원 ({date_str})")
-                            break
-                        else:
-                            # KOSPI 시도
-                            df_all = stock.get_market_net_purchases_of_equities(date_str, date_str, "KOSPI")
-                            if df_all is not None and not df_all.empty and code in df_all.index:
-                                stock_data = df_all.loc[code]
-                                
-                                if '외국인' in df_all.columns:
-                                    foreign_net = stock_data['외국인']
-                                if '기관' in df_all.columns:
-                                    institution_net = stock_data['기관']
-                                
-                                print(f"  수급: 외국인 {foreign_net:,}원, 기관 {institution_net:,}원 ({date_str})")
-                                break
-                    except Exception as e2:
-                        print(f"  {date_str} 수급 조회 실패: {e2}")
-                        continue
-            
-            # 공매도 잔고 비율
-            short_date = end_date
-            for i in range(10):  # 10일까지 확인
-                date_str = (short_date - timedelta(days=i)).strftime('%Y%m%d')
-                
-                try:
-                    # 공매도 잔고 조회 (fromdate, todate, ticker)
-                    short_df = stock.get_shorting_balance_by_date(date_str, date_str, code)
-                    
-                    if short_df is not None and not short_df.empty:
-                        latest_short = short_df.iloc[-1]
-                        
-                        # 공매도잔고비율 컬럼 찾기
-                        if '공매도잔고비율' in short_df.columns:
-                            short_ratio = latest_short['공매도잔고비율']
-                        elif '잔고비율' in short_df.columns:
-                            short_ratio = latest_short['잔고비율']
-                        
-                        print(f"  공매도: {short_ratio:.2f}% ({date_str})")
-                        break
-                except Exception as e:
-                    print(f"  {date_str} 공매도 조회 실패: {e}")
-                    continue
-                
-        except ImportError:
-            print("  pykrx 미설치 - 수급 데이터 수집 불가")
-        except Exception as e:
-            print(f"  수급 데이터 전체 오류: {e}")
+        # 수급 데이터 수집 (별도 함수)
+        foreign_net, institution_net, short_ratio = get_supply_data(code, end_date)
         
         return {
             'price': price,
@@ -233,8 +243,8 @@ def get_stock_data(code):
             'cross_signal': cross_signal,
             'rsi': round(rsi, 1),
             'short_ratio': round(short_ratio, 2),
-            'foreign_net': foreign_net,  # 금액 (원)
-            'institution_net': institution_net  # 금액 (원)
+            'foreign_net': foreign_net,
+            'institution_net': institution_net
         }
         
     except ImportError:
@@ -265,40 +275,18 @@ def send_discord_notification(df, leader):
         "timestamp": datetime.now().isoformat()
     }
     
-    # 대장주
-    leader_color = "🟢" if leader['day_change'] > 0 else "🔴" if leader['day_change'] < 0 else "⚪"
+    # 시총 1위 종목
     embed["fields"].append({
-        "name": "👑 테마 대장주 (시총 기준)",
-        "value": f"**{leader['name']}** {leader_color}\n"
-                 f"현재가: **{int(leader['price']):,}원** ({leader['day_change']:+.2f}%)\n"
-                 f"시가총액: {leader['market_cap']:.2f}조원",
-        "inline": False
-    })
-    
-    # 일일 상승/하락 TOP3
-    df_sorted_gain = df.sort_values('day_change', ascending=False)
-    top_gainers = df_sorted_gain.head(3)
-    gainers_text = "\n".join([
-        f"{i+1}. **{row['name']}**: {row['day_change']:+.2f}% ({int(row['price']):,}원)"
-        for i, (_, row) in enumerate(top_gainers.iterrows())
-    ])
-    
-    df_sorted_loss = df.sort_values('day_change', ascending=True)
-    top_losers = df_sorted_loss.head(3)
-    losers_text = "\n".join([
-        f"{i+1}. **{row['name']}**: {row['day_change']:+.2f}% ({int(row['price']):,}원)"
-        for i, (_, row) in enumerate(top_losers.iterrows())
-    ])
-    
-    embed["fields"].append({
-        "name": "📈 일일 상승 TOP3",
-        "value": gainers_text,
+        "name": f"🏆 시가총액 1위: {leader['name']}",
+        "value": f"**시총**: {leader['market_cap']:.2f}조원\n**현재가**: {int(leader['price']):,}원 ({leader['day_change']:+.2f}%)",
         "inline": True
     })
     
+    # 일일 변동률 1위
+    top_change = df.nlargest(1, 'day_change').iloc[0]
     embed["fields"].append({
-        "name": "📉 일일 하락 TOP3",
-        "value": losers_text,
+        "name": f"📈 일일 상승률 1위: {top_change['name']}",
+        "value": f"**변동**: {top_change['day_change']:+.2f}%\n**현재가**: {int(top_change['price']):,}원",
         "inline": True
     })
     
@@ -468,7 +456,7 @@ def analyze_stocks():
     print("=" * 70)
     
     for code, name in GAME_STOCKS.items():
-        print(f"분석중: {name} ({code})...")
+        print(f"\n분석중: {name} ({code})...")
         data = get_stock_data(code)
         
         if data:
@@ -521,6 +509,7 @@ def analyze_stocks():
         if p['cross_signal']:
             print(f"신호: {p['cross_signal']} 발생!")
         print(f"RSI(14): {p['rsi']:.1f}")
+        
         print(f"\n[수급 현황]")
         
         # 외국인 순매수
