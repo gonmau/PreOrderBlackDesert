@@ -135,48 +135,58 @@ def get_stock_data(code):
                 date_str = (trade_date - timedelta(days=i)).strftime('%Y%m%d')
                 
                 try:
-                    # 특정 날짜의 전체 종목 순매수 데이터 조회
-                    investor_df = stock.get_market_net_purchases_by_ticker(date_str, "KOSDAQ")
+                    # 투자자별 순매수 금액 조회 (개별 종목)
+                    # fromdate, todate, ticker
+                    investor_df = stock.get_market_trading_value_by_date(date_str, date_str, code, detail=True)
                     
-                    if investor_df is not None and not investor_df.empty and code in investor_df.index:
-                        # 해당 종목의 데이터 추출
-                        stock_data = investor_df.loc[code]
+                    if investor_df is not None and not investor_df.empty:
+                        latest_trade = investor_df.iloc[-1]
                         
-                        # 외국인 순매수 (금액)
-                        if '외국인' in investor_df.columns:
-                            foreign_net = stock_data['외국인']
-                        elif '외국인합계' in investor_df.columns:
-                            foreign_net = stock_data['외국인합계']
+                        # 외국인 순매수 = 매수 - 매도
+                        if '외국인매수' in investor_df.columns and '외국인매도' in investor_df.columns:
+                            foreign_net = latest_trade['외국인매수'] - latest_trade['외국인매도']
+                        elif '외국인순매수' in investor_df.columns:
+                            foreign_net = latest_trade['외국인순매수']
                         
-                        # 기관 순매수 (금액)
-                        if '기관' in investor_df.columns:
-                            institution_net = stock_data['기관']
-                        elif '기관합계' in investor_df.columns:
-                            institution_net = stock_data['기관합계']
+                        # 기관 순매수
+                        if '기관매수' in investor_df.columns and '기관매도' in investor_df.columns:
+                            institution_net = latest_trade['기관매수'] - latest_trade['기관매도']
+                        elif '기관순매수' in investor_df.columns:
+                            institution_net = latest_trade['기관순매수']
                         
                         print(f"  수급: 외국인 {foreign_net:,}원, 기관 {institution_net:,}원 ({date_str})")
                         break
-                    elif investor_df is not None and not investor_df.empty:
-                        # KOSDAQ에 없으면 KOSPI 시도
-                        investor_df = stock.get_market_net_purchases_by_ticker(date_str, "KOSPI")
-                        if code in investor_df.index:
-                            stock_data = investor_df.loc[code]
+                except Exception as e:
+                    # detail=True가 안 되면 다른 방식 시도
+                    try:
+                        # 방법 2: get_market_net_purchases_of_equities (전체 시장)
+                        df_all = stock.get_market_net_purchases_of_equities(date_str, date_str, "KOSDAQ")
+                        if df_all is not None and not df_all.empty and code in df_all.index:
+                            stock_data = df_all.loc[code]
                             
-                            if '외국인' in investor_df.columns:
+                            if '외국인' in df_all.columns:
                                 foreign_net = stock_data['외국인']
-                            elif '외국인합계' in investor_df.columns:
-                                foreign_net = stock_data['외국인합계']
-                            
-                            if '기관' in investor_df.columns:
+                            if '기관' in df_all.columns:
                                 institution_net = stock_data['기관']
-                            elif '기관합계' in investor_df.columns:
-                                institution_net = stock_data['기관합계']
                             
                             print(f"  수급: 외국인 {foreign_net:,}원, 기관 {institution_net:,}원 ({date_str})")
                             break
-                except Exception as e:
-                    print(f"  {date_str} 수급 조회 실패: {e}")
-                    continue
+                        else:
+                            # KOSPI 시도
+                            df_all = stock.get_market_net_purchases_of_equities(date_str, date_str, "KOSPI")
+                            if df_all is not None and not df_all.empty and code in df_all.index:
+                                stock_data = df_all.loc[code]
+                                
+                                if '외국인' in df_all.columns:
+                                    foreign_net = stock_data['외국인']
+                                if '기관' in df_all.columns:
+                                    institution_net = stock_data['기관']
+                                
+                                print(f"  수급: 외국인 {foreign_net:,}원, 기관 {institution_net:,}원 ({date_str})")
+                                break
+                    except Exception as e2:
+                        print(f"  {date_str} 수급 조회 실패: {e2}")
+                        continue
             
             # 공매도 잔고 비율
             short_date = end_date
@@ -184,33 +194,20 @@ def get_stock_data(code):
                 date_str = (short_date - timedelta(days=i)).strftime('%Y%m%d')
                 
                 try:
-                    # 특정 날짜의 전체 종목 공매도 잔고 조회
-                    short_df = stock.get_shorting_balance_by_date(date_str, "KOSDAQ")
+                    # 공매도 잔고 조회 (fromdate, todate, ticker)
+                    short_df = stock.get_shorting_balance_by_date(date_str, date_str, code)
                     
-                    if short_df is not None and not short_df.empty and code in short_df.index:
-                        stock_short = short_df.loc[code]
+                    if short_df is not None and not short_df.empty:
+                        latest_short = short_df.iloc[-1]
                         
                         # 공매도잔고비율 컬럼 찾기
                         if '공매도잔고비율' in short_df.columns:
-                            short_ratio = stock_short['공매도잔고비율']
-                        elif '비율' in short_df.columns:
-                            short_ratio = stock_short['비율']
+                            short_ratio = latest_short['공매도잔고비율']
+                        elif '잔고비율' in short_df.columns:
+                            short_ratio = latest_short['잔고비율']
                         
                         print(f"  공매도: {short_ratio:.2f}% ({date_str})")
                         break
-                    elif short_df is not None and not short_df.empty:
-                        # KOSDAQ에 없으면 KOSPI 시도
-                        short_df = stock.get_shorting_balance_by_date(date_str, "KOSPI")
-                        if code in short_df.index:
-                            stock_short = short_df.loc[code]
-                            
-                            if '공매도잔고비율' in short_df.columns:
-                                short_ratio = stock_short['공매도잔고비율']
-                            elif '비율' in short_df.columns:
-                                short_ratio = stock_short['비율']
-                            
-                            print(f"  공매도: {short_ratio:.2f}% ({date_str})")
-                            break
                 except Exception as e:
                     print(f"  {date_str} 공매도 조회 실패: {e}")
                     continue
