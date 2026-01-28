@@ -20,7 +20,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install pandas requests finance-datareader pykrx
+          pip install pandas requests finance-datareader pykrx beautifulsoup4
       
       - name: Run Game Stock Analyzer
         env:
