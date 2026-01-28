@@ -5,19 +5,16 @@
       "Resident Evil Requiem",
       "Nioh 3 Digital Deluxe Edition",
       "Life is Strange: Reunion Deluxe Edition",
-      "Marathon Deluxe Edition",
       "CODE VEIN II",
       "Nioh 3",
+      "Marathon Deluxe Edition",
       "007 First Light",
       "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5",
       "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "High On Life 2",
-      "LEGO® Batman™: Legacy of the Dark Knight Deluxe Edition",
-      "Marathon Standard Edition",
-      "Life is Strange: Reunion",
-      "Star Trek: Voyager - Across the Unknown - Deluxe Edition"
+      "Life is Strange: Reunion"
     ],
-    "crimson_rank": 16
+    "crimson_rank": 13
   },
   "독일": {
     "games": [
@@ -26,29 +23,25 @@
       "Nioh 3 Digital Deluxe Edition",
       "Diablo® IV: Lord of Hatred™ – Standard Edition",
       "Life is Strange: Reunion",
-      "Life is Strange: Reunion Deluxe Edition",
       "Nioh 3",
       "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "CODE VEIN II",
-      "Marathon – Deluxe Edition",
+      "Life is Strange: Reunion Deluxe Edition",
       "Diablo® IV: Lord of Hatred™ – Ultimate Edition",
       "Diablo® IV: Sammlung – „Zeitalter des Hasses“"
     ],
-    "crimson_rank": 13
+    "crimson_rank": 12
   },
   "프랑스": {
     "games": [
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
-      "Nioh 3 - Édition Deluxe numérique",
       "Édition numérique Deluxe de DRAGON QUEST VII Reimagined",
-      "Life is Strange: Reunion",
+      "Nioh 3 - Édition Deluxe numérique",
       "Diablo® IV: Lord of Hatred™ – Standard Edition",
-      "Nioh 3",
-      "Life is Strange: Reunion - Édition deluxe",
-      "CODE VEIN II"
+      "Nioh 3"
     ],
-    "crimson_rank": 10
+    "crimson_rank": 7
   },
   "스페인": {
     "games": [
@@ -59,9 +52,10 @@
       "Edición digital de lujo de DRAGON QUEST VII Reimagined",
       "RIDE 6 - Ultimate Edition",
       "CODE VEIN II",
-      "Diablo® IV: Lord of Hatred™ - Standard Edition"
+      "Diablo® IV: Lord of Hatred™ - Standard Edition",
+      "007 First Light"
     ],
-    "crimson_rank": 9
+    "crimson_rank": 10
   },
   "이탈리아": {
     "games": [
@@ -71,14 +65,11 @@
       "Nioh 3",
       "CODE VEIN II",
       "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
-      "Marathon - Edizione Deluxe",
       "RIDE 6 - Ultimate Edition",
       "Life is Strange: Reunion",
-      "Marathon - Edizione Standard",
-      "Diablo® IV: Lord of Hatred™ - Standard Edition",
-      "Life is Strange: Reunion Deluxe Edition"
+      "Marathon - Edizione Deluxe"
     ],
-    "crimson_rank": 13
+    "crimson_rank": 10
   },
   "네덜란드": {
     "games": [
@@ -87,16 +78,14 @@
       "Resident Evil Requiem",
       "007 First Light",
       "Nioh 3",
-      "Life is Strange: Reunion",
       "De Sims™ 4 Koninklijke Legacy Deluxe Bundel",
-      "Life is Strange: Reunion Deluxe Edition",
       "Marathon Deluxe Edition",
       "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "RIDE 6 - Ultimate Edition",
       "High On Life 2",
       "Diablo® IV: Age of Hatred Collection"
     ],
-    "crimson_rank": 14
+    "crimson_rank": 12
   },
   "폴란드": {
     "games": [
@@ -111,8 +100,8 @@
       "Edycja Deluxe Life is Strange: Reunion",
       "RIDE 6 - Ultimate Edition",
       "CODE VEIN II",
-      "Diablo® IV: Lord of Hatred™ – Deluxe Edition",
-      "007 First Light"
+      "007 First Light",
+      "Diablo® IV: Lord of Hatred™ – Deluxe Edition"
     ],
     "crimson_rank": 14
   },
@@ -120,14 +109,13 @@
     "games": [
       "Resident Evil Requiem Deluxe Edition",
       "Nioh 3 Digital Deluxe Edition",
-      "Life is Strange: Reunion Deluxe Edition",
-      "Resident Evil Requiem",
       "007 First Light",
-      "Marathon – Deluxe Edition",
-      "RIDE 6 - Ultimate Edition",
-      "Diablo® IV: Lord of Hatred™ – Ultimate Edition"
+      "Resident Evil Requiem",
+      "Life is Strange: Reunion Deluxe Edition",
+      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
+      "RIDE 6 - Ultimate Edition"
     ],
-    "crimson_rank": 9
+    "crimson_rank": 8
   },
   "스웨덴": {
     "games": [
@@ -135,42 +123,37 @@
       "Nioh 3 Digital Deluxe Edition",
       "Resident Evil Requiem",
       "Diablo® IV: Lord of Hatred™ - Standard Edition",
-      "007 First Light",
       "Nioh 3",
+      "007 First Light",
       "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "DRAGON QUEST VII Reimagined",
-      "SAROS Digital Deluxe Edition",
+      "Diablo® IV: Lord of Hatred™ - Ultimate Edition",
       "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5",
       "Life is Strange: Reunion Deluxe Edition",
-      "Diablo® IV: Lord of Hatred™ - Ultimate Edition"
+      "Diablo® IV: Age of Hatred Collection"
     ],
     "crimson_rank": 13
   },
   "노르웨이": {
     "games": [
-      "Resident Evil Requiem Deluxe Edition",
       "Nioh 3 Digital Deluxe Edition",
+      "Resident Evil Requiem Deluxe Edition",
       "007 First Light",
-      "Life is Strange: Reunion",
       "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
-      "Nioh 3",
-      "Life is Strange: Reunion Deluxe Edition"
+      "Nioh 3"
     ],
-    "crimson_rank": 8
+    "crimson_rank": 6
   },
   "덴마크": {
     "games": [
       "Nioh 3 Digital Deluxe-udgave",
-      "Diablo® IV: Lord of Hatred™ - Standard Edition",
       "Resident Evil Requiem Deluxe Edition",
+      "Diablo® IV: Lord of Hatred™ - Standard Edition",
       "Monster Hunter Stories 3: Twisted Reflection Premium Deluxe Edition",
       "Diablo® IV: Lord of Hatred™ - Ultimate Edition",
-      "Diablo® IV: Age of Hatred Collection",
-      "Life is Strange: Reunion",
-      "Life is Strange: Reunion Deluxe Edition",
       "Resident Evil Requiem"
     ],
-    "crimson_rank": 10
+    "crimson_rank": 7
   },
   "핀란드": {
     "games": [
@@ -182,7 +165,7 @@
       "007 First Light",
       "Life is Strange: Reunion Deluxe Edition",
       "Life is Strange: Reunion",
-      "Marathon Deluxe Edition",
+      "CODE VEIN II",
       "REANIMAL – Digital Deluxe Edition",
       "MY HERO ACADEMIA: All’s Justice - Ultimate Edition"
     ],
@@ -195,9 +178,10 @@
       "Nioh 3 Edição Digital Deluxe",
       "Nioh 3",
       "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
-      "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 e PS5"
+      "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 e PS5",
+      "Styx: Master of Stealth Collection"
     ],
-    "crimson_rank": 7
+    "crimson_rank": 8
   },
   "그리스": {
     "games": [
@@ -208,16 +192,14 @@
       "Nioh 3",
       "Diablo® IV: Age of Hatred Collection",
       "CODE VEIN II",
-      "Life is Strange: Reunion",
       "007 First Light",
+      "Life is Strange: Reunion",
       "MY HERO ACADEMIA: All’s Justice - Ultimate Edition",
       "RIDE 6 - Ultimate Edition",
       "LEGO® Batman™: Legacy of the Dark Knight Deluxe Edition",
-      "SAROS Digital Deluxe Edition",
-      "Life is Strange: Reunion Deluxe Edition",
-      "Marathon Deluxe Edition"
+      "SAROS Digital Deluxe Edition"
     ],
-    "crimson_rank": 16
+    "crimson_rank": 14
   },
   "체코": {
     "games": [
@@ -225,16 +207,18 @@
       "Resident Evil Requiem",
       "Nioh 3 Digital Deluxe Edition",
       "Nioh 3",
-      "Life is Strange: Reunion Deluxe Edition",
       "Diablo® IV: Lord of Hatred™ - Standard Edition",
+      "Life is Strange: Reunion Deluxe Edition",
       "Diablo® IV: Lord of Hatred™ - Ultimate Edition",
       "RIDE 6 - Ultimate Edition",
       "Disciples: Domination",
+      "REANIMAL",
       "LEGO® Batman™: Legacy of the Dark Knight Deluxe Edition",
+      "REANIMAL – Digital Deluxe Edition",
       "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
-      "REANIMAL – Digital Deluxe Edition"
+      "Diablo® IV: Age of Hatred Collection"
     ],
-    "crimson_rank": 13
+    "crimson_rank": 15
   },
   "헝가리": {
     "games": [
@@ -244,8 +228,8 @@
       "Marathon Deluxe Edition",
       "CODE VEIN II",
       "007 First Light",
-      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Nioh 3",
+      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Marathon Standard Edition",
       "Diablo® IV: Lord of Hatred™ - Ultimate Edition"
     ],
@@ -259,8 +243,8 @@
       "Marathon Deluxe Edition",
       "CODE VEIN II",
       "007 First Light",
-      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Nioh 3",
+      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Marathon Standard Edition",
       "Diablo® IV: Lord of Hatred™ - Ultimate Edition"
     ],
@@ -274,8 +258,8 @@
       "Marathon Deluxe Edition",
       "CODE VEIN II",
       "007 First Light",
-      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Nioh 3",
+      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Marathon Standard Edition",
       "Diablo® IV: Lord of Hatred™ - Ultimate Edition"
     ],
@@ -289,8 +273,8 @@
       "Marathon Deluxe Edition",
       "CODE VEIN II",
       "007 First Light",
-      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Nioh 3",
+      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Marathon Standard Edition",
       "Diablo® IV: Lord of Hatred™ - Ultimate Edition"
     ],
@@ -302,8 +286,8 @@
       "Resident Evil Requiem",
       "REANIMAL",
       "REANIMAL – Digital Deluxe Edition",
-      "Diablo® IV: Lord of Hatred™ — Standard Edition",
       "Nioh 3 Digital Deluxe Edition",
+      "Diablo® IV: Lord of Hatred™ — Standard Edition",
       "Колекція Diablo® IV: Age of Hatred",
       "Nioh 3",
       "Diablo® IV: Lord of Hatred™ — Ultimate Edition"
@@ -317,14 +301,18 @@
       "Nioh 3 Digital Deluxe Edition",
       "Nioh 3",
       "REANIMAL",
-      "Marathon Deluxe Edition",
+      "MY HERO ACADEMIA: All’s Justice - Ultimate Edition",
       "REANIMAL – Digital Deluxe Edition",
       "LEGO® Batman™: Legacy of the Dark Knight Deluxe Edition",
       "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5",
       "CODE VEIN II",
-      "Yakuza Kiwami 3 & Dark Ties PS4 & PS5"
+      "Marathon Deluxe Edition",
+      "Yakuza Kiwami 3 & Dark Ties PS4 & PS5",
+      "PRAGMATA Deluxe Edition",
+      "High On Life 2",
+      "BlazBlue Entropy Effect X Deluxe Edition"
     ],
-    "crimson_rank": 12
+    "crimson_rank": 16
   },
   "아랍에미리트": {
     "games": [
@@ -334,17 +322,10 @@
       "Nioh 3",
       "Marathon Deluxe Edition",
       "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
-      "007 First Light",
       "REANIMAL – Digital Deluxe Edition",
-      "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5",
-      "Marathon Standard Edition",
-      "Diablo® IV: Lord of Hatred™ - Ultimate Edition",
-      "LEGO® Batman™: Legacy of the Dark Knight Deluxe Edition",
-      "RIDE 6 - Ultimate Edition",
-      "High On Life 2",
-      "MY HERO ACADEMIA: All’s Justice - Deluxe Edition"
+      "007 First Light"
     ],
-    "crimson_rank": 16
+    "crimson_rank": 9
   },
   "남아공": {
     "games": [
@@ -352,15 +333,15 @@
       "Nioh 3",
       "Resident Evil Requiem",
       "MY HERO ACADEMIA: All’s Justice",
-      "Life is Strange: Reunion",
       "Nioh 3 Digital Deluxe Edition",
+      "Diablo® IV: Lord of Hatred™ - Deluxe Edition",
+      "Monster Hunter Stories 3: Twisted Reflection Premium Deluxe Edition",
+      "007 First Light",
       "Avowed",
       "LEGO® Batman™: Legacy of the Dark Knight Deluxe Edition",
       "MY HERO ACADEMIA: All’s Justice - Deluxe Edition",
       "SAROS Digital Deluxe Edition",
       "Diablo® IV: Lord of Hatred™ - Ultimate Edition",
-      "Diablo® IV: Lord of Hatred™ - Deluxe Edition",
-      "007 First Light",
       "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "High On Life 2"
     ],
@@ -374,8 +355,8 @@
       "Marathon Deluxe Edition",
       "CODE VEIN II",
       "007 First Light",
-      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Nioh 3",
+      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Marathon Standard Edition",
       "Diablo® IV: Lord of Hatred™ - Ultimate Edition"
     ],
@@ -386,29 +367,29 @@
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "Nioh 3 Digital Deluxe Edition",
-      "Marathon Deluxe Edition",
       "Diablo® IV: Lord of Hatred™ - Standard Edition",
       "CODE VEIN II",
+      "Marathon Deluxe Edition",
       "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Nioh 3",
-      "Marathon Standard Edition",
       "007 First Light",
       "Life is Strange: Reunion",
       "Diablo® IV: Age of Hatred Collection",
       "Diablo® IV: Lord of Hatred™ - Ultimate Edition",
-      "Life is Strange: Reunion Deluxe Edition"
+      "Life is Strange: Reunion Deluxe Edition",
+      "The Sims™ 4 Royalty & Legacy Grand Bundle",
+      "Marathon Standard Edition"
     ],
-    "crimson_rank": 15
+    "crimson_rank": 16
   },
   "브라질": {
     "games": [
       "Resident Evil Requiem",
       "Resident Evil Requiem Deluxe Edition",
       "Nioh 3",
-      "Nioh 3 Digital Deluxe Edition",
-      "Life is Strange: Reunion"
+      "Nioh 3 Digital Deluxe Edition"
     ],
-    "crimson_rank": 6
+    "crimson_rank": 5
   },
   "멕시코": {
     "games": [
@@ -418,17 +399,15 @@
       "Marathon - Edición Deluxe",
       "MY HERO ACADEMIA: All’s Justice - Edición Ultimate",
       "Diablo® IV: Lord of Hatred™ - Ultimate Edition",
+      "007 First Light",
       "CODE VEIN II",
       "Nioh 3",
       "Edición Digital Deluxe de SAROS",
-      "MY HERO ACADEMIA: All’s Justice - Edición Deluxe",
-      "Life is Strange: Reunion",
       "Life is Strange: Reunion Deluxe Edition",
-      "007 First Light",
-      "REANIMAL – Digital Deluxe Edition",
-      "LEGO® Batman™: El Legado del Caballero de la Noche Edición Deluxe"
+      "LEGO® Batman™: El Legado del Caballero de la Noche Edición Deluxe",
+      "MY HERO ACADEMIA: All’s Justice - Edición Deluxe"
     ],
-    "crimson_rank": 16
+    "crimson_rank": 14
   },
   "아르헨티나": {
     "games": [
@@ -457,9 +436,9 @@
     "games": [
       "Resident Evil Requiem",
       "Resident Evil Requiem Deluxe Edition",
-      "Marathon - Edición Deluxe",
       "LEGO® Batman™: El Legado del Caballero de la Noche Edición Deluxe",
       "RIDE 6 - Ultimate Edition",
+      "Marathon - Edición Deluxe",
       "007 First Light"
     ],
     "crimson_rank": 7
@@ -468,34 +447,15 @@
     "games": [
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
-      "MY HERO ACADEMIA: All’s Justice - Edición Ultimate",
-      "Edición digital de lujo de DRAGON QUEST VII Reimagined",
-      "Yakuza Kiwami 3 & Dark Ties Deluxe Edition (PS4 y PS5)",
-      "007 First Light",
-      "CODE VEIN II",
-      "LEGO® Batman™: El Legado del Caballero de la Noche",
-      "Nioh 3",
-      "Marathon - Edición Deluxe",
-      "Avowed",
-      "Diablo® IV: Lord of Hatred™ - Standard Edition",
-      "Life is Strange: Reunion",
-      "Marathon - Edición Estándar",
-      "REANIMAL",
-      "The Seven Deadly Sins: Origin(F2P) 「Paquete de objetos especiales (Paquete de reserva)」",
-      "Avowed Edición Prémium",
-      "Avowed Mejora Prémium",
-      "BlazBlue Entropy Effect X",
-      "BlazBlue Entropy Effect X Deluxe Edition",
-      "Carmageddon: Rogue Shift",
-      "Coffee Talk Tokyo",
-      "Coffee Talk Tokyo - Deluxe Edition"
+      "MY HERO ACADEMIA: All’s Justice - Edición Ultimate"
     ],
-    "crimson_rank": 24
+    "crimson_rank": 4
   },
   "우루과이": {
     "games": [
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
+      "LEGO® Batman™: El Legado del Caballero de la Noche Edición Deluxe",
       "Edición digital de lujo de DRAGON QUEST VII Reimagined",
       "007 First Light",
       "REANIMAL – Digital Deluxe Edition",
@@ -514,7 +474,7 @@
       "Coffee Talk Tokyo",
       "Coffee Talk Tokyo - Deluxe Edition"
     ],
-    "crimson_rank": 20
+    "crimson_rank": 21
   },
   "볼리비아": {
     "games": [
@@ -541,12 +501,12 @@
       "ドラゴンクエストVII Reimagined　デジタルデラックス版",
       "CODE VEIN II Ultimate Edition",
       "仁王３ Digital Deluxe Edition",
+      "CODE VEIN II Deluxe Edition",
       "龍が如く 極３ / 龍が如く３外伝 Dark Ties デラックス・エディション PS4 & PS5",
       "ドラゴンクエストVII Reimagined",
-      "CODE VEIN II Deluxe Edition",
       "BIOHAZARD requiem デラックスエディション",
-      "仁王３",
       "CODE VEIN II",
+      "仁王３",
       "龍が如く 極３ / 龍が如く３外伝 Dark Ties PS4 & PS5",
       "BIOHAZARD requiem",
       "首都高バトル",
@@ -560,45 +520,47 @@
     "games": [
       "Nioh 3 Digital Deluxe Edition (한국어판)",
       "드래곤 퀘스트 VII Reimagined 디지털 디럭스 에디션 (중국어(간체자), 한국어, 중국어(번체자))",
+      "코드 베인 II 얼티밋 에디션 (중국어(간체자), 한국어, 영어, 일본어, 중국어(번체자))",
       "용과 같이 극3 / 용과 같이3 외전 Dark Ties 디럭스 에디션 PS4 & PS5 (한국어판)",
       "BIOHAZARD requiem 디럭스 에디션 (한국어판)",
-      "코드 베인 II 얼티밋 에디션 (중국어(간체자), 한국어, 영어, 일본어, 중국어(번체자))",
+      "코드 베인 II 디럭스 에디션 (중국어(간체자), 한국어, 중국어(번체자))",
+      "Nioh 3 (한국어판)",
+      "BIOHAZARD requiem (중국어(간체자), 한국어, 영어, 일본어, 중국어(번체자))",
       "드래곤 퀘스트 VII Reimagined (중국어(간체자), 한국어, 중국어(번체자))",
       "디아블로® IV: 증오의 시대 컬렉션 (중국어(간체자), 한국어, 영어, 일본어, 중국어(번체자))",
-      "Nioh 3 (한국어판)",
-      "용과 같이 극3 / 용과 같이3 외전 Dark Ties PS4 & PS5 (중국어(간체자), 한국어, 영어, 일본어, 중국어(번체자))",
-      "BIOHAZARD requiem (중국어(간체자), 한국어, 영어, 일본어, 중국어(번체자))"
+      "용과 같이 극3 / 용과 같이3 외전 Dark Ties PS4 & PS5 (중국어(간체자), 한국어, 영어, 일본어, 중국어(번체자))"
     ],
-    "crimson_rank": 11
+    "crimson_rank": 12
   },
   "호주": {
     "games": [
       "Resident Evil Requiem Deluxe Edition",
       "Nioh 3 Digital Deluxe Edition",
-      "Marathon Deluxe Edition",
       "Resident Evil Requiem",
+      "Marathon Deluxe Edition",
       "Life is Strange: Reunion Deluxe Edition",
       "Life is Strange: Reunion",
       "CODE VEIN II",
       "Diablo® IV: Lord of Hatred™ - Standard Edition",
-      "Marathon Standard Edition",
-      "LEGO® Batman™: Legacy of the Dark Knight Deluxe Edition",
       "007 First Light",
+      "LEGO® Batman™: Legacy of the Dark Knight Deluxe Edition",
       "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
+      "Marathon Standard Edition",
       "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5",
-      "The Sims™ 4 Royalty & Legacy Grand Bundle",
       "MY HERO ACADEMIA: All’s Justice - Ultimate Edition",
-      "High On Life 2",
-      "Diablo® IV: Lord of Hatred™ - Ultimate Edition"
+      "The Sims™ 4 Royalty & Legacy Grand Bundle",
+      "Diablo® IV: Age of Hatred Collection",
+      "Diablo® IV: Lord of Hatred™ - Ultimate Edition",
+      "High On Life 2"
     ],
-    "crimson_rank": 18
+    "crimson_rank": 19
   },
   "인도": {
     "games": [
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
-      "007 First Light",
       "Nioh 3 Digital Deluxe Edition",
+      "007 First Light",
       "Nioh 3",
       "Diablo® IV: Age of Hatred Collection"
     ],
@@ -608,11 +570,11 @@
     "games": [
       "Resident Evil Requiem Deluxe Edition (English/Chinese/Korean/Japanese Ver.)",
       "DRAGON QUEST VII Reimagined Digital Deluxe Edition (English, Japanese)",
-      "Nioh 3 Digital Deluxe Edition (English/Korean/Japanese Ver.)",
       "CODE VEIN II Ultimate Edition (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
-      "Resident Evil Requiem (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
+      "Nioh 3 Digital Deluxe Edition (English/Korean/Japanese Ver.)",
       "CODE VEIN II Deluxe Edition (English, Japanese)",
       "Nioh 3 (English, Korean, Japanese)",
+      "Resident Evil Requiem (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
       "DRAGON QUEST VII Reimagined (English, Japanese)",
       "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5 (English/Chinese/Korean/Japanese Ver.)",
       "LEGO® Batman™: Legacy of the Dark Knight Deluxe Edition (English/Chinese/Korean Ver.)",
@@ -631,35 +593,36 @@
       "Nioh 3 (English, Korean, Japanese)",
       "Diablo® IV: Lord of Hatred™ - Ultimate Edition (English/Chinese/Korean Ver.)",
       "DRAGON QUEST VII Reimagined Digital Deluxe Edition (English, Japanese)",
-      "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5 (English/Chinese/Korean/Japanese Ver.)",
-      "LEGO® Batman™: Legacy of the Dark Knight Deluxe Edition (English/Chinese/Korean Ver.)",
-      "RIDE 6 - Ultimate Edition (English/Chinese/Japanese Ver.)",
       "007 First Light (English/Chinese/Korean/Japanese Ver.)",
+      "Resident Evil Requiem (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
+      "LEGO® Batman™: Legacy of the Dark Knight Deluxe Edition (English/Chinese/Korean Ver.)",
+      "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5 (English/Chinese/Korean/Japanese Ver.)",
+      "RIDE 6 - Ultimate Edition (English/Chinese/Japanese Ver.)",
       "FATAL FRAME II: Crimson Butterfly REMAKE Digital Deluxe Edition (English/Korean/Japanese Ver.)"
     ],
-    "crimson_rank": 14
+    "crimson_rank": 15
   },
   "말레이시아": {
     "games": [
       "Resident Evil Requiem Deluxe Edition (English/Chinese/Korean/Japanese Ver.)",
       "CODE VEIN II Ultimate Edition (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
+      "CODE VEIN II Deluxe Edition (English, Japanese)",
       "Nioh 3 Digital Deluxe Edition (Chinese/Japanese Ver.)",
       "Nioh 3 Digital Deluxe Edition (English/Korean/Japanese Ver.)",
       "Resident Evil Requiem (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
       "DRAGON QUEST VII Reimagined Digital Deluxe Edition (English, Japanese)",
-      "CODE VEIN II Deluxe Edition (English, Japanese)",
       "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5 (English/Chinese/Korean/Japanese Ver.)",
       "Nioh 3 (English, Korean, Japanese)",
       "Nioh 3 (Simplified Chinese, Japanese, Traditional Chinese)",
       "DRAGON QUEST VII Reimagined Digital Deluxe Edition (Simplified Chinese, Korean, Traditional Chinese)",
       "RIDE 6 - Ultimate Edition (English/Chinese/Japanese Ver.)",
       "Diablo® IV: Lord of Hatred™ - Ultimate Edition (English/Chinese/Korean Ver.)",
+      "CODE VEIN II (English, Japanese)",
       "MY HERO ACADEMIA: All’s Justice - Deluxe Edition (English, Japanese)",
-      "Marathon Deluxe Edition (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
       "REANIMAL – Digital Deluxe Edition (English/Chinese/Korean/Japanese Ver.)",
       "007 First Light (English/Chinese/Korean/Japanese Ver.)",
       "SAROS (English/Chinese/Korean Ver.)",
-      "CODE VEIN II (English, Japanese)"
+      "Marathon Deluxe Edition (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)"
     ],
     "crimson_rank": 20
   },
@@ -671,8 +634,8 @@
       "Marathon Deluxe Edition",
       "CODE VEIN II",
       "007 First Light",
-      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Nioh 3",
+      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Marathon Standard Edition",
       "Diablo® IV: Lord of Hatred™ - Ultimate Edition"
     ],
@@ -686,8 +649,8 @@
       "Marathon Deluxe Edition",
       "CODE VEIN II",
       "007 First Light",
-      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Nioh 3",
+      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Marathon Standard Edition",
       "Diablo® IV: Lord of Hatred™ - Ultimate Edition"
     ],
@@ -701,8 +664,8 @@
       "Marathon Deluxe Edition",
       "CODE VEIN II",
       "007 First Light",
-      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Nioh 3",
+      "DRAGON QUEST VII Reimagined Digital Deluxe Edition",
       "Marathon Standard Edition",
       "Diablo® IV: Lord of Hatred™ - Ultimate Edition"
     ],
@@ -714,53 +677,52 @@
       "Resident Evil Requiem 豪華版 (中日英韓文版)",
       "仁王３ (簡體中文, 繁體中文, 日文)",
       "CODE VEIN 噬血代碼 II 數位終極版 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
-      "人中之龍 極３ / 人中之龍３外傳 Dark Ties 豪華版 PS4 & PS5 (中日英韓文版)",
-      "CODE VEIN 噬血代碼 II 數位豪華版 (簡體中文, 韓文, 繁體中文)",
       "勇者鬥惡龍 VII Reimagined 數位豪華版 (簡體中文, 韓文, 繁體中文)",
       "Resident Evil Requiem (簡體中文, 韓文, 英文, 繁體中文, 日文)",
+      "人中之龍 極３ / 人中之龍３外傳 Dark Ties 豪華版 PS4 & PS5 (中日英韓文版)",
+      "CODE VEIN 噬血代碼 II 數位豪華版 (簡體中文, 韓文, 繁體中文)",
       "人中之龍 極３ / 人中之龍３外傳 Dark Ties PS4 & PS5 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "REANIMAL – Digital Deluxe Edition (中日英韓文版)",
-      "《暗黑破壞神® IV：憎恨時代合輯》 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
+      "勇者鬥惡龍 VII Reimagined (簡體中文, 韓文, 繁體中文)",
       "《暗黑破壞神® IV：憎恨之王™》標準版 (中英韓文版)",
       "《暗黑破壞神® IV：憎恨之王™》終極版 (中英韓文版)",
-      "勇者鬥惡龍 VII Reimagined (簡體中文, 韓文, 繁體中文)",
       "CODE VEIN 噬血代碼 II (簡體中文, 韓文, 繁體中文)",
+      "《暗黑破壞神® IV：憎恨時代合輯》 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "REANIMAL (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "《失落星船：馬拉松》豪華版 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
-      "仁王3 數位豪華版 (日英韓文版)",
-      "《失落星船：馬拉松》標準版 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
-      "首都高賽車 (簡體中文, 英文, 繁體中文, 日文)"
+      "仁王3 數位豪華版 (日英韓文版)"
     ],
-    "crimson_rank": 21
+    "crimson_rank": 19
   },
   "대만": {
     "games": [
       "仁王3 數位豪華版 (中日文版)",
       "仁王３ (簡體中文, 繁體中文, 日文)",
+      "CODE VEIN 噬血代碼 II 數位終極版 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "Resident Evil Requiem 豪華版 (中日英韓文版)",
       "勇者鬥惡龍 VII Reimagined 數位豪華版 (簡體中文, 韓文, 繁體中文)",
       "人中之龍 極３ / 人中之龍３外傳 Dark Ties 豪華版 PS4 & PS5 (中日英韓文版)",
-      "CODE VEIN 噬血代碼 II 數位終極版 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
-      "Resident Evil Requiem (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "CODE VEIN 噬血代碼 II 數位豪華版 (簡體中文, 韓文, 繁體中文)",
+      "Resident Evil Requiem (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "人中之龍 極３ / 人中之龍３外傳 Dark Ties PS4 & PS5 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
+      "CODE VEIN 噬血代碼 II (簡體中文, 韓文, 繁體中文)",
       "勇者鬥惡龍 VII Reimagined (簡體中文, 韓文, 繁體中文)",
       "《暗黑破壞神® IV：憎恨之王™》終極版 (中英韓文版)",
       "《暗黑破壞神® IV：憎恨之王™》標準版 (中英韓文版)",
-      "CODE VEIN 噬血代碼 II (簡體中文, 韓文, 繁體中文)",
       "Monster Hunter Stories 3: 命運雙龍 高級豪華版 (中日英韓文版)",
-      "RIDE 6 - Ultimate Edition (中日英文版)",
       "Disciples: Domination - Deluxe Edition (中日英文版)",
       "《暗黑破壞神® IV：憎恨時代合輯》 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "我的英雄學院 無盡正義 數位豪華版 (韓文, 繁體中文)",
-      "零 ～紅蝶～ REMAKE Digital Deluxe Edition (中日文版)",
       "仁王3 數位豪華版 (日英韓文版)",
+      "零 ～紅蝶～ REMAKE Digital Deluxe Edition (中日文版)",
       "首都高賽車 (簡體中文, 英文, 繁體中文, 日文)",
       "REANIMAL – Digital Deluxe Edition (中日英韓文版)",
-      "《失落星船：馬拉松》豪華版 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
-      "緋夜傳奇 Remastered 數位豪華版 (中韓文版)"
+      "緋夜傳奇 Remastered 數位豪華版 (中韓文版)",
+      "仁王３ (韓文, 英文, 日文)",
+      "Monster Hunter Stories 3: 命運雙龍 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
+      "我的英雄學院 無盡正義 (韓文, 繁體中文)"
     ],
-    "crimson_rank": 25
+    "crimson_rank": 26
   },
   "뉴질랜드": {
     "games": [
@@ -771,8 +733,9 @@
       "Life is Strange: Reunion Deluxe Edition",
       "PRAGMATA Deluxe Edition",
       "Nioh 3",
-      "Marathon Deluxe Edition"
+      "Marathon Deluxe Edition",
+      "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5"
     ],
-    "crimson_rank": 9
+    "crimson_rank": 10
   }
 }
