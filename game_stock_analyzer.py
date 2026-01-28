@@ -3,6 +3,8 @@ import requests
 from datetime import datetime, timedelta
 import json
 import os
+from bs4 import BeautifulSoup
+import re
 
 # 게임 테마주 목록
 GAME_STOCKS = {
@@ -20,111 +22,74 @@ GAME_STOCKS = {
 
 DISCORD_WEBHOOK = os.getenv('DISCORD_WEBHOOK')
 
-def get_supply_data(code, end_date):
-    """pykrx로 수급 데이터 수집 - 디버깅 강화 버전"""
+def get_pearl_abyss_supply_data():
+    """네이버 증권에서 펄어비스 수급 데이터 크롤링"""
+    code = "263750"
     foreign_net = 0
     institution_net = 0
     short_ratio = 0
     
-    print(f"\n  [수급 데이터 수집 시작]")
+    print(f"\n  [네이버 증권 수급 데이터 크롤링]")
     
     try:
-        from pykrx import stock
-        print(f"  ✓ pykrx 임포트 성공")
-    except ImportError as e:
-        print(f"  ✗ pykrx 임포트 실패: {e}")
-        return foreign_net, institution_net, short_ratio
-    
-    # 1. 투자자별 매매동향 조회
-    print(f"\n  [1단계] 투자자별 매매동향 조회")
-    for i in range(10):
-        date_str = (end_date - timedelta(days=i)).strftime('%Y%m%d')
-        print(f"    시도: {date_str}", end=" ")
+        # 네이버 증권 투자자별 매매동향 페이지
+        url = f"https://finance.naver.com/item/frgn.naver?code={code}"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
         
-        try:
-            # 방법: get_market_trading_value_by_investor
-            df = stock.get_market_trading_value_by_investor(
-                fromdate=date_str,
-                todate=date_str,
-                ticker=code,
-                etf=False,
-                etn=False,
-                elw=False
-            )
-            
-            if df is None or df.empty:
-                print("→ 데이터 없음")
-                continue
-            
-            print(f"→ 성공! (shape: {df.shape})")
-            print(f"    Columns: {list(df.columns)}")
-            print(f"    Data:\n{df}")
-            
-            # 마지막 행 추출
-            last_row = df.iloc[-1]
-            
-            # 외국인 순매수
-            if '외국인' in df.columns:
-                foreign_net = last_row['외국인']
-                print(f"    외국인: {foreign_net:,}원")
-            
-            # 기관 순매수
-            if '기관' in df.columns:
-                institution_net = last_row['기관']
-                print(f"    기관: {institution_net:,}원")
-            elif '기관합계' in df.columns:
-                institution_net = last_row['기관합계']
-                print(f"    기관합계: {institution_net:,}원")
-            
-            # 성공하면 루프 종료
-            if foreign_net != 0 or institution_net != 0:
-                print(f"  ✓ 수급 데이터 수집 완료 ({date_str})")
-                break
-                
-        except Exception as e:
-            print(f"→ 오류: {type(e).__name__}: {e}")
-    
-    # 2. 공매도 잔고비율 조회
-    print(f"\n  [2단계] 공매도 잔고비율 조회")
-    for i in range(10):
-        date_str = (end_date - timedelta(days=i)).strftime('%Y%m%d')
-        print(f"    시도: {date_str}", end=" ")
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
         
-        try:
-            df = stock.get_shorting_balance_by_date(
-                fromdate=date_str,
-                todate=date_str,
-                ticker=code
-            )
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # 투자자별 매매동향 테이블 찾기
+        table = soup.find('table', {'class': 'type2'})
+        
+        if table:
+            rows = table.find_all('tr')
             
-            if df is None or df.empty:
-                print("→ 데이터 없음")
-                continue
-            
-            print(f"→ 성공! (shape: {df.shape})")
-            print(f"    Columns: {list(df.columns)}")
-            print(f"    Data:\n{df}")
-            
-            last_row = df.iloc[-1]
-            
-            # 공매도잔고비율
-            if '공매도잔고비율' in df.columns:
-                short_ratio = last_row['공매도잔고비율']
-                print(f"    공매도잔고비율: {short_ratio:.2f}%")
-            
-            # 성공하면 루프 종료
-            if short_ratio != 0:
-                print(f"  ✓ 공매도 데이터 수집 완료 ({date_str})")
-                break
-                
-        except Exception as e:
-            print(f"→ 오류: {type(e).__name__}: {e}")
+            # 첫 번째 데이터 행 (최근 날짜)
+            for row in rows[3:4]:  # 헤더 이후 첫 데이터 행
+                cols = row.find_all('td')
+                if len(cols) >= 7:
+                    # 외국인 순매수 (주식수)
+                    foreign_shares = cols[4].text.strip().replace(',', '')
+                    if foreign_shares and foreign_shares != '-':
+                        foreign_net = int(foreign_shares)
+                    
+                    # 기관 순매수 (주식수)
+                    institution_shares = cols[5].text.strip().replace(',', '')
+                    if institution_shares and institution_shares != '-':
+                        institution_net = int(institution_shares)
+                    
+                    print(f"  ✓ 외국인 순매수: {foreign_net:,}주")
+                    print(f"  ✓ 기관 순매수: {institution_net:,}주")
+                    break
+        
+        # 공매도 비율 조회 (별도 페이지)
+        short_url = f"https://finance.naver.com/item/main.naver?code={code}"
+        response2 = requests.get(short_url, headers=headers, timeout=10)
+        soup2 = BeautifulSoup(response2.text, 'html.parser')
+        
+        # 공매도 비율 찾기
+        for tag in soup2.find_all('em', {'class': 'no_down'}):
+            text = tag.text.strip()
+            if '%' in text:
+                try:
+                    short_ratio = float(text.replace('%', ''))
+                    print(f"  ✓ 공매도 비율: {short_ratio}%")
+                    break
+                except:
+                    pass
+        
+    except Exception as e:
+        print(f"  ✗ 크롤링 오류: {e}")
     
-    print(f"\n  [최종 결과] 외국인: {foreign_net:,}원, 기관: {institution_net:,}원, 공매도: {short_ratio:.2f}%")
     return foreign_net, institution_net, short_ratio
 
 
-def get_stock_data(code):
+def get_stock_data(code, name):
     """FinanceDataReader로 주식 데이터 수집 및 분석"""
     try:
         import FinanceDataReader as fdr
@@ -224,8 +189,16 @@ def get_stock_data(code):
         except:
             market_cap = 0
         
-        # 수급 데이터 수집 (별도 함수)
-        foreign_net, institution_net, short_ratio = get_supply_data(code, end_date)
+        # 펄어비스만 수급 데이터 수집
+        foreign_net = 0
+        institution_net = 0
+        short_ratio = 0
+        
+        if name == '펄어비스':
+            foreign_shares, institution_shares, short_ratio = get_pearl_abyss_supply_data()
+            # 주식수를 금액으로 환산
+            foreign_net = foreign_shares * price
+            institution_net = institution_shares * price
         
         return {
             'price': price,
@@ -457,7 +430,7 @@ def analyze_stocks():
     
     for code, name in GAME_STOCKS.items():
         print(f"\n분석중: {name} ({code})...")
-        data = get_stock_data(code)
+        data = get_stock_data(code, name)
         
         if data:
             data['code'] = code
