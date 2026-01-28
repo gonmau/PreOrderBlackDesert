@@ -122,62 +122,71 @@ def get_stock_data(code):
             market_cap = 0
         
         # 수급 및 공매도 정보
+        foreign_net = 0
+        institution_net = 0
+        short_ratio = 0
+        
         try:
             from pykrx import stock
             
-            # 최근 영업일 찾기
+            # 최근 영업일 찾기 (외국인/기관 순매수)
             trade_date = end_date
-            for i in range(7):
+            for i in range(10):  # 10일까지 확인
                 date_str = (trade_date - timedelta(days=i)).strftime('%Y%m%d')
                 
                 try:
-                    # 투자자별 거래 (외국인, 기관)
-                    investor_df = stock.get_market_trading_value_by_date(date_str, date_str, code)
-                    if not investor_df.empty:
+                    # 투자자별 순매수 (외국인, 기관) - 금액 기준
+                    investor_df = stock.get_market_net_purchases_of_equities(date_str, date_str, code)
+                    
+                    if investor_df is not None and not investor_df.empty:
                         latest_trade = investor_df.iloc[-1]
-                        foreign_net = latest_trade.get('외국인', 0) if '외국인' in latest_trade else 0
-                        institution_net = latest_trade.get('기관', 0) if '기관' in latest_trade else 0
                         
-                        # 순매수를 거래량으로 나눠서 비율 계산 (간이)
-                        total_value = abs(foreign_net) + abs(institution_net)
-                        foreign_ratio = (foreign_net / total_value * 100) if total_value > 0 else 0
-                        institution_ratio = (institution_net / total_value * 100) if total_value > 0 else 0
+                        # 외국인 순매수 (금액)
+                        if '외국인' in latest_trade.index:
+                            foreign_net = latest_trade['외국인']
+                        elif '외국인합계' in latest_trade.index:
+                            foreign_net = latest_trade['외국인합계']
+                        
+                        # 기관 순매수 (금액)
+                        if '기관합계' in latest_trade.index:
+                            institution_net = latest_trade['기관합계']
+                        elif '기관' in latest_trade.index:
+                            institution_net = latest_trade['기관']
+                        
+                        print(f"  수급: 외국인 {foreign_net:,}원, 기관 {institution_net:,}원 ({date_str})")
                         break
-                except:
+                except Exception as e:
+                    print(f"  {date_str} 수급 조회 실패: {e}")
                     continue
-            else:
-                foreign_ratio = 0
-                institution_ratio = 0
             
             # 공매도 잔고 비율
-            try:
-                short_date = end_date
-                for i in range(7):
-                    date_str = (short_date - timedelta(days=i)).strftime('%Y%m%d')
-                    try:
-                        short_df = stock.get_shorting_balance_by_ticker(date_str, code)
-                        if not short_df.empty and code in short_df.index:
-                            short_info = short_df.loc[code]
-                            # 공매도잔고비율 = (공매도잔고 / 상장주식수) * 100
-                            short_balance = short_info.get('공매도잔고', 0) if '공매도잔고' in short_info else 0
-                            short_ratio = short_info.get('공매도잔고비율', 0) if '공매도잔고비율' in short_info else 0
-                            break
-                    except:
-                        continue
-                else:
-                    short_ratio = 0
-            except:
-                short_ratio = 0
+            short_date = end_date
+            for i in range(10):  # 10일까지 확인
+                date_str = (short_date - timedelta(days=i)).strftime('%Y%m%d')
+                
+                try:
+                    # 공매도 잔고 비율 조회
+                    short_df = stock.get_shorting_balance_by_date(date_str, date_str, code)
+                    
+                    if short_df is not None and not short_df.empty:
+                        latest_short = short_df.iloc[-1]
+                        
+                        # 공매도 잔고비율 컬럼 찾기
+                        if '공매도잔고비율' in latest_short.index:
+                            short_ratio = latest_short['공매도잔고비율']
+                        elif '비율' in latest_short.index:
+                            short_ratio = latest_short['비율']
+                        
+                        print(f"  공매도: {short_ratio:.2f}% ({date_str})")
+                        break
+                except Exception as e:
+                    print(f"  {date_str} 공매도 조회 실패: {e}")
+                    continue
                 
         except ImportError:
-            foreign_ratio = 0
-            institution_ratio = 0
-            short_ratio = 0
+            print("  pykrx 미설치 - 수급 데이터 수집 불가")
         except Exception as e:
-            print(f"  수급 데이터 오류: {e}")
-            foreign_ratio = 0
-            institution_ratio = 0
-            short_ratio = 0
+            print(f"  수급 데이터 전체 오류: {e}")
         
         return {
             'price': price,
@@ -195,8 +204,8 @@ def get_stock_data(code):
             'cross_signal': cross_signal,
             'rsi': round(rsi, 1),
             'short_ratio': round(short_ratio, 2),
-            'foreign_net': round(foreign_ratio, 1),
-            'institution_net': round(institution_ratio, 1)
+            'foreign_net': foreign_net,  # 금액 (원)
+            'institution_net': institution_net  # 금액 (원)
         }
         
     except ImportError:
@@ -316,20 +325,42 @@ def send_discord_notification(df, leader):
         # 수급 현황
         supply_value = ""
         
-        # 외국인/기관 순매수 현황
-        if pearl['foreign_net'] > 0:
-            supply_value += f"**외국인**: 🟢 순매수 {abs(pearl['foreign_net']):.1f}%\n"
-        elif pearl['foreign_net'] < 0:
-            supply_value += f"**외국인**: 🔴 순매도 {abs(pearl['foreign_net']):.1f}%\n"
-        else:
-            supply_value += f"**외국인**: ⚪ 보합\n"
+        # 외국인/기관 순매수 현황 (금액 기준)
+        foreign_amount = pearl['foreign_net']
+        institution_amount = pearl['institution_net']
         
-        if pearl['institution_net'] > 0:
-            supply_value += f"**기관**: 🟢 순매수 {abs(pearl['institution_net']):.1f}%\n"
-        elif pearl['institution_net'] < 0:
-            supply_value += f"**기관**: 🔴 순매도 {abs(pearl['institution_net']):.1f}%\n"
+        # 천만원 단위로 표시
+        if abs(foreign_amount) >= 100000000:  # 1억 이상
+            foreign_display = f"{foreign_amount/100000000:.1f}억원"
+        elif abs(foreign_amount) >= 10000000:  # 천만원 이상
+            foreign_display = f"{foreign_amount/10000000:.0f}천만원"
+        elif foreign_amount != 0:
+            foreign_display = f"{foreign_amount/10000:.0f}만원"
         else:
-            supply_value += f"**기관**: ⚪ 보합\n"
+            foreign_display = "0원"
+        
+        if abs(institution_amount) >= 100000000:
+            institution_display = f"{institution_amount/100000000:.1f}억원"
+        elif abs(institution_amount) >= 10000000:
+            institution_display = f"{institution_amount/10000000:.0f}천만원"
+        elif institution_amount != 0:
+            institution_display = f"{institution_amount/10000:.0f}만원"
+        else:
+            institution_display = "0원"
+        
+        if foreign_amount > 10000000:  # 천만원 이상 순매수
+            supply_value += f"**외국인**: 🟢 순매수 {foreign_display}\n"
+        elif foreign_amount < -10000000:  # 천만원 이상 순매도
+            supply_value += f"**외국인**: 🔴 순매도 {foreign_display}\n"
+        else:
+            supply_value += f"**외국인**: ⚪ 보합 ({foreign_display})\n"
+        
+        if institution_amount > 10000000:
+            supply_value += f"**기관**: 🟢 순매수 {institution_display}\n"
+        elif institution_amount < -10000000:
+            supply_value += f"**기관**: 🔴 순매도 {institution_display}\n"
+        else:
+            supply_value += f"**기관**: ⚪ 보합 ({institution_display})\n"
         
         # 공매도 비율
         if pearl['short_ratio'] > 10:
@@ -462,8 +493,31 @@ def analyze_stocks():
             print(f"신호: {p['cross_signal']} 발생!")
         print(f"RSI(14): {p['rsi']:.1f}")
         print(f"\n[수급 현황]")
-        print(f"외국인 순매수: {p['foreign_net']:+.1f}%")
-        print(f"기관 순매수: {p['institution_net']:+.1f}%")
+        
+        # 외국인 순매수
+        foreign_amount = p['foreign_net']
+        if abs(foreign_amount) >= 100000000:
+            foreign_str = f"{foreign_amount/100000000:+.1f}억원"
+        elif abs(foreign_amount) >= 10000000:
+            foreign_str = f"{foreign_amount/10000000:+.0f}천만원"
+        elif foreign_amount != 0:
+            foreign_str = f"{foreign_amount/10000:+.0f}만원"
+        else:
+            foreign_str = "0원"
+        
+        # 기관 순매수
+        institution_amount = p['institution_net']
+        if abs(institution_amount) >= 100000000:
+            institution_str = f"{institution_amount/100000000:+.1f}억원"
+        elif abs(institution_amount) >= 10000000:
+            institution_str = f"{institution_amount/10000000:+.0f}천만원"
+        elif institution_amount != 0:
+            institution_str = f"{institution_amount/10000:+.0f}만원"
+        else:
+            institution_str = "0원"
+        
+        print(f"외국인 순매수: {foreign_str}")
+        print(f"기관 순매수: {institution_str}")
         print(f"공매도 잔고비율: {p['short_ratio']:.2f}%")
     
     # 디스코드 알림
