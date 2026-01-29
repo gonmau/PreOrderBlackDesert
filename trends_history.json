@@ -2666,5 +2666,14 @@
         "geo_code": "FR"
       }
     }
+  },
+  {
+    "timestamp": "2026-01-29T07:58:46.969256",
+    "google": {
+      "score": 31,
+      "avg_7d": 20,
+      "top_regions": {}
+    },
+    "console_markets": {}
   }
 ]
