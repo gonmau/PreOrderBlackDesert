@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-30T06:56:44.032887",
+  "timestamp": "2026-01-31T02:33:43.992621",
   "stocks": [
     {
       "price": 254000,
@@ -72,7 +72,7 @@
       "week_change": 14.86,
       "month_change": 43.72,
       "high_52w": 59500,
-      "low_52w": 27950,
+      "low_52w": 28300,
       "from_high": -3.87,
       "ma5": 53940.0,
       "ma20": 43342.0,
@@ -129,7 +129,7 @@
     },
     {
       "price": 37650,
-      "volume": 157208,
+      "volume": 157218,
       "market_cap": 0.89,
       "day_change": -1.57,
       "week_change": 2.31,
