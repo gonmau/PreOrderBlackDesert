@@ -220,7 +220,7 @@ def send_discord_notification(webhook_url, country_data, dates, output_dir='outp
 def main():
     """메인 실행 함수"""
     # 데이터 파일 경로
-    data_file = 'rank_history__2_.json'
+    data_file = 'rank_history.json'
     
     # 디스코드 웹훅 URL (환경 변수에서 가져오기)
     discord_webhook = os.environ.get('DISCORD_WEBHOOK_URL', '')
