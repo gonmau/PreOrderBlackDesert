@@ -3225,5 +3225,20 @@
         "geo_code": "JP"
       }
     }
+  },
+  {
+    "timestamp": "2026-02-03T11:14:02.564939",
+    "google": {
+      "score": 53,
+      "avg_7d": 16,
+      "top_regions": {}
+    },
+    "console_markets": {
+      "United States": {
+        "score": 63,
+        "avg_1m": 34,
+        "geo_code": "US"
+      }
+    }
   }
 ]
