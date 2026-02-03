@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main, master ]
     paths:
-      - 'rank_history__2_.json'
+      - 'rank_history.json'
       - 'plot_rankings.py'
       - '.github/workflows/generate_plots.yml'
   workflow_dispatch:  # 수동 실행 가능
@@ -31,7 +31,7 @@ jobs:
         
     - name: Generate plots
       env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
       run: |
         python plot_rankings.py
         
