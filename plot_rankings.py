@@ -399,7 +399,7 @@ def main():
     data_file = 'rank_history.json'
     
     # 디스코드 웹훅 URL (환경 변수에서 가져오기)
-    discord_webhook = os.environ.get('DISCORD_WEBHOOK_URL', '')
+    discord_webhook = os.environ.get('DISCORD_WEBHOOK', '')
     
     if not os.path.exists(data_file):
         print(f'❌ Error: {data_file} not found')
@@ -440,7 +440,7 @@ def main():
         print('📤 Sending Discord notification...')
         send_discord_notification(discord_webhook, country_data, dates)
     else:
-        print('ℹ️  Set DISCORD_WEBHOOK_URL environment variable to enable notifications')
+        print('ℹ️  Set DISCORD_WEBHOOK environment variable to enable notifications')
 
 if __name__ == '__main__':
     main()
