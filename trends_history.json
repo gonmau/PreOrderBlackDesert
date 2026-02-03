@@ -3240,5 +3240,14 @@
         "geo_code": "US"
       }
     }
+  },
+  {
+    "timestamp": "2026-02-03T11:40:15.359289",
+    "google": {
+      "score": 54,
+      "avg_7d": 16,
+      "top_regions": {}
+    },
+    "console_markets": {}
   }
 ]
