@@ -3249,5 +3249,40 @@
       "top_regions": {}
     },
     "console_markets": {}
+  },
+  {
+    "timestamp": "2026-02-03T22:51:21.963837",
+    "google": {
+      "score": 62,
+      "avg_7d": 16,
+      "top_regions": {}
+    },
+    "console_markets": {
+      "United States": {
+        "score": 56,
+        "avg_1m": 33,
+        "geo_code": "US"
+      },
+      "Japan": {
+        "score": 50,
+        "avg_1m": 14,
+        "geo_code": "JP"
+      },
+      "United Kingdom": {
+        "score": 62,
+        "avg_1m": 31,
+        "geo_code": "GB"
+      },
+      "Germany": {
+        "score": 65,
+        "avg_1m": 33,
+        "geo_code": "DE"
+      },
+      "France": {
+        "score": 60,
+        "avg_1m": 31,
+        "geo_code": "FR"
+      }
+    }
   }
 ]
