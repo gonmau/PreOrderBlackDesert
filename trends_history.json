@@ -3379,5 +3379,14 @@
         "geo_code": "FR"
       }
     }
+  },
+  {
+    "timestamp": "2026-02-04T11:40:01.113737",
+    "google": {
+      "score": 53,
+      "avg_7d": 16,
+      "top_regions": {}
+    },
+    "console_markets": {}
   }
 ]
