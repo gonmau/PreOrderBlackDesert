@@ -3388,5 +3388,25 @@
       "top_regions": {}
     },
     "console_markets": {}
+  },
+  {
+    "timestamp": "2026-02-04T23:36:11.018398",
+    "google": {
+      "score": 50,
+      "avg_7d": 16,
+      "top_regions": {}
+    },
+    "console_markets": {
+      "United States": {
+        "score": 59,
+        "avg_1m": 34,
+        "geo_code": "US"
+      },
+      "Japan": {
+        "score": 32,
+        "avg_1m": 14,
+        "geo_code": "JP"
+      }
+    }
   }
 ]
