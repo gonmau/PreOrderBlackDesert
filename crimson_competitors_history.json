@@ -14,63 +14,51 @@
   },
   "독일": {
     "games": [
-      "Nioh 3",
       "Resident Evil Requiem Deluxe Edition",
-      "Nioh 3 Digital Deluxe Edition",
       "WWE 2K26 Monday Night War Edition",
       "Resident Evil Requiem",
       "Diablo® IV: Lord of Hatred™ – Standard Edition"
     ],
-    "crimson_rank": 7
+    "crimson_rank": 5
   },
   "프랑스": {
     "games": [
-      "Nioh 3",
       "Resident Evil Requiem Deluxe Edition",
-      "Nioh 3 - Édition Deluxe numérique",
       "WWE 2K26 Édition Monday Night War",
       "Resident Evil Requiem"
     ],
-    "crimson_rank": 6
+    "crimson_rank": 4
   },
   "스페인": {
     "games": [
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
-      "Nioh 3",
-      "Nioh 3 Edición Digital Deluxe",
       "WWE 2K26 Edición Monday Night War"
     ],
-    "crimson_rank": 6
+    "crimson_rank": 4
   },
   "이탈리아": {
     "games": [
-      "Nioh 3",
-      "Nioh 3 Digital Deluxe Edition",
       "Edizione Monday Night War di WWE 2K26",
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "RIDE 6 - Ultimate Edition"
     ],
-    "crimson_rank": 7
+    "crimson_rank": 5
   },
   "네덜란드": {
     "games": [
-      "Nioh 3 Digital Deluxe Edition",
-      "Nioh 3",
       "WWE 2K26 Monday Night War Edition",
       "Resident Evil Requiem Deluxe Edition",
       "MLB® The Show™ 26 Digital Deluxe Edition",
       "Resident Evil Requiem",
       "Docked"
     ],
-    "crimson_rank": 8
+    "crimson_rank": 6
   },
   "폴란드": {
     "games": [
-      "Nioh 3",
       "Resident Evil Requiem Deluxe Edition",
-      "Nioh 3 Cyfrowa Edycja Deluxe",
       "Resident Evil Requiem",
       "WWE 2K26 Monday Night War Edition",
       "Diablo® IV: Lord of Hatred™ – Standard Edition",
@@ -80,56 +68,46 @@
       "REANIMAL – Digital Deluxe Edition",
       "Wielki zestaw The Sims™ 4 Królewskie dziedzictwo"
     ],
-    "crimson_rank": 12
+    "crimson_rank": 10
   },
   "스위스": {
     "games": [
-      "Nioh 3 Digital Deluxe Edition",
-      "Nioh 3",
       "WWE 2K26 Monday Night War Edition",
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem"
     ],
-    "crimson_rank": 6
+    "crimson_rank": 4
   },
   "스웨덴": {
     "games": [
-      "Nioh 3",
-      "Nioh 3 Digital Deluxe Edition",
       "Resident Evil Requiem Deluxe Edition",
       "WWE 2K26 Monday Night War Edition",
       "Resident Evil Requiem"
     ],
-    "crimson_rank": 6
+    "crimson_rank": 4
   },
   "노르웨이": {
     "games": [
-      "Nioh 3 Digital Deluxe Edition",
-      "Nioh 3",
       "Resident Evil Requiem Deluxe Edition",
       "WWE 2K26 Monday Night War Edition",
       "Resident Evil Requiem",
       "ICARUS: Ultimate Console Edition"
     ],
-    "crimson_rank": 7
+    "crimson_rank": 5
   },
   "덴마크": {
     "games": [
-      "Nioh 3 Digital Deluxe-udgave",
       "Resident Evil Requiem Deluxe Edition",
-      "Nioh 3",
       "WWE 2K26 Monday Night War Edition",
       "Resident Evil Requiem",
       "High On Life 2",
       "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5",
       "Diablo® IV: Lord of Hatred™ - Standard Edition"
     ],
-    "crimson_rank": 9
+    "crimson_rank": 7
   },
   "핀란드": {
     "games": [
-      "Nioh 3",
-      "Nioh 3 Digital Deluxe Edition",
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "WWE 2K26 Monday Night War Edition",
@@ -148,7 +126,7 @@
       "MLB® The Show™ 26 Digital Deluxe Edition",
       "SAROS Digital Deluxe Edition"
     ],
-    "crimson_rank": 20
+    "crimson_rank": 18
   },
   "포르투갈": {
     "games": [
@@ -166,8 +144,6 @@
   },
   "그리스": {
     "games": [
-      "Nioh 3",
-      "Nioh 3 Digital Deluxe Edition",
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "WWE 2K26 Monday Night War Edition",
@@ -181,20 +157,17 @@
       "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5",
       "High On Life 2",
       "Avowed",
-      "LEGO® Batman™: Legacy of the Dark Knight Deluxe Edition",
-      "MY HERO ACADEMIA: All’s Justice - Deluxe Edition"
+      "LEGO® Batman™: Legacy of the Dark Knight Deluxe Edition"
     ],
-    "crimson_rank": 18
+    "crimson_rank": 15
   },
   "체코": {
     "games": [
-      "Nioh 3 Digital Deluxe Edition",
-      "Nioh 3",
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "Diablo® IV: Lord of Hatred™ - Standard Edition"
     ],
-    "crimson_rank": 6
+    "crimson_rank": 4
   },
   "헝가리": {
     "games": [
@@ -256,14 +229,12 @@
     "games": [
       "Resident Evil Requiem: видання Deluxe",
       "Resident Evil Requiem",
-      "Nioh 3 Digital Deluxe Edition",
-      "Nioh 3",
       "REANIMAL",
       "REANIMAL – Digital Deluxe Edition",
       "Diablo® IV: Lord of Hatred™ — Standard Edition",
       "Diablo® IV: Lord of Hatred™ — Ultimate Edition"
     ],
-    "crimson_rank": 9
+    "crimson_rank": 7
   },
   "사우디아라비아": {
     "games": [
@@ -291,14 +262,11 @@
   },
   "남아공": {
     "games": [
-      "Nioh 3",
       "Resident Evil Requiem Deluxe Edition",
       "WWE 2K26 Monday Night War Edition",
-      "Nioh 3 Digital Deluxe Edition",
-      "Resident Evil Requiem",
-      "MY HERO ACADEMIA: All’s Justice - Ultimate Edition"
+      "Resident Evil Requiem"
     ],
-    "crimson_rank": 7
+    "crimson_rank": 4
   },
   "미국": {
     "games": [
