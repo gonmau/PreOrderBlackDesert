@@ -3503,5 +3503,30 @@
         "geo_code": "FR"
       }
     }
+  },
+  {
+    "timestamp": "2026-02-05T23:33:07.847141",
+    "google": {
+      "score": 88,
+      "avg_7d": 17,
+      "top_regions": {}
+    },
+    "console_markets": {
+      "United States": {
+        "score": 83,
+        "avg_1m": 37,
+        "geo_code": "US"
+      },
+      "Japan": {
+        "score": 26,
+        "avg_1m": 10,
+        "geo_code": "JP"
+      },
+      "United Kingdom": {
+        "score": 93,
+        "avg_1m": 36,
+        "geo_code": "GB"
+      }
+    }
   }
 ]
