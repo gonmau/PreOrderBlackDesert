@@ -134,6 +134,34 @@ def create_views_graph():
         print("⚠️  데이터 부족 (2개 이상 필요) - 그래프 생략")
         return None
     
+    # 채널별 스타일 정의
+    CHANNEL_STYLES = {
+        "PS": {
+            "color": "#0070CC",  # PlayStation 블루
+            "marker": "o",
+            "linewidth": 3,
+            "markersize": 8
+        },
+        "Crimson Desert": {
+            "color": "#DC143C",  # Crimson 레드
+            "marker": "s",
+            "linewidth": 2.5,
+            "markersize": 7
+        },
+        "IGN": {
+            "color": "#FF6B00",  # IGN 오렌지
+            "marker": "^",
+            "linewidth": 2.5,
+            "markersize": 7
+        },
+        "Epic Games": {
+            "color": "#313131",  # Epic Games 다크그레이
+            "marker": "D",
+            "linewidth": 2.5,
+            "markersize": 6
+        }
+    }
+    
     # 데이터 파싱 - Preview #2
     timestamps_p2 = []
     views_data_p2 = {name: [] for name in PREVIEW_2_VIDEOS}
@@ -185,21 +213,32 @@ def create_views_graph():
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
     plt.style.use('seaborn-v0_8-darkgrid')
     
-    colors = ['#FF0000', '#CC0000', '#990000', '#660000']
-    
     # Preview #2 그래프
     if timestamps_p2:
-        for idx, (name, views) in enumerate(views_data_p2.items()):
+        for name, views in views_data_p2.items():
             if any(v > 0 for v in views):
-                label = name.replace("Preview #2 - ", "")
-                ax1.plot(timestamps_p2, views, marker='o', linewidth=2, 
-                        markersize=5, label=label, color=colors[idx % len(colors)])
+                channel = name.replace("Preview #2 - ", "")
+                style = CHANNEL_STYLES.get(channel, {
+                    "color": "#666666",
+                    "marker": "o",
+                    "linewidth": 2,
+                    "markersize": 6
+                })
+                
+                ax1.plot(timestamps_p2, views, 
+                        marker=style["marker"], 
+                        linewidth=style["linewidth"], 
+                        markersize=style["markersize"], 
+                        label=channel, 
+                        color=style["color"],
+                        markeredgewidth=1.5,
+                        markeredgecolor='white')
         
         ax1.set_xlabel('Date', fontsize=11, fontweight='bold')
         ax1.set_ylabel('Views', fontsize=11, fontweight='bold')
         ax1.set_title('Preview #2 - YouTube Views Trend', 
                      fontsize=13, fontweight='bold', pad=15)
-        ax1.legend(loc='best', fontsize=10)
+        ax1.legend(loc='best', fontsize=10, framealpha=0.9)
         ax1.grid(True, alpha=0.3)
         ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
         ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
@@ -211,17 +250,30 @@ def create_views_graph():
     
     # Preview #1 그래프
     if timestamps_p1:
-        for idx, (name, views) in enumerate(views_data_p1.items()):
+        for name, views in views_data_p1.items():
             if any(v > 0 for v in views):
-                label = name.replace("Preview #1 - ", "")
-                ax2.plot(timestamps_p1, views, marker='o', linewidth=2, 
-                        markersize=5, label=label, color=colors[idx % len(colors)])
+                channel = name.replace("Preview #1 - ", "")
+                style = CHANNEL_STYLES.get(channel, {
+                    "color": "#666666",
+                    "marker": "o",
+                    "linewidth": 2,
+                    "markersize": 6
+                })
+                
+                ax2.plot(timestamps_p1, views, 
+                        marker=style["marker"], 
+                        linewidth=style["linewidth"], 
+                        markersize=style["markersize"], 
+                        label=channel, 
+                        color=style["color"],
+                        markeredgewidth=1.5,
+                        markeredgecolor='white')
         
         ax2.set_xlabel('Date', fontsize=11, fontweight='bold')
         ax2.set_ylabel('Views', fontsize=11, fontweight='bold')
         ax2.set_title('Preview #1 - YouTube Views Trend', 
                      fontsize=13, fontweight='bold', pad=15)
-        ax2.legend(loc='best', fontsize=10)
+        ax2.legend(loc='best', fontsize=10, framealpha=0.9)
         ax2.grid(True, alpha=0.3)
         ax2.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
         ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
