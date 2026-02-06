@@ -3598,5 +3598,16 @@
         "geo_code": "FR"
       }
     }
+  },
+  {
+    "timestamp": "2026-02-06T11:43:28.237164",
+    "google": null,
+    "console_markets": {
+      "United States": {
+        "score": 100,
+        "avg_1m": 34,
+        "geo_code": "US"
+      }
+    }
   }
 ]
