@@ -3609,5 +3609,16 @@
         "geo_code": "US"
       }
     }
+  },
+  {
+    "timestamp": "2026-02-06T19:40:25.828744",
+    "google": null,
+    "console_markets": {
+      "United States": {
+        "score": 85,
+        "avg_1m": 39,
+        "geo_code": "US"
+      }
+    }
   }
 ]
