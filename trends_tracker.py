@@ -246,50 +246,74 @@ def save_history(google_data, console_data):
     }
     
     history.append(entry)
-
+    
     with open("trends_history.json", "w", encoding="utf-8") as f:
         json.dump(history, f, ensure_ascii=False, indent=2)
     
-    print("✅ trends_history.json 저장 완료")
+    print(f"✅ 히스토리 저장 완료 (총 {len(history)}개 항목)")
 
 
 def create_trends_graph():
-    """트렌드 그래프 생성 (Google + 콘솔 주요국) - 데이터 길이 불일치 해결"""
+    """히스토리 기반 그래프 생성 (개선된 null 값 처리)"""
     if not HAS_MATPLOTLIB:
-        print("⚠️ matplotlib 없음 - 그래프 생략")
         return None
     
     history = load_history()
-    if len(history) < 2:
-        print("⚠️ 데이터 부족 (2개 이상 필요) - 그래프 생략")
+    if not history:
         return None
     
-    # Google 글로벌 데이터
+    # Google 데이터 수집
     google_timestamps = []
     google_scores = []
     
-    # 콘솔 국가별 데이터
+    for entry in history:
+        try:
+            ts = datetime.fromisoformat(entry['timestamp'])
+            google_data = entry.get('google')
+            if google_data and google_data.get('score'):
+                google_timestamps.append(ts)
+                google_scores.append(google_data['score'])
+        except:
+            continue
+    
+    # 콘솔 데이터 수집 (개선된 null 값 처리)
     console_timestamps = []
     console_scores = {country: [] for country in CONSOLE_MARKETS.keys()}
+    last_valid_scores = {country: None for country in CONSOLE_MARKETS.keys()}  # 각 국가별 마지막 유효값 저장
     
     for entry in history:
         try:
-            dt = datetime.fromisoformat(entry['timestamp'])
+            ts = datetime.fromisoformat(entry['timestamp'])
+            console_data = entry.get('console_markets', {})
             
-            # Google 글로벌 (모든 히스토리)
-            if entry.get('google'):
-                google_timestamps.append(dt)
-                g_score = entry['google'].get('score')
-                google_scores.append(g_score if g_score else 0)
-            
-            # 콘솔 주요국 (console_markets가 있는 경우만)
-            console_data = entry.get('console_markets')
+            # console_markets가 있고 최소 하나 이상의 유효한 데이터가 있을 때만 추가
             if console_data:
-                console_timestamps.append(dt)
+                has_any_valid_data = False
                 for country in CONSOLE_MARKETS.keys():
                     country_data = console_data.get(country)
-                    score = country_data.get('score') if country_data else None
-                    console_scores[country].append(score if score else 0)
+                    if country_data and country_data.get('score') is not None and country_data.get('score') > 0:
+                        has_any_valid_data = True
+                        break
+                
+                if has_any_valid_data:
+                    console_timestamps.append(ts)
+                    
+                    for country in CONSOLE_MARKETS.keys():
+                        country_data = console_data.get(country)
+                        
+                        # null이거나 score가 None이거나 0인 경우
+                        if not country_data or country_data.get('score') is None or country_data.get('score') == 0:
+                            # 이전 유효값이 있으면 그것을 사용
+                            if last_valid_scores[country] is not None:
+                                console_scores[country].append(last_valid_scores[country])
+                            else:
+                                # 이전 유효값도 없으면 None으로 저장 (그래프에서 선이 끊김)
+                                console_scores[country].append(None)
+                        else:
+                            # 유효한 값이면 저장하고 last_valid_scores 업데이트
+                            score = country_data['score']
+                            console_scores[country].append(score)
+                            last_valid_scores[country] = score
         except:
             continue
     
@@ -317,10 +341,11 @@ def create_trends_graph():
         ax1.set_ylim(0, 105)
         ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
         
-        # 2. 콘솔 주요 5개국 (console_timestamps 사용!)
+        # 2. 콘솔 주요 5개국
         colors = ['#EA4335', '#34A853', '#FBBC05', '#FF6D01', '#46BDC6']
         for idx, (country, scores) in enumerate(console_scores.items()):
-            if any(s > 0 for s in scores):
+            # None이 아닌 값이 하나라도 있으면 그래프에 표시
+            if any(s is not None and s > 0 for s in scores):
                 ax2.plot(console_timestamps, scores, marker='o', linewidth=2,
                         markersize=5, label=country, color=colors[idx])
         
