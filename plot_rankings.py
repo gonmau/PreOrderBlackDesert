@@ -124,6 +124,16 @@ def plot_all_countries_standard(country_data, output_dir='output'):
     for country, data in sorted(country_data.items()):
         if data['dates']:
             ax.plot(data['dates'], data['standard'], 'o-', label=country, linewidth=1.5, markersize=3, alpha=0.7)
+            
+            # 최근 날짜의 순위 표시
+            if data['standard'] and data['standard'][-1] is not None:
+                last_date = data['dates'][-1]
+                last_rank = data['standard'][-1]
+                ax.annotate(f'{int(last_rank)}', 
+                           xy=(last_date, last_rank),
+                           xytext=(5, 0), textcoords='offset points',
+                           fontsize=7, fontweight='bold',
+                           bbox=dict(boxstyle='round,pad=0.2', facecolor='lightblue', alpha=0.6, edgecolor='none'))
     
     ax.set_xlabel('Date', fontsize=12)
     ax.set_ylabel('Rank', fontsize=12)
@@ -151,6 +161,16 @@ def plot_all_countries_deluxe(country_data, output_dir='output'):
     for country, data in sorted(country_data.items()):
         if data['dates']:
             ax.plot(data['dates'], data['deluxe'], 's-', label=country, linewidth=1.5, markersize=3, alpha=0.7)
+            
+            # 최근 날짜의 순위 표시
+            if data['deluxe'] and data['deluxe'][-1] is not None:
+                last_date = data['dates'][-1]
+                last_rank = data['deluxe'][-1]
+                ax.annotate(f'{int(last_rank)}', 
+                           xy=(last_date, last_rank),
+                           xytext=(5, 0), textcoords='offset points',
+                           fontsize=7, fontweight='bold',
+                           bbox=dict(boxstyle='round,pad=0.2', facecolor='yellow', alpha=0.6, edgecolor='none'))
     
     ax.set_xlabel('Date', fontsize=12)
     ax.set_ylabel('Rank', fontsize=12)
@@ -213,8 +233,24 @@ def plot_daily_averages(country_data, output_dir='output'):
     # 그래프 생성
     fig, ax = plt.subplots(figsize=(14, 7))
     
-    ax.plot(dates, standard_avgs, 'o-', label='Standard Average', linewidth=2, markersize=5, color='#2E86AB')
     ax.plot(dates, deluxe_avgs, 's-', label='Deluxe Average', linewidth=2, markersize=5, color='#A23B72')
+    ax.plot(dates, standard_avgs, 'o-', label='Standard Average', linewidth=2, markersize=5, color='#2E86AB')
+    
+    # 날짜별 순위 표시
+    for i, date in enumerate(dates):
+        # Deluxe 순위 표시
+        ax.annotate(f'{deluxe_avgs[i]:.1f}', 
+                   xy=(date, deluxe_avgs[i]),
+                   xytext=(0, 8), textcoords='offset points',
+                   fontsize=7, ha='center',
+                   bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.6, edgecolor='none'))
+        
+        # Standard 순위 표시
+        ax.annotate(f'{standard_avgs[i]:.1f}', 
+                   xy=(date, standard_avgs[i]),
+                   xytext=(0, -12), textcoords='offset points',
+                   fontsize=7, ha='center',
+                   bbox=dict(boxstyle='round,pad=0.3', facecolor='lightblue', alpha=0.6, edgecolor='none'))
     
     # Standard 최고/최저 표시
     std_min_rank = min(standard_avgs)
@@ -234,7 +270,7 @@ def plot_daily_averages(country_data, output_dir='output'):
     
     ax.set_xlabel('Date', fontsize=12)
     ax.set_ylabel('Average Rank', fontsize=12)
-    ax.set_title('Daily Average Rankings - Standard vs Deluxe', fontsize=14, fontweight='bold')
+    ax.set_title('Daily Average Rankings - Deluxe vs Standard', fontsize=14, fontweight='bold')
     ax.invert_yaxis()
     ax.grid(True, alpha=0.3)
     ax.legend(fontsize=10, loc='best')
