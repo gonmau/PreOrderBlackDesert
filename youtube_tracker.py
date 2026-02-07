@@ -30,13 +30,11 @@ VIDEO_IDS = {
     "Preview #2 - PS": "pG_lpBoGK1c",
     "Preview #2 - Crimson Desert": "srQ-NtGNBpY",
     "Preview #2 - IGN": "cNT1NrYvwPE",
-    # "Preview #2 - Epic Games": "",  # 아직 안 올라옴
     
     # Preview #1
     "Preview #1 - PS": "Li9Cxhxw8WA",
     "Preview #1 - Crimson Desert": "MfZCV8EySac",
     "Preview #1 - IGN": "RbGbqVIXbMI",
-    "Preview #1 - Epic Games": "J18_g6sdXCs",
 }
 
 # 그래프에 표시할 영상 그룹
@@ -50,7 +48,6 @@ PREVIEW_1_VIDEOS = [
     "Preview #1 - PS",
     "Preview #1 - Crimson Desert",
     "Preview #1 - IGN",
-    "Preview #1 - Epic Games",
 ]
 
 # =============================================================================
