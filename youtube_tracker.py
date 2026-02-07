@@ -234,7 +234,8 @@ def create_views_graph():
         ax1.set_ylabel('Views', fontsize=11, fontweight='bold')
         ax1.set_title('Preview #2 - YouTube Views Trend', 
                      fontsize=13, fontweight='bold', pad=15)
-        ax1.legend(loc='best', fontsize=10, framealpha=0.9)
+        ax1.set_ylim(0, 2000000)
+        ax1.legend(loc='upper left', fontsize=10, framealpha=0.9)
         ax1.grid(True, alpha=0.3)
         ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
         ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
@@ -269,7 +270,8 @@ def create_views_graph():
         ax2.set_ylabel('Views', fontsize=11, fontweight='bold')
         ax2.set_title('Preview #1 - YouTube Views Trend', 
                      fontsize=13, fontweight='bold', pad=15)
-        ax2.legend(loc='lower right', fontsize=10, framealpha=0.9)
+        ax2.set_ylim(0, 2000000)
+        ax2.legend(loc='upper left', fontsize=10, framealpha=0.9)
         ax2.grid(True, alpha=0.3)
         ax2.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
         ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
