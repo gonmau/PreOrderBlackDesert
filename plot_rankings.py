@@ -320,8 +320,10 @@ def send_discord_notification(webhook_url, country_data, dates, output_dir='outp
         top_changes = []
         for country, data in country_data.items():
             if len(data['standard']) >= 2:
-                change = abs(data['standard'][-1] - data['standard'][-2])
-                top_changes.append((country, change, data['standard'][-1]))
+                # None 값 체크
+                if data['standard'][-1] is not None and data['standard'][-2] is not None:
+                    change = abs(data['standard'][-1] - data['standard'][-2])
+                    top_changes.append((country, change, data['standard'][-1]))
         
         top_changes.sort(key=lambda x: x[1], reverse=True)
         top_5_changes = top_changes[:5]
