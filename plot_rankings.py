@@ -325,17 +325,27 @@ def plot_top_countries(country_data, countries_to_plot, output_dir='output'):
     
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 12))
     
-    # Standard 그래프
+    # Deluxe 그래프 (위)
     for country in countries_to_plot:
         if country in country_data and country_data[country]['dates']:
             data = country_data[country]
             linewidth = 3 if '한국' in country or 'Korea' in country else 2
-            ax1.plot(data['dates'], data['standard'], 'o-', label=country, 
+            ax1.plot(data['dates'], data['deluxe'], 's-', label=country, 
                     linewidth=linewidth, markersize=5, alpha=0.8)
+            
+            # 최근 날짜의 순위 표시
+            if data['deluxe'] and data['deluxe'][-1] is not None:
+                last_date = data['dates'][-1]
+                last_rank = data['deluxe'][-1]
+                ax1.annotate(f'{int(last_rank)}', 
+                           xy=(last_date, last_rank),
+                           xytext=(5, 0), textcoords='offset points',
+                           fontsize=9, fontweight='bold',
+                           bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.7))
     
     ax1.set_xlabel('Date', fontsize=12)
     ax1.set_ylabel('Rank', fontsize=12)
-    ax1.set_title('Major Countries - Standard Ranking Trends', fontsize=14, fontweight='bold')
+    ax1.set_title('Major Countries - Deluxe Ranking Trends', fontsize=14, fontweight='bold')
     ax1.invert_yaxis()
     ax1.grid(True, alpha=0.3)
     ax1.legend(fontsize=10, loc='best')
@@ -343,17 +353,27 @@ def plot_top_countries(country_data, countries_to_plot, output_dir='output'):
     ax1.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45)
     
-    # Deluxe 그래프
+    # Standard 그래프 (아래)
     for country in countries_to_plot:
         if country in country_data and country_data[country]['dates']:
             data = country_data[country]
             linewidth = 3 if '한국' in country or 'Korea' in country else 2
-            ax2.plot(data['dates'], data['deluxe'], 's-', label=country, 
+            ax2.plot(data['dates'], data['standard'], 'o-', label=country, 
                     linewidth=linewidth, markersize=5, alpha=0.8)
+            
+            # 최근 날짜의 순위 표시
+            if data['standard'] and data['standard'][-1] is not None:
+                last_date = data['dates'][-1]
+                last_rank = data['standard'][-1]
+                ax2.annotate(f'{int(last_rank)}', 
+                           xy=(last_date, last_rank),
+                           xytext=(5, 0), textcoords='offset points',
+                           fontsize=9, fontweight='bold',
+                           bbox=dict(boxstyle='round,pad=0.3', facecolor='lightblue', alpha=0.7))
     
     ax2.set_xlabel('Date', fontsize=12)
     ax2.set_ylabel('Rank', fontsize=12)
-    ax2.set_title('Major Countries - Deluxe Ranking Trends', fontsize=14, fontweight='bold')
+    ax2.set_title('Major Countries - Standard Ranking Trends', fontsize=14, fontweight='bold')
     ax2.invert_yaxis()
     ax2.grid(True, alpha=0.3)
     ax2.legend(fontsize=10, loc='best')
