@@ -270,7 +270,7 @@ def plot_daily_averages(country_data, output_dir='output'):
     
     ax.set_xlabel('Date', fontsize=12)
     ax.set_ylabel('Average Rank', fontsize=12)
-    ax.set_title('Daily Average Rankings - Deluxe vs Standard', fontsize=14, fontweight='bold')
+    ax.set_title('Crimson Desert PS Pre-Order - Daily Average Rankings - Deluxe vs Standard', fontsize=14, fontweight='bold')
     ax.invert_yaxis()
     ax.grid(True, alpha=0.3)
     ax.legend(fontsize=10, loc='best')
