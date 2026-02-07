@@ -103,7 +103,7 @@ def plot_country_rankings(country_data, output_dir='output'):
         
         # 날짜 포맷 설정
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
-        ax.xaxis.set_major_locator(mdates.DayLocator(interval=max(1, len(data['dates'])//10)))
+        ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
         plt.xticks(rotation=45)
         
         plt.tight_layout()
@@ -133,6 +133,7 @@ def plot_all_countries_standard(country_data, output_dir='output'):
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
     
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.xticks(rotation=45)
     
     plt.tight_layout()
@@ -159,6 +160,7 @@ def plot_all_countries_deluxe(country_data, output_dir='output'):
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
     
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.xticks(rotation=45)
     
     plt.tight_layout()
@@ -222,7 +224,7 @@ def plot_daily_averages(country_data, output_dir='output'):
     ax.legend(fontsize=11)
     
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
-    ax.xaxis.set_major_locator(mdates.DayLocator(interval=max(1, len(dates)//15)))
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.xticks(rotation=45)
     
     plt.tight_layout()
@@ -259,7 +261,7 @@ def plot_daily_standard_average(dates, averages, output_dir='output'):
     ax.legend(fontsize=10)
     
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
-    ax.xaxis.set_major_locator(mdates.DayLocator(interval=max(1, len(dates)//15)))
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.xticks(rotation=45)
     
     plt.tight_layout()
@@ -292,7 +294,7 @@ def plot_daily_deluxe_average(dates, averages, output_dir='output'):
     ax.legend(fontsize=10)
     
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
-    ax.xaxis.set_major_locator(mdates.DayLocator(interval=max(1, len(dates)//15)))
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.xticks(rotation=45)
     
     plt.tight_layout()
