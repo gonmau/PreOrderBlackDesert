@@ -5707,5 +5707,46 @@
         "comments": 2220
       }
     }
+  },
+  {
+    "timestamp": "2026-02-07T00:52:45.861299",
+    "videos": {
+      "Preview #2 - PS": {
+        "title": "Crimson Desert - Features Overview #2: Combat and Progression | PS5 Games",
+        "views": 445205,
+        "likes": 21073,
+        "comments": 2282
+      },
+      "Preview #2 - Crimson Desert": {
+        "title": "Features Overview #2: Combat and Progression | Crimson Desert",
+        "views": 248660,
+        "likes": 14545,
+        "comments": 2888
+      },
+      "Preview #2 - IGN": {
+        "title": "Crimson Desert - Official Combat and Progression Features Overview",
+        "views": 204124,
+        "likes": 4868,
+        "comments": 1003
+      },
+      "Preview #1 - PS": {
+        "title": "Crimson Desert - Features Overview: Kliff and the Open World of Pywel | PS5 Games",
+        "views": 926186,
+        "likes": 38836,
+        "comments": 3977
+      },
+      "Preview #1 - Crimson Desert": {
+        "title": "Features Overview #1: Kliff and the Open World of Pywel | Crimson Desert",
+        "views": 192959,
+        "likes": 10612,
+        "comments": 1686
+      },
+      "Preview #1 - IGN": {
+        "title": "Crimson Desert - Official Kliff and the Open World of Pywel Features Overview Trailer",
+        "views": 510199,
+        "likes": 11556,
+        "comments": 2222
+      }
+    }
   }
 ]
