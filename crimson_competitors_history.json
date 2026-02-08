@@ -58,9 +58,9 @@
     "games": [
       "Resident Evil Requiem",
       "Resident Evil Requiem Deluxe Edition",
-      "WWE 2K26 Monday Night War Edition",
       "Diablo® IV: Lord of Hatred™ – Standard Edition",
       "Diablo® IV: Age of Hatred Collection",
+      "WWE 2K26 Monday Night War Edition",
       "REANIMAL",
       "Diablo® IV: Lord of Hatred™ – Ultimate Edition"
     ],
@@ -79,10 +79,9 @@
     "games": [
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
-      "WWE 2K26 Monday Night War Edition",
-      "MLB® The Show™ 26 Digital Deluxe Edition"
+      "WWE 2K26 Monday Night War Edition"
     ],
-    "crimson_rank": 5
+    "crimson_rank": 4
   },
   "노르웨이": {
     "games": [
@@ -109,9 +108,9 @@
       "Resident Evil Requiem Deluxe Edition",
       "WWE 2K26 Monday Night War Edition",
       "Avowed Premium Edition",
-      "Monster Hunter Stories 3: Twisted Reflection",
       "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5",
-      "The Sims™ 4 Dynastiat Grand Bundle"
+      "The Sims™ 4 Dynastiat Grand Bundle",
+      "Yakuza Kiwami 3 & Dark Ties PS4 & PS5"
     ],
     "crimson_rank": 8
   },
@@ -122,19 +121,22 @@
       "WWE 2K26 Monday Night War Edition",
       "WWE 2K26 Standard Edition",
       "ICARUS: Ultimate Console Edition",
+      "RIDE 6 - Ultimate Edition",
       "MLB® The Show™ 26 Edição Digital Deluxe"
     ],
-    "crimson_rank": 7
+    "crimson_rank": 8
   },
   "그리스": {
     "games": [
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "WWE 2K26 Monday Night War Edition",
+      "RIDE 6 - Ultimate Edition",
       "Diablo® IV: Age of Hatred Collection",
-      "RIDE 6 - Ultimate Edition"
+      "High On Life 2",
+      "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5"
     ],
-    "crimson_rank": 6
+    "crimson_rank": 8
   },
   "체코": {
     "games": [
@@ -150,10 +152,9 @@
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "MLB® The Show™ 26",
-      "WWE 2K26 Standard Edition",
-      "WWE 2K26 Attitude Era Edition"
+      "WWE 2K26 Standard Edition"
     ],
-    "crimson_rank": 8
+    "crimson_rank": 7
   },
   "루마니아": {
     "games": [
@@ -162,10 +163,9 @@
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "MLB® The Show™ 26",
-      "WWE 2K26 Standard Edition",
-      "WWE 2K26 Attitude Era Edition"
+      "WWE 2K26 Standard Edition"
     ],
-    "crimson_rank": 8
+    "crimson_rank": 7
   },
   "슬로바키아": {
     "games": [
@@ -174,10 +174,9 @@
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "MLB® The Show™ 26",
-      "WWE 2K26 Standard Edition",
-      "WWE 2K26 Attitude Era Edition"
+      "WWE 2K26 Standard Edition"
     ],
-    "crimson_rank": 8
+    "crimson_rank": 7
   },
   "슬로베니아": {
     "games": [
@@ -186,10 +185,9 @@
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "MLB® The Show™ 26",
-      "WWE 2K26 Standard Edition",
-      "WWE 2K26 Attitude Era Edition"
+      "WWE 2K26 Standard Edition"
     ],
-    "crimson_rank": 8
+    "crimson_rank": 7
   },
   "우크라이나": {
     "games": [
@@ -209,8 +207,8 @@
       "WWE 2K26 Monday Night War Edition",
       "REANIMAL",
       "WWE 2K26 King of Kings Edition",
-      "WWE 2K26 Attitude Era Edition",
-      "REANIMAL – Digital Deluxe Edition"
+      "REANIMAL – Digital Deluxe Edition",
+      "WWE 2K26 Attitude Era Edition"
     ],
     "crimson_rank": 9
   },
@@ -220,21 +218,23 @@
       "WWE 2K26 Monday Night War Edition",
       "Resident Evil Requiem",
       "WWE 2K26 Standard Edition",
-      "REANIMAL",
-      "007 First Light"
+      "REANIMAL"
     ],
-    "crimson_rank": 7
+    "crimson_rank": 6
   },
   "남아공": {
     "games": [
       "WWE 2K26 Monday Night War Edition",
       "Resident Evil Requiem",
       "Resident Evil Requiem Deluxe Edition",
+      "PRAGMATA Deluxe Edition",
       "007 First Light",
+      "Diablo® IV: Lord of Hatred™ - Ultimate Edition",
       "WWE 2K26 Standard Edition",
-      "High On Life 2"
+      "High On Life 2",
+      "The Sims™ 4 Royalty & Legacy Grand Bundle"
     ],
-    "crimson_rank": 7
+    "crimson_rank": 10
   },
   "미국": {
     "games": [
@@ -243,10 +243,9 @@
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "MLB® The Show™ 26",
-      "WWE 2K26 Standard Edition",
-      "WWE 2K26 Attitude Era Edition"
+      "WWE 2K26 Standard Edition"
     ],
-    "crimson_rank": 8
+    "crimson_rank": 7
   },
   "캐나다": {
     "games": [
@@ -255,10 +254,9 @@
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "MLB® The Show™ 26",
-      "WWE 2K26 Standard Edition",
-      "WWE 2K26 Attitude Era Edition"
+      "WWE 2K26 Standard Edition"
     ],
-    "crimson_rank": 8
+    "crimson_rank": 7
   },
   "브라질": {
     "games": [
@@ -275,9 +273,10 @@
       "Edición Monday Night War de WWE 2K26",
       "Edición Estándar WWE 2K26",
       "MLB® The Show™ 26",
+      "REANIMAL – Digital Deluxe Edition",
       "Edición Attitude Era de WWE 2K26"
     ],
-    "crimson_rank": 8
+    "crimson_rank": 9
   },
   "아르헨티나": {
     "games": [
@@ -340,8 +339,8 @@
   "과테말라": {
     "games": [
       "Resident Evil Requiem Deluxe Edition",
-      "Edición Monday Night War de WWE 2K26",
       "Resident Evil Requiem",
+      "Edición Monday Night War de WWE 2K26",
       "Edición digital deluxe de MLB® The Show™ 26"
     ],
     "crimson_rank": 5
@@ -365,9 +364,10 @@
       "『MLB® The Show™ 26』（英語版）デジタルデラックスエディション",
       "モンスターハンターストーリーズ3　～運命の双竜～ プレミアムデラックスエディション",
       "PRAGMATA Deluxe Edition",
-      "がんばれゴエモン大集合！"
+      "がんばれゴエモン大集合！",
+      "モンスターハンターストーリーズ3　～運命の双竜～"
     ],
-    "crimson_rank": 10
+    "crimson_rank": 11
   },
   "한국": {
     "games": [
@@ -381,37 +381,38 @@
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "MLB® The Show™ 26 Digital Deluxe Edition",
-      "WWE 2K26 Attitude Era Edition",
       "High On Life 2"
     ],
-    "crimson_rank": 7
+    "crimson_rank": 6
   },
   "인도": {
     "games": [
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
-      "WWE 2K26 Monday Night War Edition",
-      "REANIMAL – Digital Deluxe Edition"
+      "WWE 2K26 Monday Night War Edition"
     ],
-    "crimson_rank": 5
+    "crimson_rank": 4
   },
   "태국": {
     "games": [
       "Resident Evil Requiem Deluxe Edition (English/Chinese/Korean/Japanese Ver.)",
       "Resident Evil Requiem (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
-      "Yakuza Kiwami 3 & Dark Ties PS4 & PS5 (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
-      "WWE 2K26 Monday Night War Edition (English)",
       "Monster Hunter Stories 3: Twisted Reflection Premium Deluxe Edition (English/Chinese/Korean/Japanese Ver.)",
       "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5 (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
       "REANIMAL – Digital Deluxe Edition (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
-      "REANIMAL (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)"
+      "REANIMAL (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
+      "Yakuza Kiwami 3 & Dark Ties PS4 & PS5 (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
+      "WWE 2K26 Monday Night War Edition (English)",
+      "PRAGMATA (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
+      "MLB® The Show™ 26 Digital Deluxe Edition (English Ver.)",
+      "LEGO® Batman™: Legacy of the Dark Knight Deluxe Edition (English/Chinese/Korean Ver.)"
     ],
-    "crimson_rank": 9
+    "crimson_rank": 12
   },
   "싱가포르": {
     "games": [
-      "Resident Evil Requiem Deluxe Edition (English/Chinese/Korean/Japanese Ver.)",
       "WWE 2K26 Monday Night War Edition (English)",
+      "Resident Evil Requiem Deluxe Edition (English/Chinese/Korean/Japanese Ver.)",
       "Resident Evil Requiem (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
       "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5 (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
       "PRAGMATA Deluxe Edition (English/Chinese/Korean/Japanese Ver.)"
@@ -433,10 +434,9 @@
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "MLB® The Show™ 26",
-      "WWE 2K26 Standard Edition",
-      "WWE 2K26 Attitude Era Edition"
+      "WWE 2K26 Standard Edition"
     ],
-    "crimson_rank": 8
+    "crimson_rank": 7
   },
   "필리핀": {
     "games": [
@@ -445,10 +445,9 @@
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "MLB® The Show™ 26",
-      "WWE 2K26 Standard Edition",
-      "WWE 2K26 Attitude Era Edition"
+      "WWE 2K26 Standard Edition"
     ],
-    "crimson_rank": 8
+    "crimson_rank": 7
   },
   "베트남": {
     "games": [
@@ -457,10 +456,9 @@
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "MLB® The Show™ 26",
-      "WWE 2K26 Standard Edition",
-      "WWE 2K26 Attitude Era Edition"
+      "WWE 2K26 Standard Edition"
     ],
-    "crimson_rank": 8
+    "crimson_rank": 7
   },
   "홍콩": {
     "games": [
@@ -470,12 +468,12 @@
       "人中之龍 極３ / 人中之龍３外傳 Dark Ties PS4 & PS5 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "REANIMAL – Digital Deluxe Edition (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "REANIMAL (簡體中文, 韓文, 英文, 繁體中文, 日文)",
+      "PRAGMATA Deluxe Edition (中日英韓文版)",
       "《暗黑破壞神® IV：憎恨時代合輯》 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
-      "Monster Hunter Stories 3: 命運雙龍 高級豪華版 (中日英韓文版)",
       "《暗黑破壞神® IV：憎恨之王™》標準版 (中英韓文版)",
+      "Monster Hunter Stories 3: 命運雙龍 高級豪華版 (中日英韓文版)",
       "首都高賽車 (簡體中文, 英文, 繁體中文, 日文)",
-      "冒險家艾略特的千年奇譚 數位豪華版 (中韓文版)",
-      "PRAGMATA Deluxe Edition (中日英韓文版)"
+      "冒險家艾略特的千年奇譚 數位豪華版 (中韓文版)"
     ],
     "crimson_rank": 13
   },
@@ -487,15 +485,15 @@
       "Resident Evil Requiem (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "MLB® The Show™ 26 (英文)",
       "人中之龍 極３ / 人中之龍３外傳 Dark Ties PS4 & PS5 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
+      "PRAGMATA Deluxe Edition (中日英韓文版)",
       "Monster Hunter Stories 3: 命運雙龍 高級豪華版 (中日英韓文版)",
       "REANIMAL – Digital Deluxe Edition (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "首都高賽車 (簡體中文, 英文, 繁體中文, 日文)",
-      "PRAGMATA Deluxe Edition (中日英韓文版)",
       "《暗黑破壞神® IV：憎恨之王™》終極版 (中英韓文版)",
       "Monster Hunter Stories 3: 命運雙龍 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "零 ～紅蝶～ REMAKE Digital Deluxe Edition (中日文版)",
-      "冒險家艾略特的千年奇譚 數位豪華版 (中韓文版)",
-      "RIDE 6 - Ultimate Edition (簡體中文, 英文, 繁體中文, 日文)"
+      "RIDE 6 - Ultimate Edition (簡體中文, 英文, 繁體中文, 日文)",
+      "冒險家艾略特的千年奇譚 數位豪華版 (中韓文版)"
     ],
     "crimson_rank": 16
   },
