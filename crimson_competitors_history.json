@@ -363,9 +363,7 @@
   },
   "일본": {
     "games": [
-      "龍が如く 極３ / 龍が如く３外伝 Dark Ties デラックス・エディション PS4 & PS5",
       "BIOHAZARD requiem デラックスエディション",
-      "龍が如く 極３ / 龍が如く３外伝 Dark Ties PS4 & PS5",
       "BIOHAZARD requiem",
       "モンスターハンターストーリーズ3　～運命の双竜～ プレミアムデラックスエディション",
       "首都高バトル",
@@ -374,14 +372,13 @@
       "『MLB® The Show™ 26』（英語版）デジタルデラックスエディション",
       "がんばれゴエモン大集合！"
     ],
-    "crimson_rank": 11
+    "crimson_rank": 9
   },
   "한국": {
     "games": [
-      "용과 같이 극3 / 용과 같이3 외전 Dark Ties 디럭스 에디션 PS4 & PS5 (중국어(간체자), 한국어, 영어, 일본어, 중국어(번체자))",
       "MLB® The Show™ 26 디지털 디럭스 에디션 (영어판)"
     ],
-    "crimson_rank": 3
+    "crimson_rank": 2
   },
   "호주": {
     "games": [
@@ -411,28 +408,25 @@
       "Monster Hunter Stories 3: Twisted Reflection Premium Deluxe Edition (English/Chinese/Korean/Japanese Ver.)",
       "WWE 2K26 Monday Night War Edition (English)",
       "REANIMAL (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
-      "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5 (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
       "MLB® The Show™ 26 Digital Deluxe Edition (English Ver.)"
     ],
-    "crimson_rank": 8
+    "crimson_rank": 7
   },
   "싱가포르": {
     "games": [
       "WWE 2K26 Monday Night War Edition (English)",
       "Resident Evil Requiem Deluxe Edition (English/Chinese/Korean/Japanese Ver.)",
-      "Resident Evil Requiem (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
-      "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5 (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)"
+      "Resident Evil Requiem (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)"
     ],
-    "crimson_rank": 5
+    "crimson_rank": 4
   },
   "말레이시아": {
     "games": [
       "Resident Evil Requiem Deluxe Edition (English/Chinese/Korean/Japanese Ver.)",
       "Resident Evil Requiem (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
-      "WWE 2K26 Monday Night War Edition (English)",
-      "Yakuza Kiwami 3 & Dark Ties Deluxe Edition PS4 & PS5 (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)"
+      "WWE 2K26 Monday Night War Edition (English)"
     ],
-    "crimson_rank": 5
+    "crimson_rank": 4
   },
   "인도네시아": {
     "games": [
@@ -470,9 +464,7 @@
   "홍콩": {
     "games": [
       "Resident Evil Requiem 豪華版 (中日英韓文版)",
-      "人中之龍 極３ / 人中之龍３外傳 Dark Ties 豪華版 PS4 & PS5 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "Resident Evil Requiem (簡體中文, 韓文, 英文, 繁體中文, 日文)",
-      "人中之龍 極３ / 人中之龍３外傳 Dark Ties PS4 & PS5 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "REANIMAL (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "REANIMAL – Digital Deluxe Edition (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "Monster Hunter Stories 3: 命運雙龍 高級豪華版 (中日英韓文版)",
@@ -483,15 +475,13 @@
       "首都高賽車 (簡體中文, 英文, 繁體中文, 日文)",
       "007 First Light (中日英韓文版)"
     ],
-    "crimson_rank": 14
+    "crimson_rank": 12
   },
   "대만": {
     "games": [
       "Resident Evil Requiem 豪華版 (中日英韓文版)",
-      "人中之龍 極３ / 人中之龍３外傳 Dark Ties 豪華版 PS4 & PS5 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "《MLB® The Show™ 26》數位豪華版 (英文版)",
       "Resident Evil Requiem (簡體中文, 韓文, 英文, 繁體中文, 日文)",
-      "人中之龍 極３ / 人中之龍３外傳 Dark Ties PS4 & PS5 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "MLB® The Show™ 26 (英文)",
       "Monster Hunter Stories 3: 命運雙龍 高級豪華版 (中日英韓文版)",
       "PRAGMATA Deluxe Edition (中日英韓文版)",
@@ -503,7 +493,7 @@
       "冒險家艾略特的千年奇譚 數位豪華版 (中韓文版)",
       "REANIMAL (簡體中文, 韓文, 英文, 繁體中文, 日文)"
     ],
-    "crimson_rank": 16
+    "crimson_rank": 14
   },
   "뉴질랜드": {
     "games": [
