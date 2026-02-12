@@ -29,6 +29,7 @@ VIDEO_IDS = {
     # Preview #3
     "Preview #3 - PS": "vRhK2HLrgzE",
     "Preview #3 - Crimson Desert": "BOy81crUgtw",
+    "Preview #3 - IGN": "xUWSscgiNts",
     
     # Preview #2
     "Preview #2 - PS": "pG_lpBoGK1c",
@@ -45,6 +46,7 @@ VIDEO_IDS = {
 PREVIEW_3_VIDEOS = [
     "Preview #3 - PS",
     "Preview #3 - Crimson Desert",
+    "Preview #3 - IGN",
 ]
 
 PREVIEW_2_VIDEOS = [
