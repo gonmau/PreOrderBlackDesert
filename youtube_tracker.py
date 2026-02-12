@@ -27,7 +27,7 @@ DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 # Crimson Desert 공식 영상 ID들
 VIDEO_IDS = {
     # Preview #3
-    "Preview #3 - PS": "be0dekDBHJk",
+    "Preview #3 - PS": "vRhK2HLrgzE",
     "Preview #3 - Crimson Desert": "BOy81crUgtw",
     
     # Preview #2
