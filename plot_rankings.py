@@ -10,6 +10,7 @@ import os
 import requests
 from pathlib import Path
 import matplotlib.font_manager as fm
+from io import BytesIO
 
 # 한글 폰트 설정
 def setup_korean_font():
@@ -78,6 +79,93 @@ def parse_data(data):
                 country_data[country]['deluxe'].append(entry['raw_results'][country]['deluxe'])
     
     return country_data, sorted(dates)
+
+def create_ranking_table(data, output_dir='output'):
+    """에디션별, 나라별 순위를 표로 생성 (PNG 이미지)"""
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # 최신 데이터 가져오기
+    latest_entry = data[-1]
+    timestamp = datetime.fromisoformat(latest_entry['timestamp'])
+    raw_results = latest_entry['raw_results']
+    
+    # 국가 목록을 Standard 순위로 정렬
+    countries_sorted = sorted(
+        raw_results.items(),
+        key=lambda x: x[1]['standard'] if x[1]['standard'] is not None else 999
+    )
+    
+    # 표 데이터 준비
+    table_data = []
+    for country, ranks in countries_sorted:
+        std_rank = ranks['standard'] if ranks['standard'] is not None else '-'
+        dlx_rank = ranks['deluxe'] if ranks['deluxe'] is not None else '-'
+        table_data.append([country, std_rank, dlx_rank])
+    
+    # matplotlib를 사용해 표 이미지 생성
+    fig, ax = plt.subplots(figsize=(10, max(8, len(table_data) * 0.3)))
+    ax.axis('tight')
+    ax.axis('off')
+    
+    # 헤더
+    headers = ['Country', 'Standard', 'Deluxe']
+    
+    # 표 생성
+    table = ax.table(
+        cellText=table_data,
+        colLabels=headers,
+        cellLoc='center',
+        loc='center',
+        colWidths=[0.5, 0.25, 0.25]
+    )
+    
+    # 스타일링
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    table.scale(1, 2)
+    
+    # 헤더 스타일
+    for i in range(3):
+        cell = table[(0, i)]
+        cell.set_facecolor('#4472C4')
+        cell.set_text_props(weight='bold', color='white')
+    
+    # 행 스타일 (짝수/홀수)
+    for i in range(1, len(table_data) + 1):
+        for j in range(3):
+            cell = table[(i, j)]
+            if i % 2 == 0:
+                cell.set_facecolor('#E7E6E6')
+            else:
+                cell.set_facecolor('#FFFFFF')
+    
+    # 제목 추가
+    title_text = f'Rankings by Country and Edition\n{timestamp.strftime("%Y-%m-%d %H:%M:%S")}'
+    plt.title(title_text, fontsize=14, fontweight='bold', pad=20)
+    
+    plt.tight_layout()
+    table_path = f'{output_dir}/ranking_table.png'
+    plt.savefig(table_path, dpi=150, bbox_inches='tight', facecolor='white')
+    plt.close()
+    
+    print(f'✓ Generated: ranking_table.png')
+    return table_path
+
+def get_latest_rankings(data):
+    """최신 순위 데이터를 딕셔너리 형태로 반환"""
+    latest_entry = data[-1]
+    timestamp = datetime.fromisoformat(latest_entry['timestamp'])
+    
+    # Standard 순위로 정렬
+    countries_sorted = sorted(
+        latest_entry['raw_results'].items(),
+        key=lambda x: x[1]['standard'] if x[1]['standard'] is not None else 999
+    )
+    
+    return {
+        'timestamp': timestamp,
+        'rankings': countries_sorted
+    }
 
 def plot_country_rankings(country_data, output_dir='output'):
     """각 국가별 S,D 순위 그래프 생성"""
@@ -227,53 +315,21 @@ def plot_daily_averages(country_data, output_dir='output'):
             deluxe_avgs.append(sum(dlx_list) / len(dlx_list))
     
     if not dates:
-        print('⚠️  No data available for daily averages')
+        print('⚠️  No data to plot for daily averages')
         return
     
     # 그래프 생성
     fig, ax = plt.subplots(figsize=(14, 7))
     
-    ax.plot(dates, deluxe_avgs, 's-', label='Deluxe Average', linewidth=2, markersize=5, color='#A23B72')
-    ax.plot(dates, standard_avgs, 'o-', label='Standard Average', linewidth=2, markersize=5, color='#2E86AB')
-    
-    # 날짜별 순위 표시
-    for i, date in enumerate(dates):
-        # Deluxe 순위 표시
-        ax.annotate(f'{deluxe_avgs[i]:.1f}', 
-                   xy=(date, deluxe_avgs[i]),
-                   xytext=(0, 8), textcoords='offset points',
-                   fontsize=7, ha='center',
-                   bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.6, edgecolor='none'))
-        
-        # Standard 순위 표시
-        ax.annotate(f'{standard_avgs[i]:.1f}', 
-                   xy=(date, standard_avgs[i]),
-                   xytext=(0, -12), textcoords='offset points',
-                   fontsize=7, ha='center',
-                   bbox=dict(boxstyle='round,pad=0.3', facecolor='lightblue', alpha=0.6, edgecolor='none'))
-    
-    # Standard 최고/최저 표시
-    std_min_rank = min(standard_avgs)
-    std_max_rank = max(standard_avgs)
-    std_min_idx = standard_avgs.index(std_min_rank)
-    std_max_idx = standard_avgs.index(std_max_rank)
-    ax.plot(dates[std_min_idx], std_min_rank, 'go', markersize=10, label=f'Std Best: {std_min_rank:.1f}', zorder=5)
-    ax.plot(dates[std_max_idx], std_max_rank, 'ro', markersize=10, label=f'Std Worst: {std_max_rank:.1f}', zorder=5)
-    
-    # Deluxe 최고/최저 표시
-    dlx_min_rank = min(deluxe_avgs)
-    dlx_max_rank = max(deluxe_avgs)
-    dlx_min_idx = deluxe_avgs.index(dlx_min_rank)
-    dlx_max_idx = deluxe_avgs.index(dlx_max_rank)
-    ax.plot(dates[dlx_min_idx], dlx_min_rank, 'g^', markersize=10, label=f'Dlx Best: {dlx_min_rank:.1f}', zorder=5)
-    ax.plot(dates[dlx_max_idx], dlx_max_rank, 'r^', markersize=10, label=f'Dlx Worst: {dlx_max_rank:.1f}', zorder=5)
+    ax.plot(dates, standard_avgs, 'o-', label='Standard Average', linewidth=2, markersize=6, color='#2E86DE')
+    ax.plot(dates, deluxe_avgs, 's-', label='Deluxe Average', linewidth=2, markersize=6, color='#EE5A6F')
     
     ax.set_xlabel('Date', fontsize=12)
     ax.set_ylabel('Average Rank', fontsize=12)
-    ax.set_title('Crimson Desert PS Pre-Order - Daily Average Rankings - Deluxe vs Standard', fontsize=14, fontweight='bold')
+    ax.set_title('Daily Average Rankings - Standard vs Deluxe', fontsize=14, fontweight='bold')
     ax.invert_yaxis()
     ax.grid(True, alpha=0.3)
-    ax.legend(fontsize=10, loc='best')
+    ax.legend(fontsize=10)
     
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
     ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
@@ -284,135 +340,59 @@ def plot_daily_averages(country_data, output_dir='output'):
     plt.close()
     
     print(f'✓ Generated: daily_averages.png')
-    
-    # 개별 그래프도 생성
-    plot_daily_standard_average(dates, standard_avgs, output_dir)
-    plot_daily_deluxe_average(dates, deluxe_avgs, output_dir)
-
-def plot_daily_standard_average(dates, averages, output_dir='output'):
-    """일별 Standard 평균 순위만 표시"""
-    fig, ax = plt.subplots(figsize=(14, 7))
-    
-    ax.plot(dates, averages, 'o-', linewidth=2.5, markersize=6, color='#2E86AB')
-    ax.fill_between(dates, averages, alpha=0.3, color='#2E86AB')
-    
-    ax.set_xlabel('Date', fontsize=12)
-    ax.set_ylabel('Average Rank', fontsize=12)
-    ax.set_title('Daily Average Ranking - Standard', fontsize=14, fontweight='bold')
-    ax.invert_yaxis()
-    ax.grid(True, alpha=0.3)
-    
-    # 최고/최저 평균 표시
-    min_rank = min(averages)
-    max_rank = max(averages)
-    min_idx = averages.index(min_rank)
-    max_idx = averages.index(max_rank)
-    
-    ax.plot(dates[min_idx], min_rank, 'go', markersize=10, label=f'Best Avg: {min_rank:.1f}')
-    ax.plot(dates[max_idx], max_rank, 'ro', markersize=10, label=f'Worst Avg: {max_rank:.1f}')
-    ax.legend(fontsize=10)
-    
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
-    ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
-    plt.xticks(rotation=45)
-    
-    plt.tight_layout()
-    plt.savefig(f'{output_dir}/daily_standard_average.png', dpi=150, bbox_inches='tight')
-    plt.close()
-    
-    print(f'✓ Generated: daily_standard_average.png')
-
-def plot_daily_deluxe_average(dates, averages, output_dir='output'):
-    """일별 Deluxe 평균 순위만 표시"""
-    fig, ax = plt.subplots(figsize=(14, 7))
-    
-    ax.plot(dates, averages, 's-', linewidth=2.5, markersize=6, color='#A23B72')
-    ax.fill_between(dates, averages, alpha=0.3, color='#A23B72')
-    
-    ax.set_xlabel('Date', fontsize=12)
-    ax.set_ylabel('Average Rank', fontsize=12)
-    ax.set_title('Daily Average Ranking - Deluxe', fontsize=14, fontweight='bold')
-    ax.invert_yaxis()
-    ax.grid(True, alpha=0.3)
-    
-    # 최고/최저 평균 표시
-    min_rank = min(averages)
-    max_rank = max(averages)
-    min_idx = averages.index(min_rank)
-    max_idx = averages.index(max_rank)
-    
-    ax.plot(dates[min_idx], min_rank, 'go', markersize=10, label=f'Best Avg: {min_rank:.1f}')
-    ax.plot(dates[max_idx], max_rank, 'ro', markersize=10, label=f'Worst Avg: {max_rank:.1f}')
-    ax.legend(fontsize=10)
-    
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
-    ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
-    plt.xticks(rotation=45)
-    
-    plt.tight_layout()
-    plt.savefig(f'{output_dir}/daily_deluxe_average.png', dpi=150, bbox_inches='tight')
-    plt.close()
-    
-    print(f'✓ Generated: daily_deluxe_average.png')
 
 def plot_top_countries(country_data, countries_to_plot, output_dir='output'):
-    """주요 국가(일본, 미국, 영국, 독일, 프랑스, 한국)의 Standard & Deluxe 순위 그래프"""
+    """주요 국가들의 Standard와 Deluxe 순위 비교"""
     os.makedirs(output_dir, exist_ok=True)
     
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 12))
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 12))
     
-    # Deluxe 그래프 (위)
+    # Standard 그래프
     for country in countries_to_plot:
         if country in country_data and country_data[country]['dates']:
             data = country_data[country]
-            linewidth = 3 if '한국' in country or 'Korea' in country else 2
-            ax1.plot(data['dates'], data['deluxe'], 's-', label=country, 
-                    linewidth=linewidth, markersize=5, alpha=0.8)
+            ax1.plot(data['dates'], data['standard'], 'o-', label=country, linewidth=2, markersize=4)
             
-            # 최근 날짜의 순위 표시
-            if data['deluxe'] and data['deluxe'][-1] is not None:
+            # 최근 순위 표시
+            if data['standard'] and data['standard'][-1] is not None:
                 last_date = data['dates'][-1]
-                last_rank = data['deluxe'][-1]
+                last_rank = data['standard'][-1]
                 ax1.annotate(f'{int(last_rank)}', 
                            xy=(last_date, last_rank),
                            xytext=(5, 0), textcoords='offset points',
-                           fontsize=9, fontweight='bold',
-                           bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.7))
+                           fontsize=8, fontweight='bold')
     
     ax1.set_xlabel('Date', fontsize=12)
     ax1.set_ylabel('Rank', fontsize=12)
-    ax1.set_title('Major Countries - Deluxe Ranking Trends', fontsize=14, fontweight='bold')
+    ax1.set_title('Major Countries - Standard Ranking', fontsize=14, fontweight='bold')
     ax1.invert_yaxis()
     ax1.grid(True, alpha=0.3)
-    ax1.legend(fontsize=10, loc='best')
+    ax1.legend(fontsize=10)
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
     ax1.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45)
     
-    # Standard 그래프 (아래)
+    # Deluxe 그래프
     for country in countries_to_plot:
         if country in country_data and country_data[country]['dates']:
             data = country_data[country]
-            linewidth = 3 if '한국' in country or 'Korea' in country else 2
-            ax2.plot(data['dates'], data['standard'], 'o-', label=country, 
-                    linewidth=linewidth, markersize=5, alpha=0.8)
+            ax2.plot(data['dates'], data['deluxe'], 's-', label=country, linewidth=2, markersize=4)
             
-            # 최근 날짜의 순위 표시
-            if data['standard'] and data['standard'][-1] is not None:
+            # 최근 순위 표시
+            if data['deluxe'] and data['deluxe'][-1] is not None:
                 last_date = data['dates'][-1]
-                last_rank = data['standard'][-1]
+                last_rank = data['deluxe'][-1]
                 ax2.annotate(f'{int(last_rank)}', 
                            xy=(last_date, last_rank),
                            xytext=(5, 0), textcoords='offset points',
-                           fontsize=9, fontweight='bold',
-                           bbox=dict(boxstyle='round,pad=0.3', facecolor='lightblue', alpha=0.7))
+                           fontsize=8, fontweight='bold')
     
     ax2.set_xlabel('Date', fontsize=12)
     ax2.set_ylabel('Rank', fontsize=12)
-    ax2.set_title('Major Countries - Standard Ranking Trends', fontsize=14, fontweight='bold')
+    ax2.set_title('Major Countries - Deluxe Ranking', fontsize=14, fontweight='bold')
     ax2.invert_yaxis()
     ax2.grid(True, alpha=0.3)
-    ax2.legend(fontsize=10, loc='best')
+    ax2.legend(fontsize=10)
     ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
     ax2.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45)
@@ -422,6 +402,99 @@ def plot_top_countries(country_data, countries_to_plot, output_dir='output'):
     plt.close()
     
     print(f'✓ Generated: top_countries_rankings.png')
+
+def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_path):
+    """오늘 날짜 최신 순위를 디스코드로 전송"""
+    if not webhook_url:
+        print('⚠️  Discord webhook URL not provided, skipping latest rankings notification')
+        return
+    
+    try:
+        timestamp = latest_rankings['timestamp']
+        rankings = latest_rankings['rankings']
+        
+        # Top 10 국가 추출
+        top_10 = rankings[:10]
+        
+        # 임베드 필드 생성 (Standard 순위)
+        ranking_text = ""
+        for idx, (country, ranks) in enumerate(top_10, 1):
+            std_rank = ranks['standard'] if ranks['standard'] is not None else '-'
+            dlx_rank = ranks['deluxe'] if ranks['deluxe'] is not None else '-'
+            
+            # 메달 이모지 추가
+            medal = ""
+            if idx == 1:
+                medal = "🥇 "
+            elif idx == 2:
+                medal = "🥈 "
+            elif idx == 3:
+                medal = "🥉 "
+            
+            ranking_text += f"{medal}**{idx}. {country}**\n"
+            ranking_text += f"   Standard: #{std_rank} | Deluxe: #{dlx_rank}\n"
+        
+        # 디스코드 임베드 메시지 생성
+        embed = {
+            "title": "📊 Latest Rankings Update",
+            "description": f"**{timestamp.strftime('%Y-%m-%d %H:%M:%S')}** 기준 최신 순위",
+            "color": 3066993,  # 초록색
+            "fields": [
+                {
+                    "name": "🏆 Top 10 Countries (by Standard Edition)",
+                    "value": ranking_text,
+                    "inline": False
+                },
+                {
+                    "name": "📈 Total Countries Tracked",
+                    "value": str(len(rankings)),
+                    "inline": True
+                }
+            ],
+            "footer": {
+                "text": "Ranking Bot | Auto-update"
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        # 표 이미지 첨부
+        files_to_send = {}
+        if os.path.exists(table_path):
+            files_to_send['ranking_table'] = (
+                'ranking_table.png',
+                open(table_path, 'rb'),
+                'image/png'
+            )
+            embed["image"] = {"url": "attachment://ranking_table.png"}
+        
+        # 웹훅으로 전송
+        payload = {
+            "username": "Ranking Bot",
+            "embeds": [embed]
+        }
+        
+        print(f'📤 Sending latest rankings to Discord...')
+        
+        if files_to_send:
+            response = requests.post(
+                webhook_url,
+                data={"payload_json": json.dumps(payload)},
+                files=files_to_send,
+                timeout=30
+            )
+            for file_tuple in files_to_send.values():
+                file_tuple[1].close()
+        else:
+            response = requests.post(webhook_url, json=payload, timeout=10)
+        
+        if response.status_code in [200, 204]:
+            print('✅ Latest rankings sent to Discord successfully!')
+        else:
+            print(f'⚠️  Failed to send latest rankings: {response.status_code}')
+            print(f'Response: {response.text}')
+            
+    except Exception as e:
+        print(f'❌ Error sending latest rankings to Discord: {e}')
 
 def send_discord_notification(webhook_url, country_data, dates, output_dir='output'):
     """디스코드 웹훅으로 알림 전송 (그래프 이미지 포함)"""
@@ -609,6 +682,14 @@ def main():
     print(f'🌍 Countries: {len(country_data)}')
     print()
     
+    # 순위 표 생성
+    print('📋 Creating ranking table...')
+    table_path = create_ranking_table(data)
+    print()
+    
+    # 최신 순위 정보 추출
+    latest_rankings = get_latest_rankings(data)
+    
     print('🎨 Generating individual country plots...')
     plot_country_rankings(country_data)
     print()
@@ -631,7 +712,13 @@ def main():
     
     # 디스코드 알림 전송
     if discord_webhook:
-        print('📤 Sending Discord notification...')
+        # 1. 최신 순위 전송
+        print('📤 Sending latest rankings to Discord...')
+        send_latest_rankings_to_discord(discord_webhook, latest_rankings, table_path)
+        print()
+        
+        # 2. 그래프 알림 전송
+        print('📤 Sending graph notification to Discord...')
         send_discord_notification(discord_webhook, country_data, dates)
     else:
         print('ℹ️  Set DISCORD_WEBHOOK environment variable to enable notifications')
