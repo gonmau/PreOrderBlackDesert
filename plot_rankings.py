@@ -137,10 +137,6 @@ def create_ranking_table(data, output_dir='output'):
             else:
                 cell.set_facecolor('#FFFFFF')
     
-    # 제목 추가
-    title_text = f'Standard Edition Rankings\n{timestamp.strftime("%Y-%m-%d %H:%M:%S")}'
-    plt.title(title_text, fontsize=14, fontweight='bold', pad=20)
-    
     plt.tight_layout()
     std_table_path = f'{output_dir}/ranking_table_standard.png'
     plt.savefig(std_table_path, dpi=150, bbox_inches='tight', facecolor='white')
@@ -194,10 +190,6 @@ def create_ranking_table(data, output_dir='output'):
                 cell.set_facecolor('#FFF2CC')
             else:
                 cell.set_facecolor('#FFFFFF')
-    
-    # 제목 추가
-    title_text = f'Deluxe Edition Rankings\n{timestamp.strftime("%Y-%m-%d %H:%M:%S")}'
-    plt.title(title_text, fontsize=14, fontweight='bold', pad=20)
     
     plt.tight_layout()
     dlx_table_path = f'{output_dir}/ranking_table_deluxe.png'
