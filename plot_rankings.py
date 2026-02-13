@@ -263,23 +263,23 @@ def estimate_daily_sales(data, output_dir='output'):
         
         # PlayStation Store 게임 순위별 일일 판매량 추정 (중소 시장 기준)
         if rank == 1:
-            return 500   # 1위: ~500개/일
+            return 1500   # 1위: ~1500개/일
         elif rank == 2:
-            return 350   # 2위: ~350개/일
+            return 1000   # 2위: ~1000개/일
         elif rank == 3:
-            return 250   # 3위: ~250개/일
+            return 700    # 3위: ~700개/일
         elif rank == 4:
-            return 180
+            return 500
         elif rank == 5:
-            return 140
+            return 400
         elif rank <= 10:
-            return 100 / (rank - 4)  # 6~10위: 20~100개
+            return 300 / (rank - 4)  # 6~10위: 50~300개
         elif rank <= 20:
-            return 50 / (rank - 9)   # 11~20위: 5~50개
+            return 150 / (rank - 9)  # 11~20위: 15~150개
         elif rank <= 50:
-            return 20 / (rank - 19)  # 21~50위: 1~20개
+            return 60 / (rank - 19)  # 21~50위: 2~60개
         else:
-            return 10 / (rank - 49)  # 50위 이하
+            return 30 / (rank - 49)  # 50위 이하
     
     # 날짜별 판매량 추산
     daily_sales = []
@@ -357,7 +357,28 @@ def estimate_daily_sales(data, output_dir='output'):
             else:
                 cell.set_facecolor('#FFFFFF')
     
-    plt.tight_layout()
+    # 추정 기준 정보 추가 (좌측 하단)
+    criteria_text = (
+        "Estimation Criteria:\n"
+        "• Rank-based sales (base market):\n"
+        "  1st: 1,500 units/day\n"
+        "  3rd: 700 units/day\n"
+        "  5th: 400 units/day\n"
+        "  10th: 50 units/day\n\n"
+        "• Market size multiplier:\n"
+        "  US ×10, JP ×5, UK ×2.7\n"
+        "  DE ×2.3, FR ×2.0, KR ×1.3\n"
+        "  Others ×0.15~1.0\n\n"
+        "• Total: 48 countries combined"
+    )
+    
+    fig.text(0.02, 0.02, criteria_text, 
+             fontsize=7, 
+             verticalalignment='bottom',
+             horizontalalignment='left',
+             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.3))
+    
+    plt.tight_layout(rect=[0, 0.15, 1, 1])  # 하단 여백 확보
     sales_table_path = f'{output_dir}/daily_sales_estimate.png'
     plt.savefig(sales_table_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close()
@@ -421,7 +442,21 @@ def estimate_daily_sales(data, output_dir='output'):
     ax2.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45)
     
-    plt.tight_layout()
+    # 추정 기준 정보 추가
+    criteria_text = (
+        "Estimation Criteria:\n"
+        "Rank → Base Sales: 1st=1,500/day, 3rd=700/day, 5th=400/day, 10th=50/day\n"
+        "Market Multiplier: US ×10, JP ×5, UK ×2.7, DE ×2.3, FR ×2.0, KR ×1.3, Others ×0.15~1.0\n"
+        "Total: 48 countries combined (PlayStation Store pre-order rankings)"
+    )
+    
+    fig.text(0.5, 0.01, criteria_text, 
+             fontsize=8, 
+             verticalalignment='bottom',
+             horizontalalignment='center',
+             bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.3))
+    
+    plt.tight_layout(rect=[0, 0.05, 1, 1])  # 하단 여백 확보
     sales_chart_path = f'{output_dir}/daily_sales_chart.png'
     plt.savefig(sales_chart_path, dpi=150, bbox_inches='tight')
     plt.close()
