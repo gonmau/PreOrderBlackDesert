@@ -217,6 +217,79 @@ def get_latest_rankings(data):
         'rankings': countries_sorted
     }
 
+def load_and_merge_historical_data(current_data):
+    """과거 순위 데이터를 로드하고 현재 데이터와 병합"""
+    import os
+    
+    historical_file = 'historical_ranking_data.json'
+    
+    if not os.path.exists(historical_file):
+        print('⚠️  Historical ranking data not found, using current data only')
+        return current_data
+    
+    with open(historical_file, 'r', encoding='utf-8') as f:
+        historical_data = json.load(f)
+    
+    print(f'📜 Loaded {len(historical_data)} historical data points')
+    
+    # 현재 데이터에서 Standard/Deluxe 평균 이격도 계산
+    std_ranks = []
+    dlx_ranks = []
+    
+    for entry in current_data:
+        for country, ranks in entry['raw_results'].items():
+            if ranks['standard'] is not None:
+                std_ranks.append(ranks['standard'])
+            if ranks['deluxe'] is not None:
+                dlx_ranks.append(ranks['deluxe'])
+    
+    avg_std = sum(std_ranks) / len(std_ranks) if std_ranks else 15
+    avg_dlx = sum(dlx_ranks) / len(dlx_ranks) if dlx_ranks else 8
+    
+    # 평균 이격도 (Deluxe가 Standard보다 얼마나 높은 순위인지)
+    rank_gap = avg_std - avg_dlx  # 양수 = Deluxe가 더 높은 순위
+    
+    print(f'📊 Average ranks - Standard: {avg_std:.1f}, Deluxe: {avg_dlx:.1f}, Gap: {rank_gap:.1f}')
+    
+    # 히스토리 데이터를 현재 데이터 형식으로 변환
+    merged_data = []
+    
+    # 히스토리 데이터 처리 (2025-09-24 ~ 2026-01-10)
+    for item in historical_data:
+        date_str = item['date']
+        avg_rank = item['average_rank']
+        
+        # 평균 순위를 Standard/Deluxe로 분할
+        # Deluxe가 더 높은 순위 (낮은 숫자)
+        std_rank = int(avg_rank + (rank_gap / 2))
+        dlx_rank = int(avg_rank - (rank_gap / 2))
+        
+        # 현재 데이터의 국가 구조 사용 (첫 번째 항목 기준)
+        if current_data:
+            countries = list(current_data[0]['raw_results'].keys())
+        else:
+            countries = ['미국', '일본', '영국', '독일', '프랑스', '한국']
+        
+        # 모든 국가에 동일한 순위 적용 (히스토리 데이터는 통합 순위)
+        raw_results = {}
+        for country in countries:
+            raw_results[country] = {
+                'standard': std_rank,
+                'deluxe': dlx_rank
+            }
+        
+        merged_data.append({
+            'timestamp': f'{date_str}T08:00:00',
+            'raw_results': raw_results
+        })
+    
+    # 현재 데이터 추가 (2026-01-11 ~)
+    merged_data.extend(current_data)
+    
+    print(f'✓ Merged data: {len(merged_data)} total entries ({len(historical_data)} historical + {len(current_data)} current)')
+    
+    return merged_data
+
 def estimate_daily_sales(data, output_dir='output'):
     """일별 에디션별 판매량 추산 (PS 점유율 기반 가중치)"""
     os.makedirs(output_dir, exist_ok=True)
@@ -1032,6 +1105,10 @@ def main():
     
     print('📊 Loading data...')
     data = load_data(data_file)
+    
+    # 히스토리 데이터 병합
+    print('🔗 Merging historical data...')
+    data = load_and_merge_historical_data(data)
     
     print('📈 Parsing data...')
     country_data, dates = parse_data(data)
