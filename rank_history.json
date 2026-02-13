@@ -42838,5 +42838,209 @@
         "deluxe": 5
       }
     }
+  },
+  {
+    "timestamp": "2026-02-13T15:14:34.556627",
+    "averages": {
+      "combined": 5.374542124542125
+    },
+    "raw_results": {
+      "\uc601\uad6d": {
+        "standard": 10,
+        "deluxe": 5
+      },
+      "\ub3c5\uc77c": {
+        "standard": 10,
+        "deluxe": 5
+      },
+      "\ud504\ub791\uc2a4": {
+        "standard": 5,
+        "deluxe": 4
+      },
+      "\uc2a4\ud398\uc778": {
+        "standard": 4,
+        "deluxe": 5
+      },
+      "\uc774\ud0c8\ub9ac\uc544": {
+        "standard": 5,
+        "deluxe": 4
+      },
+      "\ub124\ub35c\ub780\ub4dc": {
+        "standard": 6,
+        "deluxe": 3
+      },
+      "\ud3f4\ub780\ub4dc": {
+        "standard": 9,
+        "deluxe": 6
+      },
+      "\uc2a4\uc704\uc2a4": {
+        "standard": 9,
+        "deluxe": 4
+      },
+      "\uc2a4\uc6e8\ub374": {
+        "standard": 8,
+        "deluxe": 3
+      },
+      "\ub178\ub974\uc6e8\uc774": {
+        "standard": 5,
+        "deluxe": 3
+      },
+      "\ub374\ub9c8\ud06c": {
+        "standard": 14,
+        "deluxe": 3
+      },
+      "\ud540\ub780\ub4dc": {
+        "standard": 10,
+        "deluxe": 7
+      },
+      "\ud3ec\ub974\ud22c\uac08": {
+        "standard": 8,
+        "deluxe": 4
+      },
+      "\uadf8\ub9ac\uc2a4": {
+        "standard": 6,
+        "deluxe": 5
+      },
+      "\uccb4\ucf54": {
+        "standard": 11,
+        "deluxe": 3
+      },
+      "\ud5dd\uac00\ub9ac": {
+        "standard": 11,
+        "deluxe": 6
+      },
+      "\ub8e8\ub9c8\ub2c8\uc544": {
+        "standard": 11,
+        "deluxe": 6
+      },
+      "\uc2ac\ub85c\ubc14\ud0a4\uc544": {
+        "standard": 11,
+        "deluxe": 6
+      },
+      "\uc2ac\ub85c\ubca0\ub2c8\uc544": {
+        "standard": 11,
+        "deluxe": 6
+      },
+      "\uc6b0\ud06c\ub77c\uc774\ub098": {
+        "standard": 6,
+        "deluxe": 4
+      },
+      "\uc0ac\uc6b0\ub514\uc544\ub77c\ube44\uc544": {
+        "standard": 8,
+        "deluxe": 7
+      },
+      "\uc544\ub78d\uc5d0\ubbf8\ub9ac\ud2b8": {
+        "standard": 7,
+        "deluxe": 5
+      },
+      "\ub0a8\uc544\uacf5": {
+        "standard": 7,
+        "deluxe": 3
+      },
+      "\ubbf8\uad6d": {
+        "standard": 11,
+        "deluxe": 6
+      },
+      "\uce90\ub098\ub2e4": {
+        "standard": 7,
+        "deluxe": 6
+      },
+      "\ube0c\ub77c\uc9c8": {
+        "standard": 4,
+        "deluxe": 3
+      },
+      "\uba55\uc2dc\ucf54": {
+        "standard": 8,
+        "deluxe": 7
+      },
+      "\uc544\ub974\ud5e8\ud2f0\ub098": {
+        "standard": 9,
+        "deluxe": 4
+      },
+      "\uce60\ub808": {
+        "standard": 9,
+        "deluxe": 7
+      },
+      "\ucf5c\ub86c\ube44\uc544": {
+        "standard": 7,
+        "deluxe": 4
+      },
+      "\ud398\ub8e8": {
+        "standard": 20,
+        "deluxe": 5
+      },
+      "\uc6b0\ub8e8\uacfc\uc774": {
+        "standard": 16,
+        "deluxe": 4
+      },
+      "\ubcfc\ub9ac\ube44\uc544": {
+        "standard": 13,
+        "deluxe": 12
+      },
+      "\uacfc\ud14c\ub9d0\ub77c": {
+        "standard": 16,
+        "deluxe": 4
+      },
+      "\uc628\ub450\ub77c\uc2a4": {
+        "standard": 13,
+        "deluxe": 5
+      },
+      "\uc77c\ubcf8": {
+        "standard": 15,
+        "deluxe": 9
+      },
+      "\ud55c\uad6d": {
+        "standard": 1,
+        "deluxe": 5
+      },
+      "\uc911\uad6d": {
+        "standard": null,
+        "deluxe": null
+      },
+      "\ud638\uc8fc": {
+        "standard": 13,
+        "deluxe": 4
+      },
+      "\uc778\ub3c4": {
+        "standard": 8,
+        "deluxe": 4
+      },
+      "\ud0dc\uad6d": {
+        "standard": 7,
+        "deluxe": 4
+      },
+      "\uc2f1\uac00\ud3ec\ub974": {
+        "standard": 19,
+        "deluxe": 5
+      },
+      "\ub9d0\ub808\uc774\uc2dc\uc544": {
+        "standard": 17,
+        "deluxe": 6
+      },
+      "\uc778\ub3c4\ub124\uc2dc\uc544": {
+        "standard": 11,
+        "deluxe": 6
+      },
+      "\ud544\ub9ac\ud540": {
+        "standard": 11,
+        "deluxe": 6
+      },
+      "\ubca0\ud2b8\ub0a8": {
+        "standard": 11,
+        "deluxe": 6
+      },
+      "\ud64d\ucf69": {
+        "standard": 17,
+        "deluxe": 8
+      },
+      "\ub300\ub9cc": {
+        "standard": 14,
+        "deluxe": 12
+      },
+      "\ub274\uc9c8\ub79c\ub4dc": {
+        "standard": 6,
+        "deluxe": 4
+      }
+    }
   }
 ]
