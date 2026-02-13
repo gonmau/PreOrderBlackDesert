@@ -413,6 +413,8 @@ def estimate_daily_sales(data, output_dir='output'):
     print(f'✓ Generated: daily_sales_chart.png')
     
     return sales_table_path, sales_chart_path, daily_sales
+
+def plot_country_rankings(country_data, output_dir='output'):
     """각 국가별 S,D 순위 그래프 생성"""
     os.makedirs(output_dir, exist_ok=True)
     
