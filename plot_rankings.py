@@ -343,32 +343,75 @@ def estimate_daily_sales(data, output_dir='output'):
         else:
             return 30 / (rank - 49)  # 50위 이하
     
-    # 날짜별 판매량 추산
+    # 날짜별 판매량 추산 (같은 날짜는 최고 순위만 사용)
     daily_sales = []
     
-    for entry in sales_data:  # 병합된 데이터 사용
+    # 먼저 날짜별로 그룹화
+    date_groups = {}
+    
+    for entry in sales_data:
         timestamp = datetime.fromisoformat(entry['timestamp'])
         date_str = timestamp.strftime('%Y-%m-%d')
         
+        if date_str not in date_groups:
+            date_groups[date_str] = []
+        
+        date_groups[date_str].append({
+            'timestamp': timestamp,
+            'raw_results': entry['raw_results']
+        })
+    
+    # 각 날짜별로 최고 순위(가장 낮은 숫자) 데이터만 사용
+    for date_str in sorted(date_groups.keys()):
+        entries = date_groups[date_str]
+        
+        # 각 국가별로 최고 순위 선택
+        best_ranks = {}
+        representative_timestamp = entries[0]['timestamp']
+        
+        # 첫 번째 항목의 국가 목록 가져오기
+        countries = list(entries[0]['raw_results'].keys())
+        
+        for country in countries:
+            best_std = None
+            best_dlx = None
+            
+            # 같은 날짜의 모든 측정값 중 최고 순위 찾기
+            for entry in entries:
+                if country in entry['raw_results']:
+                    std_rank = entry['raw_results'][country]['standard']
+                    dlx_rank = entry['raw_results'][country]['deluxe']
+                    
+                    if std_rank is not None:
+                        if best_std is None or std_rank < best_std:
+                            best_std = std_rank
+                    
+                    if dlx_rank is not None:
+                        if best_dlx is None or dlx_rank < best_dlx:
+                            best_dlx = dlx_rank
+            
+            best_ranks[country] = {
+                'standard': best_std,
+                'deluxe': best_dlx
+            }
+        
+        # 최고 순위로 판매량 계산
         std_sales = 0
         dlx_sales = 0
         
-        for country, ranks in entry['raw_results'].items():
-            # 국가별 시장 규모 배율 (기본값 0.15 = 소형 시장)
+        for country, ranks in best_ranks.items():
             multiplier = ps_market_multiplier.get(country, 0.15)
             
-            # Standard 판매량 추산
             if ranks['standard'] is not None:
                 base_sales = rank_to_daily_sales(ranks['standard'])
                 std_sales += base_sales * multiplier
             
-            # Deluxe 판매량 추산
             if ranks['deluxe'] is not None:
                 base_sales = rank_to_daily_sales(ranks['deluxe'])
                 dlx_sales += base_sales * multiplier
         
         daily_sales.append({
-            'date': timestamp,
+            'date': representative_timestamp,
             'date_str': date_str,
             'standard': round(std_sales, 2),
             'deluxe': round(dlx_sales, 2),
