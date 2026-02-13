@@ -318,30 +318,33 @@ def estimate_daily_sales(data, output_dir='output'):
     # 순위별 일일 판매량 추정 (PlayStation Store 베스트셀러 순위 기반)
     # 중소 국가 기준 판매량 (대형 국가는 배율로 조정)
     def rank_to_daily_sales(rank):
-        """순위를 일일 판매량으로 변환 (기본 시장 기준)"""
+        """순위를 일일 판매량으로 변환 (기본 시장 기준) - 로그 스케일 기반"""
         if rank is None or rank == '-':
             return 0
         rank = int(rank)
         
-        # PlayStation Store 게임 순위별 일일 판매량 추정 (중소 시장 기준)
+        # 더 현실적인 판매량 곡선 (로그 기반 완만한 감소)
+        # 1위와 20위의 차이를 약 8배로 조정 (기존 60배에서 대폭 완화)
+        import math
+        
         if rank == 1:
-            return 1500   # 1위: ~1500개/일
-        elif rank == 2:
-            return 1000   # 2위: ~1000개/일
-        elif rank == 3:
-            return 700    # 3위: ~700개/일
-        elif rank == 4:
-            return 500
-        elif rank == 5:
-            return 400
+            return 600   # 1위: ~600개/일 (기존 1500 → 600)
+        elif rank <= 5:
+            # 1~5위: 600 → 250 (완만한 감소)
+            # e^(-0.18 * 4) ≈ 0.48
+            return 600 * math.exp(-0.18 * (rank - 1))
         elif rank <= 10:
-            return 300 / (rank - 4)  # 6~10위: 50~300개
+            # 6~10위: 250 → 130
+            return 250 * math.exp(-0.13 * (rank - 5))
         elif rank <= 20:
-            return 150 / (rank - 9)  # 11~20위: 15~150개
+            # 11~20위: 130 → 70
+            return 130 * math.exp(-0.06 * (rank - 10))
         elif rank <= 50:
-            return 60 / (rank - 19)  # 21~50위: 2~60개
+            # 21~50위: 70 → 30
+            return 70 * math.exp(-0.03 * (rank - 20))
         else:
-            return 30 / (rank - 49)  # 50위 이하
+            # 50위 이상: 30 이하로 천천히 감소
+            return 30 * math.exp(-0.01 * (rank - 50))
     
     # 날짜별 판매량 추산 (같은 날짜는 최고 순위만 사용)
     daily_sales = []
@@ -466,10 +469,12 @@ def estimate_daily_sales(data, output_dir='output'):
     criteria_text = (
         "Estimation Criteria:\n"
         "• Rank-based sales (base market):\n"
-        "  1st: 1,500 units/day\n"
-        "  3rd: 700 units/day\n"
-        "  5th: 400 units/day\n"
-        "  10th: 50 units/day\n\n"
+        "  1st: 600 units/day\n"
+        "  3rd: 390 units/day\n"
+        "  5th: 250 units/day\n"
+        "  10th: 130 units/day\n"
+        "  15th: 97 units/day\n"
+        "  (Log-scale curve)\n\n"
         "• Market size multiplier:\n"
         "  US ×10, JP ×5, UK ×2.7\n"
         "  DE ×2.3, FR ×2.0, KR ×1.3\n"
@@ -550,7 +555,7 @@ def estimate_daily_sales(data, output_dir='output'):
     # 추정 기준 정보 추가
     criteria_text = (
         "Estimation Criteria:\n"
-        "Rank → Base Sales: 1st=1,500/day, 3rd=700/day, 5th=400/day, 10th=50/day\n"
+        "Rank → Base Sales: 1st=600/day, 3rd=390/day, 5th=250/day, 10th=130/day (Log-scale curve)\n"
         "Market Multiplier: US ×10, JP ×5, UK ×2.7, DE ×2.3, FR ×2.0, KR ×1.3, Others ×0.15~1.0\n"
         "Total: 48 countries combined (PlayStation Store pre-order rankings)"
     )
