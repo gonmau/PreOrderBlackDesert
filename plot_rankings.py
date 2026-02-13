@@ -81,7 +81,7 @@ def parse_data(data):
     return country_data, sorted(dates)
 
 def create_ranking_table(data, output_dir='output'):
-    """에디션별, 나라별 순위를 표로 생성 (PNG 이미지)"""
+    """에디션별, 나라별 순위를 표로 생성 (PNG 이미지) - Standard와 Deluxe 각각 생성"""
     os.makedirs(output_dir, exist_ok=True)
     
     # 최신 데이터 가져오기
@@ -89,67 +89,125 @@ def create_ranking_table(data, output_dir='output'):
     timestamp = datetime.fromisoformat(latest_entry['timestamp'])
     raw_results = latest_entry['raw_results']
     
-    # 국가 목록을 Standard 순위로 정렬
-    countries_sorted = sorted(
+    table_paths = []
+    
+    # 1. Standard Edition 표
+    countries_sorted_std = sorted(
         raw_results.items(),
         key=lambda x: x[1]['standard'] if x[1]['standard'] is not None else 999
     )
     
-    # 표 데이터 준비
-    table_data = []
-    for country, ranks in countries_sorted:
+    std_table_data = []
+    for rank, (country, ranks) in enumerate(countries_sorted_std, 1):
         std_rank = ranks['standard'] if ranks['standard'] is not None else '-'
-        dlx_rank = ranks['deluxe'] if ranks['deluxe'] is not None else '-'
-        table_data.append([country, std_rank, dlx_rank])
+        if std_rank != '-':
+            std_table_data.append([rank, country, std_rank])
     
-    # matplotlib를 사용해 표 이미지 생성
-    fig, ax = plt.subplots(figsize=(10, max(8, len(table_data) * 0.3)))
+    # Standard 표 생성
+    fig, ax = plt.subplots(figsize=(8, max(8, len(std_table_data) * 0.3)))
     ax.axis('tight')
     ax.axis('off')
     
-    # 헤더
-    headers = ['Country', 'Standard', 'Deluxe']
+    headers_std = ['#', 'Country', 'Rank']
     
-    # 표 생성
-    table = ax.table(
-        cellText=table_data,
-        colLabels=headers,
+    table_std = ax.table(
+        cellText=std_table_data,
+        colLabels=headers_std,
         cellLoc='center',
         loc='center',
-        colWidths=[0.5, 0.25, 0.25]
+        colWidths=[0.15, 0.6, 0.25]
     )
     
-    # 스타일링
-    table.auto_set_font_size(False)
-    table.set_fontsize(10)
-    table.scale(1, 2)
+    table_std.auto_set_font_size(False)
+    table_std.set_fontsize(10)
+    table_std.scale(1, 2)
     
     # 헤더 스타일
     for i in range(3):
-        cell = table[(0, i)]
+        cell = table_std[(0, i)]
         cell.set_facecolor('#4472C4')
         cell.set_text_props(weight='bold', color='white')
     
-    # 행 스타일 (짝수/홀수)
-    for i in range(1, len(table_data) + 1):
+    # 행 스타일
+    for i in range(1, len(std_table_data) + 1):
         for j in range(3):
-            cell = table[(i, j)]
+            cell = table_std[(i, j)]
             if i % 2 == 0:
                 cell.set_facecolor('#E7E6E6')
             else:
                 cell.set_facecolor('#FFFFFF')
     
     # 제목 추가
-    title_text = f'Rankings by Country and Edition\n{timestamp.strftime("%Y-%m-%d %H:%M:%S")}'
+    title_text = f'Standard Edition Rankings\n{timestamp.strftime("%Y-%m-%d %H:%M:%S")}'
     plt.title(title_text, fontsize=14, fontweight='bold', pad=20)
     
     plt.tight_layout()
-    table_path = f'{output_dir}/ranking_table.png'
-    plt.savefig(table_path, dpi=150, bbox_inches='tight', facecolor='white')
+    std_table_path = f'{output_dir}/ranking_table_standard.png'
+    plt.savefig(std_table_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close()
     
-    print(f'✓ Generated: ranking_table.png')
-    return table_path
+    print(f'✓ Generated: ranking_table_standard.png')
+    table_paths.append(std_table_path)
+    
+    # 2. Deluxe Edition 표
+    countries_sorted_dlx = sorted(
+        raw_results.items(),
+        key=lambda x: x[1]['deluxe'] if x[1]['deluxe'] is not None else 999
+    )
+    
+    dlx_table_data = []
+    for rank, (country, ranks) in enumerate(countries_sorted_dlx, 1):
+        dlx_rank = ranks['deluxe'] if ranks['deluxe'] is not None else '-'
+        if dlx_rank != '-':
+            dlx_table_data.append([rank, country, dlx_rank])
+    
+    # Deluxe 표 생성
+    fig, ax = plt.subplots(figsize=(8, max(8, len(dlx_table_data) * 0.3)))
+    ax.axis('tight')
+    ax.axis('off')
+    
+    headers_dlx = ['#', 'Country', 'Rank']
+    
+    table_dlx = ax.table(
+        cellText=dlx_table_data,
+        colLabels=headers_dlx,
+        cellLoc='center',
+        loc='center',
+        colWidths=[0.15, 0.6, 0.25]
+    )
+    
+    table_dlx.auto_set_font_size(False)
+    table_dlx.set_fontsize(10)
+    table_dlx.scale(1, 2)
+    
+    # 헤더 스타일
+    for i in range(3):
+        cell = table_dlx[(0, i)]
+        cell.set_facecolor('#ED7D31')
+        cell.set_text_props(weight='bold', color='white')
+    
+    # 행 스타일
+    for i in range(1, len(dlx_table_data) + 1):
+        for j in range(3):
+            cell = table_dlx[(i, j)]
+            if i % 2 == 0:
+                cell.set_facecolor('#FFF2CC')
+            else:
+                cell.set_facecolor('#FFFFFF')
+    
+    # 제목 추가
+    title_text = f'Deluxe Edition Rankings\n{timestamp.strftime("%Y-%m-%d %H:%M:%S")}'
+    plt.title(title_text, fontsize=14, fontweight='bold', pad=20)
+    
+    plt.tight_layout()
+    dlx_table_path = f'{output_dir}/ranking_table_deluxe.png'
+    plt.savefig(dlx_table_path, dpi=150, bbox_inches='tight', facecolor='white')
+    plt.close()
+    
+    print(f'✓ Generated: ranking_table_deluxe.png')
+    table_paths.append(dlx_table_path)
+    
+    return table_paths
 
 def get_latest_rankings(data):
     """최신 순위 데이터를 딕셔너리 형태로 반환"""
@@ -403,8 +461,8 @@ def plot_top_countries(country_data, countries_to_plot, output_dir='output'):
     
     print(f'✓ Generated: top_countries_rankings.png')
 
-def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_path):
-    """오늘 날짜 최신 순위를 디스코드로 전송"""
+def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_paths):
+    """오늘 날짜 최신 순위를 디스코드로 전송 (Standard와 Deluxe 표 모두 포함)"""
     if not webhook_url:
         print('⚠️  Discord webhook URL not provided, skipping latest rankings notification')
         return
@@ -457,15 +515,25 @@ def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_path):
             "timestamp": datetime.utcnow().isoformat()
         }
         
-        # 표 이미지 첨부
+        # 표 이미지 첨부 (Standard와 Deluxe 모두)
         files_to_send = {}
-        if os.path.exists(table_path):
-            files_to_send['ranking_table'] = (
-                'ranking_table.png',
-                open(table_path, 'rb'),
+        
+        # Standard 표
+        if len(table_paths) > 0 and os.path.exists(table_paths[0]):
+            files_to_send['ranking_table_standard'] = (
+                'ranking_table_standard.png',
+                open(table_paths[0], 'rb'),
                 'image/png'
             )
-            embed["image"] = {"url": "attachment://ranking_table.png"}
+            embed["image"] = {"url": "attachment://ranking_table_standard.png"}
+        
+        # Deluxe 표
+        if len(table_paths) > 1 and os.path.exists(table_paths[1]):
+            files_to_send['ranking_table_deluxe'] = (
+                'ranking_table_deluxe.png',
+                open(table_paths[1], 'rb'),
+                'image/png'
+            )
         
         # 웹훅으로 전송
         payload = {
@@ -683,8 +751,8 @@ def main():
     print()
     
     # 순위 표 생성
-    print('📋 Creating ranking table...')
-    table_path = create_ranking_table(data)
+    print('📋 Creating ranking tables...')
+    table_paths = create_ranking_table(data)
     print()
     
     # 최신 순위 정보 추출
@@ -714,7 +782,7 @@ def main():
     if discord_webhook:
         # 1. 최신 순위 전송
         print('📤 Sending latest rankings to Discord...')
-        send_latest_rankings_to_discord(discord_webhook, latest_rankings, table_path)
+        send_latest_rankings_to_discord(discord_webhook, latest_rankings, table_paths)
         print()
         
         # 2. 그래프 알림 전송
