@@ -217,7 +217,202 @@ def get_latest_rankings(data):
         'rankings': countries_sorted
     }
 
-def plot_country_rankings(country_data, output_dir='output'):
+def estimate_daily_sales(data, output_dir='output'):
+    """일별 에디션별 판매량 추산 (PS 점유율 기반 가중치)"""
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # PlayStation 국가별 시장 점유율 (2023-2024 기준 추정치)
+    # 출처: VGChartz, Statista 등의 게임 시장 데이터 기반
+    ps_market_share = {
+        # 주요 시장
+        '미국': 0.30, 'USA': 0.30, 'United States': 0.30, 'US': 0.30,
+        '일본': 0.15, 'Japan': 0.15,
+        '영국': 0.08, 'UK': 0.08, 'United Kingdom': 0.08, 'Britain': 0.08,
+        '독일': 0.07, 'Germany': 0.07, 'Deutschland': 0.07,
+        '프랑스': 0.06, 'France': 0.06,
+        '한국': 0.04, '대한민국': 0.04, 'Korea': 0.04, 'South Korea': 0.04,
+        '스페인': 0.03, 'Spain': 0.03, 'España': 0.03,
+        '이탈리아': 0.03, 'Italy': 0.03, 'Italia': 0.03,
+        '캐나다': 0.03, 'Canada': 0.03,
+        '호주': 0.02, 'Australia': 0.02,
+        # 중소 시장
+        '네덜란드': 0.015, 'Netherlands': 0.015,
+        '스웨덴': 0.01, 'Sweden': 0.01,
+        '벨기에': 0.01, 'Belgium': 0.01,
+        '스위스': 0.01, 'Switzerland': 0.01,
+        '오스트리아': 0.008, 'Austria': 0.008,
+        '폴란드': 0.008, 'Poland': 0.008,
+        '노르웨이': 0.007, 'Norway': 0.007,
+        '덴마크': 0.006, 'Denmark': 0.006,
+        '핀란드': 0.005, 'Finland': 0.005,
+        '포르투갈': 0.005, 'Portugal': 0.005,
+    }
+    
+    # 순위별 판매량 추정 계수 (Amazon 베스트셀러 순위 기반)
+    # 1위 = 100, 로그 스케일로 감소
+    def rank_to_sales_multiplier(rank):
+        if rank is None or rank == '-':
+            return 0
+        rank = int(rank)
+        if rank == 1:
+            return 100
+        elif rank <= 5:
+            return 100 / (rank ** 0.8)
+        elif rank <= 10:
+            return 100 / (rank ** 1.0)
+        elif rank <= 20:
+            return 100 / (rank ** 1.2)
+        else:
+            return 100 / (rank ** 1.5)
+    
+    # 날짜별 판매량 추산
+    daily_sales = []
+    
+    for entry in data:
+        timestamp = datetime.fromisoformat(entry['timestamp'])
+        date_str = timestamp.strftime('%Y-%m-%d')
+        
+        std_sales = 0
+        dlx_sales = 0
+        
+        for country, ranks in entry['raw_results'].items():
+            # 국가별 가중치 (점유율)
+            weight = ps_market_share.get(country, 0.005)  # 기본값 0.5%
+            
+            # Standard 판매량 추산
+            if ranks['standard'] is not None:
+                std_multiplier = rank_to_sales_multiplier(ranks['standard'])
+                std_sales += std_multiplier * weight
+            
+            # Deluxe 판매량 추산
+            if ranks['deluxe'] is not None:
+                dlx_multiplier = rank_to_sales_multiplier(ranks['deluxe'])
+                dlx_sales += dlx_multiplier * weight
+        
+        daily_sales.append({
+            'date': timestamp,
+            'date_str': date_str,
+            'standard': round(std_sales, 2),
+            'deluxe': round(dlx_sales, 2),
+            'total': round(std_sales + dlx_sales, 2)
+        })
+    
+    # 표 데이터 생성
+    table_data = []
+    for item in daily_sales:
+        table_data.append([
+            item['date_str'],
+            f"{item['standard']:.1f}",
+            f"{item['deluxe']:.1f}",
+            f"{item['total']:.1f}"
+        ])
+    
+    # matplotlib 표 생성
+    fig, ax = plt.subplots(figsize=(10, max(10, len(table_data) * 0.35)))
+    ax.axis('tight')
+    ax.axis('off')
+    
+    headers = ['Date', 'Standard\n(Est.)', 'Deluxe\n(Est.)', 'Total\n(Est.)']
+    
+    table = ax.table(
+        cellText=table_data,
+        colLabels=headers,
+        cellLoc='center',
+        loc='center',
+        colWidths=[0.3, 0.23, 0.23, 0.24]
+    )
+    
+    table.auto_set_font_size(False)
+    table.set_fontsize(9)
+    table.scale(1, 1.8)
+    
+    # 헤더 스타일
+    for i in range(4):
+        cell = table[(0, i)]
+        cell.set_facecolor('#2E5984')
+        cell.set_text_props(weight='bold', color='white')
+    
+    # 행 스타일
+    for i in range(1, len(table_data) + 1):
+        for j in range(4):
+            cell = table[(i, j)]
+            if i % 2 == 0:
+                cell.set_facecolor('#F0F0F0')
+            else:
+                cell.set_facecolor('#FFFFFF')
+    
+    plt.tight_layout()
+    sales_table_path = f'{output_dir}/daily_sales_estimate.png'
+    plt.savefig(sales_table_path, dpi=150, bbox_inches='tight', facecolor='white')
+    plt.close()
+    
+    print(f'✓ Generated: daily_sales_estimate.png')
+    
+    # 그래프도 생성
+    dates = [item['date'] for item in daily_sales]
+    std_sales = [item['standard'] for item in daily_sales]
+    dlx_sales = [item['deluxe'] for item in daily_sales]
+    total_sales = [item['total'] for item in daily_sales]
+    
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+    
+    # 상단: 에디션별 판매량
+    ax1.plot(dates, std_sales, 'o-', label='Standard (Est.)', linewidth=2, markersize=5, color='#2E86AB')
+    ax1.plot(dates, dlx_sales, 's-', label='Deluxe (Est.)', linewidth=2, markersize=5, color='#A23B72')
+    
+    ax1.set_ylabel('Estimated Sales Index', fontsize=12)
+    ax1.set_title('Daily Estimated Sales by Edition (PS Market Share Weighted)', fontsize=14, fontweight='bold')
+    ax1.grid(True, alpha=0.3)
+    ax1.legend(fontsize=10)
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
+    ax1.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+    plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45)
+    
+    # 하단: 누적 판매량
+    cumulative_std = []
+    cumulative_dlx = []
+    cumulative_total = []
+    
+    for i in range(len(std_sales)):
+        cumulative_std.append(sum(std_sales[:i+1]))
+        cumulative_dlx.append(sum(dlx_sales[:i+1]))
+        cumulative_total.append(sum(total_sales[:i+1]))
+    
+    ax2.plot(dates, cumulative_std, 'o-', label='Standard (Cumulative)', linewidth=2, markersize=5, color='#2E86AB')
+    ax2.plot(dates, cumulative_dlx, 's-', label='Deluxe (Cumulative)', linewidth=2, markersize=5, color='#A23B72')
+    ax2.plot(dates, cumulative_total, '^-', label='Total (Cumulative)', linewidth=2, markersize=5, color='#27AE60')
+    
+    # 최종 누적 값 표시
+    ax2.annotate(f'{cumulative_std[-1]:.0f}',
+                xy=(dates[-1], cumulative_std[-1]),
+                xytext=(10, 0), textcoords='offset points',
+                fontsize=9, fontweight='bold')
+    ax2.annotate(f'{cumulative_dlx[-1]:.0f}',
+                xy=(dates[-1], cumulative_dlx[-1]),
+                xytext=(10, 0), textcoords='offset points',
+                fontsize=9, fontweight='bold')
+    ax2.annotate(f'{cumulative_total[-1]:.0f}',
+                xy=(dates[-1], cumulative_total[-1]),
+                xytext=(10, 0), textcoords='offset points',
+                fontsize=9, fontweight='bold')
+    
+    ax2.set_xlabel('Date', fontsize=12)
+    ax2.set_ylabel('Cumulative Sales Index', fontsize=12)
+    ax2.set_title('Cumulative Estimated Sales', fontsize=14, fontweight='bold')
+    ax2.grid(True, alpha=0.3)
+    ax2.legend(fontsize=10)
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
+    ax2.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+    plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45)
+    
+    plt.tight_layout()
+    sales_chart_path = f'{output_dir}/daily_sales_chart.png'
+    plt.savefig(sales_chart_path, dpi=150, bbox_inches='tight')
+    plt.close()
+    
+    print(f'✓ Generated: daily_sales_chart.png')
+    
+    return sales_table_path, sales_chart_path, daily_sales
     """각 국가별 S,D 순위 그래프 생성"""
     os.makedirs(output_dir, exist_ok=True)
     
@@ -485,7 +680,7 @@ def plot_top_countries(country_data, countries_to_plot, output_dir='output'):
     
     print(f'✓ Generated: top_countries_rankings.png')
 
-def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_paths):
+def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_paths, daily_sales):
     """오늘 날짜 최신 순위를 디스코드로 전송 (Standard와 Deluxe 표 모두 포함)"""
     if not webhook_url:
         print('⚠️  Discord webhook URL not provided, skipping latest rankings notification')
@@ -494,6 +689,9 @@ def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_paths):
     try:
         timestamp = latest_rankings['timestamp']
         rankings = latest_rankings['rankings']
+        
+        # 최신 판매량 추산 데이터
+        latest_sales = daily_sales[-1] if daily_sales else None
         
         # Top 10 국가 추출
         top_10 = rankings[:10]
@@ -538,6 +736,20 @@ def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_paths):
             },
             "timestamp": datetime.utcnow().isoformat()
         }
+        
+        # 판매량 추산 정보 추가
+        if latest_sales:
+            sales_text = (
+                f"**Standard**: {latest_sales['standard']:.1f}\n"
+                f"**Deluxe**: {latest_sales['deluxe']:.1f}\n"
+                f"**Total**: {latest_sales['total']:.1f}\n"
+                f"*(PS Market Share Weighted Index)*"
+            )
+            embed["fields"].append({
+                "name": "💰 Estimated Sales (Today)",
+                "value": sales_text,
+                "inline": True
+            })
         
         # 표 이미지 첨부 (Standard와 Deluxe 모두)
         files_to_send = {}
@@ -779,6 +991,11 @@ def main():
     table_paths = create_ranking_table(data)
     print()
     
+    # 판매량 추산
+    print('💰 Estimating daily sales...')
+    sales_table_path, sales_chart_path, daily_sales = estimate_daily_sales(data)
+    print()
+    
     # 최신 순위 정보 추출
     latest_rankings = get_latest_rankings(data)
     
@@ -806,7 +1023,7 @@ def main():
     if discord_webhook:
         # 1. 최신 순위 전송
         print('📤 Sending latest rankings to Discord...')
-        send_latest_rankings_to_discord(discord_webhook, latest_rankings, table_paths)
+        send_latest_rankings_to_discord(discord_webhook, latest_rankings, table_paths, daily_sales)
         print()
         
         # 2. 그래프 알림 전송
