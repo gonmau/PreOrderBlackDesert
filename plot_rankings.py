@@ -371,15 +371,47 @@ def plot_daily_averages(country_data, output_dir='output'):
     # 그래프 생성
     fig, ax = plt.subplots(figsize=(14, 7))
     
-    ax.plot(dates, standard_avgs, 'o-', label='Standard Average', linewidth=2, markersize=6, color='#2E86DE')
-    ax.plot(dates, deluxe_avgs, 's-', label='Deluxe Average', linewidth=2, markersize=6, color='#EE5A6F')
+    ax.plot(dates, deluxe_avgs, 's-', label='Deluxe Average', linewidth=2, markersize=5, color='#A23B72')
+    ax.plot(dates, standard_avgs, 'o-', label='Standard Average', linewidth=2, markersize=5, color='#2E86AB')
+    
+    # 날짜별 순위 표시
+    for i, date in enumerate(dates):
+        # Deluxe 순위 표시
+        ax.annotate(f'{deluxe_avgs[i]:.1f}', 
+                   xy=(date, deluxe_avgs[i]),
+                   xytext=(0, 8), textcoords='offset points',
+                   fontsize=7, ha='center',
+                   bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.6, edgecolor='none'))
+        
+        # Standard 순위 표시
+        ax.annotate(f'{standard_avgs[i]:.1f}', 
+                   xy=(date, standard_avgs[i]),
+                   xytext=(0, -12), textcoords='offset points',
+                   fontsize=7, ha='center',
+                   bbox=dict(boxstyle='round,pad=0.3', facecolor='lightblue', alpha=0.6, edgecolor='none'))
+    
+    # Standard 최고/최저 표시
+    std_min_rank = min(standard_avgs)
+    std_max_rank = max(standard_avgs)
+    std_min_idx = standard_avgs.index(std_min_rank)
+    std_max_idx = standard_avgs.index(std_max_rank)
+    ax.plot(dates[std_min_idx], std_min_rank, 'go', markersize=10, label=f'Std Best: {std_min_rank:.1f}', zorder=5)
+    ax.plot(dates[std_max_idx], std_max_rank, 'ro', markersize=10, label=f'Std Worst: {std_max_rank:.1f}', zorder=5)
+    
+    # Deluxe 최고/최저 표시
+    dlx_min_rank = min(deluxe_avgs)
+    dlx_max_rank = max(deluxe_avgs)
+    dlx_min_idx = deluxe_avgs.index(dlx_min_rank)
+    dlx_max_idx = deluxe_avgs.index(dlx_max_rank)
+    ax.plot(dates[dlx_min_idx], dlx_min_rank, 'g^', markersize=10, label=f'Dlx Best: {dlx_min_rank:.1f}', zorder=5)
+    ax.plot(dates[dlx_max_idx], dlx_max_rank, 'r^', markersize=10, label=f'Dlx Worst: {dlx_max_rank:.1f}', zorder=5)
     
     ax.set_xlabel('Date', fontsize=12)
     ax.set_ylabel('Average Rank', fontsize=12)
     ax.set_title('Daily Average Rankings - Standard vs Deluxe', fontsize=14, fontweight='bold')
     ax.invert_yaxis()
     ax.grid(True, alpha=0.3)
-    ax.legend(fontsize=10)
+    ax.legend(fontsize=10, loc='best')
     
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
     ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
