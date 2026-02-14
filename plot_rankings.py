@@ -84,6 +84,74 @@ def create_ranking_table(data, output_dir='output'):
     """에디션별 순위를 표로 생성 (PNG 이미지) - 같은 순위의 국가들을 열로 배치"""
     os.makedirs(output_dir, exist_ok=True)
     
+    # 국가별 국기 이모지 매핑
+    country_flags = {
+        '미국': '🇺🇸', 'USA': '🇺🇸', 'United States': '🇺🇸', 'US': '🇺🇸',
+        '일본': '🇯🇵', 'Japan': '🇯🇵',
+        '영국': '🇬🇧', 'UK': '🇬🇧', 'United Kingdom': '🇬🇧', 'Britain': '🇬🇧',
+        '독일': '🇩🇪', 'Germany': '🇩🇪', 'Deutschland': '🇩🇪',
+        '프랑스': '🇫🇷', 'France': '🇫🇷',
+        '한국': '🇰🇷', '대한민국': '🇰🇷', 'Korea': '🇰🇷', 'South Korea': '🇰🇷',
+        '스페인': '🇪🇸', 'Spain': '🇪🇸', 'España': '🇪🇸',
+        '이탈리아': '🇮🇹', 'Italy': '🇮🇹', 'Italia': '🇮🇹',
+        '캐나다': '🇨🇦', 'Canada': '🇨🇦',
+        '호주': '🇦🇺', 'Australia': '🇦🇺',
+        '네덜란드': '🇳🇱', 'Netherlands': '🇳🇱',
+        '스웨덴': '🇸🇪', 'Sweden': '🇸🇪',
+        '벨기에': '🇧🇪', 'Belgium': '🇧🇪',
+        '스위스': '🇨🇭', 'Switzerland': '🇨🇭',
+        '오스트리아': '🇦🇹', 'Austria': '🇦🇹',
+        '폴란드': '🇵🇱', 'Poland': '🇵🇱',
+        '노르웨이': '🇳🇴', 'Norway': '🇳🇴',
+        '덴마크': '🇩🇰', 'Denmark': '🇩🇰',
+        '핀란드': '🇫🇮', 'Finland': '🇫🇮',
+        '포르투갈': '🇵🇹', 'Portugal': '🇵🇹',
+        '브라질': '🇧🇷', 'Brazil': '🇧🇷',
+        '멕시코': '🇲🇽', 'Mexico': '🇲🇽',
+        '아르헨티나': '🇦🇷', 'Argentina': '🇦🇷',
+        '칠레': '🇨🇱', 'Chile': '🇨🇱',
+        '콜롬비아': '🇨🇴', 'Colombia': '🇨🇴',
+        '그리스': '🇬🇷', 'Greece': '🇬🇷',
+        '체코': '🇨🇿', 'Czech Republic': '🇨🇿', 'Czechia': '🇨🇿',
+        '헝가리': '🇭🇺', 'Hungary': '🇭🇺',
+        '루마니아': '🇷🇴', 'Romania': '🇷🇴',
+        '터키': '🇹🇷', 'Turkey': '🇹🇷', 'Türkiye': '🇹🇷',
+        '남아공': '🇿🇦', 'South Africa': '🇿🇦',
+        '사우디아라비아': '🇸🇦', 'Saudi Arabia': '🇸🇦',
+        '아랍에미리트': '🇦🇪', 'UAE': '🇦🇪', 'United Arab Emirates': '🇦🇪',
+        '인도': '🇮🇳', 'India': '🇮🇳',
+        '태국': '🇹🇭', 'Thailand': '🇹🇭',
+        '싱가포르': '🇸🇬', 'Singapore': '🇸🇬',
+        '홍콩': '🇭🇰', 'Hong Kong': '🇭🇰',
+        '대만': '🇹🇼', 'Taiwan': '🇹🇼',
+        '중국': '🇨🇳', 'China': '🇨🇳',
+        '뉴질랜드': '🇳🇿', 'New Zealand': '🇳🇿',
+        '아일랜드': '🇮🇪', 'Ireland': '🇮🇪',
+        '이스라엘': '🇮🇱', 'Israel': '🇮🇱',
+        '러시아': '🇷🇺', 'Russia': '🇷🇺',
+        '우크라이나': '🇺🇦', 'Ukraine': '🇺🇦',
+        '슬로바키아': '🇸🇰', 'Slovakia': '🇸🇰',
+        '크로아티아': '🇭🇷', 'Croatia': '🇭🇷',
+        '슬로베니아': '🇸🇮', 'Slovenia': '🇸🇮',
+        '불가리아': '🇧🇬', 'Bulgaria': '🇧🇬',
+        '세르비아': '🇷🇸', 'Serbia': '🇷🇸',
+        '에스토니아': '🇪🇪', 'Estonia': '🇪🇪',
+        '라트비아': '🇱🇻', 'Latvia': '🇱🇻',
+        '리투아니아': '🇱🇹', 'Lithuania': '🇱🇹',
+        '룩셈부르크': '🇱🇺', 'Luxembourg': '🇱🇺',
+        '몰타': '🇲🇹', 'Malta': '🇲🇹',
+        '키프로스': '🇨🇾', 'Cyprus': '🇨🇾',
+        '아이슬란드': '🇮🇸', 'Iceland': '🇮🇸',
+        '쿠웨이트': '🇰🇼', 'Kuwait': '🇰🇼',
+        '카타르': '🇶🇦', 'Qatar': '🇶🇦',
+        '바레인': '🇧🇭', 'Bahrain': '🇧🇭',
+        '오만': '🇴🇲', 'Oman': '🇴🇲',
+        '말레이시아': '🇲🇾', 'Malaysia': '🇲🇾',
+        '인도네시아': '🇮🇩', 'Indonesia': '🇮🇩',
+        '필리핀': '🇵🇭', 'Philippines': '🇵🇭',
+        '베트남': '🇻🇳', 'Vietnam': '🇻🇳',
+    }
+    
     # PlayStation 국가별 시장 규모 배율 (점유율)
     ps_market_multiplier = {
         '미국': 10.0, 'USA': 10.0, 'United States': 10.0, 'US': 10.0,
@@ -155,11 +223,15 @@ def create_ranking_table(data, output_dir='output'):
         # 최대 국가 수 찾기 (가장 많은 국가가 있는 순위)
         max_countries = max(len(countries) for countries in rank_groups.values())
         
-        # 표 데이터 구성
+        # 표 데이터 구성 - 국기 이모지 추가
         table_data = []
         for rank in sorted_ranks:
             countries = rank_groups[rank]
-            row = [rank] + countries + [''] * (max_countries - len(countries))
+            # 국기 이모지 + 국가명
+            countries_with_flags = [
+                f"{country_flags.get(c, '🏳️')} {c}" for c in countries
+            ]
+            row = [rank] + countries_with_flags + [''] * (max_countries - len(countries))
             table_data.append(row)
         
         # 헤더 생성
@@ -167,10 +239,10 @@ def create_ranking_table(data, output_dir='output'):
         
         # 표 생성
         num_cols = max_countries + 1
-        col_widths = [0.12] + [0.88 / max_countries] * max_countries
+        col_widths = [0.1] + [0.9 / max_countries] * max_countries
         
-        fig_height = max(8, len(table_data) * 0.5 + 2)
-        fig_width = max(10, num_cols * 2)
+        fig_height = max(8, len(table_data) * 0.6 + 2)
+        fig_width = max(12, num_cols * 2.5)
         fig, ax = plt.subplots(figsize=(fig_width, fig_height))
         ax.axis('tight')
         ax.axis('off')
@@ -184,14 +256,14 @@ def create_ranking_table(data, output_dir='output'):
         )
         
         table.auto_set_font_size(False)
-        table.set_fontsize(14)  # 글자 크기 증가
-        table.scale(1, 2.8)  # 행 높이 증가
+        table.set_fontsize(13)
+        table.scale(1, 3.0)
         
         # 헤더 스타일
         for i in range(len(headers)):
             cell = table[(0, i)]
             cell.set_facecolor(header_color)
-            cell.set_text_props(weight='bold', color='white', ha='center', fontsize=15)
+            cell.set_text_props(weight='bold', color='white', ha='center', fontsize=14)
         
         # 데이터 행 스타일
         for i in range(1, len(table_data) + 1):
@@ -201,29 +273,33 @@ def create_ranking_table(data, output_dir='output'):
                 
                 if j == 0:
                     # Rank 열
-                    cell.set_text_props(weight='bold', ha='center', fontsize=14)
+                    cell.set_text_props(weight='bold', ha='center', fontsize=13)
                     if i % 2 == 0:
                         cell.set_facecolor('#E7E6E6')
                     else:
                         cell.set_facecolor('#FFFFFF')
                 else:
                     # Country 열들
-                    country_name = table_data[i-1][j]
+                    country_text = table_data[i-1][j]
                     
-                    if country_name == '':
+                    if country_text == '':
                         # 빈 셀
                         cell.set_facecolor('#F5F5F5')
-                    elif country_name in top_10_markets:
-                        # Top 10 시장: 굵은 글씨 + 강조 색
-                        cell.set_facecolor('#FFE699')
-                        cell.set_text_props(weight='bold', ha='center', fontsize=14)
                     else:
-                        # 일반 국가
-                        cell.set_text_props(ha='center', fontsize=14)
-                        if i % 2 == 0:
-                            cell.set_facecolor('#E7E6E6')
+                        # 국기 제거하고 국가명만 추출하여 체크
+                        country_name = country_text.split(' ', 1)[-1] if ' ' in country_text else country_text
+                        
+                        if country_name in top_10_markets:
+                            # Top 10 시장: 굵은 글씨 + 강조 색
+                            cell.set_facecolor('#FFE699')
+                            cell.set_text_props(weight='bold', ha='center', fontsize=13)
                         else:
-                            cell.set_facecolor('#FFFFFF')
+                            # 일반 국가
+                            cell.set_text_props(ha='center', fontsize=13)
+                            if i % 2 == 0:
+                                cell.set_facecolor('#E7E6E6')
+                            else:
+                                cell.set_facecolor('#FFFFFF')
         
         plt.tight_layout()
         
