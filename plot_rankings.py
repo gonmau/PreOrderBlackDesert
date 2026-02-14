@@ -14,7 +14,7 @@ from io import BytesIO
 
 # 한글 폰트 설정
 def setup_korean_font():
-    """한글 폰트 설정"""
+    """한글 폰트 설정 (이모지 지원 포함)"""
     try:
         # 시스템에 설치된 한글 폰트 찾기
         font_list = fm.findSystemFonts(fontpaths=None, fontext='ttf')
@@ -23,19 +23,29 @@ def setup_korean_font():
             'Malgun Gothic', 'AppleGothic', 'Noto Sans KR', 'Noto Sans CJK KR'
         ]
         
+        korean_font_found = False
         for font_path in font_list:
             for korean_font in korean_fonts:
                 if korean_font.lower() in font_path.lower():
                     font_name = fm.FontProperties(fname=font_path).get_name()
-                    plt.rcParams['font.family'] = font_name
-                    plt.rcParams['axes.unicode_minus'] = False
-                    print(f'✓ Korean font set: {font_name}')
-                    return
+                    korean_font_found = True
+                    break
+            if korean_font_found:
+                break
         
-        # 한글 폰트를 찾지 못한 경우 기본 설정
-        print('⚠️  Korean font not found, using default font')
-        plt.rcParams['font.family'] = 'DejaVu Sans'
-        plt.rcParams['axes.unicode_minus'] = False
+        if korean_font_found:
+            # 이모지 지원을 위한 폰트 폴백 설정
+            # Noto Color Emoji, Apple Color Emoji, Segoe UI Emoji 등을 fallback으로 추가
+            plt.rcParams['font.family'] = [font_name, 'DejaVu Sans', 'sans-serif']
+            plt.rcParams['font.sans-serif'] = [font_name, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'DejaVu Sans']
+            plt.rcParams['axes.unicode_minus'] = False
+            print(f'✓ Korean font set: {font_name} (with emoji support)')
+        else:
+            # 한글 폰트를 찾지 못한 경우 기본 설정 + 이모지 지원
+            print('⚠️  Korean font not found, using default font with emoji support')
+            plt.rcParams['font.family'] = ['DejaVu Sans', 'sans-serif']
+            plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji']
+            plt.rcParams['axes.unicode_minus'] = False
         
     except Exception as e:
         print(f'⚠️  Font setup error: {e}')
@@ -81,10 +91,10 @@ def parse_data(data):
     return country_data, sorted(dates)
 
 def create_ranking_table(data, output_dir='output'):
-    """에디션별 순위를 표로 생성 (PNG 이미지) - 같은 순위의 국가들을 열로 배치"""
+    """에디션별 순위를 시각화 (표 대신 리스트 형식) - 국기 + 국가명"""
     os.makedirs(output_dir, exist_ok=True)
     
-    # 국가별 국기 이모지 매핑
+    # 국기 이모지 매핑
     country_flags = {
         '미국': '🇺🇸', 'USA': '🇺🇸', 'United States': '🇺🇸', 'US': '🇺🇸',
         '일본': '🇯🇵', 'Japan': '🇯🇵',
@@ -194,8 +204,8 @@ def create_ranking_table(data, output_dir='output'):
     
     table_paths = []
     
-    def create_edition_table(edition_name, rank_key, header_color):
-        """에디션별 표 생성 - 국가를 열로 배치"""
+    def create_edition_visual(edition_name, rank_key, title_color):
+        """에디션별 시각화 생성 - 리스트 형식"""
         # 순위별로 국가 그룹화
         rank_groups = {}
         for country, ranks in raw_results.items():
@@ -220,86 +230,63 @@ def create_ranking_table(data, output_dir='output'):
                 reverse=True
             )
         
-        # 최대 국가 수 찾기 (가장 많은 국가가 있는 순위)
-        max_countries = max(len(countries) for countries in rank_groups.values())
-        
-        # 표 데이터 구성 - 국기 이모지 추가
-        table_data = []
-        for rank in sorted_ranks:
-            countries = rank_groups[rank]
-            # 국기 이모지 + 국가명
-            countries_with_flags = [
-                f"{country_flags.get(c, '🏳️')} {c}" for c in countries
-            ]
-            row = [rank] + countries_with_flags + [''] * (max_countries - len(countries))
-            table_data.append(row)
-        
-        # 헤더 생성
-        headers = ['Rank'] + [str(i+1) for i in range(max_countries)]
-        
-        # 표 생성
-        num_cols = max_countries + 1
-        col_widths = [0.1] + [0.9 / max_countries] * max_countries
-        
-        fig_height = max(8, len(table_data) * 0.6 + 2)
-        fig_width = max(12, num_cols * 2.5)
-        fig, ax = plt.subplots(figsize=(fig_width, fig_height))
-        ax.axis('tight')
+        # 이미지 생성
+        fig, ax = plt.subplots(figsize=(14, max(10, len(sorted_ranks) * 0.8)))
+        ax.set_xlim(0, 10)
+        ax.set_ylim(0, len(sorted_ranks) + 1)
         ax.axis('off')
         
-        table = ax.table(
-            cellText=table_data,
-            colLabels=headers,
-            cellLoc='center',
-            loc='center',
-            colWidths=col_widths
-        )
+        # 제목
+        ax.text(5, len(sorted_ranks) + 0.5, edition_name, 
+                fontsize=20, fontweight='bold', ha='center', color=title_color)
         
-        table.auto_set_font_size(False)
-        table.set_fontsize(13)
-        table.scale(1, 3.0)
+        y_pos = len(sorted_ranks) - 0.5
         
-        # 헤더 스타일
-        for i in range(len(headers)):
-            cell = table[(0, i)]
-            cell.set_facecolor(header_color)
-            cell.set_text_props(weight='bold', color='white', ha='center', fontsize=14)
-        
-        # 데이터 행 스타일
-        for i in range(1, len(table_data) + 1):
-            for j in range(len(headers)):
-                cell = table[(i, j)]
-                cell.set_text_props(ha='center')
+        for rank in sorted_ranks:
+            countries = rank_groups[rank]
+            
+            # 순위 표시
+            ax.text(0.5, y_pos, f"#{rank}", 
+                   fontsize=18, fontweight='bold', ha='center', va='center',
+                   bbox=dict(boxstyle='round,pad=0.5', facecolor=title_color, 
+                            edgecolor='none', alpha=0.8))
+            
+            # 국가들 표시
+            x_offset = 1.5
+            for country in countries:
+                flag = country_flags.get(country, '🏳️')
+                is_top_market = country in top_10_markets
                 
-                if j == 0:
-                    # Rank 열
-                    cell.set_text_props(weight='bold', ha='center', fontsize=13)
-                    if i % 2 == 0:
-                        cell.set_facecolor('#E7E6E6')
-                    else:
-                        cell.set_facecolor('#FFFFFF')
+                # 점유율에 따른 크기 및 스타일
+                if is_top_market:
+                    fontsize = 16
+                    fontweight = 'bold'
+                    bbox_props = dict(boxstyle='round,pad=0.4', 
+                                     facecolor='#FFD700', edgecolor='#FFA500', 
+                                     linewidth=2, alpha=0.9)
                 else:
-                    # Country 열들
-                    country_text = table_data[i-1][j]
-                    
-                    if country_text == '':
-                        # 빈 셀
-                        cell.set_facecolor('#F5F5F5')
-                    else:
-                        # 국기 제거하고 국가명만 추출하여 체크
-                        country_name = country_text.split(' ', 1)[-1] if ' ' in country_text else country_text
-                        
-                        if country_name in top_10_markets:
-                            # Top 10 시장: 굵은 글씨 + 강조 색
-                            cell.set_facecolor('#FFE699')
-                            cell.set_text_props(weight='bold', ha='center', fontsize=13)
-                        else:
-                            # 일반 국가
-                            cell.set_text_props(ha='center', fontsize=13)
-                            if i % 2 == 0:
-                                cell.set_facecolor('#E7E6E6')
-                            else:
-                                cell.set_facecolor('#FFFFFF')
+                    fontsize = 13
+                    fontweight = 'normal'
+                    bbox_props = dict(boxstyle='round,pad=0.3', 
+                                     facecolor='white', edgecolor='#CCCCCC', 
+                                     linewidth=1, alpha=0.7)
+                
+                # 국기 + 국가명
+                text = f"{flag} {country}"
+                ax.text(x_offset, y_pos, text,
+                       fontsize=fontsize, fontweight=fontweight,
+                       ha='left', va='center', bbox=bbox_props)
+                
+                # 다음 국가 위치 계산 (텍스트 길이에 따라)
+                text_width = len(country) * 0.12 + 0.8
+                x_offset += text_width
+                
+                # 줄바꿈 (너무 길어지면)
+                if x_offset > 9:
+                    y_pos -= 0.35
+                    x_offset = 1.5
+            
+            y_pos -= 1
         
         plt.tight_layout()
         
@@ -308,6 +295,28 @@ def create_ranking_table(data, output_dir='output'):
         plt.savefig(filepath, dpi=150, bbox_inches='tight', facecolor='white')
         plt.close()
         
+        print(f'✓ Generated: {filename}')
+        return filepath
+    
+    # Standard Edition 시각화 생성
+    std_path = create_edition_visual(
+        'Standard Edition Rankings',
+        'standard',
+        '#4472C4'
+    )
+    if std_path:
+        table_paths.append(std_path)
+    
+    # Deluxe Edition 시각화 생성
+    dlx_path = create_edition_visual(
+        'Deluxe Edition Rankings',
+        'deluxe',
+        '#ED7D31'
+    )
+    if dlx_path:
+        table_paths.append(dlx_path)
+    
+    return table_paths
         print(f'✓ Generated: {filename}')
         return filepath
     
