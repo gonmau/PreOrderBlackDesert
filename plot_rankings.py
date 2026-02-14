@@ -81,8 +81,43 @@ def parse_data(data):
     return country_data, sorted(dates)
 
 def create_ranking_table(data, output_dir='output'):
-    """에디션별 순위를 표로 생성 (PNG 이미지) - 순위별로 국가를 그룹화"""
+    """에디션별 순위를 표로 생성 (PNG 이미지) - 순위별로 국가를 개별 셀로 표시, 점유율 순 정렬"""
     os.makedirs(output_dir, exist_ok=True)
+    
+    # PlayStation 국가별 시장 규모 배율 (점유율)
+    ps_market_multiplier = {
+        '미국': 10.0, 'USA': 10.0, 'United States': 10.0, 'US': 10.0,
+        '일본': 5.0, 'Japan': 5.0,
+        '영국': 2.7, 'UK': 2.7, 'United Kingdom': 2.7, 'Britain': 2.7,
+        '독일': 2.3, 'Germany': 2.3, 'Deutschland': 2.3,
+        '프랑스': 2.0, 'France': 2.0,
+        '한국': 1.3, '대한민국': 1.3, 'Korea': 1.3, 'South Korea': 1.3,
+        '스페인': 1.0, 'Spain': 1.0, 'España': 1.0,
+        '이탈리아': 1.0, 'Italy': 1.0, 'Italia': 1.0,
+        '캐나다': 1.0, 'Canada': 1.0,
+        '호주': 0.7, 'Australia': 0.7,
+        '네덜란드': 0.5, 'Netherlands': 0.5,
+        '스웨덴': 0.35, 'Sweden': 0.35,
+        '벨기에': 0.35, 'Belgium': 0.35,
+        '스위스': 0.35, 'Switzerland': 0.35,
+        '오스트리아': 0.27, 'Austria': 0.27,
+        '폴란드': 0.27, 'Poland': 0.27,
+        '노르웨이': 0.23, 'Norway': 0.23,
+        '덴마크': 0.2, 'Denmark': 0.2,
+        '핀란드': 0.17, 'Finland': 0.17,
+        '포르투갈': 0.17, 'Portugal': 0.17,
+    }
+    
+    # Top 10 시장 국가 목록
+    top_10_markets = ['미국', 'USA', 'United States', 'US', '일본', 'Japan', 
+                      '영국', 'UK', 'United Kingdom', 'Britain',
+                      '독일', 'Germany', 'Deutschland',
+                      '프랑스', 'France',
+                      '한국', '대한민국', 'Korea', 'South Korea',
+                      '스페인', 'Spain', 'España',
+                      '이탈리아', 'Italy', 'Italia',
+                      '캐나다', 'Canada',
+                      '호주', 'Australia']
     
     # 최신 데이터 가져오기
     latest_entry = data[-1]
@@ -91,139 +126,121 @@ def create_ranking_table(data, output_dir='output'):
     
     table_paths = []
     
-    # 1. Standard Edition 표 (순위별로 그룹화)
-    # 순위별로 국가 그룹화
-    rank_groups_std = {}
-    for country, ranks in raw_results.items():
-        std_rank = ranks['standard']
-        if std_rank is not None:
-            if std_rank not in rank_groups_std:
-                rank_groups_std[std_rank] = []
-            rank_groups_std[std_rank].append(country)
-    
-    # 순위 순서대로 정렬
-    sorted_ranks_std = sorted(rank_groups_std.keys())
-    
-    # 표 데이터 구성
-    std_table_data = []
-    for rank in sorted_ranks_std:
-        countries = sorted(rank_groups_std[rank])  # 같은 순위 내에서 국가명 알파벳 순
-        countries_str = ', '.join(countries)
-        std_table_data.append([rank, countries_str])
-    
-    # Standard 표 생성
-    fig, ax = plt.subplots(figsize=(12, max(8, len(std_table_data) * 0.4)))
-    ax.axis('tight')
-    ax.axis('off')
-    
-    headers_std = ['Rank', 'Countries']
-    
-    table_std = ax.table(
-        cellText=std_table_data,
-        colLabels=headers_std,
-        cellLoc='left',
-        loc='center',
-        colWidths=[0.15, 0.85]
-    )
-    
-    table_std.auto_set_font_size(False)
-    table_std.set_fontsize(9)
-    table_std.scale(1, 2)
-    
-    # 헤더 스타일
-    for i in range(2):
-        cell = table_std[(0, i)]
-        cell.set_facecolor('#4472C4')
-        cell.set_text_props(weight='bold', color='white')
-    
-    # 행 스타일
-    for i in range(1, len(std_table_data) + 1):
-        for j in range(2):
-            cell = table_std[(i, j)]
-            if i % 2 == 0:
-                cell.set_facecolor('#E7E6E6')
-            else:
-                cell.set_facecolor('#FFFFFF')
+    def create_edition_table(edition_name, rank_key, header_color, alt_color):
+        """에디션별 표 생성 공통 함수"""
+        # 순위별로 국가 그룹화
+        rank_groups = {}
+        for country, ranks in raw_results.items():
+            rank = ranks[rank_key]
+            if rank is not None:
+                if rank not in rank_groups:
+                    rank_groups[rank] = []
+                rank_groups[rank].append(country)
+        
+        # 순위 순서대로 정렬
+        sorted_ranks = sorted(rank_groups.keys())
+        
+        # 표 데이터 구성 - 각 국가를 점유율 순으로 정렬하여 개별 행으로
+        table_data = []
+        for rank in sorted_ranks:
+            countries = rank_groups[rank]
+            # 점유율 순으로 정렬
+            countries_sorted = sorted(
+                countries, 
+                key=lambda c: ps_market_multiplier.get(c, 0.15),
+                reverse=True
+            )
+            
+            # 각 국가를 개별 행으로 추가
+            for country in countries_sorted:
+                table_data.append([rank, country])
+        
+        if not table_data:
+            return None
+        
+        # 표 생성 - 높이를 행 수에 맞게 조정
+        fig_height = max(6, len(table_data) * 0.35 + 2)
+        fig, ax = plt.subplots(figsize=(10, fig_height))
+        ax.axis('tight')
+        ax.axis('off')
+        
+        headers = ['Rank', 'Country']
+        
+        table = ax.table(
+            cellText=table_data,
+            colLabels=headers,
+            cellLoc='left',
+            loc='center',
+            colWidths=[0.2, 0.8]
+        )
+        
+        table.auto_set_font_size(False)
+        table.set_fontsize(10)
+        table.scale(1, 2.2)
+        
+        # 헤더 스타일
+        for i in range(2):
+            cell = table[(0, i)]
+            cell.set_facecolor(header_color)
+            cell.set_text_props(weight='bold', color='white', ha='center')
+        
+        # 데이터 행 스타일
+        for i in range(1, len(table_data) + 1):
+            rank_cell = table[(i, 0)]
+            country_cell = table[(i, 1)]
+            country_name = table_data[i-1][1]
+            
             # Rank 열은 중앙 정렬
-            if j == 0:
-                cell.set_text_props(ha='center')
-    
-    plt.title(f'Standard Edition Rankings - {timestamp.strftime("%Y-%m-%d %H:%M")}', 
-              fontsize=12, fontweight='bold', pad=20)
-    plt.tight_layout()
-    std_table_path = f'{output_dir}/ranking_table_standard.png'
-    plt.savefig(std_table_path, dpi=150, bbox_inches='tight', facecolor='white')
-    plt.close()
-    
-    print(f'✓ Generated: ranking_table_standard.png')
-    table_paths.append(std_table_path)
-    
-    # 2. Deluxe Edition 표 (순위별로 그룹화)
-    # 순위별로 국가 그룹화
-    rank_groups_dlx = {}
-    for country, ranks in raw_results.items():
-        dlx_rank = ranks['deluxe']
-        if dlx_rank is not None:
-            if dlx_rank not in rank_groups_dlx:
-                rank_groups_dlx[dlx_rank] = []
-            rank_groups_dlx[dlx_rank].append(country)
-    
-    # 순위 순서대로 정렬
-    sorted_ranks_dlx = sorted(rank_groups_dlx.keys())
-    
-    # 표 데이터 구성
-    dlx_table_data = []
-    for rank in sorted_ranks_dlx:
-        countries = sorted(rank_groups_dlx[rank])  # 같은 순위 내에서 국가명 알파벳 순
-        countries_str = ', '.join(countries)
-        dlx_table_data.append([rank, countries_str])
-    
-    # Deluxe 표 생성
-    fig, ax = plt.subplots(figsize=(12, max(8, len(dlx_table_data) * 0.4)))
-    ax.axis('tight')
-    ax.axis('off')
-    
-    headers_dlx = ['Rank', 'Countries']
-    
-    table_dlx = ax.table(
-        cellText=dlx_table_data,
-        colLabels=headers_dlx,
-        cellLoc='left',
-        loc='center',
-        colWidths=[0.15, 0.85]
-    )
-    
-    table_dlx.auto_set_font_size(False)
-    table_dlx.set_fontsize(9)
-    table_dlx.scale(1, 2)
-    
-    # 헤더 스타일
-    for i in range(2):
-        cell = table_dlx[(0, i)]
-        cell.set_facecolor('#ED7D31')
-        cell.set_text_props(weight='bold', color='white')
-    
-    # 행 스타일
-    for i in range(1, len(dlx_table_data) + 1):
-        for j in range(2):
-            cell = table_dlx[(i, j)]
-            if i % 2 == 0:
-                cell.set_facecolor('#FFF2CC')
+            rank_cell.set_text_props(ha='center')
+            
+            # Top 10 시장 국가는 굵게 + 강조 색상
+            is_top_market = country_name in top_10_markets
+            
+            if is_top_market:
+                # Top 10 시장: 강조 배경색 + 굵은 글씨
+                rank_cell.set_facecolor('#FFE699')  # 밝은 금색
+                country_cell.set_facecolor('#FFE699')
+                country_cell.set_text_props(weight='bold')
             else:
-                cell.set_facecolor('#FFFFFF')
-            # Rank 열은 중앙 정렬
-            if j == 0:
-                cell.set_text_props(ha='center')
+                # 일반 국가: 교대 배경색
+                if i % 2 == 0:
+                    rank_cell.set_facecolor('#E7E6E6')
+                    country_cell.set_facecolor('#E7E6E6')
+                else:
+                    rank_cell.set_facecolor('#FFFFFF')
+                    country_cell.set_facecolor('#FFFFFF')
+        
+        plt.title(f'{edition_name} - {timestamp.strftime("%Y-%m-%d %H:%M")}', 
+                  fontsize=13, fontweight='bold', pad=15)
+        plt.tight_layout()
+        
+        filename = f'ranking_table_{rank_key}.png'
+        filepath = f'{output_dir}/{filename}'
+        plt.savefig(filepath, dpi=150, bbox_inches='tight', facecolor='white')
+        plt.close()
+        
+        print(f'✓ Generated: {filename}')
+        return filepath
     
-    plt.title(f'Deluxe Edition Rankings - {timestamp.strftime("%Y-%m-%d %H:%M")}', 
-              fontsize=12, fontweight='bold', pad=20)
-    plt.tight_layout()
-    dlx_table_path = f'{output_dir}/ranking_table_deluxe.png'
-    plt.savefig(dlx_table_path, dpi=150, bbox_inches='tight', facecolor='white')
-    plt.close()
+    # Standard Edition 표 생성
+    std_path = create_edition_table(
+        'Standard Edition Rankings',
+        'standard',
+        '#4472C4',  # 파란색 헤더
+        '#E7E6E6'   # 회색 교대
+    )
+    if std_path:
+        table_paths.append(std_path)
     
-    print(f'✓ Generated: ranking_table_deluxe.png')
-    table_paths.append(dlx_table_path)
+    # Deluxe Edition 표 생성
+    dlx_path = create_edition_table(
+        'Deluxe Edition Rankings',
+        'deluxe',
+        '#ED7D31',  # 오렌지색 헤더
+        '#FFF2CC'   # 노란색 교대
+    )
+    if dlx_path:
+        table_paths.append(dlx_path)
     
     return table_paths
 
