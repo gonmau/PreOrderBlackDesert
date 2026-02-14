@@ -163,7 +163,7 @@ def create_ranking_table(data, output_dir='output'):
             table_data.append(row)
         
         # 헤더 생성
-        headers = ['Rank'] + [f'Country {i+1}' for i in range(max_countries)]
+        headers = ['Rank'] + [str(i+1) for i in range(max_countries)]
         
         # 표 생성
         num_cols = max_countries + 1
@@ -184,14 +184,14 @@ def create_ranking_table(data, output_dir='output'):
         )
         
         table.auto_set_font_size(False)
-        table.set_fontsize(12)  # 글자 크기 증가
-        table.scale(1, 2.5)  # 행 높이 증가
+        table.set_fontsize(14)  # 글자 크기 증가
+        table.scale(1, 2.8)  # 행 높이 증가
         
         # 헤더 스타일
         for i in range(len(headers)):
             cell = table[(0, i)]
             cell.set_facecolor(header_color)
-            cell.set_text_props(weight='bold', color='white', ha='center', fontsize=13)
+            cell.set_text_props(weight='bold', color='white', ha='center', fontsize=15)
         
         # 데이터 행 스타일
         for i in range(1, len(table_data) + 1):
@@ -201,7 +201,7 @@ def create_ranking_table(data, output_dir='output'):
                 
                 if j == 0:
                     # Rank 열
-                    cell.set_text_props(weight='bold', ha='center')
+                    cell.set_text_props(weight='bold', ha='center', fontsize=14)
                     if i % 2 == 0:
                         cell.set_facecolor('#E7E6E6')
                     else:
@@ -216,9 +216,10 @@ def create_ranking_table(data, output_dir='output'):
                     elif country_name in top_10_markets:
                         # Top 10 시장: 굵은 글씨 + 강조 색
                         cell.set_facecolor('#FFE699')
-                        cell.set_text_props(weight='bold', ha='center', fontsize=12)
+                        cell.set_text_props(weight='bold', ha='center', fontsize=14)
                     else:
                         # 일반 국가
+                        cell.set_text_props(ha='center', fontsize=14)
                         if i % 2 == 0:
                             cell.set_facecolor('#E7E6E6')
                         else:
