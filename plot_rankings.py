@@ -91,8 +91,7 @@ def parse_data(data):
     return country_data, sorted(dates)
 
 def create_ranking_table(data, output_dir='output'):
-    """에디션별 순위를 시각화 (표 대신 리스트 형식) - 국기 + 국가명"""
-    os.makedirs(output_dir, exist_ok=True)
+    """에디션별 순위를 텍스트 형식으로 생성 (Discord용)"""
     
     # 국기 이모지 매핑
     country_flags = {
@@ -148,18 +147,6 @@ def create_ranking_table(data, output_dir='output'):
         '에스토니아': '🇪🇪', 'Estonia': '🇪🇪',
         '라트비아': '🇱🇻', 'Latvia': '🇱🇻',
         '리투아니아': '🇱🇹', 'Lithuania': '🇱🇹',
-        '룩셈부르크': '🇱🇺', 'Luxembourg': '🇱🇺',
-        '몰타': '🇲🇹', 'Malta': '🇲🇹',
-        '키프로스': '🇨🇾', 'Cyprus': '🇨🇾',
-        '아이슬란드': '🇮🇸', 'Iceland': '🇮🇸',
-        '쿠웨이트': '🇰🇼', 'Kuwait': '🇰🇼',
-        '카타르': '🇶🇦', 'Qatar': '🇶🇦',
-        '바레인': '🇧🇭', 'Bahrain': '🇧🇭',
-        '오만': '🇴🇲', 'Oman': '🇴🇲',
-        '말레이시아': '🇲🇾', 'Malaysia': '🇲🇾',
-        '인도네시아': '🇮🇩', 'Indonesia': '🇮🇩',
-        '필리핀': '🇵🇭', 'Philippines': '🇵🇭',
-        '베트남': '🇻🇳', 'Vietnam': '🇻🇳',
     }
     
     # PlayStation 국가별 시장 규모 배율 (점유율)
@@ -174,149 +161,65 @@ def create_ranking_table(data, output_dir='output'):
         '이탈리아': 1.0, 'Italy': 1.0, 'Italia': 1.0,
         '캐나다': 1.0, 'Canada': 1.0,
         '호주': 0.7, 'Australia': 0.7,
-        '네덜란드': 0.5, 'Netherlands': 0.5,
-        '스웨덴': 0.35, 'Sweden': 0.35,
-        '벨기에': 0.35, 'Belgium': 0.35,
-        '스위스': 0.35, 'Switzerland': 0.35,
-        '오스트리아': 0.27, 'Austria': 0.27,
-        '폴란드': 0.27, 'Poland': 0.27,
-        '노르웨이': 0.23, 'Norway': 0.23,
-        '덴마크': 0.2, 'Denmark': 0.2,
-        '핀란드': 0.17, 'Finland': 0.17,
-        '포르투갈': 0.17, 'Portugal': 0.17,
     }
-    
-    # Top 10 시장 국가 목록
-    top_10_markets = {'미국', 'USA', 'United States', 'US', '일본', 'Japan', 
-                      '영국', 'UK', 'United Kingdom', 'Britain',
-                      '독일', 'Germany', 'Deutschland',
-                      '프랑스', 'France',
-                      '한국', '대한민국', 'Korea', 'South Korea',
-                      '스페인', 'Spain', 'España',
-                      '이탈리아', 'Italy', 'Italia',
-                      '캐나다', 'Canada',
-                      '호주', 'Australia'}
     
     # 최신 데이터 가져오기
     latest_entry = data[-1]
-    timestamp = datetime.fromisoformat(latest_entry['timestamp'])
     raw_results = latest_entry['raw_results']
     
-    table_paths = []
+    # Standard Edition 순위 텍스트 생성
+    rank_groups_std = {}
+    for country, ranks in raw_results.items():
+        std_rank = ranks['standard']
+        if std_rank is not None:
+            if std_rank not in rank_groups_std:
+                rank_groups_std[std_rank] = []
+            rank_groups_std[std_rank].append(country)
     
-    def create_edition_visual(edition_name, rank_key, title_color):
-        """에디션별 시각화 생성 - 리스트 형식"""
-        # 순위별로 국가 그룹화
-        rank_groups = {}
-        for country, ranks in raw_results.items():
-            rank = ranks[rank_key]
-            if rank is not None:
-                if rank not in rank_groups:
-                    rank_groups[rank] = []
-                rank_groups[rank].append(country)
-        
-        if not rank_groups:
-            return None
-        
-        # 순위 순서대로 정렬
-        sorted_ranks = sorted(rank_groups.keys())
-        
-        # 각 순위의 국가들을 점유율 순으로 정렬
-        for rank in sorted_ranks:
-            countries = rank_groups[rank]
-            rank_groups[rank] = sorted(
-                countries, 
-                key=lambda c: ps_market_multiplier.get(c, 0.15),
-                reverse=True
-            )
-        
-        # 이미지 생성
-        fig, ax = plt.subplots(figsize=(14, max(10, len(sorted_ranks) * 0.8)))
-        ax.set_xlim(0, 10)
-        ax.set_ylim(0, len(sorted_ranks) + 1)
-        ax.axis('off')
-        
-        # 제목
-        ax.text(5, len(sorted_ranks) + 0.5, edition_name, 
-                fontsize=20, fontweight='bold', ha='center', color=title_color)
-        
-        y_pos = len(sorted_ranks) - 0.5
-        
-        for rank in sorted_ranks:
-            countries = rank_groups[rank]
-            
-            # 순위 표시
-            ax.text(0.5, y_pos, f"#{rank}", 
-                   fontsize=18, fontweight='bold', ha='center', va='center',
-                   bbox=dict(boxstyle='round,pad=0.5', facecolor=title_color, 
-                            edgecolor='none', alpha=0.8))
-            
-            # 국가들 표시
-            x_offset = 1.5
-            for country in countries:
-                flag = country_flags.get(country, '🏳️')
-                is_top_market = country in top_10_markets
-                
-                # 점유율에 따른 크기 및 스타일
-                if is_top_market:
-                    fontsize = 16
-                    fontweight = 'bold'
-                    bbox_props = dict(boxstyle='round,pad=0.4', 
-                                     facecolor='#FFD700', edgecolor='#FFA500', 
-                                     linewidth=2, alpha=0.9)
-                else:
-                    fontsize = 13
-                    fontweight = 'normal'
-                    bbox_props = dict(boxstyle='round,pad=0.3', 
-                                     facecolor='white', edgecolor='#CCCCCC', 
-                                     linewidth=1, alpha=0.7)
-                
-                # 국기 + 국가명
-                text = f"{flag} {country}"
-                ax.text(x_offset, y_pos, text,
-                       fontsize=fontsize, fontweight=fontweight,
-                       ha='left', va='center', bbox=bbox_props)
-                
-                # 다음 국가 위치 계산 (텍스트 길이에 따라)
-                text_width = len(country) * 0.12 + 0.8
-                x_offset += text_width
-                
-                # 줄바꿈 (너무 길어지면)
-                if x_offset > 9:
-                    y_pos -= 0.35
-                    x_offset = 1.5
-            
-            y_pos -= 1
-        
-        plt.tight_layout()
-        
-        filename = f'ranking_table_{rank_key}.png'
-        filepath = f'{output_dir}/{filename}'
-        plt.savefig(filepath, dpi=150, bbox_inches='tight', facecolor='white')
-        plt.close()
-        
-        print(f'✓ Generated: {filename}')
-        return filepath
+    # 각 순위 내에서 점유율 순으로 정렬
+    for rank in rank_groups_std:
+        rank_groups_std[rank] = sorted(
+            rank_groups_std[rank],
+            key=lambda c: ps_market_multiplier.get(c, 0.15),
+            reverse=True
+        )
     
-    # Standard Edition 시각화 생성
-    std_path = create_edition_visual(
-        'Standard Edition Rankings',
-        'standard',
-        '#4472C4'
-    )
-    if std_path:
-        table_paths.append(std_path)
+    std_text = "**Standard Edition Rankings:**\n"
+    for rank in sorted(rank_groups_std.keys()):
+        countries = rank_groups_std[rank]
+        countries_with_flags = [f"{country_flags.get(c, '🏳️')} {c}" for c in countries]
+        std_text += f"**#{rank}** {', '.join(countries_with_flags)}\n"
     
-    # Deluxe Edition 시각화 생성
-    dlx_path = create_edition_visual(
-        'Deluxe Edition Rankings',
-        'deluxe',
-        '#ED7D31'
-    )
-    if dlx_path:
-        table_paths.append(dlx_path)
+    # Deluxe Edition 순위 텍스트 생성
+    rank_groups_dlx = {}
+    for country, ranks in raw_results.items():
+        dlx_rank = ranks['deluxe']
+        if dlx_rank is not None:
+            if dlx_rank not in rank_groups_dlx:
+                rank_groups_dlx[dlx_rank] = []
+            rank_groups_dlx[dlx_rank].append(country)
     
-    return table_paths
+    # 각 순위 내에서 점유율 순으로 정렬
+    for rank in rank_groups_dlx:
+        rank_groups_dlx[rank] = sorted(
+            rank_groups_dlx[rank],
+            key=lambda c: ps_market_multiplier.get(c, 0.15),
+            reverse=True
+        )
+    
+    dlx_text = "**Deluxe Edition Rankings:**\n"
+    for rank in sorted(rank_groups_dlx.keys()):
+        countries = rank_groups_dlx[rank]
+        countries_with_flags = [f"{country_flags.get(c, '🏳️')} {c}" for c in countries]
+        dlx_text += f"**#{rank}** {', '.join(countries_with_flags)}\n"
+    
+    print('✓ Generated ranking text for Discord')
+    
+    # 텍스트를 반환 (이미지 파일 대신)
+    return {
+        'standard': std_text,
+        'deluxe': dlx_text
+    }
 
 def get_latest_rankings(data):
     """최신 순위 데이터를 딕셔너리 형태로 반환"""
@@ -1028,8 +931,8 @@ def plot_top_countries(country_data, countries_to_plot, output_dir='output'):
     
     print(f'✓ Generated: top_countries_rankings.png')
 
-def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_paths, daily_sales):
-    """오늘 날짜 최신 순위를 디스코드로 전송 (Standard와 Deluxe 표 모두 포함)"""
+def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_texts, daily_sales):
+    """오늘 날짜 최신 순위를 디스코드로 전송 (텍스트 형식)"""
     if not webhook_url:
         print('⚠️  Discord webhook URL not provided, skipping latest rankings notification')
         return
@@ -1112,25 +1015,18 @@ def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_paths, d
                 "inline": True
             })
         
-        # 표 이미지 첨부 (Standard와 Deluxe 모두)
-        files_to_send = {}
-        
-        # Standard 표
-        if len(table_paths) > 0 and os.path.exists(table_paths[0]):
-            files_to_send['ranking_table_standard'] = (
-                'ranking_table_standard.png',
-                open(table_paths[0], 'rb'),
-                'image/png'
-            )
-            embed["image"] = {"url": "attachment://ranking_table_standard.png"}
-        
-        # Deluxe 표
-        if len(table_paths) > 1 and os.path.exists(table_paths[1]):
-            files_to_send['ranking_table_deluxe'] = (
-                'ranking_table_deluxe.png',
-                open(table_paths[1], 'rb'),
-                'image/png'
-            )
+        # 순위 텍스트 추가 (이미지 대신)
+        if table_texts:
+            embed["fields"].append({
+                "name": "📋 All Rankings (Standard)",
+                "value": table_texts['standard'][:1024],  # Discord 필드 제한
+                "inline": False
+            })
+            embed["fields"].append({
+                "name": "📋 All Rankings (Deluxe)",
+                "value": table_texts['deluxe'][:1024],  # Discord 필드 제한
+                "inline": False
+            })
         
         # 웹훅으로 전송
         payload = {
@@ -1140,17 +1036,7 @@ def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_paths, d
         
         print(f'📤 Sending latest rankings to Discord...')
         
-        if files_to_send:
-            response = requests.post(
-                webhook_url,
-                data={"payload_json": json.dumps(payload)},
-                files=files_to_send,
-                timeout=30
-            )
-            for file_tuple in files_to_send.values():
-                file_tuple[1].close()
-        else:
-            response = requests.post(webhook_url, json=payload, timeout=10)
+        response = requests.post(webhook_url, json=payload, timeout=10)
         
         if response.status_code in [200, 204]:
             print('✅ Latest rankings sent to Discord successfully!')
@@ -1348,9 +1234,9 @@ def main():
     print(f'🌍 Countries: {len(country_data)}')
     print()
     
-    # 순위 표 생성
-    print('📋 Creating ranking tables...')
-    table_paths = create_ranking_table(data)
+    # 순위 텍스트 생성
+    print('📋 Creating ranking text...')
+    table_texts = create_ranking_table(data)
     print()
     
     # 판매량 추산
@@ -1385,7 +1271,7 @@ def main():
     if discord_webhook:
         # 1. 최신 순위 전송
         print('📤 Sending latest rankings to Discord...')
-        send_latest_rankings_to_discord(discord_webhook, latest_rankings, table_paths, daily_sales)
+        send_latest_rankings_to_discord(discord_webhook, latest_rankings, table_texts, daily_sales)
         print()
         
         # 2. 그래프 알림 전송
