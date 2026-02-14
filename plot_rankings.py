@@ -243,6 +243,74 @@ def get_latest_rankings(data):
         'rankings': countries_sorted
     }
 
+def calculate_current_sales(rankings):
+    """현재 순위 기반으로 실시간 판매량 추산"""
+    import math
+    
+    # PlayStation 국가별 시장 규모 배율
+    ps_market_multiplier = {
+        '미국': 10.0, 'USA': 10.0, 'United States': 10.0, 'US': 10.0,
+        '일본': 5.0, 'Japan': 5.0,
+        '영국': 2.7, 'UK': 2.7, 'United Kingdom': 2.7, 'Britain': 2.7,
+        '독일': 2.3, 'Germany': 2.3, 'Deutschland': 2.3,
+        '프랑스': 2.0, 'France': 2.0,
+        '한국': 1.3, '대한민국': 1.3, 'Korea': 1.3, 'South Korea': 1.3,
+        '스페인': 1.0, 'Spain': 1.0, 'España': 1.0,
+        '이탈리아': 1.0, 'Italy': 1.0, 'Italia': 1.0,
+        '캐나다': 1.0, 'Canada': 1.0,
+        '호주': 0.7, 'Australia': 0.7,
+        '네덜란드': 0.5, 'Netherlands': 0.5,
+        '스웨덴': 0.35, 'Sweden': 0.35,
+        '벨기에': 0.35, 'Belgium': 0.35,
+        '스위스': 0.35, 'Switzerland': 0.35,
+        '오스트리아': 0.27, 'Austria': 0.27,
+        '폴란드': 0.27, 'Poland': 0.27,
+        '노르웨이': 0.23, 'Norway': 0.23,
+        '덴마크': 0.2, 'Denmark': 0.2,
+        '핀란드': 0.17, 'Finland': 0.17,
+        '포르투갈': 0.17, 'Portugal': 0.17,
+    }
+    
+    def rank_to_daily_sales(rank):
+        """순위를 일일 판매량으로 변환"""
+        if rank is None or rank == '-':
+            return 0
+        rank = int(rank)
+        
+        if rank == 1:
+            return 600
+        elif rank <= 5:
+            return 600 * math.exp(-0.18 * (rank - 1))
+        elif rank <= 10:
+            return 250 * math.exp(-0.13 * (rank - 5))
+        elif rank <= 20:
+            return 130 * math.exp(-0.06 * (rank - 10))
+        elif rank <= 50:
+            return 70 * math.exp(-0.03 * (rank - 20))
+        else:
+            return 30 * math.exp(-0.01 * (rank - 50))
+    
+    std_sales = 0
+    dlx_sales = 0
+    
+    for country, ranks in rankings:
+        multiplier = ps_market_multiplier.get(country, 0.15)
+        
+        if ranks['standard'] is not None:
+            base_sales = rank_to_daily_sales(ranks['standard'])
+            std_sales += base_sales * multiplier
+        
+        if ranks['deluxe'] is not None:
+            base_sales = rank_to_daily_sales(ranks['deluxe'])
+            dlx_sales += base_sales * multiplier
+    
+    return {
+        'standard': round(std_sales, 2),
+        'deluxe': round(dlx_sales, 2),
+        'total': round(std_sales + dlx_sales, 2)
+    }
+
+
 def estimate_daily_sales(data, output_dir='output'):
     """일별 에디션별 판매량 추산 (PS 점유율 기반 가중치)"""
     import os as os_module
@@ -879,29 +947,37 @@ def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_paths, d
         timestamp = latest_rankings['timestamp']
         rankings = latest_rankings['rankings']
         
-        # 최신 판매량 추산 데이터
-        latest_sales = daily_sales[-1] if daily_sales else None
+        # 최신 판매량 추산 데이터 (현재 순위로 실시간 계산)
+        latest_sales = calculate_current_sales(rankings) if rankings else None
         
-        # Top 10 국가 추출
-        top_10 = rankings[:10]
+        # Standard Edition Top 3 추출
+        std_top_3 = []
+        for country, ranks in rankings:
+            if ranks['standard'] is not None and len(std_top_3) < 3:
+                std_top_3.append((country, ranks['standard'], ranks['deluxe']))
         
-        # 임베드 필드 생성 (Standard 순위)
-        ranking_text = ""
-        for idx, (country, ranks) in enumerate(top_10, 1):
-            std_rank = ranks['standard'] if ranks['standard'] is not None else '-'
-            dlx_rank = ranks['deluxe'] if ranks['deluxe'] is not None else '-'
-            
-            # 메달 이모지 추가
-            medal = ""
-            if idx == 1:
-                medal = "🥇 "
-            elif idx == 2:
-                medal = "🥈 "
-            elif idx == 3:
-                medal = "🥉 "
-            
-            ranking_text += f"{medal}**{idx}. {country}**\n"
-            ranking_text += f"   Standard: #{std_rank} | Deluxe: #{dlx_rank}\n"
+        # Deluxe Edition Top 3 추출
+        dlx_sorted = sorted(
+            [(country, ranks) for country, ranks in rankings if ranks['deluxe'] is not None],
+            key=lambda x: x[1]['deluxe']
+        )
+        dlx_top_3 = [(country, ranks['deluxe'], ranks['standard']) for country, ranks in dlx_sorted[:3]]
+        
+        # Standard Top 3 텍스트
+        std_ranking_text = ""
+        for idx, (country, std_rank, dlx_rank) in enumerate(std_top_3, 1):
+            medal = "🥇 " if idx == 1 else "🥈 " if idx == 2 else "🥉 "
+            dlx_display = f"#{dlx_rank}" if dlx_rank is not None else "-"
+            std_ranking_text += f"{medal}**{country}**\n"
+            std_ranking_text += f"   Standard: #{std_rank} | Deluxe: {dlx_display}\n"
+        
+        # Deluxe Top 3 텍스트
+        dlx_ranking_text = ""
+        for idx, (country, dlx_rank, std_rank) in enumerate(dlx_top_3, 1):
+            medal = "🥇 " if idx == 1 else "🥈 " if idx == 2 else "🥉 "
+            std_display = f"#{std_rank}" if std_rank is not None else "-"
+            dlx_ranking_text += f"{medal}**{country}**\n"
+            dlx_ranking_text += f"   Deluxe: #{dlx_rank} | Standard: {std_display}\n"
         
         # 디스코드 임베드 메시지 생성
         embed = {
@@ -910,14 +986,19 @@ def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_paths, d
             "color": 3066993,  # 초록색
             "fields": [
                 {
-                    "name": "🏆 Top 10 Countries (by Standard Edition)",
-                    "value": ranking_text,
-                    "inline": False
+                    "name": "🏆 Top 3 Countries (Standard Edition)",
+                    "value": std_ranking_text,
+                    "inline": True
+                },
+                {
+                    "name": "🏆 Top 3 Countries (Deluxe Edition)",
+                    "value": dlx_ranking_text,
+                    "inline": True
                 },
                 {
                     "name": "📈 Total Countries Tracked",
                     "value": str(len(rankings)),
-                    "inline": True
+                    "inline": False
                 }
             ],
             "footer": {
@@ -934,8 +1015,8 @@ def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_paths, d
                 f"**Total**: {int(latest_sales['total']):,} units\n"
                 f"*(PS Market Share Weighted)*"
             )
-            embed["fields"].append({
-                "name": "💰 Estimated Sales (Today)",
+            embed["fields"].insert(2, {
+                "name": "💰 Estimated Sales (Current)",
                 "value": sales_text,
                 "inline": True
             })
