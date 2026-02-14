@@ -81,7 +81,7 @@ def parse_data(data):
     return country_data, sorted(dates)
 
 def create_ranking_table(data, output_dir='output'):
-    """에디션별, 나라별 순위를 표로 생성 (PNG 이미지) - Standard와 Deluxe 각각 생성"""
+    """에디션별 순위를 표로 생성 (PNG 이미지) - 순위별로 국가를 그룹화"""
     os.makedirs(output_dir, exist_ok=True)
     
     # 최신 데이터 가져오기
@@ -91,52 +91,65 @@ def create_ranking_table(data, output_dir='output'):
     
     table_paths = []
     
-    # 1. Standard Edition 표
-    countries_sorted_std = sorted(
-        raw_results.items(),
-        key=lambda x: x[1]['standard'] if x[1]['standard'] is not None else 999
-    )
+    # 1. Standard Edition 표 (순위별로 그룹화)
+    # 순위별로 국가 그룹화
+    rank_groups_std = {}
+    for country, ranks in raw_results.items():
+        std_rank = ranks['standard']
+        if std_rank is not None:
+            if std_rank not in rank_groups_std:
+                rank_groups_std[std_rank] = []
+            rank_groups_std[std_rank].append(country)
     
+    # 순위 순서대로 정렬
+    sorted_ranks_std = sorted(rank_groups_std.keys())
+    
+    # 표 데이터 구성
     std_table_data = []
-    for rank, (country, ranks) in enumerate(countries_sorted_std, 1):
-        std_rank = ranks['standard'] if ranks['standard'] is not None else '-'
-        if std_rank != '-':
-            std_table_data.append([rank, country, std_rank])
+    for rank in sorted_ranks_std:
+        countries = sorted(rank_groups_std[rank])  # 같은 순위 내에서 국가명 알파벳 순
+        countries_str = ', '.join(countries)
+        std_table_data.append([rank, countries_str])
     
     # Standard 표 생성
-    fig, ax = plt.subplots(figsize=(8, max(8, len(std_table_data) * 0.3)))
+    fig, ax = plt.subplots(figsize=(12, max(8, len(std_table_data) * 0.4)))
     ax.axis('tight')
     ax.axis('off')
     
-    headers_std = ['#', 'Country', 'Rank']
+    headers_std = ['Rank', 'Countries']
     
     table_std = ax.table(
         cellText=std_table_data,
         colLabels=headers_std,
-        cellLoc='center',
+        cellLoc='left',
         loc='center',
-        colWidths=[0.15, 0.6, 0.25]
+        colWidths=[0.15, 0.85]
     )
     
     table_std.auto_set_font_size(False)
-    table_std.set_fontsize(10)
+    table_std.set_fontsize(9)
     table_std.scale(1, 2)
     
     # 헤더 스타일
-    for i in range(3):
+    for i in range(2):
         cell = table_std[(0, i)]
         cell.set_facecolor('#4472C4')
         cell.set_text_props(weight='bold', color='white')
     
     # 행 스타일
     for i in range(1, len(std_table_data) + 1):
-        for j in range(3):
+        for j in range(2):
             cell = table_std[(i, j)]
             if i % 2 == 0:
                 cell.set_facecolor('#E7E6E6')
             else:
                 cell.set_facecolor('#FFFFFF')
+            # Rank 열은 중앙 정렬
+            if j == 0:
+                cell.set_text_props(ha='center')
     
+    plt.title(f'Standard Edition Rankings - {timestamp.strftime("%Y-%m-%d %H:%M")}', 
+              fontsize=12, fontweight='bold', pad=20)
     plt.tight_layout()
     std_table_path = f'{output_dir}/ranking_table_standard.png'
     plt.savefig(std_table_path, dpi=150, bbox_inches='tight', facecolor='white')
@@ -145,52 +158,65 @@ def create_ranking_table(data, output_dir='output'):
     print(f'✓ Generated: ranking_table_standard.png')
     table_paths.append(std_table_path)
     
-    # 2. Deluxe Edition 표
-    countries_sorted_dlx = sorted(
-        raw_results.items(),
-        key=lambda x: x[1]['deluxe'] if x[1]['deluxe'] is not None else 999
-    )
+    # 2. Deluxe Edition 표 (순위별로 그룹화)
+    # 순위별로 국가 그룹화
+    rank_groups_dlx = {}
+    for country, ranks in raw_results.items():
+        dlx_rank = ranks['deluxe']
+        if dlx_rank is not None:
+            if dlx_rank not in rank_groups_dlx:
+                rank_groups_dlx[dlx_rank] = []
+            rank_groups_dlx[dlx_rank].append(country)
     
+    # 순위 순서대로 정렬
+    sorted_ranks_dlx = sorted(rank_groups_dlx.keys())
+    
+    # 표 데이터 구성
     dlx_table_data = []
-    for rank, (country, ranks) in enumerate(countries_sorted_dlx, 1):
-        dlx_rank = ranks['deluxe'] if ranks['deluxe'] is not None else '-'
-        if dlx_rank != '-':
-            dlx_table_data.append([rank, country, dlx_rank])
+    for rank in sorted_ranks_dlx:
+        countries = sorted(rank_groups_dlx[rank])  # 같은 순위 내에서 국가명 알파벳 순
+        countries_str = ', '.join(countries)
+        dlx_table_data.append([rank, countries_str])
     
     # Deluxe 표 생성
-    fig, ax = plt.subplots(figsize=(8, max(8, len(dlx_table_data) * 0.3)))
+    fig, ax = plt.subplots(figsize=(12, max(8, len(dlx_table_data) * 0.4)))
     ax.axis('tight')
     ax.axis('off')
     
-    headers_dlx = ['#', 'Country', 'Rank']
+    headers_dlx = ['Rank', 'Countries']
     
     table_dlx = ax.table(
         cellText=dlx_table_data,
         colLabels=headers_dlx,
-        cellLoc='center',
+        cellLoc='left',
         loc='center',
-        colWidths=[0.15, 0.6, 0.25]
+        colWidths=[0.15, 0.85]
     )
     
     table_dlx.auto_set_font_size(False)
-    table_dlx.set_fontsize(10)
+    table_dlx.set_fontsize(9)
     table_dlx.scale(1, 2)
     
     # 헤더 스타일
-    for i in range(3):
+    for i in range(2):
         cell = table_dlx[(0, i)]
         cell.set_facecolor('#ED7D31')
         cell.set_text_props(weight='bold', color='white')
     
     # 행 스타일
     for i in range(1, len(dlx_table_data) + 1):
-        for j in range(3):
+        for j in range(2):
             cell = table_dlx[(i, j)]
             if i % 2 == 0:
                 cell.set_facecolor('#FFF2CC')
             else:
                 cell.set_facecolor('#FFFFFF')
+            # Rank 열은 중앙 정렬
+            if j == 0:
+                cell.set_text_props(ha='center')
     
+    plt.title(f'Deluxe Edition Rankings - {timestamp.strftime("%Y-%m-%d %H:%M")}', 
+              fontsize=12, fontweight='bold', pad=20)
     plt.tight_layout()
     dlx_table_path = f'{output_dir}/ranking_table_deluxe.png'
     plt.savefig(dlx_table_path, dpi=150, bbox_inches='tight', facecolor='white')
