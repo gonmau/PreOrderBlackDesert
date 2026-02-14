@@ -317,28 +317,6 @@ def create_ranking_table(data, output_dir='output'):
         table_paths.append(dlx_path)
     
     return table_paths
-        print(f'✓ Generated: {filename}')
-        return filepath
-    
-    # Standard Edition 표 생성
-    std_path = create_edition_table(
-        'Standard Edition Rankings',
-        'standard',
-        '#4472C4'  # 파란색 헤더
-    )
-    if std_path:
-        table_paths.append(std_path)
-    
-    # Deluxe Edition 표 생성
-    dlx_path = create_edition_table(
-        'Deluxe Edition Rankings',
-        'deluxe',
-        '#ED7D31'  # 오렌지색 헤더
-    )
-    if dlx_path:
-        table_paths.append(dlx_path)
-    
-    return table_paths
 
 def get_latest_rankings(data):
     """최신 순위 데이터를 딕셔너리 형태로 반환"""
