@@ -4870,5 +4870,40 @@
         "geo_code": "FR"
       }
     }
+  },
+  {
+    "timestamp": "2026-02-14T11:28:20.592208",
+    "google": {
+      "score": 80,
+      "avg_7d": 21,
+      "top_regions": {}
+    },
+    "console_markets": {
+      "United States": {
+        "score": 91,
+        "avg_1m": 41,
+        "geo_code": "US"
+      },
+      "Japan": {
+        "score": 26,
+        "avg_1m": 12,
+        "geo_code": "JP"
+      },
+      "United Kingdom": {
+        "score": 84,
+        "avg_1m": 41,
+        "geo_code": "GB"
+      },
+      "Germany": {
+        "score": 100,
+        "avg_1m": 31,
+        "geo_code": "DE"
+      },
+      "France": {
+        "score": 83,
+        "avg_1m": 49,
+        "geo_code": "FR"
+      }
+    }
   }
 ]
