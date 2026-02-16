@@ -104,9 +104,10 @@
     "games": [
       "Resident Evil Requiem",
       "Resident Evil Requiem Deluxe Edition",
-      "WWE 2K26 Monday Night War Edition"
+      "WWE 2K26 Monday Night War Edition",
+      "LEGO® Batman™: Legacy of the Dark Knight Deluxe Edition"
     ],
-    "crimson_rank": 4
+    "crimson_rank": 5
   },
   "체코": {
     "games": [
@@ -339,9 +340,10 @@
   "태국": {
     "games": [
       "Resident Evil Requiem Deluxe Edition (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
-      "Resident Evil Requiem (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)"
+      "Resident Evil Requiem (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
+      "WWE 2K26 Monday Night War Edition (English)"
     ],
-    "crimson_rank": 3
+    "crimson_rank": 4
   },
   "싱가포르": {
     "games": [
@@ -364,9 +366,10 @@
       "WWE 2K26 Standard Edition (English)",
       "MLB® The Show™ 26 Digital Deluxe Edition (English Ver.)",
       "FATAL FRAME II: Crimson Butterfly REMAKE (Simplified Chinese, Japanese, Traditional Chinese)",
-      "FATAL FRAME II: Crimson Butterfly REMAKE Digital Deluxe Edition (Chinese/Japanese Ver.)"
+      "FATAL FRAME II: Crimson Butterfly REMAKE Digital Deluxe Edition (Chinese/Japanese Ver.)",
+      "Monster Hunter Stories 3: Twisted Reflection (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)"
     ],
-    "crimson_rank": 11
+    "crimson_rank": 12
   },
   "인도네시아": {
     "games": [
@@ -405,9 +408,11 @@
       "Monster Hunter Stories 3: 命運雙龍 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "PRAGMATA Deluxe Edition (中日英韓文版)",
       "《暗黑破壞神® IV：憎恨之王™》終極版 (中英韓文版)",
-      "007 First Light (中日英韓文版)"
+      "007 First Light (中日英韓文版)",
+      "零 ～紅蝶～ REMAKE Digital Deluxe Edition (中日文版)",
+      "首都高賽車 (簡體中文, 英文, 繁體中文, 日文)"
     ],
-    "crimson_rank": 10
+    "crimson_rank": 12
   },
   "대만": {
     "games": [
@@ -430,9 +435,8 @@
     "games": [
       "Resident Evil Requiem Deluxe Edition",
       "WWE 2K26 Monday Night War Edition",
-      "Resident Evil Requiem",
-      "MLB® The Show™ 26"
+      "Resident Evil Requiem"
     ],
-    "crimson_rank": 5
+    "crimson_rank": 4
   }
 }
