@@ -404,21 +404,41 @@ def estimate_daily_sales(data, output_dir='output'):
             countries = ['미국', '일본', '영국', '독일', '프랑스', '한국']
         
         for item in historical_data:
-            date_str = item['date']
-            avg_rank = item['average_rank']
-            
-            # 평균 순위를 Standard/Deluxe로 분할
-            std_rank = int(avg_rank + (rank_gap / 2))
-            dlx_rank = int(avg_rank - (rank_gap / 2))
-            
-            # 모든 국가에 동일한 순위 적용
+            date_str  = item['date']
+            # historical_data 항목에 country_ranks가 있으면 직접 사용,
+            # 없으면 avg_rank 단일값으로 fallback
+            country_ranks = item.get('country_ranks', {})  # {"미국":12, "일본":17, ...}
+
+            # ── 가중평균 순위 계산 (보간용) ──────────────────────────────
+            # 표에 있는 국가들의 가중평균을 나머지 국가에 적용
+            wa_num, wa_den = 0.0, 0.0
+            for c, v in country_ranks.items():
+                if v is not None:
+                    m = get_multiplier(c)
+                    wa_num += v * m
+                    wa_den += m
+            if wa_den > 0:
+                weighted_avg_rank = wa_num / wa_den
+            else:
+                # country_ranks가 없으면 avg_rank 사용
+                weighted_avg_rank = item.get('average_rank', 15)
+
+            # ── Standard / Deluxe 분리 ────────────────────────────────
+            # 표에 있는 국가: 실제 순위 그대로, std = rank + gap/2, dlx = rank - gap/2
+            # 표에 없는 국가: 가중평균 순위로 보간
             raw_results = {}
             for country in countries:
+                if country in country_ranks and country_ranks[country] is not None:
+                    base = country_ranks[country]
+                else:
+                    base = weighted_avg_rank
+                std_r = max(1, int(base + rank_gap / 2))
+                dlx_r = max(1, int(base - rank_gap / 2))
                 raw_results[country] = {
-                    'standard': std_rank,
-                    'deluxe': dlx_rank
+                    'standard': std_r,
+                    'deluxe':   dlx_r
                 }
-            
+
             historical_entries.append({
                 'timestamp': f'{date_str}T08:00:00',
                 'raw_results': raw_results
@@ -1242,6 +1262,79 @@ def send_discord_notification(webhook_url, country_data, dates, output_dir='outp
     except Exception as e:
         print(f'❌ Error sending Discord notification: {e}')
 
+def build_historical_data_from_weekly(output_path='historical_ranking_data.json'):
+    """
+    이미지에서 수집한 주단위 국가별 순위를 historical_ranking_data.json 형식으로 변환.
+    각 항목: {"date": "YYYY-MM-DD", "average_rank": float, "country_ranks": {...}}
+
+    주 → 일 변환: 해당 주의 모든 날짜에 동일 데이터 복제 (월~일 7일).
+    이미 rank_history.json에 있는 날짜(1/11 이후)는 제외해야 하므로
+    cutoff_date 이전 날짜만 생성.
+    """
+    import math as _m
+    from datetime import timedelta
+
+    # 이미지(주단위 평균 순위표)에서 정확히 읽은 데이터
+    # None = 표에서 '-' (해당 주 데이터 없음)
+    # 컬럼: 미국, 일본, 홍콩, 인도, 영국, 독일, 프랑스, 멕시코, 캐나다, 한국, 호주, 브라질, 스페인
+    weekly_raw = [
+        # (주 시작일,  국가별 순위 dict)
+        ("2025-09-22", {"미국":12,"일본":17,"홍콩":14,"인도":4, "영국":18,"독일":12,"프랑스":9, "멕시코":17,"캐나다":15,"한국":4, "호주":12,"브라질":12,"스페인":14}),
+        ("2025-09-29", {"미국":11,"일본":None,"홍콩":17,"인도":6, "영국":22,"독일":16,"프랑스":12,"멕시코":13,"캐나다":20,"한국":4, "호주":21,"브라질":11,"스페인":11}),
+        ("2025-10-06", {"미국":16,"일본":15,"홍콩":12,"인도":17,"영국":18,"독일":19,"프랑스":13,"멕시코":13,"캐나다":20,"한국":4, "호주":21,"브라질":11,"스페인":11}),
+        ("2025-10-13", {"미국":16,"일본":22,"홍콩":11,"인도":14,"영국":None,"독일":23,"프랑스":16,"멕시코":7, "캐나다":18,"한국":3, "호주":17,"브라질":12,"스페인":11}),
+        ("2025-10-20", {"미국":21,"일본":None,"홍콩":22,"인도":20,"영국":None,"독일":None,"프랑스":23,"멕시코":14,"캐나다":24,"한국":4, "호주":23,"브라질":18,"스페인":None}),
+        ("2025-10-27", {"미국":11,"일본":8, "홍콩":23,"인도":None,"영국":None,"독일":None,"프랑스":23,"멕시코":13,"캐나다":15,"한국":8, "호주":None,"브라질":12,"스페인":16}),
+        ("2025-11-03", {"미국":8, "일본":23,"홍콩":None,"인도":20,"영국":None,"독일":None,"프랑스":22,"멕시코":14,"캐나다":12,"한국":7, "호주":16,"브라질":8, "스페인":13}),
+        ("2025-11-10", {"미국":8, "일본":24,"홍콩":23,"인도":1, "영국":None,"독일":None,"프랑스":22,"멕시코":14,"캐나다":12,"한국":7, "호주":16,"브라질":7, "스페인":15}),
+        ("2025-11-17", {"미국":23,"일본":None,"홍콩":17,"인도":11,"영국":None,"독일":None,"프랑스":24,"멕시코":16,"캐나다":None,"한국":14,"호주":None,"브라질":15,"스페인":17}),
+        ("2025-11-24", {"미국":None,"일본":None,"홍콩":24,"인도":13,"영국":19,"독일":None,"프랑스":22,"멕시코":10,"캐나다":22,"한국":9, "호주":19,"브라질":13,"스페인":None}),
+        ("2025-12-01", {"미국":20,"일본":None,"홍콩":20,"인도":14,"영국":20,"독일":16,"프랑스":18,"멕시코":17,"캐나다":18,"한국":12,"호주":15,"브라질":12,"스페인":22}),
+        ("2025-12-08", {"미국":17,"일본":None,"홍콩":23,"인도":14,"영국":13,"독일":21,"프랑스":11,"멕시코":12,"캐나다":22,"한국":9, "호주":11,"브라질":10,"스페인":21}),
+        ("2025-12-15", {"미국":9, "일본":21,"홍콩":12,"인도":8, "영국":10,"독일":12,"프랑스":9, "멕시코":9, "캐나다":7, "한국":9, "호주":6, "브라질":7, "스페인":12}),
+        ("2025-12-22", {"미국":22,"일본":None,"홍콩":None,"인도":23,"영국":None,"독일":18,"프랑스":23,"멕시코":15,"캐나다":19,"한국":18,"호주":None,"브라질":23,"스페인":19}),
+        ("2025-12-29", {"미국":20,"일본":21,"홍콩":23,"인도":17,"영국":None,"독일":20,"프랑스":10,"멕시코":19,"캐나다":21,"한국":11,"호주":10,"브라질":11,"스페인":23}),
+        ("2026-01-05", {"미국":15,"일본":None,"홍콩":15,"인도":9, "영국":17,"독일":14,"프랑스":11,"멕시코":14,"캐나다":15,"한국":10,"호주":20,"브라질":11,"스페인":13}),
+    ]
+
+    CUTOFF = datetime.strptime("2026-01-11", "%Y-%m-%d")  # 이 날짜 이전만 생성
+
+    result = []
+    for week_start_str, country_ranks in weekly_raw:
+        week_start = datetime.strptime(week_start_str, "%Y-%m-%d")
+
+        # 가중평균 순위 계산
+        wa_num, wa_den = 0.0, 0.0
+        for c, v in country_ranks.items():
+            if v is not None:
+                m = get_multiplier(c)
+                wa_num += v * m; wa_den += m
+        avg_rank = round(wa_num / wa_den, 1) if wa_den > 0 else 15.0
+
+        # 주의 7일을 개별 날짜로 전개, cutoff 이전만
+        for day_offset in range(7):
+            day = week_start + timedelta(days=day_offset)
+            if day >= CUTOFF:
+                break
+            result.append({
+                "date": day.strftime("%Y-%m-%d"),
+                "average_rank": avg_rank,
+                "country_ranks": country_ranks
+            })
+
+    # 날짜 중복 제거 (같은 날짜가 여러 주에 걸쳐 있을 경우 나중 항목 우선)
+    seen = {}
+    for item in result:
+        seen[item['date']] = item
+    result = sorted(seen.values(), key=lambda x: x['date'])
+
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
+
+    print(f'✓ historical_ranking_data.json 생성: {len(result)}일치 데이터 → {output_path}')
+    return result
+
+
 def main():
     """메인 실행 함수"""
     # 한글 폰트 설정
@@ -1273,6 +1366,13 @@ def main():
     print()
     
     # 판매량 추산
+    # historical_ranking_data.json 없으면 주단위 데이터로 자동 생성
+    historical_file = 'historical_ranking_data.json'
+    if not os.path.exists(historical_file):
+        print('📅 historical_ranking_data.json not found → building from weekly data...')
+        build_historical_data_from_weekly(historical_file)
+        print()
+
     print('💰 Estimating daily sales...')
     sales_table_path, sales_chart_path, daily_sales = estimate_daily_sales(data)
     print()
