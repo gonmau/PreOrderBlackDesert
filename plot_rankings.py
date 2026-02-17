@@ -425,6 +425,11 @@ def estimate_daily_sales(data, output_dir='output'):
             })
         
         # 히스토리 + 현재 데이터 병합 (판매량 추산용만)
+        # historical_entries에 is_historical 플래그 마킹
+        for e in historical_entries:
+            e['is_historical'] = True
+        for e in data:
+            e['is_historical'] = False
         sales_data = historical_entries + data
         print(f'   Total data points for sales estimation: {len(sales_data)}')
     
@@ -439,13 +444,16 @@ def estimate_daily_sales(data, output_dir='output'):
         timestamp = datetime.fromisoformat(entry['timestamp'])
         date_str  = timestamp.strftime('%Y-%m-%d')
         date_groups.setdefault(date_str, []).append({
-            'timestamp':   timestamp,
-            'raw_results': entry['raw_results']
+            'timestamp':     timestamp,
+            'raw_results':   entry['raw_results'],
+            'is_historical': entry.get('is_historical', False)
         })
 
     for date_str in sorted(date_groups.keys()):
         entries = date_groups[date_str]
         representative_timestamp = entries[0]['timestamp']
+        # 해당 날짜가 하나라도 실제 데이터면 False
+        is_historical = all(e['is_historical'] for e in entries)
 
         # 해당 날짜의 모든 항목에서 국가별 최고 순위 취합
         all_countries: set = set()
@@ -475,18 +483,19 @@ def estimate_daily_sales(data, output_dir='output'):
                 dlx_sales += rank_to_daily_sales(ranks['deluxe']) * m
 
         daily_sales.append({
-            'date':     representative_timestamp,
-            'date_str': date_str,
-            'standard': round(std_sales, 2),
-            'deluxe':   round(dlx_sales, 2),
-            'total':    round(std_sales + dlx_sales, 2)
+            'date':          representative_timestamp,
+            'date_str':      date_str,
+            'standard':      round(std_sales, 2),
+            'deluxe':        round(dlx_sales, 2),
+            'total':         round(std_sales + dlx_sales, 2),
+            'is_historical': is_historical
         })
     
     # 표 데이터 생성
     table_data = []
     for item in daily_sales:
         table_data.append([
-            item['date_str'],
+            item['date_str'] + (' *' if item['is_historical'] else ''),
             f"{int(item['standard']):,}",
             f"{int(item['deluxe']):,}",
             f"{int(item['total']):,}"
@@ -497,14 +506,14 @@ def estimate_daily_sales(data, output_dir='output'):
     ax.axis('tight')
     ax.axis('off')
     
-    headers = ['Date', 'Standard\n(Units)', 'Deluxe\n(Units)', 'Total\n(Units)']
+    headers = ['Date (* = estimated)', 'Standard\n(Units)', 'Deluxe\n(Units)', 'Total\n(Units)']
     
     table = ax.table(
         cellText=table_data,
         colLabels=headers,
         cellLoc='center',
         loc='center',
-        colWidths=[0.3, 0.23, 0.23, 0.24]
+        colWidths=[0.34, 0.22, 0.22, 0.22]
     )
     
     table.auto_set_font_size(False)
@@ -517,14 +526,15 @@ def estimate_daily_sales(data, output_dir='output'):
         cell.set_facecolor('#2E5984')
         cell.set_text_props(weight='bold', color='white')
     
-    # 행 스타일
-    for i in range(1, len(table_data) + 1):
+    # 행 스타일 — 히스토리: 주황 계열, 실제: 흰/회색
+    for i, item in enumerate(daily_sales, start=1):
         for j in range(4):
             cell = table[(i, j)]
-            if i % 2 == 0:
-                cell.set_facecolor('#F0F0F0')
+            if item['is_historical']:
+                cell.set_facecolor('#FFF3CD' if i % 2 == 0 else '#FFEAA7')
+                cell.set_text_props(color='#856404')
             else:
-                cell.set_facecolor('#FFFFFF')
+                cell.set_facecolor('#F0F0F0' if i % 2 == 0 else '#FFFFFF')
     
     # 추정 기준 정보 추가 (좌측 하단)
     criteria_text = (
@@ -557,61 +567,147 @@ def estimate_daily_sales(data, output_dir='output'):
     
     print(f'✓ Generated: daily_sales_estimate.png')
     
-    # 그래프도 생성
-    dates = [item['date'] for item in daily_sales]
-    std_sales = [item['standard'] for item in daily_sales]
-    dlx_sales = [item['deluxe'] for item in daily_sales]
-    total_sales = [item['total'] for item in daily_sales]
-    
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
-    
-    # 상단: 에디션별 판매량
-    ax1.plot(dates, std_sales, 'o-', label='Standard (Est.)', linewidth=2, markersize=5, color='#2E86AB')
-    ax1.plot(dates, dlx_sales, 's-', label='Deluxe (Est.)', linewidth=2, markersize=5, color='#A23B72')
-    
-    ax1.set_ylabel('Estimated Daily Sales (Units)', fontsize=12)
-    ax1.set_title('Daily Estimated Sales by Edition (PS Market Share Weighted)', fontsize=14, fontweight='bold')
-    ax1.grid(True, alpha=0.3)
-    ax1.legend(fontsize=10)
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
-    ax1.xaxis.set_major_locator(mdates.DayLocator(interval=1))
-    plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45)
-    
-    # 하단: 누적 판매량
-    cumulative_std = []
-    cumulative_dlx = []
+    # ── 히스토리 / 실제 구간 분리 ──────────────────────────────────────
+    hist_items = [item for item in daily_sales if     item['is_historical']]
+    real_items = [item for item in daily_sales if not item['is_historical']]
+
+    # 경계 연결용: 히스토리 마지막 + 실제 첫 번째 점을 이어서 연속선 표현
+    bridge_std, bridge_dlx, bridge_tot, bridge_dates = [], [], [], []
+    if hist_items and real_items:
+        bridge_items = [hist_items[-1], real_items[0]]
+        bridge_dates = [it['date']     for it in bridge_items]
+        bridge_std   = [it['standard'] for it in bridge_items]
+        bridge_dlx   = [it['deluxe']   for it in bridge_items]
+        bridge_tot   = [it['total']    for it in bridge_items]
+
+    h_dates = [it['date']     for it in hist_items]
+    h_std   = [it['standard'] for it in hist_items]
+    h_dlx   = [it['deluxe']   for it in hist_items]
+    h_tot   = [it['total']    for it in hist_items]
+
+    r_dates = [it['date']     for it in real_items]
+    r_std   = [it['standard'] for it in real_items]
+    r_dlx   = [it['deluxe']   for it in real_items]
+    r_tot   = [it['total']    for it in real_items]
+
+    # 누적 (전체 순서 유지)
+    all_total = [it['total'] for it in daily_sales]
+    all_dates = [it['date']  for it in daily_sales]
+    cumulative_std   = []
+    cumulative_dlx   = []
     cumulative_total = []
-    
-    for i in range(len(std_sales)):
-        cumulative_std.append(sum(std_sales[:i+1]))
-        cumulative_dlx.append(sum(dlx_sales[:i+1]))
-        cumulative_total.append(sum(total_sales[:i+1]))
-    
-    ax2.plot(dates, cumulative_std, 'o-', label='Standard (Cumulative)', linewidth=2, markersize=5, color='#2E86AB')
-    ax2.plot(dates, cumulative_dlx, 's-', label='Deluxe (Cumulative)', linewidth=2, markersize=5, color='#A23B72')
-    ax2.plot(dates, cumulative_total, '^-', label='Total (Cumulative)', linewidth=2, markersize=5, color='#27AE60')
-    
+    for i in range(len(daily_sales)):
+        cumulative_std.append(sum(it['standard'] for it in daily_sales[:i+1]))
+        cumulative_dlx.append(sum(it['deluxe']   for it in daily_sales[:i+1]))
+        cumulative_total.append(sum(it['total']  for it in daily_sales[:i+1]))
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 12))
+
+    # ── 상단: 일별 에디션별 판매량 ──────────────────────────────────────
+    # 히스토리 구간 (점선 + 연한 색)
+    if h_dates:
+        ax1.plot(h_dates, h_std, 'o--', label='Standard – Est. (historical avg)',
+                 linewidth=1.5, markersize=4, color='#90CAF9', alpha=0.8)
+        ax1.plot(h_dates, h_dlx, 's--', label='Deluxe – Est. (historical avg)',
+                 linewidth=1.5, markersize=4, color='#F48FB1', alpha=0.8)
+        ax1.fill_between(h_dates, h_std, alpha=0.06, color='#2E86AB')
+        ax1.fill_between(h_dates, h_dlx, alpha=0.06, color='#A23B72')
+
+    # 경계 연결 (점선)
+    if bridge_dates:
+        ax1.plot(bridge_dates, bridge_std, '--', linewidth=1, color='#90CAF9', alpha=0.5)
+        ax1.plot(bridge_dates, bridge_dlx, '--', linewidth=1, color='#F48FB1', alpha=0.5)
+
+    # 실제 구간 (실선 + 진한 색)
+    if r_dates:
+        ax1.plot(r_dates, r_std, 'o-', label='Standard – Est. (per-country data)',
+                 linewidth=2, markersize=5, color='#2E86AB')
+        ax1.plot(r_dates, r_dlx, 's-', label='Deluxe – Est. (per-country data)',
+                 linewidth=2, markersize=5, color='#A23B72')
+
+    # 구분선
+    if hist_items and real_items:
+        boundary = real_items[0]['date']
+        ax1.axvline(x=boundary, color='gray', linestyle=':', linewidth=1.5, alpha=0.7)
+        ax1.text(boundary, ax1.get_ylim()[1] if ax1.get_ylim()[1] != 1.0 else 5000,
+                 ' ← per-country\ndata starts',
+                 fontsize=8, color='gray', va='top')
+
+    ax1.set_ylabel('Estimated Daily Sales (Units)', fontsize=12)
+    ax1.set_title('Daily Estimated Sales by Edition\n'
+                  '(dashed = historical avg estimate  |  solid = per-country data)',
+                  fontsize=13, fontweight='bold')
+    ax1.grid(True, alpha=0.3)
+    ax1.legend(fontsize=9, loc='upper right')
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
+    ax1.xaxis.set_major_locator(mdates.DayLocator(interval=3))
+    plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45)
+
+    # ── 하단: 누적 판매량 (히스토리/실제 구분 음영) ──────────────────────
+    # 히스토리 누적 구간 배경
+    if hist_items:
+        h_idx_end = len(hist_items)
+        ax2.axvspan(all_dates[0], all_dates[h_idx_end - 1],
+                    alpha=0.07, color='orange', label='Historical estimate period')
+
+    h_cum_std   = cumulative_std[:len(hist_items)]
+    h_cum_dlx   = cumulative_dlx[:len(hist_items)]
+    h_cum_tot   = cumulative_total[:len(hist_items)]
+    h_cum_dates = all_dates[:len(hist_items)]
+
+    r_cum_std   = cumulative_std[len(hist_items):]
+    r_cum_dlx   = cumulative_dlx[len(hist_items):]
+    r_cum_tot   = cumulative_total[len(hist_items):]
+    r_cum_dates = all_dates[len(hist_items):]
+
+    if h_cum_dates:
+        ax2.plot(h_cum_dates, h_cum_std, 'o--', linewidth=1.5, markersize=3,
+                 color='#90CAF9', alpha=0.8)
+        ax2.plot(h_cum_dates, h_cum_dlx, 's--', linewidth=1.5, markersize=3,
+                 color='#F48FB1', alpha=0.8)
+        ax2.plot(h_cum_dates, h_cum_tot, '^--', linewidth=1.5, markersize=3,
+                 color='#A8D5A2', alpha=0.8)
+
+    # 경계 연결
+    if hist_items and real_items:
+        for cum_list, color in [
+            (cumulative_std,   '#2E86AB'),
+            (cumulative_dlx,   '#A23B72'),
+            (cumulative_total, '#27AE60'),
+        ]:
+            ax2.plot([all_dates[len(hist_items)-1], all_dates[len(hist_items)]],
+                     [cum_list[len(hist_items)-1],  cum_list[len(hist_items)]],
+                     '--', linewidth=1, color=color, alpha=0.5)
+
+    if r_cum_dates:
+        ax2.plot(r_cum_dates, r_cum_std,  'o-',
+                 label='Standard (Cumulative)', linewidth=2, markersize=4, color='#2E86AB')
+        ax2.plot(r_cum_dates, r_cum_dlx,  's-',
+                 label='Deluxe (Cumulative)',   linewidth=2, markersize=4, color='#A23B72')
+        ax2.plot(r_cum_dates, r_cum_tot,  '^-',
+                 label='Total (Cumulative)',     linewidth=2, markersize=4, color='#27AE60')
+
     # 최종 누적 값 표시
-    ax2.annotate(f'{int(cumulative_std[-1]):,}',
-                xy=(dates[-1], cumulative_std[-1]),
-                xytext=(10, 0), textcoords='offset points',
-                fontsize=9, fontweight='bold')
-    ax2.annotate(f'{int(cumulative_dlx[-1]):,}',
-                xy=(dates[-1], cumulative_dlx[-1]),
-                xytext=(10, 0), textcoords='offset points',
-                fontsize=9, fontweight='bold')
-    ax2.annotate(f'{int(cumulative_total[-1]):,}',
-                xy=(dates[-1], cumulative_total[-1]),
-                xytext=(10, 0), textcoords='offset points',
-                fontsize=9, fontweight='bold')
-    
+    if cumulative_std:
+        for cum, label_txt, color in [
+            (cumulative_std,   f"{int(cumulative_std[-1]):,}",   '#2E86AB'),
+            (cumulative_dlx,   f"{int(cumulative_dlx[-1]):,}",   '#A23B72'),
+            (cumulative_total, f"{int(cumulative_total[-1]):,}", '#27AE60'),
+        ]:
+            ax2.annotate(label_txt,
+                         xy=(all_dates[-1], cum[-1]),
+                         xytext=(8, 0), textcoords='offset points',
+                         fontsize=9, fontweight='bold', color=color)
+
     ax2.set_xlabel('Date', fontsize=12)
     ax2.set_ylabel('Cumulative Sales (Units)', fontsize=12)
-    ax2.set_title('Cumulative Estimated Sales', fontsize=14, fontweight='bold')
+    ax2.set_title('Cumulative Estimated Sales\n'
+                  '(shaded area = historical estimate  |  solid = per-country data)',
+                  fontsize=13, fontweight='bold')
     ax2.grid(True, alpha=0.3)
-    ax2.legend(fontsize=10)
+    ax2.legend(fontsize=9, loc='upper left')
     ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
-    ax2.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+    ax2.xaxis.set_major_locator(mdates.DayLocator(interval=3))
     plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45)
     
     # 추정 기준 정보 추가
