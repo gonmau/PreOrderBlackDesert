@@ -58,37 +58,66 @@ def load_data(filepath):
         return json.load(f)
 
 def parse_data(data):
-    """데이터 파싱 및 구조화"""
+    """데이터 파싱 및 구조화 (일별 최고 순위 집계)"""
     countries = set()
-    dates = []
-    
+
     # 모든 국가 목록 추출
     for entry in data:
         countries.update(entry['raw_results'].keys())
-        dates.append(datetime.fromisoformat(entry['timestamp']))
-    
+
     countries = sorted(list(countries))
-    
-    # 국가별 데이터 구조 생성
+
+    # ── 1단계: 날짜(YYYY-MM-DD) 기준으로 그룹화 ──────────────────────────
+    # { '2025-01-01': { '미국': {'standard': [9, 7, 8], 'deluxe': [3, 2, 4]}, ... }, ... }
+    date_groups: dict = {}
+
+    for entry in data:
+        ts = datetime.fromisoformat(entry['timestamp'])
+        day_str = ts.strftime('%Y-%m-%d')
+        if day_str not in date_groups:
+            date_groups[day_str] = {'_ts': ts}   # 대표 timestamp 저장
+
+        for country in countries:
+            if country not in date_groups[day_str]:
+                date_groups[day_str][country] = {'standard': [], 'deluxe': []}
+            if country in entry['raw_results']:
+                s = entry['raw_results'][country]['standard']
+                d = entry['raw_results'][country]['deluxe']
+                if s is not None:
+                    date_groups[day_str][country]['standard'].append(s)
+                if d is not None:
+                    date_groups[day_str][country]['deluxe'].append(d)
+
+    # ── 2단계: 국가별 일별 최고 순위(숫자가 작을수록 좋음) 선택 ────────────
     country_data = {
-        country: {
-            'dates': [],
-            'standard': [],
-            'deluxe': []
-        }
+        country: {'dates': [], 'standard': [], 'deluxe': []}
         for country in countries
     }
-    
-    # 데이터 채우기
-    for entry in data:
-        date = datetime.fromisoformat(entry['timestamp'])
+
+    sorted_days = sorted(date_groups.keys())
+    daily_dates = []
+
+    for day_str in sorted_days:
+        day_info = date_groups[day_str]
+        rep_ts = day_info['_ts']
+        daily_dates.append(rep_ts)
+
         for country in countries:
-            if country in entry['raw_results']:
-                country_data[country]['dates'].append(date)
-                country_data[country]['standard'].append(entry['raw_results'][country]['standard'])
-                country_data[country]['deluxe'].append(entry['raw_results'][country]['deluxe'])
-    
-    return country_data, sorted(dates)
+            if country not in day_info:
+                # 해당 날짜에 데이터 없음 → None 삽입
+                country_data[country]['dates'].append(rep_ts)
+                country_data[country]['standard'].append(None)
+                country_data[country]['deluxe'].append(None)
+            else:
+                s_list = day_info[country]['standard']
+                d_list = day_info[country]['deluxe']
+                best_s = min(s_list) if s_list else None   # 숫자 작을수록 좋은 순위
+                best_d = min(d_list) if d_list else None
+                country_data[country]['dates'].append(rep_ts)
+                country_data[country]['standard'].append(best_s)
+                country_data[country]['deluxe'].append(best_d)
+
+    return country_data, daily_dates
 
 def create_ranking_table(data, output_dir='output'):
     """에디션별 순위를 텍스트 형식으로 생성 (Discord용)"""
@@ -691,113 +720,140 @@ def estimate_daily_sales(data, output_dir='output'):
     return sales_table_path, sales_chart_path, daily_sales
 
 def plot_country_rankings(country_data, output_dir='output'):
-    """각 국가별 S,D 순위 그래프 생성"""
+    """각 국가별 S,D 순위 그래프 생성 (일별 최고 순위 기준)"""
     os.makedirs(output_dir, exist_ok=True)
-    
+
     for country, data in country_data.items():
         if not data['dates']:
             continue
-            
+
+        # None 값 제거한 유효 데이터만 사용
+        std_pairs = [(d, v) for d, v in zip(data['dates'], data['standard']) if v is not None]
+        dlx_pairs = [(d, v) for d, v in zip(data['dates'], data['deluxe'])   if v is not None]
+
+        if not std_pairs and not dlx_pairs:
+            continue
+
         fig, ax = plt.subplots(figsize=(14, 7))
-        
-        # 순위 그래프 (낮을수록 좋으므로 y축 반전)
-        ax.plot(data['dates'], data['standard'], 'o-', label='Standard', linewidth=2, markersize=4)
-        ax.plot(data['dates'], data['deluxe'], 's-', label='Deluxe', linewidth=2, markersize=4)
-        
-        # 축 설정
+
+        if std_pairs:
+            std_dates, std_vals = zip(*std_pairs)
+            ax.plot(std_dates, std_vals, 'o-', label='Standard (Daily Best)',
+                    linewidth=2, markersize=5, color='#2E86AB')
+            # 각 포인트에 순위 숫자 표시
+            for d, v in std_pairs:
+                ax.annotate(str(int(v)),
+                            xy=(d, v), xytext=(0, 7), textcoords='offset points',
+                            fontsize=7, ha='center', fontweight='bold',
+                            bbox=dict(boxstyle='round,pad=0.2', facecolor='#AED6F1',
+                                      alpha=0.7, edgecolor='none'))
+
+        if dlx_pairs:
+            dlx_dates, dlx_vals = zip(*dlx_pairs)
+            ax.plot(dlx_dates, dlx_vals, 's-', label='Deluxe (Daily Best)',
+                    linewidth=2, markersize=5, color='#A23B72')
+            # 각 포인트에 순위 숫자 표시
+            for d, v in dlx_pairs:
+                ax.annotate(str(int(v)),
+                            xy=(d, v), xytext=(0, -12), textcoords='offset points',
+                            fontsize=7, ha='center', fontweight='bold',
+                            bbox=dict(boxstyle='round,pad=0.2', facecolor='#F9A8D4',
+                                      alpha=0.7, edgecolor='none'))
+
         ax.set_xlabel('Date', fontsize=12)
-        ax.set_ylabel('Rank', fontsize=12)
-        ax.set_title(f'{country} - Daily Ranking Trends', fontsize=14, fontweight='bold')
-        ax.invert_yaxis()  # 순위는 낮을수록 좋음
+        ax.set_ylabel('Rank (lower = better)', fontsize=12)
+        ax.set_title(f'{country} - Daily Best Ranking', fontsize=14, fontweight='bold')
+        ax.invert_yaxis()
         ax.grid(True, alpha=0.3)
         ax.legend(fontsize=10)
-        
-        # 날짜 포맷 설정
+
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
         ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
         plt.xticks(rotation=45)
-        
+
         plt.tight_layout()
-        
-        # 파일명에서 특수문자 제거
+
         safe_country = country.replace('/', '_').replace('\\', '_')
         plt.savefig(f'{output_dir}/{safe_country}_ranking.png', dpi=150, bbox_inches='tight')
         plt.close()
-        
+
         print(f'✓ Generated: {safe_country}_ranking.png')
 
 def plot_all_countries_standard(country_data, output_dir='output'):
-    """모든 국가의 Standard 순위를 하나의 그래프에"""
+    """모든 국가의 Standard 일별 최고 순위를 하나의 그래프에"""
     os.makedirs(output_dir, exist_ok=True)
-    
+
     fig, ax = plt.subplots(figsize=(16, 10))
-    
+
     for country, data in sorted(country_data.items()):
-        if data['dates']:
-            ax.plot(data['dates'], data['standard'], 'o-', label=country, linewidth=1.5, markersize=3, alpha=0.7)
-            
-            # 최근 날짜의 순위 표시
-            if data['standard'] and data['standard'][-1] is not None:
-                last_date = data['dates'][-1]
-                last_rank = data['standard'][-1]
-                ax.annotate(f'{int(last_rank)}', 
-                           xy=(last_date, last_rank),
-                           xytext=(5, 0), textcoords='offset points',
-                           fontsize=7, fontweight='bold',
-                           bbox=dict(boxstyle='round,pad=0.2', facecolor='lightblue', alpha=0.6, edgecolor='none'))
-    
+        pairs = [(d, v) for d, v in zip(data['dates'], data['standard']) if v is not None]
+        if not pairs:
+            continue
+
+        dates_f, vals_f = zip(*pairs)
+        ax.plot(dates_f, vals_f, 'o-', label=country, linewidth=1.5, markersize=3, alpha=0.7)
+
+        # 마지막 점에 현재 순위 표시
+        ax.annotate(f'{int(vals_f[-1])}',
+                    xy=(dates_f[-1], vals_f[-1]),
+                    xytext=(5, 0), textcoords='offset points',
+                    fontsize=7, fontweight='bold',
+                    bbox=dict(boxstyle='round,pad=0.2', facecolor='lightblue',
+                              alpha=0.6, edgecolor='none'))
+
     ax.set_xlabel('Date', fontsize=12)
-    ax.set_ylabel('Rank', fontsize=12)
-    ax.set_title('All Countries - Standard Ranking Trends', fontsize=14, fontweight='bold')
+    ax.set_ylabel('Rank (lower = better)', fontsize=12)
+    ax.set_title('All Countries - Standard Daily Best Ranking', fontsize=14, fontweight='bold')
     ax.invert_yaxis()
     ax.grid(True, alpha=0.3)
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
-    
+
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
     ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.xticks(rotation=45)
-    
+
     plt.tight_layout()
     plt.savefig(f'{output_dir}/all_countries_standard.png', dpi=150, bbox_inches='tight')
     plt.close()
-    
+
     print(f'✓ Generated: all_countries_standard.png')
 
 def plot_all_countries_deluxe(country_data, output_dir='output'):
-    """모든 국가의 Deluxe 순위를 하나의 그래프에"""
+    """모든 국가의 Deluxe 일별 최고 순위를 하나의 그래프에"""
     os.makedirs(output_dir, exist_ok=True)
-    
+
     fig, ax = plt.subplots(figsize=(16, 10))
-    
+
     for country, data in sorted(country_data.items()):
-        if data['dates']:
-            ax.plot(data['dates'], data['deluxe'], 's-', label=country, linewidth=1.5, markersize=3, alpha=0.7)
-            
-            # 최근 날짜의 순위 표시
-            if data['deluxe'] and data['deluxe'][-1] is not None:
-                last_date = data['dates'][-1]
-                last_rank = data['deluxe'][-1]
-                ax.annotate(f'{int(last_rank)}', 
-                           xy=(last_date, last_rank),
-                           xytext=(5, 0), textcoords='offset points',
-                           fontsize=7, fontweight='bold',
-                           bbox=dict(boxstyle='round,pad=0.2', facecolor='yellow', alpha=0.6, edgecolor='none'))
-    
+        pairs = [(d, v) for d, v in zip(data['dates'], data['deluxe']) if v is not None]
+        if not pairs:
+            continue
+
+        dates_f, vals_f = zip(*pairs)
+        ax.plot(dates_f, vals_f, 's-', label=country, linewidth=1.5, markersize=3, alpha=0.7)
+
+        ax.annotate(f'{int(vals_f[-1])}',
+                    xy=(dates_f[-1], vals_f[-1]),
+                    xytext=(5, 0), textcoords='offset points',
+                    fontsize=7, fontweight='bold',
+                    bbox=dict(boxstyle='round,pad=0.2', facecolor='yellow',
+                              alpha=0.6, edgecolor='none'))
+
     ax.set_xlabel('Date', fontsize=12)
-    ax.set_ylabel('Rank', fontsize=12)
-    ax.set_title('All Countries - Deluxe Ranking Trends', fontsize=14, fontweight='bold')
+    ax.set_ylabel('Rank (lower = better)', fontsize=12)
+    ax.set_title('All Countries - Deluxe Daily Best Ranking', fontsize=14, fontweight='bold')
     ax.invert_yaxis()
     ax.grid(True, alpha=0.3)
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
-    
+
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
     ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.xticks(rotation=45)
-    
+
     plt.tight_layout()
     plt.savefig(f'{output_dir}/all_countries_deluxe.png', dpi=150, bbox_inches='tight')
     plt.close()
-    
+
     print(f'✓ Generated: all_countries_deluxe.png')
 
 def plot_daily_averages(country_data, output_dir='output'):
@@ -881,7 +937,7 @@ def plot_daily_averages(country_data, output_dir='output'):
     
     ax.set_xlabel('Date', fontsize=12)
     ax.set_ylabel('Average Rank', fontsize=12)
-    ax.set_title('Daily Average Rankings - Standard vs Deluxe', fontsize=14, fontweight='bold')
+    ax.set_title('Daily Average Rankings (per-day best) - Standard vs Deluxe', fontsize=14, fontweight='bold')
     ax.invert_yaxis()
     ax.grid(True, alpha=0.3)
     ax.legend(fontsize=10, loc='best')
@@ -897,65 +953,65 @@ def plot_daily_averages(country_data, output_dir='output'):
     print(f'✓ Generated: daily_averages.png')
 
 def plot_top_countries(country_data, countries_to_plot, output_dir='output'):
-    """주요 국가들의 Standard와 Deluxe 순위 비교"""
+    """주요 국가들의 Standard와 Deluxe 일별 최고 순위 비교"""
     os.makedirs(output_dir, exist_ok=True)
-    
+
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 12))
-    
+
     # Standard 그래프
     for country in countries_to_plot:
-        if country in country_data and country_data[country]['dates']:
-            data = country_data[country]
-            ax1.plot(data['dates'], data['standard'], 'o-', label=country, linewidth=2, markersize=4)
-            
-            # 최근 순위 표시
-            if data['standard'] and data['standard'][-1] is not None:
-                last_date = data['dates'][-1]
-                last_rank = data['standard'][-1]
-                ax1.annotate(f'{int(last_rank)}', 
-                           xy=(last_date, last_rank),
-                           xytext=(5, 0), textcoords='offset points',
-                           fontsize=8, fontweight='bold')
-    
+        if country not in country_data or not country_data[country]['dates']:
+            continue
+        data = country_data[country]
+        std_pairs = [(d, v) for d, v in zip(data['dates'], data['standard']) if v is not None]
+        if not std_pairs:
+            continue
+        std_dates, std_vals = zip(*std_pairs)
+        ax1.plot(std_dates, std_vals, 'o-', label=country, linewidth=2, markersize=4)
+        ax1.annotate(f'{int(std_vals[-1])}',
+                     xy=(std_dates[-1], std_vals[-1]),
+                     xytext=(5, 0), textcoords='offset points',
+                     fontsize=8, fontweight='bold')
+
     ax1.set_xlabel('Date', fontsize=12)
-    ax1.set_ylabel('Rank', fontsize=12)
-    ax1.set_title('Major Countries - Standard Ranking', fontsize=14, fontweight='bold')
+    ax1.set_ylabel('Rank (lower = better)', fontsize=12)
+    ax1.set_title('Major Countries - Standard Daily Best Ranking', fontsize=14, fontweight='bold')
     ax1.invert_yaxis()
     ax1.grid(True, alpha=0.3)
     ax1.legend(fontsize=10)
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
     ax1.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45)
-    
+
     # Deluxe 그래프
     for country in countries_to_plot:
-        if country in country_data and country_data[country]['dates']:
-            data = country_data[country]
-            ax2.plot(data['dates'], data['deluxe'], 's-', label=country, linewidth=2, markersize=4)
-            
-            # 최근 순위 표시
-            if data['deluxe'] and data['deluxe'][-1] is not None:
-                last_date = data['dates'][-1]
-                last_rank = data['deluxe'][-1]
-                ax2.annotate(f'{int(last_rank)}', 
-                           xy=(last_date, last_rank),
-                           xytext=(5, 0), textcoords='offset points',
-                           fontsize=8, fontweight='bold')
-    
+        if country not in country_data or not country_data[country]['dates']:
+            continue
+        data = country_data[country]
+        dlx_pairs = [(d, v) for d, v in zip(data['dates'], data['deluxe']) if v is not None]
+        if not dlx_pairs:
+            continue
+        dlx_dates, dlx_vals = zip(*dlx_pairs)
+        ax2.plot(dlx_dates, dlx_vals, 's-', label=country, linewidth=2, markersize=4)
+        ax2.annotate(f'{int(dlx_vals[-1])}',
+                     xy=(dlx_dates[-1], dlx_vals[-1]),
+                     xytext=(5, 0), textcoords='offset points',
+                     fontsize=8, fontweight='bold')
+
     ax2.set_xlabel('Date', fontsize=12)
-    ax2.set_ylabel('Rank', fontsize=12)
-    ax2.set_title('Major Countries - Deluxe Ranking', fontsize=14, fontweight='bold')
+    ax2.set_ylabel('Rank (lower = better)', fontsize=12)
+    ax2.set_title('Major Countries - Deluxe Daily Best Ranking', fontsize=14, fontweight='bold')
     ax2.invert_yaxis()
     ax2.grid(True, alpha=0.3)
     ax2.legend(fontsize=10)
     ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
     ax2.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45)
-    
+
     plt.tight_layout()
     plt.savefig(f'{output_dir}/top_countries_rankings.png', dpi=150, bbox_inches='tight')
     plt.close()
-    
+
     print(f'✓ Generated: top_countries_rankings.png')
 
 def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_texts, daily_sales):
