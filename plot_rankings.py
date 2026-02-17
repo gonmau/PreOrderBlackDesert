@@ -57,67 +57,129 @@ def load_data(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
         return json.load(f)
 
-def parse_data(data):
-    """데이터 파싱 및 구조화 (일별 최고 순위 집계)"""
-    countries = set()
+# =============================================================================
+# 공통 상수 (crimson_tracker의 MARKET_WEIGHTS와 통일)
+# =============================================================================
 
+# crimson_tracker MARKET_WEIGHTS 기준, 미국=10으로 정규화
+_US_BASE = 30.0
+PS_MARKET_MULTIPLIER = {
+    # Americas
+    '미국': 30.0 / _US_BASE * 10,   # 10.00
+    '캐나다': 4.5  / _US_BASE * 10,  # 1.50
+    '브라질': 2.5  / _US_BASE * 10,  # 0.83
+    '멕시코': 2.0  / _US_BASE * 10,  # 0.67
+    '아르헨티나': 0.9 / _US_BASE * 10,
+    '칠레':   0.8 / _US_BASE * 10,
+    '콜롬비아': 0.7 / _US_BASE * 10,
+    '페루':   0.4 / _US_BASE * 10,
+    '우루과이': 0.3 / _US_BASE * 10,
+    '볼리비아': 0.2 / _US_BASE * 10,
+    '과테말라': 0.2 / _US_BASE * 10,
+    '온두라스': 0.2 / _US_BASE * 10,
+    # Europe & Middle East
+    '영국':   8.5 / _US_BASE * 10,  # 2.83
+    '독일':   6.5 / _US_BASE * 10,  # 2.17
+    '프랑스':  6.0 / _US_BASE * 10,  # 2.00
+    '스페인':  4.0 / _US_BASE * 10,  # 1.33
+    '이탈리아': 3.5 / _US_BASE * 10,  # 1.17
+    '네덜란드': 1.8 / _US_BASE * 10,
+    '사우디아라비아': 1.5 / _US_BASE * 10,
+    '아랍에미리트': 1.2 / _US_BASE * 10,
+    '폴란드':  1.2 / _US_BASE * 10,
+    '스위스':  1.0 / _US_BASE * 10,
+    '스웨덴':  1.0 / _US_BASE * 10,
+    '덴마크':  0.9 / _US_BASE * 10,
+    '포르투갈': 0.8 / _US_BASE * 10,
+    '핀란드':  0.8 / _US_BASE * 10,
+    '노르웨이': 0.8 / _US_BASE * 10,
+    '남아공':  0.8 / _US_BASE * 10,
+    '체코':   0.7 / _US_BASE * 10,
+    '루마니아': 0.6 / _US_BASE * 10,
+    '그리스':  0.5 / _US_BASE * 10,
+    '헝가리':  0.5 / _US_BASE * 10,
+    '우크라이나': 0.5 / _US_BASE * 10,
+    '슬로바키아': 0.3 / _US_BASE * 10,
+    '슬로베니아': 0.3 / _US_BASE * 10,
+    # Asia & Oceania
+    '일본':   8.0 / _US_BASE * 10,  # 2.67
+    '호주':   3.0 / _US_BASE * 10,  # 1.00
+    '한국':   2.8 / _US_BASE * 10,  # 0.93
+    '인도':   2.0 / _US_BASE * 10,
+    '대만':   1.0 / _US_BASE * 10,
+    '싱가포르': 0.8 / _US_BASE * 10,
+    '태국':   0.9 / _US_BASE * 10,
+    '홍콩':   0.9 / _US_BASE * 10,
+    '인도네시아': 0.8 / _US_BASE * 10,
+    '말레이시아': 0.7 / _US_BASE * 10,
+    '베트남':  0.7 / _US_BASE * 10,
+    '필리핀':  0.6 / _US_BASE * 10,
+    '뉴질랜드': 0.6 / _US_BASE * 10,
+    '중국':   0.2 / _US_BASE * 10,
+}
+# 위 테이블에 없는 국가의 기본값
+PS_MARKET_MULTIPLIER_DEFAULT = 0.10
+
+import math as _math
+
+# 연속성 확보를 위한 구간 계수 사전 계산
+# 앵커: 1위=600, 20위=70, 100위=15
+_A1   = 600.0
+_A20  = 70.0
+_A100 = 15.0
+_k1   = _math.log(_A1 / _A20)  / (20 - 1)   # 1~20위 감쇠 상수
+_k2   = _math.log(_A20 / _A100) / (100 - 20) # 20~100위 감쇠 상수
+
+def rank_to_daily_sales(rank):
+    """
+    순위 → 일일 판매량(기본 시장 기준).
+    - 1위=600, 20위=70, 100위=15 앵커 기반 두 구간 지수 곡선
+    - 경계(20위)에서 완전 연속, 50→51 역전 버그 없음
+    """
+    if rank is None or rank == '-':
+        return 0.0
+    r = int(rank)
+    if r <= 20:
+        return _A1 * _math.exp(-_k1 * (r - 1))
+    else:
+        return _A20 * _math.exp(-_k2 * (r - 20))
+
+def get_multiplier(country: str) -> float:
+    """국가명 → PS 시장 배율 반환 (PS_MARKET_MULTIPLIER 단일 소스)"""
+    return PS_MARKET_MULTIPLIER.get(country, PS_MARKET_MULTIPLIER_DEFAULT)
+
+def parse_data(data):
+    """데이터 파싱 및 구조화"""
+    countries = set()
+    dates = []
+    
     # 모든 국가 목록 추출
     for entry in data:
         countries.update(entry['raw_results'].keys())
-
+        dates.append(datetime.fromisoformat(entry['timestamp']))
+    
     countries = sorted(list(countries))
-
-    # ── 1단계: 날짜(YYYY-MM-DD) 기준으로 그룹화 ──────────────────────────
-    # { '2025-01-01': { '미국': {'standard': [9, 7, 8], 'deluxe': [3, 2, 4]}, ... }, ... }
-    date_groups: dict = {}
-
-    for entry in data:
-        ts = datetime.fromisoformat(entry['timestamp'])
-        day_str = ts.strftime('%Y-%m-%d')
-        if day_str not in date_groups:
-            date_groups[day_str] = {'_ts': ts}   # 대표 timestamp 저장
-
-        for country in countries:
-            if country not in date_groups[day_str]:
-                date_groups[day_str][country] = {'standard': [], 'deluxe': []}
-            if country in entry['raw_results']:
-                s = entry['raw_results'][country]['standard']
-                d = entry['raw_results'][country]['deluxe']
-                if s is not None:
-                    date_groups[day_str][country]['standard'].append(s)
-                if d is not None:
-                    date_groups[day_str][country]['deluxe'].append(d)
-
-    # ── 2단계: 국가별 일별 최고 순위(숫자가 작을수록 좋음) 선택 ────────────
+    
+    # 국가별 데이터 구조 생성
     country_data = {
-        country: {'dates': [], 'standard': [], 'deluxe': []}
+        country: {
+            'dates': [],
+            'standard': [],
+            'deluxe': []
+        }
         for country in countries
     }
-
-    sorted_days = sorted(date_groups.keys())
-    daily_dates = []
-
-    for day_str in sorted_days:
-        day_info = date_groups[day_str]
-        rep_ts = day_info['_ts']
-        daily_dates.append(rep_ts)
-
+    
+    # 데이터 채우기
+    for entry in data:
+        date = datetime.fromisoformat(entry['timestamp'])
         for country in countries:
-            if country not in day_info:
-                # 해당 날짜에 데이터 없음 → None 삽입
-                country_data[country]['dates'].append(rep_ts)
-                country_data[country]['standard'].append(None)
-                country_data[country]['deluxe'].append(None)
-            else:
-                s_list = day_info[country]['standard']
-                d_list = day_info[country]['deluxe']
-                best_s = min(s_list) if s_list else None   # 숫자 작을수록 좋은 순위
-                best_d = min(d_list) if d_list else None
-                country_data[country]['dates'].append(rep_ts)
-                country_data[country]['standard'].append(best_s)
-                country_data[country]['deluxe'].append(best_d)
-
-    return country_data, daily_dates
+            if country in entry['raw_results']:
+                country_data[country]['dates'].append(date)
+                country_data[country]['standard'].append(entry['raw_results'][country]['standard'])
+                country_data[country]['deluxe'].append(entry['raw_results'][country]['deluxe'])
+    
+    return country_data, sorted(dates)
 
 def create_ranking_table(data, output_dir='output'):
     """에디션별 순위를 텍스트 형식으로 생성 (Discord용)"""
@@ -205,19 +267,7 @@ def create_ranking_table(data, output_dir='output'):
         '남아공': '🇿🇦', 'South Africa': '🇿🇦',
     }
     
-    # PlayStation 국가별 시장 규모 배율 (점유율)
-    ps_market_multiplier = {
-        '미국': 10.0, 'USA': 10.0, 'United States': 10.0, 'US': 10.0,
-        '일본': 5.0, 'Japan': 5.0,
-        '영국': 2.7, 'UK': 2.7, 'United Kingdom': 2.7, 'Britain': 2.7,
-        '독일': 2.3, 'Germany': 2.3, 'Deutschland': 2.3,
-        '프랑스': 2.0, 'France': 2.0,
-        '한국': 1.3, '대한민국': 1.3, 'Korea': 1.3, 'South Korea': 1.3,
-        '스페인': 1.0, 'Spain': 1.0, 'España': 1.0,
-        '이탈리아': 1.0, 'Italy': 1.0, 'Italia': 1.0,
-        '캐나다': 1.0, 'Canada': 1.0,
-        '호주': 0.7, 'Australia': 0.7,
-    }
+    # PlayStation 국가별 시장 규모 배율 → 공통 get_multiplier() 사용
     
     # 최신 데이터 가져오기
     latest_entry = data[-1]
@@ -236,7 +286,7 @@ def create_ranking_table(data, output_dir='output'):
     for rank in rank_groups_std:
         rank_groups_std[rank] = sorted(
             rank_groups_std[rank],
-            key=lambda c: ps_market_multiplier.get(c, 0.15),
+            key=lambda c: get_multiplier(c),
             reverse=True
         )
     
@@ -259,7 +309,7 @@ def create_ranking_table(data, output_dir='output'):
     for rank in rank_groups_dlx:
         rank_groups_dlx[rank] = sorted(
             rank_groups_dlx[rank],
-            key=lambda c: ps_market_multiplier.get(c, 0.15),
+            key=lambda c: get_multiplier(c),
             reverse=True
         )
     
@@ -294,70 +344,23 @@ def get_latest_rankings(data):
     }
 
 def calculate_current_sales(rankings):
-    """현재 순위 기반으로 실시간 판매량 추산"""
-    import math
-    
-    # PlayStation 국가별 시장 규모 배율
-    ps_market_multiplier = {
-        '미국': 10.0, 'USA': 10.0, 'United States': 10.0, 'US': 10.0,
-        '일본': 5.0, 'Japan': 5.0,
-        '영국': 2.7, 'UK': 2.7, 'United Kingdom': 2.7, 'Britain': 2.7,
-        '독일': 2.3, 'Germany': 2.3, 'Deutschland': 2.3,
-        '프랑스': 2.0, 'France': 2.0,
-        '한국': 1.3, '대한민국': 1.3, 'Korea': 1.3, 'South Korea': 1.3,
-        '스페인': 1.0, 'Spain': 1.0, 'España': 1.0,
-        '이탈리아': 1.0, 'Italy': 1.0, 'Italia': 1.0,
-        '캐나다': 1.0, 'Canada': 1.0,
-        '호주': 0.7, 'Australia': 0.7,
-        '네덜란드': 0.5, 'Netherlands': 0.5,
-        '스웨덴': 0.35, 'Sweden': 0.35,
-        '벨기에': 0.35, 'Belgium': 0.35,
-        '스위스': 0.35, 'Switzerland': 0.35,
-        '오스트리아': 0.27, 'Austria': 0.27,
-        '폴란드': 0.27, 'Poland': 0.27,
-        '노르웨이': 0.23, 'Norway': 0.23,
-        '덴마크': 0.2, 'Denmark': 0.2,
-        '핀란드': 0.17, 'Finland': 0.17,
-        '포르투갈': 0.17, 'Portugal': 0.17,
-    }
-    
-    def rank_to_daily_sales(rank):
-        """순위를 일일 판매량으로 변환"""
-        if rank is None or rank == '-':
-            return 0
-        rank = int(rank)
-        
-        if rank == 1:
-            return 600
-        elif rank <= 5:
-            return 600 * math.exp(-0.18 * (rank - 1))
-        elif rank <= 10:
-            return 250 * math.exp(-0.13 * (rank - 5))
-        elif rank <= 20:
-            return 130 * math.exp(-0.06 * (rank - 10))
-        elif rank <= 50:
-            return 70 * math.exp(-0.03 * (rank - 20))
-        else:
-            return 30 * math.exp(-0.01 * (rank - 50))
-    
-    std_sales = 0
-    dlx_sales = 0
-    
+    """현재 순위 기반으로 실시간 판매량 추산 (공통 rank_to_daily_sales / get_multiplier 사용)"""
+    std_sales = 0.0
+    dlx_sales = 0.0
+
     for country, ranks in rankings:
-        multiplier = ps_market_multiplier.get(country, 0.15)
-        
+        multiplier = get_multiplier(country)
+
         if ranks['standard'] is not None:
-            base_sales = rank_to_daily_sales(ranks['standard'])
-            std_sales += base_sales * multiplier
-        
+            std_sales += rank_to_daily_sales(ranks['standard']) * multiplier
+
         if ranks['deluxe'] is not None:
-            base_sales = rank_to_daily_sales(ranks['deluxe'])
-            dlx_sales += base_sales * multiplier
-    
+            dlx_sales += rank_to_daily_sales(ranks['deluxe']) * multiplier
+
     return {
         'standard': round(std_sales, 2),
-        'deluxe': round(dlx_sales, 2),
-        'total': round(std_sales + dlx_sales, 2)
+        'deluxe':   round(dlx_sales, 2),
+        'total':    round(std_sales + dlx_sales, 2)
     }
 
 
@@ -426,143 +429,57 @@ def estimate_daily_sales(data, output_dir='output'):
         print(f'   Total data points for sales estimation: {len(sales_data)}')
     
     os.makedirs(output_dir, exist_ok=True)
-    
-    # PlayStation 국가별 시장 규모 배율 (미국 기준 = 10)
-    # 출처: VGChartz, Statista 등의 게임 시장 데이터 기반
-    ps_market_multiplier = {
-        # 주요 시장 (대형)
-        '미국': 10.0, 'USA': 10.0, 'United States': 10.0, 'US': 10.0,
-        '일본': 5.0, 'Japan': 5.0,
-        
-        # 주요 시장 (중대형)
-        '영국': 2.7, 'UK': 2.7, 'United Kingdom': 2.7, 'Britain': 2.7,
-        '독일': 2.3, 'Germany': 2.3, 'Deutschland': 2.3,
-        '프랑스': 2.0, 'France': 2.0,
-        
-        # 중형 시장
-        '한국': 1.3, '대한민국': 1.3, 'Korea': 1.3, 'South Korea': 1.3,
-        '스페인': 1.0, 'Spain': 1.0, 'España': 1.0,
-        '이탈리아': 1.0, 'Italy': 1.0, 'Italia': 1.0,
-        '캐나다': 1.0, 'Canada': 1.0,
-        '호주': 0.7, 'Australia': 0.7,
-        
-        # 중소 시장
-        '네덜란드': 0.5, 'Netherlands': 0.5,
-        '스웨덴': 0.35, 'Sweden': 0.35,
-        '벨기에': 0.35, 'Belgium': 0.35,
-        '스위스': 0.35, 'Switzerland': 0.35,
-        '오스트리아': 0.27, 'Austria': 0.27,
-        '폴란드': 0.27, 'Poland': 0.27,
-        '노르웨이': 0.23, 'Norway': 0.23,
-        '덴마크': 0.2, 'Denmark': 0.2,
-        '핀란드': 0.17, 'Finland': 0.17,
-        '포르투갈': 0.17, 'Portugal': 0.17,
-    }
-    
-    # 순위별 일일 판매량 추정 (PlayStation Store 베스트셀러 순위 기반)
-    # 중소 국가 기준 판매량 (대형 국가는 배율로 조정)
-    def rank_to_daily_sales(rank):
-        """순위를 일일 판매량으로 변환 (기본 시장 기준) - 로그 스케일 기반"""
-        if rank is None or rank == '-':
-            return 0
-        rank = int(rank)
-        
-        # 더 현실적인 판매량 곡선 (로그 기반 완만한 감소)
-        # 1위와 20위의 차이를 약 8배로 조정 (기존 60배에서 대폭 완화)
-        import math
-        
-        if rank == 1:
-            return 600   # 1위: ~600개/일 (기존 1500 → 600)
-        elif rank <= 5:
-            # 1~5위: 600 → 250 (완만한 감소)
-            # e^(-0.18 * 4) ≈ 0.48
-            return 600 * math.exp(-0.18 * (rank - 1))
-        elif rank <= 10:
-            # 6~10위: 250 → 130
-            return 250 * math.exp(-0.13 * (rank - 5))
-        elif rank <= 20:
-            # 11~20위: 130 → 70
-            return 130 * math.exp(-0.06 * (rank - 10))
-        elif rank <= 50:
-            # 21~50위: 70 → 30
-            return 70 * math.exp(-0.03 * (rank - 20))
-        else:
-            # 50위 이상: 30 이하로 천천히 감소
-            return 30 * math.exp(-0.01 * (rank - 50))
-    
-    # 날짜별 판매량 추산 (같은 날짜는 최고 순위만 사용)
-    daily_sales = []
-    
-    # 먼저 날짜별로 그룹화
-    date_groups = {}
-    
+
+    # ── 날짜별 그룹화 → 국가별 최고 순위 → 판매량 계산 ─────────────────
+    # 공통 rank_to_daily_sales / get_multiplier 사용
+    daily_sales: list = []
+    date_groups: dict = {}
+
     for entry in sales_data:
         timestamp = datetime.fromisoformat(entry['timestamp'])
-        date_str = timestamp.strftime('%Y-%m-%d')
-        
-        if date_str not in date_groups:
-            date_groups[date_str] = []
-        
-        date_groups[date_str].append({
-            'timestamp': timestamp,
+        date_str  = timestamp.strftime('%Y-%m-%d')
+        date_groups.setdefault(date_str, []).append({
+            'timestamp':   timestamp,
             'raw_results': entry['raw_results']
         })
-    
-    # 각 날짜별로 최고 순위(가장 낮은 숫자) 데이터만 사용
+
     for date_str in sorted(date_groups.keys()):
         entries = date_groups[date_str]
-        
-        # 각 국가별로 최고 순위 선택
-        best_ranks = {}
         representative_timestamp = entries[0]['timestamp']
-        
-        # 첫 번째 항목의 국가 목록 가져오기
-        countries = list(entries[0]['raw_results'].keys())
-        
-        for country in countries:
-            best_std = None
-            best_dlx = None
-            
-            # 같은 날짜의 모든 측정값 중 최고 순위 찾기
-            for entry in entries:
-                if country in entry['raw_results']:
-                    std_rank = entry['raw_results'][country]['standard']
-                    dlx_rank = entry['raw_results'][country]['deluxe']
-                    
-                    if std_rank is not None:
-                        if best_std is None or std_rank < best_std:
-                            best_std = std_rank
-                    
-                    if dlx_rank is not None:
-                        if best_dlx is None or dlx_rank < best_dlx:
-                            best_dlx = dlx_rank
-            
-            best_ranks[country] = {
-                'standard': best_std,
-                'deluxe': best_dlx
-            }
-        
-        # 최고 순위로 판매량 계산
-        std_sales = 0
-        dlx_sales = 0
-        
+
+        # 해당 날짜의 모든 항목에서 국가별 최고 순위 취합
+        all_countries: set = set()
+        for e in entries:
+            all_countries.update(e['raw_results'].keys())
+
+        best_ranks: dict = {}
+        for country in all_countries:
+            best_std, best_dlx = None, None
+            for e in entries:
+                if country in e['raw_results']:
+                    s = e['raw_results'][country]['standard']
+                    d = e['raw_results'][country]['deluxe']
+                    if s is not None and (best_std is None or s < best_std):
+                        best_std = s
+                    if d is not None and (best_dlx is None or d < best_dlx):
+                        best_dlx = d
+            best_ranks[country] = {'standard': best_std, 'deluxe': best_dlx}
+
+        std_sales = 0.0
+        dlx_sales = 0.0
         for country, ranks in best_ranks.items():
-            multiplier = ps_market_multiplier.get(country, 0.15)
-            
+            m = get_multiplier(country)
             if ranks['standard'] is not None:
-                base_sales = rank_to_daily_sales(ranks['standard'])
-                std_sales += base_sales * multiplier
-            
+                std_sales += rank_to_daily_sales(ranks['standard']) * m
             if ranks['deluxe'] is not None:
-                base_sales = rank_to_daily_sales(ranks['deluxe'])
-                dlx_sales += base_sales * multiplier
-        
+                dlx_sales += rank_to_daily_sales(ranks['deluxe']) * m
+
         daily_sales.append({
-            'date': representative_timestamp,
+            'date':     representative_timestamp,
             'date_str': date_str,
             'standard': round(std_sales, 2),
-            'deluxe': round(dlx_sales, 2),
-            'total': round(std_sales + dlx_sales, 2)
+            'deluxe':   round(dlx_sales, 2),
+            'total':    round(std_sales + dlx_sales, 2)
         })
     
     # 표 데이터 생성
@@ -612,18 +529,19 @@ def estimate_daily_sales(data, output_dir='output'):
     # 추정 기준 정보 추가 (좌측 하단)
     criteria_text = (
         "Estimation Criteria:\n"
-        "• Rank-based sales (base market):\n"
+        "• Rank → Base Sales (continuous 2-segment curve):\n"
         "  1st: 600 units/day\n"
-        "  3rd: 390 units/day\n"
-        "  5th: 250 units/day\n"
-        "  10th: 130 units/day\n"
-        "  15th: 97 units/day\n"
-        "  (Log-scale curve)\n\n"
-        "• Market size multiplier:\n"
-        "  US ×10, JP ×5, UK ×2.7\n"
-        "  DE ×2.3, FR ×2.0, KR ×1.3\n"
-        "  Others ×0.15~1.0\n\n"
-        "• Total: 48 countries combined"
+        "  5th: 382 units/day\n"
+        "  10th: 217 units/day\n"
+        "  20th:  70 units/day  ← boundary (smooth)\n"
+        "  50th:  39 units/day\n"
+        " 100th:  15 units/day\n\n"
+        "• Market size multiplier (crimson_tracker\n"
+        "  MARKET_WEIGHTS, US=10 normalized):\n"
+        "  US ×10, JP ×2.67, UK ×2.83\n"
+        "  DE ×2.17, FR ×2.0, KR ×0.93\n"
+        "  Others ×0.03~1.5\n\n"
+        "• Total: 49 countries combined"
     )
     
     fig.text(0.02, 0.02, criteria_text, 
@@ -699,9 +617,11 @@ def estimate_daily_sales(data, output_dir='output'):
     # 추정 기준 정보 추가
     criteria_text = (
         "Estimation Criteria:\n"
-        "Rank → Base Sales: 1st=600/day, 3rd=390/day, 5th=250/day, 10th=130/day (Log-scale curve)\n"
-        "Market Multiplier: US ×10, JP ×5, UK ×2.7, DE ×2.3, FR ×2.0, KR ×1.3, Others ×0.15~1.0\n"
-        "Total: 48 countries combined (PlayStation Store pre-order rankings)"
+        "Rank → Base Sales (continuous 2-segment curve): "
+        "1st=600/day, 5th=382/day, 10th=217/day, 20th=70/day (boundary), 50th=39/day, 100th=15/day\n"
+        "Market Multiplier (crimson_tracker MARKET_WEIGHTS, US=10): "
+        "US ×10, JP ×2.67, UK ×2.83, DE ×2.17, FR ×2.0, KR ×0.93, Others ×0.03~1.5\n"
+        "Total: 49 countries combined (PlayStation Store pre-order rankings)"
     )
     
     fig.text(0.5, 0.01, criteria_text, 
@@ -720,140 +640,113 @@ def estimate_daily_sales(data, output_dir='output'):
     return sales_table_path, sales_chart_path, daily_sales
 
 def plot_country_rankings(country_data, output_dir='output'):
-    """각 국가별 S,D 순위 그래프 생성 (일별 최고 순위 기준)"""
+    """각 국가별 S,D 순위 그래프 생성"""
     os.makedirs(output_dir, exist_ok=True)
-
+    
     for country, data in country_data.items():
         if not data['dates']:
             continue
-
-        # None 값 제거한 유효 데이터만 사용
-        std_pairs = [(d, v) for d, v in zip(data['dates'], data['standard']) if v is not None]
-        dlx_pairs = [(d, v) for d, v in zip(data['dates'], data['deluxe'])   if v is not None]
-
-        if not std_pairs and not dlx_pairs:
-            continue
-
+            
         fig, ax = plt.subplots(figsize=(14, 7))
-
-        if std_pairs:
-            std_dates, std_vals = zip(*std_pairs)
-            ax.plot(std_dates, std_vals, 'o-', label='Standard (Daily Best)',
-                    linewidth=2, markersize=5, color='#2E86AB')
-            # 각 포인트에 순위 숫자 표시
-            for d, v in std_pairs:
-                ax.annotate(str(int(v)),
-                            xy=(d, v), xytext=(0, 7), textcoords='offset points',
-                            fontsize=7, ha='center', fontweight='bold',
-                            bbox=dict(boxstyle='round,pad=0.2', facecolor='#AED6F1',
-                                      alpha=0.7, edgecolor='none'))
-
-        if dlx_pairs:
-            dlx_dates, dlx_vals = zip(*dlx_pairs)
-            ax.plot(dlx_dates, dlx_vals, 's-', label='Deluxe (Daily Best)',
-                    linewidth=2, markersize=5, color='#A23B72')
-            # 각 포인트에 순위 숫자 표시
-            for d, v in dlx_pairs:
-                ax.annotate(str(int(v)),
-                            xy=(d, v), xytext=(0, -12), textcoords='offset points',
-                            fontsize=7, ha='center', fontweight='bold',
-                            bbox=dict(boxstyle='round,pad=0.2', facecolor='#F9A8D4',
-                                      alpha=0.7, edgecolor='none'))
-
+        
+        # 순위 그래프 (낮을수록 좋으므로 y축 반전)
+        ax.plot(data['dates'], data['standard'], 'o-', label='Standard', linewidth=2, markersize=4)
+        ax.plot(data['dates'], data['deluxe'], 's-', label='Deluxe', linewidth=2, markersize=4)
+        
+        # 축 설정
         ax.set_xlabel('Date', fontsize=12)
-        ax.set_ylabel('Rank (lower = better)', fontsize=12)
-        ax.set_title(f'{country} - Daily Best Ranking', fontsize=14, fontweight='bold')
-        ax.invert_yaxis()
+        ax.set_ylabel('Rank', fontsize=12)
+        ax.set_title(f'{country} - Daily Ranking Trends', fontsize=14, fontweight='bold')
+        ax.invert_yaxis()  # 순위는 낮을수록 좋음
         ax.grid(True, alpha=0.3)
         ax.legend(fontsize=10)
-
+        
+        # 날짜 포맷 설정
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
         ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
         plt.xticks(rotation=45)
-
+        
         plt.tight_layout()
-
+        
+        # 파일명에서 특수문자 제거
         safe_country = country.replace('/', '_').replace('\\', '_')
         plt.savefig(f'{output_dir}/{safe_country}_ranking.png', dpi=150, bbox_inches='tight')
         plt.close()
-
+        
         print(f'✓ Generated: {safe_country}_ranking.png')
 
 def plot_all_countries_standard(country_data, output_dir='output'):
-    """모든 국가의 Standard 일별 최고 순위를 하나의 그래프에"""
+    """모든 국가의 Standard 순위를 하나의 그래프에"""
     os.makedirs(output_dir, exist_ok=True)
-
+    
     fig, ax = plt.subplots(figsize=(16, 10))
-
+    
     for country, data in sorted(country_data.items()):
-        pairs = [(d, v) for d, v in zip(data['dates'], data['standard']) if v is not None]
-        if not pairs:
-            continue
-
-        dates_f, vals_f = zip(*pairs)
-        ax.plot(dates_f, vals_f, 'o-', label=country, linewidth=1.5, markersize=3, alpha=0.7)
-
-        # 마지막 점에 현재 순위 표시
-        ax.annotate(f'{int(vals_f[-1])}',
-                    xy=(dates_f[-1], vals_f[-1]),
-                    xytext=(5, 0), textcoords='offset points',
-                    fontsize=7, fontweight='bold',
-                    bbox=dict(boxstyle='round,pad=0.2', facecolor='lightblue',
-                              alpha=0.6, edgecolor='none'))
-
+        if data['dates']:
+            ax.plot(data['dates'], data['standard'], 'o-', label=country, linewidth=1.5, markersize=3, alpha=0.7)
+            
+            # 최근 날짜의 순위 표시
+            if data['standard'] and data['standard'][-1] is not None:
+                last_date = data['dates'][-1]
+                last_rank = data['standard'][-1]
+                ax.annotate(f'{int(last_rank)}', 
+                           xy=(last_date, last_rank),
+                           xytext=(5, 0), textcoords='offset points',
+                           fontsize=7, fontweight='bold',
+                           bbox=dict(boxstyle='round,pad=0.2', facecolor='lightblue', alpha=0.6, edgecolor='none'))
+    
     ax.set_xlabel('Date', fontsize=12)
-    ax.set_ylabel('Rank (lower = better)', fontsize=12)
-    ax.set_title('All Countries - Standard Daily Best Ranking', fontsize=14, fontweight='bold')
+    ax.set_ylabel('Rank', fontsize=12)
+    ax.set_title('All Countries - Standard Ranking Trends', fontsize=14, fontweight='bold')
     ax.invert_yaxis()
     ax.grid(True, alpha=0.3)
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
-
+    
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
     ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.xticks(rotation=45)
-
+    
     plt.tight_layout()
     plt.savefig(f'{output_dir}/all_countries_standard.png', dpi=150, bbox_inches='tight')
     plt.close()
-
+    
     print(f'✓ Generated: all_countries_standard.png')
 
 def plot_all_countries_deluxe(country_data, output_dir='output'):
-    """모든 국가의 Deluxe 일별 최고 순위를 하나의 그래프에"""
+    """모든 국가의 Deluxe 순위를 하나의 그래프에"""
     os.makedirs(output_dir, exist_ok=True)
-
+    
     fig, ax = plt.subplots(figsize=(16, 10))
-
+    
     for country, data in sorted(country_data.items()):
-        pairs = [(d, v) for d, v in zip(data['dates'], data['deluxe']) if v is not None]
-        if not pairs:
-            continue
-
-        dates_f, vals_f = zip(*pairs)
-        ax.plot(dates_f, vals_f, 's-', label=country, linewidth=1.5, markersize=3, alpha=0.7)
-
-        ax.annotate(f'{int(vals_f[-1])}',
-                    xy=(dates_f[-1], vals_f[-1]),
-                    xytext=(5, 0), textcoords='offset points',
-                    fontsize=7, fontweight='bold',
-                    bbox=dict(boxstyle='round,pad=0.2', facecolor='yellow',
-                              alpha=0.6, edgecolor='none'))
-
+        if data['dates']:
+            ax.plot(data['dates'], data['deluxe'], 's-', label=country, linewidth=1.5, markersize=3, alpha=0.7)
+            
+            # 최근 날짜의 순위 표시
+            if data['deluxe'] and data['deluxe'][-1] is not None:
+                last_date = data['dates'][-1]
+                last_rank = data['deluxe'][-1]
+                ax.annotate(f'{int(last_rank)}', 
+                           xy=(last_date, last_rank),
+                           xytext=(5, 0), textcoords='offset points',
+                           fontsize=7, fontweight='bold',
+                           bbox=dict(boxstyle='round,pad=0.2', facecolor='yellow', alpha=0.6, edgecolor='none'))
+    
     ax.set_xlabel('Date', fontsize=12)
-    ax.set_ylabel('Rank (lower = better)', fontsize=12)
-    ax.set_title('All Countries - Deluxe Daily Best Ranking', fontsize=14, fontweight='bold')
+    ax.set_ylabel('Rank', fontsize=12)
+    ax.set_title('All Countries - Deluxe Ranking Trends', fontsize=14, fontweight='bold')
     ax.invert_yaxis()
     ax.grid(True, alpha=0.3)
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
-
+    
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
     ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.xticks(rotation=45)
-
+    
     plt.tight_layout()
     plt.savefig(f'{output_dir}/all_countries_deluxe.png', dpi=150, bbox_inches='tight')
     plt.close()
-
+    
     print(f'✓ Generated: all_countries_deluxe.png')
 
 def plot_daily_averages(country_data, output_dir='output'):
@@ -937,7 +830,7 @@ def plot_daily_averages(country_data, output_dir='output'):
     
     ax.set_xlabel('Date', fontsize=12)
     ax.set_ylabel('Average Rank', fontsize=12)
-    ax.set_title('Daily Average Rankings (per-day best) - Standard vs Deluxe', fontsize=14, fontweight='bold')
+    ax.set_title('Daily Average Rankings - Standard vs Deluxe', fontsize=14, fontweight='bold')
     ax.invert_yaxis()
     ax.grid(True, alpha=0.3)
     ax.legend(fontsize=10, loc='best')
@@ -953,65 +846,65 @@ def plot_daily_averages(country_data, output_dir='output'):
     print(f'✓ Generated: daily_averages.png')
 
 def plot_top_countries(country_data, countries_to_plot, output_dir='output'):
-    """주요 국가들의 Standard와 Deluxe 일별 최고 순위 비교"""
+    """주요 국가들의 Standard와 Deluxe 순위 비교"""
     os.makedirs(output_dir, exist_ok=True)
-
+    
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 12))
-
+    
     # Standard 그래프
     for country in countries_to_plot:
-        if country not in country_data or not country_data[country]['dates']:
-            continue
-        data = country_data[country]
-        std_pairs = [(d, v) for d, v in zip(data['dates'], data['standard']) if v is not None]
-        if not std_pairs:
-            continue
-        std_dates, std_vals = zip(*std_pairs)
-        ax1.plot(std_dates, std_vals, 'o-', label=country, linewidth=2, markersize=4)
-        ax1.annotate(f'{int(std_vals[-1])}',
-                     xy=(std_dates[-1], std_vals[-1]),
-                     xytext=(5, 0), textcoords='offset points',
-                     fontsize=8, fontweight='bold')
-
+        if country in country_data and country_data[country]['dates']:
+            data = country_data[country]
+            ax1.plot(data['dates'], data['standard'], 'o-', label=country, linewidth=2, markersize=4)
+            
+            # 최근 순위 표시
+            if data['standard'] and data['standard'][-1] is not None:
+                last_date = data['dates'][-1]
+                last_rank = data['standard'][-1]
+                ax1.annotate(f'{int(last_rank)}', 
+                           xy=(last_date, last_rank),
+                           xytext=(5, 0), textcoords='offset points',
+                           fontsize=8, fontweight='bold')
+    
     ax1.set_xlabel('Date', fontsize=12)
-    ax1.set_ylabel('Rank (lower = better)', fontsize=12)
-    ax1.set_title('Major Countries - Standard Daily Best Ranking', fontsize=14, fontweight='bold')
+    ax1.set_ylabel('Rank', fontsize=12)
+    ax1.set_title('Major Countries - Standard Ranking', fontsize=14, fontweight='bold')
     ax1.invert_yaxis()
     ax1.grid(True, alpha=0.3)
     ax1.legend(fontsize=10)
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
     ax1.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45)
-
+    
     # Deluxe 그래프
     for country in countries_to_plot:
-        if country not in country_data or not country_data[country]['dates']:
-            continue
-        data = country_data[country]
-        dlx_pairs = [(d, v) for d, v in zip(data['dates'], data['deluxe']) if v is not None]
-        if not dlx_pairs:
-            continue
-        dlx_dates, dlx_vals = zip(*dlx_pairs)
-        ax2.plot(dlx_dates, dlx_vals, 's-', label=country, linewidth=2, markersize=4)
-        ax2.annotate(f'{int(dlx_vals[-1])}',
-                     xy=(dlx_dates[-1], dlx_vals[-1]),
-                     xytext=(5, 0), textcoords='offset points',
-                     fontsize=8, fontweight='bold')
-
+        if country in country_data and country_data[country]['dates']:
+            data = country_data[country]
+            ax2.plot(data['dates'], data['deluxe'], 's-', label=country, linewidth=2, markersize=4)
+            
+            # 최근 순위 표시
+            if data['deluxe'] and data['deluxe'][-1] is not None:
+                last_date = data['dates'][-1]
+                last_rank = data['deluxe'][-1]
+                ax2.annotate(f'{int(last_rank)}', 
+                           xy=(last_date, last_rank),
+                           xytext=(5, 0), textcoords='offset points',
+                           fontsize=8, fontweight='bold')
+    
     ax2.set_xlabel('Date', fontsize=12)
-    ax2.set_ylabel('Rank (lower = better)', fontsize=12)
-    ax2.set_title('Major Countries - Deluxe Daily Best Ranking', fontsize=14, fontweight='bold')
+    ax2.set_ylabel('Rank', fontsize=12)
+    ax2.set_title('Major Countries - Deluxe Ranking', fontsize=14, fontweight='bold')
     ax2.invert_yaxis()
     ax2.grid(True, alpha=0.3)
     ax2.legend(fontsize=10)
     ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
     ax2.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45)
-
+    
     plt.tight_layout()
     plt.savefig(f'{output_dir}/top_countries_rankings.png', dpi=150, bbox_inches='tight')
     plt.close()
-
+    
     print(f'✓ Generated: top_countries_rankings.png')
 
 def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_texts, daily_sales):
