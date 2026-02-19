@@ -1,12 +1,12 @@
 name: Generate Ranking Plots
 
 on:
-  push:
-    branches: [ main, master ]
-    paths:
-      - 'rank_history.json'
-      - 'plot_rankings.py'
-      - '.github/workflows/generate_plots.yml'
+  # push:
+  #  branches: [ main, master ]
+  #  paths:
+  #    - 'rank_history.json'
+  #    - 'plot_rankings.py'
+  #    - '.github/workflows/generate_plots.yml'
   workflow_dispatch:  # 수동 실행 가능
   # schedule:
   #  - cron: '0 */6 * * *'  # 6시간마다 실행 (옵션)
