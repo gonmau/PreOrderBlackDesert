@@ -5,17 +5,17 @@ jobs:
   trigger-all:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger BDO Tracker
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.PAT_TOKEN }}
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'bdo_workflow.yml',
-              ref: 'main'
-            });
+      #- name: Trigger BDO Tracker
+      #  uses: actions/github-script@v7
+      #  with:
+      #    github-token: ${{ secrets.PAT_TOKEN }}
+      #    script: |
+      #      await github.rest.actions.createWorkflowDispatch({
+      #        owner: context.repo.owner,
+      #        repo: context.repo.repo,
+      #        workflow_id: 'bdo_workflow.yml',
+      #        ref: 'main'
+      #      });
       
       - name: Wait 2 seconds
         run: sleep 2
