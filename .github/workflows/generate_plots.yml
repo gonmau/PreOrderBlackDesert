@@ -8,8 +8,8 @@ on:
       - 'plot_rankings.py'
       - '.github/workflows/generate_plots.yml'
   workflow_dispatch:  # 수동 실행 가능
-  schedule:
-    - cron: '0 */6 * * *'  # 6시간마다 실행 (옵션)
+  # schedule:
+  #  - cron: '0 */6 * * *'  # 6시간마다 실행 (옵션)
 
 jobs:
   generate-plots:
