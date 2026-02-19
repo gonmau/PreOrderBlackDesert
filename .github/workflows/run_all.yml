@@ -1,25 +1,14 @@
 name: Run All Trackers
 on:
+  schedule:
+    - cron: '0 22 * * *'    # 오전 7시 KST (UTC+9)
+    - cron: '30 6 * * *'    # 오후 3시 30분 KST
+    - cron: '0 10 * * *'    # 오후 7시 KST
   workflow_dispatch:
 jobs:
   trigger-all:
     runs-on: ubuntu-latest
     steps:
-      #- name: Trigger BDO Tracker
-      #  uses: actions/github-script@v7
-      #  with:
-      #    github-token: ${{ secrets.PAT_TOKEN }}
-      #    script: |
-      #      await github.rest.actions.createWorkflowDispatch({
-      #        owner: context.repo.owner,
-      #        repo: context.repo.repo,
-      #        workflow_id: 'bdo_workflow.yml',
-      #        ref: 'main'
-      #      });
-      
-      - name: Wait 2 seconds
-        run: sleep 2
-      
       - name: Trigger Exchange Rate
         uses: actions/github-script@v7
         with:
@@ -119,6 +108,21 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'game_stock_workflow.yml',
+              ref: 'main'
+            });
+      
+      - name: Wait 2 seconds
+        run: sleep 2
+      
+      - name: Trigger Generate Ranking Plots
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PAT_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'generate_plots.yml',
               ref: 'main'
             });
       
