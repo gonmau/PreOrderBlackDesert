@@ -1,8 +1,8 @@
 name: PlayStation Store Tracker
 
 on:
- # schedule:
- #   - cron: '0 23,11 * * *'  # 오전 8시, 오후 8시 (KST)
+  schedule:
+    - cron: '0 * * * *'  # 매 1시간마다
   workflow_dispatch:      # 수동 실행 가능
 
 # [중요] 쓰기 권한 추가
