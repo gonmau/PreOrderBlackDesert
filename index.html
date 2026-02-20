@@ -345,6 +345,117 @@
       line-height: 1;
     }
 
+    /* ─── COUNTRY MODAL ─── */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      width: 100%;
+      max-width: 680px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(20px);
+      transition: transform 0.25s;
+      position: relative;
+    }
+    .modal-backdrop.open .modal {
+      transform: translateY(0);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .modal-flag { font-size: 2rem; }
+    .modal-country-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 2px;
+      color: var(--text);
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 3px;
+      line-height: 1;
+      transition: color 0.15s, background 0.15s;
+    }
+    .modal-close:hover { color: var(--text); background: var(--surface2); }
+
+    .modal-stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-stat {
+      background: var(--surface2);
+      padding: 14px 16px;
+      text-align: center;
+    }
+    .modal-stat-label {
+      font-size: 0.62rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .modal-stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      line-height: 1;
+      color: var(--red-glow);
+    }
+    .modal-stat-value.gold { color: var(--gold); }
+    .modal-stat-diff {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+    .modal-stat-diff.up { color: var(--up); }
+    .modal-stat-diff.down { color: var(--down); }
+
+    .modal-chart-wrap {
+      padding: 20px 24px 16px;
+    }
+    .modal-chart-title {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .modal-chart-inner { position: relative; height: 200px; }
+
     /* ─── FOOTER ─── */
     footer {
       text-align: center;
@@ -497,6 +608,42 @@
           </thead>
           <tbody id="rank-table"></tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- COUNTRY DETAIL MODAL -->
+  <div class="modal-backdrop" id="country-modal" onclick="closeModal(event)">
+    <div class="modal" id="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span class="modal-flag" id="modal-flag"></span>
+          <span class="modal-country-name" id="modal-name"></span>
+        </div>
+        <button class="modal-close" onclick="closeModalDirect()">✕</button>
+      </div>
+      <div class="modal-stats-row">
+        <div class="modal-stat">
+          <div class="modal-stat-label">스탠다드</div>
+          <div class="modal-stat-value" id="modal-standard">—</div>
+          <div class="modal-stat-diff" id="modal-standard-diff"></div>
+        </div>
+        <div class="modal-stat">
+          <div class="modal-stat-label">디럭스</div>
+          <div class="modal-stat-value" id="modal-deluxe">—</div>
+          <div class="modal-stat-diff" id="modal-deluxe-diff"></div>
+        </div>
+        <div class="modal-stat">
+          <div class="modal-stat-label">종합 (Best)</div>
+          <div class="modal-stat-value gold" id="modal-combined">—</div>
+          <div class="modal-stat-diff" id="modal-combined-diff"></div>
+        </div>
+      </div>
+      <div class="modal-chart-wrap">
+        <div class="modal-chart-title">순위 히스토리</div>
+        <div class="modal-chart-inner">
+          <canvas id="modalChart"></canvas>
+        </div>
       </div>
     </div>
   </div>
@@ -757,7 +904,7 @@ function renderHeatmap(raw, prevRaw) {
     const bgColor = rankColor(cr);
 
     return `
-      <div class="heatmap-card" style="background:${bgColor}" title="${c}: S${d.standard ?? '-'} / D${d.deluxe ?? '-'}">
+      <div class="heatmap-card" style="background:${bgColor};cursor:pointer" title="${c}: S${d.standard ?? '-'} / D${d.deluxe ?? '-'}" onclick="openCountryModal('${c}')">
         <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${arrowColor}"></div>
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
           <span class="hm-flag">${FLAGS[c] || ''}</span>
@@ -830,6 +977,141 @@ function switchTab(tab, btn) {
     renderTable(tab, latest.raw_results, prev?.raw_results);
   }
 }
+
+// ─── 국가 모달 ───
+let modalChartInstance = null;
+
+function openCountryModal(country) {
+  if (!allHistory.length) return;
+
+  const latest = allHistory[allHistory.length - 1];
+  const prev   = allHistory.length >= 2 ? allHistory[allHistory.length - 2] : null;
+  const raw    = latest.raw_results;
+  const prevRaw = prev?.raw_results;
+
+  const d  = raw[country]    || {};
+  const pd = prevRaw?.[country] || {};
+  const cr  = combinedRank(d.standard, d.deluxe);
+  const pcr = combinedRank(pd.standard, pd.deluxe);
+
+  // 헤더
+  document.getElementById('modal-flag').textContent  = FLAGS[country] || '🏳️';
+  document.getElementById('modal-name').textContent  = country;
+
+  // 스탯
+  setModalStat('modal-standard', 'modal-standard-diff', d.standard, pd.standard);
+  setModalStat('modal-deluxe',   'modal-deluxe-diff',   d.deluxe,   pd.deluxe);
+  setModalStat('modal-combined', 'modal-combined-diff', cr,          pcr);
+
+  // 차트
+  const labels = allHistory.map(h => {
+    const dt = new Date(h.timestamp);
+    return `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+  });
+  const stdData = allHistory.map(h => h.raw_results?.[country]?.standard ?? null);
+  const dlxData = allHistory.map(h => h.raw_results?.[country]?.deluxe   ?? null);
+
+  const ctx = document.getElementById('modalChart').getContext('2d');
+  if (modalChartInstance) modalChartInstance.destroy();
+
+  modalChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: '스탠다드',
+          data: stdData,
+          borderColor: '#e74c3c',
+          backgroundColor: 'rgba(231,76,60,0.08)',
+          borderWidth: 2,
+          pointRadius: stdData.length > 30 ? 0 : 3,
+          pointHoverRadius: 5,
+          tension: 0.4,
+          fill: true,
+          spanGaps: true,
+        },
+        {
+          label: '디럭스',
+          data: dlxData,
+          borderColor: '#d4a017',
+          backgroundColor: 'rgba(212,160,23,0.08)',
+          borderWidth: 2,
+          pointRadius: dlxData.length > 30 ? 0 : 3,
+          pointHoverRadius: 5,
+          tension: 0.4,
+          fill: true,
+          spanGaps: true,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          reverse: true,
+          ticks: { color: '#7a6a65', font: { size: 11 }, stepSize: 1 },
+          grid:  { color: 'rgba(42,31,34,0.8)' },
+          border: { color: '#2a1f22' }
+        },
+        x: {
+          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 10, maxRotation: 0 },
+          grid:  { display: false },
+          border: { color: '#2a1f22' }
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          labels: { color: '#e8ddd5', font: { size: 11 }, boxWidth: 12, padding: 16 }
+        },
+        tooltip: {
+          backgroundColor: '#1a1318',
+          borderColor: '#2a1f22',
+          borderWidth: 1,
+          titleColor: '#e8ddd5',
+          bodyColor: '#e8ddd5',
+          callbacks: {
+            label: ctx2 => `${ctx2.dataset.label}: ${ctx2.raw != null ? ctx2.raw + '위' : '—'}`
+          }
+        }
+      }
+    }
+  });
+
+  // 모달 열기
+  document.getElementById('country-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function setModalStat(valId, diffId, curr, prev) {
+  const el     = document.getElementById(valId);
+  const diffEl = document.getElementById(diffId);
+  el.textContent = curr != null ? `${curr}위` : '—';
+  if (diffEl) {
+    if (curr != null && prev != null) {
+      const d = prev - curr;
+      if (d > 0)      { diffEl.textContent = `▲ ${d} 상승`; diffEl.className = 'modal-stat-diff up'; }
+      else if (d < 0) { diffEl.textContent = `▼ ${Math.abs(d)} 하락`; diffEl.className = 'modal-stat-diff down'; }
+      else            { diffEl.textContent = '변동 없음'; diffEl.className = 'modal-stat-diff'; }
+    } else {
+      diffEl.textContent = ''; diffEl.className = 'modal-stat-diff';
+    }
+  }
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('country-modal')) closeModalDirect();
+}
+
+function closeModalDirect() {
+  document.getElementById('country-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ESC 키로 닫기
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
 
 // ─── 자동 갱신 (30분) ───
 setInterval(() => { loadData(); }, 30 * 60 * 1000);
