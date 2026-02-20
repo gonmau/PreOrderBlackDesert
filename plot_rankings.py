@@ -632,6 +632,55 @@ def estimate_daily_sales(data, output_dir='output'):
                  ' ← per-country\ndata starts',
                  fontsize=8, color='gray', va='top')
 
+    # ── 일별 수치 표시 ──────────────────────────────────────────────────
+    # 히스토리 구간: 7일 간격으로 Total 수치 표시 (과밀 방지)
+    if h_dates:
+        step = max(1, len(h_dates) // 12)
+        for i in range(0, len(h_dates), step):
+            tot = h_std[i] + h_dlx[i]
+            ax1.annotate(f'{int(tot):,}',
+                         xy=(h_dates[i], max(h_std[i], h_dlx[i])),
+                         xytext=(0, 6), textcoords='offset points',
+                         fontsize=6, ha='center', color='#555555',
+                         bbox=dict(boxstyle='round,pad=0.1', facecolor='white', alpha=0.5, edgecolor='none'))
+
+    # 실제 구간: Standard / Deluxe 수치 표시
+    if r_dates:
+        step = max(1, len(r_dates) // 20)
+        for i in range(0, len(r_dates), step):
+            ax1.annotate(f'{int(r_std[i]):,}',
+                         xy=(r_dates[i], r_std[i]),
+                         xytext=(0, 7), textcoords='offset points',
+                         fontsize=6.5, ha='center', color='#2E86AB', fontweight='bold',
+                         bbox=dict(boxstyle='round,pad=0.15', facecolor='#E3F2FD', alpha=0.75, edgecolor='none'))
+            ax1.annotate(f'{int(r_dlx[i]):,}',
+                         xy=(r_dates[i], r_dlx[i]),
+                         xytext=(0, -12), textcoords='offset points',
+                         fontsize=6.5, ha='center', color='#A23B72', fontweight='bold',
+                         bbox=dict(boxstyle='round,pad=0.15', facecolor='#FCE4EC', alpha=0.75, edgecolor='none'))
+
+    # 히스토리 마지막 날(1/11) 강조 박스
+    if hist_items:
+        last_h = hist_items[-1]
+        ax1.annotate(
+            f"Till 1/11 Total\nStd: {int(last_h['standard']):,}\nDlx: {int(last_h['deluxe']):,}\nSum: {int(last_h['total']):,}",
+            xy=(last_h['date'], max(last_h['standard'], last_h['deluxe'])),
+            xytext=(-60, 35), textcoords='offset points',
+            fontsize=7.5, color='#5D4037', fontweight='bold',
+            bbox=dict(boxstyle='round,pad=0.4', facecolor='#FFF8E1', alpha=0.9, edgecolor='#BCAAA4'),
+            arrowprops=dict(arrowstyle='->', color='#BCAAA4', lw=1.2))
+
+    # 실제 데이터 첫날(1/13) 강조 박스
+    if real_items:
+        first_r = real_items[0]
+        ax1.annotate(
+            f"From 1/13\nStd: {int(first_r['standard']):,}\nDlx: {int(first_r['deluxe']):,}\nSum: {int(first_r['total']):,}",
+            xy=(first_r['date'], max(first_r['standard'], first_r['deluxe'])),
+            xytext=(15, 35), textcoords='offset points',
+            fontsize=7.5, color='#1A237E', fontweight='bold',
+            bbox=dict(boxstyle='round,pad=0.4', facecolor='#E8EAF6', alpha=0.9, edgecolor='#9FA8DA'),
+            arrowprops=dict(arrowstyle='->', color='#9FA8DA', lw=1.2))
+
     ax1.set_ylabel('Estimated Daily Sales (Units)', fontsize=12)
     ax1.set_title('Daily Estimated Sales by Edition\n'
                   '(dashed = historical avg estimate  |  solid = per-country data)',
@@ -679,7 +728,48 @@ def estimate_daily_sales(data, output_dir='output'):
         ax2.plot(r_cum_dates, r_cum_tot,  '^-',
                  label='Total (Cumulative)',     linewidth=2, markersize=4, color='#27AE60')
 
-    # 최종 누적 값 표시
+    # ── 누적 수치 표시 ──────────────────────────────────────────────────
+    # 히스토리 구간 주요 지점 수치 표시
+    if h_cum_dates:
+        step = max(1, len(h_cum_dates) // 8)
+        for i in range(step - 1, len(h_cum_dates), step):
+            ax2.annotate(f'{int(h_cum_tot[i]):,}',
+                         xy=(h_cum_dates[i], h_cum_tot[i]),
+                         xytext=(0, 7), textcoords='offset points',
+                         fontsize=6, ha='center', color='#7B5E3A',
+                         bbox=dict(boxstyle='round,pad=0.1', facecolor='#FFF9C4', alpha=0.7, edgecolor='none'))
+
+    # 실제 구간 주요 지점 수치 표시
+    if r_cum_dates:
+        step = max(1, len(r_cum_dates) // 10)
+        for i in range(0, len(r_cum_dates), step):
+            ax2.annotate(f'{int(r_cum_tot[i]):,}',
+                         xy=(r_cum_dates[i], r_cum_tot[i]),
+                         xytext=(0, 7), textcoords='offset points',
+                         fontsize=6.5, ha='center', color='#27AE60', fontweight='bold',
+                         bbox=dict(boxstyle='round,pad=0.15', facecolor='#E8F5E9', alpha=0.8, edgecolor='none'))
+
+    # 경계점(1/11 추정 누적 합계) 강조 박스
+    if h_cum_dates:
+        ax2.annotate(
+            f"1/11 Cumulative\nStd: {int(h_cum_std[-1]):,}\nDlx: {int(h_cum_dlx[-1]):,}\nTotal: {int(h_cum_tot[-1]):,}",
+            xy=(h_cum_dates[-1], h_cum_tot[-1]),
+            xytext=(-80, -55), textcoords='offset points',
+            fontsize=7.5, color='#5D4037', fontweight='bold',
+            bbox=dict(boxstyle='round,pad=0.4', facecolor='#FFF8E1', alpha=0.92, edgecolor='#BCAAA4'),
+            arrowprops=dict(arrowstyle='->', color='#BCAAA4', lw=1.2))
+
+    # 실제 데이터 첫날(1/13) 누적 강조 박스
+    if r_cum_dates:
+        ax2.annotate(
+            f"1/13 Start\nStd: {int(r_cum_std[0]):,}\nDlx: {int(r_cum_dlx[0]):,}\nTotal: {int(r_cum_tot[0]):,}",
+            xy=(r_cum_dates[0], r_cum_tot[0]),
+            xytext=(15, -55), textcoords='offset points',
+            fontsize=7.5, color='#1A237E', fontweight='bold',
+            bbox=dict(boxstyle='round,pad=0.4', facecolor='#E8EAF6', alpha=0.92, edgecolor='#9FA8DA'),
+            arrowprops=dict(arrowstyle='->', color='#9FA8DA', lw=1.2))
+
+    # 최종 누적 값 표시 (그래프 오른쪽 끝)
     if cumulative_std:
         for cum, label_txt, color in [
             (cumulative_std,   f"{int(cumulative_std[-1]):,}",   '#2E86AB'),
