@@ -330,8 +330,15 @@
       width: 3px;
     }
 
-    .heatmap-card .hm-flag { font-size: 1.1rem; }
-    .heatmap-card .hm-country { font-size: 0.7rem; color: var(--muted); margin: 2px 0; }
+    .heatmap-card .hm-flag { font-size: 1.4rem; line-height: 1; }
+    .heatmap-card .hm-country {
+      font-size: 0.78rem;
+      color: var(--text);
+      font-weight: 700;
+      margin: 4px 0 2px;
+      letter-spacing: 0.3px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
     .heatmap-card .hm-rank {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 1.5rem;
@@ -465,7 +472,7 @@
 
     <!-- HEATMAP -->
     <div class="heatmap-section fade-in">
-      <div class="section-title">전국 현황 한눈에</div>
+      <div class="section-title">전세계 현황 한눈에</div>
       <div class="heatmap-grid" id="heatmap-grid"></div>
     </div>
 
@@ -752,8 +759,10 @@ function renderHeatmap(raw, prevRaw) {
     return `
       <div class="heatmap-card" style="background:${bgColor}" title="${c}: S${d.standard ?? '-'} / D${d.deluxe ?? '-'}">
         <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${arrowColor}"></div>
-        <div class="hm-flag">${FLAGS[c] || ''}</div>
-        <div class="hm-country">${c}</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
+          <span class="hm-flag">${FLAGS[c] || ''}</span>
+          <span class="hm-country">${c}</span>
+        </div>
         <div class="hm-rank" style="color:${cr && cr <= 10 ? '#d4a017' : '#e8ddd5'}">${cr ? `${cr}위` : '—'}</div>
       </div>`;
   }).join('');
