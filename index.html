@@ -547,6 +547,109 @@
       padding-top: 10px;
     }
 
+    /* ─── TRENDS SECTION ─── */
+    .trends-section { margin-bottom: 32px; }
+
+    .trends-stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border-radius: 4px 4px 0 0;
+      overflow: hidden;
+      margin-bottom: 1px;
+    }
+
+    .trends-stat-box {
+      background: var(--surface);
+      padding: 16px 20px;
+      text-align: center;
+    }
+
+    .trends-stat-label {
+      font-size: 0.62rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .trends-stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      line-height: 1;
+      color: #4285F4;
+    }
+
+    .trends-stat-value.yt   { color: #FF0000; }
+    .trends-stat-value.high { color: var(--gold); }
+
+    .trends-stat-sub {
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .trends-chart-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0 0 4px 4px;
+      padding: 20px 24px 16px;
+    }
+
+    .trends-chart-inner { position: relative; height: 220px; }
+
+    .trends-countries-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 6px;
+      margin-top: 16px;
+    }
+
+    .trends-country-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .trends-country-flag { font-size: 1.2rem; }
+
+    .trends-country-info { flex: 1; min-width: 0; }
+
+    .trends-country-name {
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .trends-country-score {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      line-height: 1;
+      color: #4285F4;
+    }
+
+    .trends-score-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 4px;
+      overflow: hidden;
+    }
+
+    .trends-score-fill {
+      height: 100%;
+      background: #4285F4;
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
     /* ─── STEAM SECTION ─── */
     .steam-section {
       margin-bottom: 32px;
@@ -823,6 +926,50 @@
           📌 추산 기준: 순위→판매량 2구간 지수 곡선 (1위=600/일, 20위=70/일, 100위=15/일) × 국가별 PS 시장 가중치 (미국=10 기준)<br>
           🟡 점선 구간 = 과거 평균 순위 기반 추정 (2025.9~2026.1.11) | 실선 구간 = 국가별 실제 데이터 (2026.1.12~)
         </div>
+      </div>
+    </div>
+
+    <!-- TRENDS SECTION -->
+    <div class="trends-section fade-in">
+      <div class="steam-header">
+        <div class="section-title" style="margin-bottom:0">🔍 Google 검색 트렌드</div>
+        <span style="font-size:0.68rem;color:var(--muted)">관심도 0~100 (상대 수치)</span>
+      </div>
+
+      <!-- 스탯 -->
+      <div class="trends-stats-row">
+        <div class="trends-stat-box">
+          <div class="trends-stat-label">Google 글로벌 현재</div>
+          <div class="trends-stat-value" id="trends-google-now">—</div>
+          <div class="trends-stat-sub" id="trends-google-diff">/ 100</div>
+        </div>
+        <div class="trends-stat-box">
+          <div class="trends-stat-label">Google 전체 평균</div>
+          <div class="trends-stat-value" id="trends-google-avg">—</div>
+          <div class="trends-stat-sub">/ 100</div>
+        </div>
+        <div class="trends-stat-box">
+          <div class="trends-stat-label">역대 최고</div>
+          <div class="trends-stat-value high" id="trends-google-peak">—</div>
+          <div class="trends-stat-sub" id="trends-google-peak-date"></div>
+        </div>
+        <div class="trends-stat-box">
+          <div class="trends-stat-label">YouTube 현재</div>
+          <div class="trends-stat-value yt" id="trends-yt-now">—</div>
+          <div class="trends-stat-sub" id="trends-yt-diff">/ 100</div>
+        </div>
+      </div>
+
+      <!-- 글로벌 히스토리 차트 -->
+      <div class="trends-chart-box">
+        <div style="font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">검색 관심도 히스토리 (글로벌)</div>
+        <div class="trends-chart-inner">
+          <canvas id="trendsChart"></canvas>
+        </div>
+
+        <!-- 국가별 최신 스코어 -->
+        <div style="font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px">콘솔 주요 5개국 최신 관심도</div>
+        <div class="trends-countries-grid" id="trends-countries-grid"></div>
       </div>
     </div>
 
@@ -1533,6 +1680,172 @@ function switchSalesTab(mode, btn) {
   renderSalesChart();
 }
 
+// ─── 구글 트렌드 ───
+let trendsChartInstance = null;
+
+const CONSOLE_COUNTRY_FLAGS = {
+  'United States': '🇺🇸',
+  'Japan':         '🇯🇵',
+  'United Kingdom':'🇬🇧',
+  'Germany':       '🇩🇪',
+  'France':        '🇫🇷',
+};
+
+async function loadTrendsData() {
+  try {
+    const res = await fetch('trends_history.json?t=' + Date.now());
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.length) return;
+    renderTrends(data);
+  } catch (e) {
+    console.warn('trends_history.json 로드 실패:', e);
+  }
+}
+
+function renderTrends(data) {
+  // google 데이터 있는 항목만
+  const gEntries = data.filter(e => e.google?.score != null);
+  if (!gEntries.length) return;
+
+  const latest  = gEntries[gEntries.length - 1];
+  const prev    = gEntries.length >= 2 ? gEntries[gEntries.length - 2] : null;
+  const scores  = gEntries.map(e => e.google.score);
+  const peak    = Math.max(...scores);
+  const peakEntry = gEntries[scores.indexOf(peak)];
+  const avg     = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+
+  // Google 현재
+  const gNow = latest.google.score;
+  document.getElementById('trends-google-now').textContent = gNow;
+  const gDiffEl = document.getElementById('trends-google-diff');
+  if (prev?.google?.score != null) {
+    const d = gNow - prev.google.score;
+    gDiffEl.textContent = d > 0 ? `▲ ${d} 상승` : d < 0 ? `▼ ${Math.abs(d)} 하락` : '변동 없음';
+    gDiffEl.style.color = d > 0 ? 'var(--up)' : d < 0 ? 'var(--down)' : 'var(--muted)';
+  } else {
+    gDiffEl.textContent = '/ 100';
+  }
+
+  // 평균 / 최고
+  document.getElementById('trends-google-avg').textContent  = avg;
+  document.getElementById('trends-google-peak').textContent = peak;
+  document.getElementById('trends-google-peak-date').textContent = fmtDate(peakEntry.timestamp);
+
+  // YouTube
+  const ytEntries = data.filter(e => e.youtube?.score != null);
+  if (ytEntries.length) {
+    const ytLatest = ytEntries[ytEntries.length - 1];
+    const ytPrev   = ytEntries.length >= 2 ? ytEntries[ytEntries.length - 2] : null;
+    document.getElementById('trends-yt-now').textContent = ytLatest.youtube.score;
+    const ytDiffEl = document.getElementById('trends-yt-diff');
+    if (ytPrev?.youtube?.score != null) {
+      const d = ytLatest.youtube.score - ytPrev.youtube.score;
+      ytDiffEl.textContent = d > 0 ? `▲ ${d} 상승` : d < 0 ? `▼ ${Math.abs(d)} 하락` : '변동 없음';
+      ytDiffEl.style.color = d > 0 ? 'var(--up)' : d < 0 ? 'var(--down)' : 'var(--muted)';
+    } else {
+      ytDiffEl.textContent = '/ 100';
+    }
+  }
+
+  // ── 차트 ──
+  const labels = gEntries.map(e => {
+    const d = new Date(e.timestamp);
+    return `${d.getMonth()+1}/${d.getDate()}`;
+  });
+  const gScores  = gEntries.map(e => e.google.score);
+  const ytScores = gEntries.map(e => {
+    const match = data.find(d => d.timestamp === e.timestamp);
+    return match?.youtube?.score ?? null;
+  });
+
+  const ctx = document.getElementById('trendsChart').getContext('2d');
+  if (trendsChartInstance) trendsChartInstance.destroy();
+
+  trendsChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Google 글로벌',
+          data: gScores,
+          borderColor: '#4285F4',
+          backgroundColor: 'rgba(66,133,244,0.08)',
+          borderWidth: 2,
+          pointRadius: gScores.length > 60 ? 0 : 3,
+          pointHoverRadius: 5,
+          tension: 0.4,
+          fill: true,
+          spanGaps: true,
+        },
+        {
+          label: 'YouTube',
+          data: ytScores,
+          borderColor: '#FF0000',
+          backgroundColor: 'rgba(255,0,0,0.05)',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.4,
+          fill: false,
+          spanGaps: true,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          min: 0, max: 105,
+          ticks: { color: '#7a6a65', font: { size: 11 } },
+          grid:  { color: 'rgba(42,31,34,0.8)' },
+          border: { color: '#2a1f22' }
+        },
+        x: {
+          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 12, maxRotation: 0 },
+          grid:  { display: false },
+          border: { color: '#2a1f22' }
+        }
+      },
+      plugins: {
+        legend: { display: true, labels: { color: '#e8ddd5', font: { size: 11 }, boxWidth: 10, padding: 14 } },
+        tooltip: {
+          backgroundColor: '#1a1318', borderColor: '#2a1f22', borderWidth: 1,
+          titleColor: '#e8ddd5', bodyColor: '#e8ddd5',
+          callbacks: { label: ctx2 => ctx2.raw != null ? `${ctx2.dataset.label}: ${ctx2.raw}/100` : null }
+        }
+      }
+    }
+  });
+
+  // ── 국가별 카드 ──
+  // console_markets 있는 항목 중 가장 최근
+  const consoleEntry = [...data].reverse().find(e => e.console_markets && Object.keys(e.console_markets).length > 0);
+  const grid = document.getElementById('trends-countries-grid');
+  grid.innerHTML = '';
+  if (consoleEntry) {
+    for (const [country, info] of Object.entries(consoleEntry.console_markets)) {
+      if (!info) continue;
+      const score = info.score ?? 0;
+      const avg1m = info.avg_1m ?? 0;
+      const flag  = CONSOLE_COUNTRY_FLAGS[country] || '🌍';
+      const barColor = score >= 70 ? '#4285F4' : score >= 40 ? '#FBBC05' : '#EA4335';
+      grid.innerHTML += `
+        <div class="trends-country-card">
+          <span class="trends-country-flag">${flag}</span>
+          <div class="trends-country-info">
+            <div class="trends-country-name">${country}</div>
+            <div class="trends-country-score" style="color:${barColor}">${score}<span style="font-size:0.7rem;color:var(--muted)">/100</span></div>
+            <div class="trends-score-bar"><div class="trends-score-fill" style="width:${score}%;background:${barColor}"></div></div>
+            <div style="font-size:0.62rem;color:var(--muted);margin-top:2px">1개월 평균 ${avg1m}/100</div>
+          </div>
+        </div>`;
+    }
+  }
+}
+
 // ─── STEAM 데이터 ───
 let steamHistory = [];
 let steamChartInstance = null;
@@ -1794,11 +2107,12 @@ function closeModalDirect() {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
 
 // ─── 자동 갱신 (30분) ───
-setInterval(() => { loadData(); loadSteamData(); }, 30 * 60 * 1000);
+setInterval(() => { loadData(); loadSteamData(); loadTrendsData(); }, 30 * 60 * 1000);
 
 // ─── 초기 실행 ───
 loadData().then(() => renderSalesEstimate());
 loadSteamData();
+loadTrendsData();
 </script>
 </body>
 </html>
