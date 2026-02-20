@@ -456,6 +456,97 @@
     }
     .modal-chart-inner { position: relative; height: 200px; }
 
+    /* ─── SALES ESTIMATE SECTION ─── */
+    .sales-section { margin-bottom: 32px; }
+
+    .sales-stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border-radius: 4px 4px 0 0;
+      overflow: hidden;
+      margin-bottom: 1px;
+    }
+
+    .sales-stat-box {
+      background: var(--surface);
+      padding: 16px 20px;
+      text-align: center;
+    }
+
+    .sales-stat-label {
+      font-size: 0.62rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .sales-stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.7rem;
+      line-height: 1;
+      color: #2ecc71;
+    }
+
+    .sales-stat-value.std  { color: #2E86AB; }
+    .sales-stat-value.dlx  { color: #A23B72; }
+    .sales-stat-value.tot  { color: #2ecc71; }
+    .sales-stat-value.cum  { color: var(--gold); }
+
+    .sales-stat-sub {
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .sales-chart-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0 0 4px 4px;
+      padding: 20px 24px 16px;
+    }
+
+    .sales-tab-row {
+      display: flex;
+      gap: 0;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      width: fit-content;
+    }
+
+    .sales-tab-btn {
+      padding: 6px 14px;
+      background: var(--surface2);
+      border: none;
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-right: 1px solid var(--border);
+      transition: all 0.15s;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    .sales-tab-btn:last-child { border-right: none; }
+    .sales-tab-btn:hover { color: var(--text); background: var(--surface); }
+    .sales-tab-btn.active { background: var(--red); color: #fff; }
+
+    .sales-chart-inner { position: relative; height: 240px; }
+
+    .sales-note {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 10px;
+      line-height: 1.6;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+
     /* ─── STEAM SECTION ─── */
     .steam-section {
       margin-bottom: 32px;
@@ -682,6 +773,56 @@
       <div class="section-title">순위 히스토리 (가중 평균)</div>
       <div class="chart-wrapper">
         <canvas id="rankChart"></canvas>
+      </div>
+    </div>
+
+    <!-- SALES ESTIMATE SECTION -->
+    <div class="sales-section fade-in">
+      <div class="steam-header">
+        <div class="section-title" style="margin-bottom:0">💰 예상 판매량 추산</div>
+        <span style="font-size:0.68rem;color:var(--muted)">순위 → 판매량 모델 기반 추정치 (참고용)</span>
+      </div>
+
+      <!-- 오늘 추산 스탯 -->
+      <div class="sales-stats-row">
+        <div class="sales-stat-box">
+          <div class="sales-stat-label">오늘 스탠다드 추산</div>
+          <div class="sales-stat-value std" id="sales-today-std">—</div>
+          <div class="sales-stat-sub">units / day</div>
+        </div>
+        <div class="sales-stat-box">
+          <div class="sales-stat-label">오늘 디럭스 추산</div>
+          <div class="sales-stat-value dlx" id="sales-today-dlx">—</div>
+          <div class="sales-stat-sub">units / day</div>
+        </div>
+        <div class="sales-stat-box">
+          <div class="sales-stat-label">오늘 합계 추산</div>
+          <div class="sales-stat-value tot" id="sales-today-tot">—</div>
+          <div class="sales-stat-sub">units / day</div>
+        </div>
+        <div class="sales-stat-box">
+          <div class="sales-stat-label">누적 합계 (총)</div>
+          <div class="sales-stat-value cum" id="sales-cumulative">—</div>
+          <div class="sales-stat-sub" id="sales-cumulative-range">—</div>
+        </div>
+      </div>
+
+      <!-- 차트 -->
+      <div class="sales-chart-box">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <span style="font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">일별 / 누적 판매량 추산</span>
+          <div class="sales-tab-row">
+            <button class="sales-tab-btn active" onclick="switchSalesTab('daily', this)">일별</button>
+            <button class="sales-tab-btn" onclick="switchSalesTab('cumulative', this)">누적</button>
+          </div>
+        </div>
+        <div class="sales-chart-inner">
+          <canvas id="salesChart"></canvas>
+        </div>
+        <div class="sales-note">
+          📌 추산 기준: 순위→판매량 2구간 지수 곡선 (1위=600/일, 20위=70/일, 100위=15/일) × 국가별 PS 시장 가중치 (미국=10 기준)<br>
+          🟡 점선 구간 = 과거 평균 순위 기반 추정 (2025.9~2026.1.11) | 실선 구간 = 국가별 실제 데이터 (2026.1.12~)
+        </div>
       </div>
     </div>
 
@@ -1168,6 +1309,230 @@ function switchTab(tab, btn) {
   }
 }
 
+// ─── 판매량 추산 ───
+let salesChartInstance = null;
+let salesMode = 'daily';
+let salesDailyData = []; // { dateStr, date, std, dlx, tot, isHistorical }
+
+// Python의 rank_to_daily_sales 동일 로직
+const _A1=600, _A20=70, _A100=15;
+const _k1 = Math.log(_A1/_A20)/(20-1);
+const _k2 = Math.log(_A20/_A100)/(100-20);
+
+function rankToSales(rank) {
+  if (!rank) return 0;
+  const r = parseInt(rank);
+  return r <= 20
+    ? _A1 * Math.exp(-_k1 * (r - 1))
+    : _A20 * Math.exp(-_k2 * (r - 20));
+}
+
+// Python의 PS_MARKET_MULTIPLIER (_US_BASE=30, ×10/30)
+const SALES_MULTIPLIER = (() => {
+  const base = 30.0;
+  const w = MARKET_WEIGHTS; // 이미 정의된 MARKET_WEIGHTS 재사용
+  const m = {};
+  for (const [c, v] of Object.entries(w)) m[c] = v / base * 10;
+  return m;
+})();
+
+function getMultiplier(country) {
+  return SALES_MULTIPLIER[country] ?? 0.10;
+}
+
+async function loadHistoricalData() {
+  try {
+    const res = await fetch('historical_ranking_data.json?t=' + Date.now());
+    if (!res.ok) return [];
+    return await res.json();
+  } catch { return []; }
+}
+
+async function renderSalesEstimate() {
+  if (!allHistory.length) return;
+
+  const historical = await loadHistoricalData();
+
+  // ── 실제 데이터: rank_history.json에서 일별 집계 ──
+  const realByDate = {};
+  for (const entry of allHistory) {
+    const d = new Date(entry.timestamp);
+    const ds = d.toISOString().slice(0,10);
+    if (!realByDate[ds]) realByDate[ds] = [];
+    realByDate[ds].push(entry.raw_results);
+  }
+
+  const realDays = [];
+  for (const [ds, entries] of Object.entries(realByDate).sort()) {
+    // 각 날짜에서 국가별 최고 순위(가장 낮은 숫자) 선택
+    const best = {};
+    for (const raw of entries) {
+      for (const [c, d] of Object.entries(raw)) {
+        if (!best[c]) best[c] = { standard: null, deluxe: null };
+        if (d.standard && (!best[c].standard || d.standard < best[c].standard)) best[c].standard = d.standard;
+        if (d.deluxe   && (!best[c].deluxe   || d.deluxe   < best[c].deluxe  )) best[c].deluxe   = d.deluxe;
+      }
+    }
+    let std=0, dlx=0;
+    for (const [c, r] of Object.entries(best)) {
+      const m = getMultiplier(c);
+      if (r.standard) std += rankToSales(r.standard) * m;
+      if (r.deluxe)   dlx += rankToSales(r.deluxe)   * m;
+    }
+    realDays.push({ dateStr: ds, date: new Date(ds+'T12:00:00'), std: Math.round(std), dlx: Math.round(dlx), tot: Math.round(std+dlx), isHistorical: false });
+  }
+
+  // ── 과거 데이터: historical_ranking_data.json ──
+  // 실제 데이터의 첫 날짜 이전 것만 사용
+  const realFirstDate = realDays.length ? realDays[0].dateStr : '9999-12-31';
+
+  // 실제 데이터에서 std/dlx 평균 갭 계산
+  let sumStd=0, sumDlx=0, cnt=0;
+  for (const entry of allHistory) {
+    for (const d of Object.values(entry.raw_results)) {
+      if (d.standard) { sumStd += d.standard; cnt++; }
+      if (d.deluxe)   { sumDlx += d.deluxe; }
+    }
+  }
+  const avgStd = cnt ? sumStd/cnt : 15;
+  const avgDlx = cnt ? sumDlx/cnt : 8;
+  const rankGap = avgStd - avgDlx;
+
+  const countries = Object.keys(allHistory[0]?.raw_results || {});
+
+  const histDays = [];
+  for (const item of historical) {
+    if (item.date >= realFirstDate) continue;
+    const avgRank = item.average_rank ?? 15;
+    const countryRanks = item.country_ranks || {};
+
+    let std=0, dlx=0;
+    for (const c of countries) {
+      const base = countryRanks[c] ?? avgRank;
+      const stdR = Math.max(1, Math.round(base + rankGap/2));
+      const dlxR = Math.max(1, Math.round(base - rankGap/2));
+      const m = getMultiplier(c);
+      std += rankToSales(stdR) * m;
+      dlx += rankToSales(dlxR) * m;
+    }
+    histDays.push({ dateStr: item.date, date: new Date(item.date+'T12:00:00'), std: Math.round(std), dlx: Math.round(dlx), tot: Math.round(std+dlx), isHistorical: true });
+  }
+
+  salesDailyData = [...histDays, ...realDays];
+
+  // ── 오늘 스탯 표시 ──
+  const today = realDays[realDays.length - 1];
+  if (today) {
+    document.getElementById('sales-today-std').textContent = today.std.toLocaleString();
+    document.getElementById('sales-today-dlx').textContent = today.dlx.toLocaleString();
+    document.getElementById('sales-today-tot').textContent = today.tot.toLocaleString();
+  }
+
+  // 누적 합계
+  const cumTotal = salesDailyData.reduce((s, d) => s + d.tot, 0);
+  document.getElementById('sales-cumulative').textContent = cumTotal.toLocaleString();
+  if (salesDailyData.length) {
+    document.getElementById('sales-cumulative-range').textContent =
+      `${salesDailyData[0].dateStr} ~ ${salesDailyData[salesDailyData.length-1].dateStr}`;
+  }
+
+  renderSalesChart();
+}
+
+function renderSalesChart() {
+  if (!salesDailyData.length) return;
+
+  const ctx = document.getElementById('salesChart').getContext('2d');
+  if (salesChartInstance) salesChartInstance.destroy();
+
+  const labels = salesDailyData.map(d => {
+    const dt = d.date;
+    return `${dt.getMonth()+1}/${dt.getDate()}`;
+  });
+
+  let datasets;
+  if (salesMode === 'daily') {
+    // 히스토리 / 실제 구간 분리 (점선 vs 실선)
+    const histStd = salesDailyData.map(d => d.isHistorical ? d.std : null);
+    const histDlx = salesDailyData.map(d => d.isHistorical ? d.dlx : null);
+    const realStd = salesDailyData.map(d => !d.isHistorical ? d.std : null);
+    const realDlx = salesDailyData.map(d => !d.isHistorical ? d.dlx : null);
+
+    datasets = [
+      { label:'스탠다드 (추정)', data: histStd, borderColor:'#90CAF9', backgroundColor:'rgba(46,134,171,0.06)', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0.4, spanGaps:false, fill:true },
+      { label:'디럭스 (추정)',   data: histDlx, borderColor:'#F48FB1', backgroundColor:'rgba(162,59,114,0.06)', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0.4, spanGaps:false, fill:true },
+      { label:'스탠다드 (실제)', data: realStd, borderColor:'#2E86AB', backgroundColor:'rgba(46,134,171,0.1)',  borderWidth:2,   pointRadius: salesDailyData.length>60?0:3, tension:0.4, spanGaps:false, fill:true },
+      { label:'디럭스 (실제)',   data: realDlx, borderColor:'#A23B72', backgroundColor:'rgba(162,59,114,0.1)', borderWidth:2,   pointRadius: salesDailyData.length>60?0:3, tension:0.4, spanGaps:false, fill:true },
+    ];
+  } else {
+    // 누적
+    let cumStdH=0, cumDlxH=0, cumStdR=0, cumDlxR=0;
+    const cumHistStd=[], cumHistDlx=[], cumRealStd=[], cumRealDlx=[];
+    let switchIdx = -1;
+    for (let i=0; i<salesDailyData.length; i++) {
+      const d = salesDailyData[i];
+      if (d.isHistorical) {
+        cumStdH += d.std; cumDlxH += d.dlx;
+        cumHistStd.push(cumStdH); cumHistDlx.push(cumDlxH);
+        cumRealStd.push(null);    cumRealDlx.push(null);
+      } else {
+        if (switchIdx < 0) { switchIdx = i; cumStdR = cumStdH; cumDlxR = cumDlxH; }
+        cumStdR += d.std; cumDlxR += d.dlx;
+        cumRealStd.push(cumStdR); cumRealDlx.push(cumDlxR);
+        cumHistStd.push(null);    cumHistDlx.push(null);
+      }
+    }
+    const cumHistTot = cumHistStd.map((s,i) => s!=null&&cumHistDlx[i]!=null ? s+cumHistDlx[i] : null);
+    const cumRealTot = cumRealStd.map((s,i) => s!=null&&cumRealDlx[i]!=null ? s+cumRealDlx[i] : null);
+
+    datasets = [
+      { label:'누적 스탠다드 (추정)', data:cumHistStd, borderColor:'#90CAF9', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0.4, spanGaps:false, fill:false },
+      { label:'누적 디럭스 (추정)',   data:cumHistDlx, borderColor:'#F48FB1', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0.4, spanGaps:false, fill:false },
+      { label:'누적 합계 (추정)',     data:cumHistTot, borderColor:'#A8D5A2', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0.4, spanGaps:false, fill:false },
+      { label:'누적 스탠다드 (실제)', data:cumRealStd, borderColor:'#2E86AB', borderWidth:2,   pointRadius:0, tension:0.4, spanGaps:false, fill:false },
+      { label:'누적 디럭스 (실제)',   data:cumRealDlx, borderColor:'#A23B72', borderWidth:2,   pointRadius:0, tension:0.4, spanGaps:false, fill:false },
+      { label:'누적 합계 (실제)',     data:cumRealTot, borderColor:'#27AE60', borderWidth:2.5, pointRadius:0, tension:0.4, spanGaps:false, fill:false },
+    ];
+  }
+
+  salesChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        y: {
+          ticks: { color:'#7a6a65', font:{size:11}, callback: v => v>=1000 ? (v/1000).toFixed(1)+'k' : v },
+          grid:  { color:'rgba(42,31,34,0.8)' },
+          border: { color:'#2a1f22' }
+        },
+        x: {
+          ticks: { color:'#7a6a65', font:{size:10}, maxTicksLimit:14, maxRotation:0 },
+          grid:  { display:false },
+          border: { color:'#2a1f22' }
+        }
+      },
+      plugins: {
+        legend: { display:true, labels:{ color:'#e8ddd5', font:{size:10}, boxWidth:10, padding:12 } },
+        tooltip: {
+          backgroundColor:'#1a1318', borderColor:'#2a1f22', borderWidth:1,
+          titleColor:'#e8ddd5', bodyColor:'#e8ddd5',
+          callbacks: { label: ctx2 => ctx2.raw != null ? `${ctx2.dataset.label}: ${Math.round(ctx2.raw).toLocaleString()} units` : null }
+        }
+      }
+    }
+  });
+}
+
+function switchSalesTab(mode, btn) {
+  salesMode = mode;
+  document.querySelectorAll('.sales-tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSalesChart();
+}
+
 // ─── STEAM 데이터 ───
 let steamHistory = [];
 let steamChartInstance = null;
@@ -1432,7 +1797,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDi
 setInterval(() => { loadData(); loadSteamData(); }, 30 * 60 * 1000);
 
 // ─── 초기 실행 ───
-loadData();
+loadData().then(() => renderSalesEstimate());
 loadSteamData();
 </script>
 </body>
