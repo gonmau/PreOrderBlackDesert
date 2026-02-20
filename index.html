@@ -456,6 +456,110 @@
     }
     .modal-chart-inner { position: relative; height: 200px; }
 
+    /* ─── STEAM SECTION ─── */
+    .steam-section {
+      margin-bottom: 32px;
+    }
+
+    .steam-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .steam-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .steam-icon {
+      font-size: 1.2rem;
+    }
+
+    .steamdb-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: #1b2838;
+      border: 1px solid #2a475e;
+      border-radius: 3px;
+      color: #c7d5e0;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      text-decoration: none;
+      font-family: 'Noto Sans KR', sans-serif;
+      transition: background 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+
+    .steamdb-btn:hover {
+      background: #2a475e;
+      border-color: #4fc3f7;
+      color: #fff;
+    }
+
+    .steam-stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border-radius: 4px 4px 0 0;
+      overflow: hidden;
+      margin-bottom: 1px;
+    }
+
+    .steam-stat-box {
+      background: var(--surface);
+      padding: 16px 20px;
+      text-align: center;
+    }
+
+    .steam-stat-label {
+      font-size: 0.62rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .steam-stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      line-height: 1;
+      color: #4fc3f7;
+    }
+
+    .steam-stat-diff {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .steam-stat-diff.up   { color: var(--up); }
+    .steam-stat-diff.down { color: var(--down); }
+
+    .steam-chart-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0 0 4px 4px;
+      padding: 20px 24px 16px;
+    }
+
+    .steam-chart-label {
+      font-size: 0.62rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .steam-chart-inner { position: relative; height: 200px; }
+
     /* ─── FOOTER ─── */
     footer {
       text-align: center;
@@ -578,6 +682,46 @@
       <div class="section-title">순위 히스토리 (가중 평균)</div>
       <div class="chart-wrapper">
         <canvas id="rankChart"></canvas>
+      </div>
+    </div>
+
+    <!-- STEAM SECTION -->
+    <div class="steam-section fade-in">
+      <div class="steam-header">
+        <div class="steam-title-row">
+          <div class="section-title" style="margin-bottom:0">🎮 Steam 위시리스트 순위</div>
+        </div>
+        <a class="steamdb-btn" href="https://steamdb.info/app/3321460/charts/" target="_blank">
+          🔗 SteamDB에서 자세히 보기 ↗
+        </a>
+      </div>
+      <div class="steam-stats-row">
+        <div class="steam-stat-box">
+          <div class="steam-stat-label">현재 순위</div>
+          <div class="steam-stat-value" id="steam-rank-current">—</div>
+          <div class="steam-stat-diff" id="steam-rank-diff"></div>
+        </div>
+        <div class="steam-stat-box">
+          <div class="steam-stat-label">최고 순위</div>
+          <div class="steam-stat-value" id="steam-rank-best">—</div>
+          <div class="steam-stat-diff" style="color:var(--muted);font-size:0.7rem" id="steam-rank-best-date"></div>
+        </div>
+        <div class="steam-stat-box">
+          <div class="steam-stat-label">추적 시작</div>
+          <div class="steam-stat-value" id="steam-rank-first">—</div>
+          <div class="steam-stat-diff" id="steam-rank-first-date"></div>
+        </div>
+        <div class="steam-stat-box">
+          <div class="steam-stat-label">총 기록 수</div>
+          <div class="steam-stat-value" id="steam-count">—</div>
+          <div class="steam-stat-diff">개 데이터포인트</div>
+        </div>
+      </div>
+      <div class="steam-chart-box">
+        <div class="steam-chart-label">위시리스트 순위 히스토리</div>
+        <div class="steam-chart-inner">
+          <canvas id="steamChart"></canvas>
+        </div>
       </div>
     </div>
 
@@ -978,6 +1122,131 @@ function switchTab(tab, btn) {
   }
 }
 
+// ─── STEAM 데이터 ───
+let steamHistory = [];
+let steamChartInstance = null;
+
+async function loadSteamData() {
+  try {
+    const res = await fetch('steam_history.json?t=' + Date.now());
+    if (!res.ok) throw new Error('steam fetch failed');
+    steamHistory = await res.json();
+    renderSteam();
+  } catch (e) {
+    console.warn('steam_history.json 로드 실패:', e);
+    // Steam 섹션 숨기지 않고 — 표시 유지
+  }
+}
+
+function renderSteam() {
+  if (!steamHistory.length) return;
+
+  const valid = steamHistory.filter(h => h.rank != null);
+  if (!valid.length) return;
+
+  const latest   = valid[valid.length - 1];
+  const prev     = valid.length >= 2 ? valid[valid.length - 2] : null;
+  const best     = valid.reduce((a, b) => a.rank <= b.rank ? a : b);
+  const first    = valid[0];
+
+  // 현재 순위
+  const rankEl = document.getElementById('steam-rank-current');
+  const diffEl = document.getElementById('steam-rank-diff');
+  rankEl.textContent = `#${latest.rank}`;
+  if (prev) {
+    const d = prev.rank - latest.rank;
+    if (d > 0)      { diffEl.textContent = `▲ ${d} 상승`; diffEl.className = 'steam-stat-diff up'; }
+    else if (d < 0) { diffEl.textContent = `▼ ${Math.abs(d)} 하락`; diffEl.className = 'steam-stat-diff down'; }
+    else            { diffEl.textContent = '변동 없음'; diffEl.className = 'steam-stat-diff'; }
+  }
+
+  // 최고 순위
+  document.getElementById('steam-rank-best').textContent = `#${best.rank}`;
+  document.getElementById('steam-rank-best-date').textContent = fmtDate(best.timestamp);
+
+  // 추적 시작 순위
+  document.getElementById('steam-rank-first').textContent = `#${first.rank}`;
+  document.getElementById('steam-rank-first-date').textContent = fmtDate(first.timestamp);
+
+  // 총 기록 수
+  document.getElementById('steam-count').textContent = steamHistory.length;
+
+  // 차트
+  const labels = steamHistory.map(h => {
+    const d = new Date(h.timestamp);
+    return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  });
+  const rankData = steamHistory.map(h => h.rank);
+
+  const ctx = document.getElementById('steamChart').getContext('2d');
+  if (steamChartInstance) steamChartInstance.destroy();
+
+  steamChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Steam 위시리스트 순위',
+        data: rankData,
+        borderColor: '#4fc3f7',
+        backgroundColor: (ctx2) => {
+          const g = ctx2.chart.ctx.createLinearGradient(0, 0, 0, 200);
+          g.addColorStop(0, 'rgba(79,195,247,0.2)');
+          g.addColorStop(1, 'rgba(79,195,247,0)');
+          return g;
+        },
+        borderWidth: 2,
+        pointBackgroundColor: '#4fc3f7',
+        pointRadius: rankData.length > 50 ? 0 : 3,
+        pointHoverRadius: 5,
+        tension: 0.4,
+        fill: true,
+        spanGaps: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          reverse: true,
+          ticks: { color: '#7a6a65', font: { size: 11 }, stepSize: 1 },
+          grid:  { color: 'rgba(42,31,34,0.8)' },
+          border: { color: '#2a1f22' }
+        },
+        x: {
+          ticks: {
+            color: '#7a6a65',
+            font: { size: 10 },
+            maxTicksLimit: 12,
+            maxRotation: 0
+          },
+          grid: { display: false },
+          border: { color: '#2a1f22' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1318',
+          borderColor: '#2a1f22',
+          borderWidth: 1,
+          titleColor: '#e8ddd5',
+          bodyColor: '#4fc3f7',
+          callbacks: {
+            label: ctx2 => ctx2.raw != null ? `위시리스트 순위: #${ctx2.raw}` : '데이터 없음'
+          }
+        }
+      }
+    }
+  });
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
+}
+
 // ─── 국가 모달 ───
 let modalChartInstance = null;
 
@@ -1114,10 +1383,11 @@ function closeModalDirect() {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
 
 // ─── 자동 갱신 (30분) ───
-setInterval(() => { loadData(); }, 30 * 60 * 1000);
+setInterval(() => { loadData(); loadSteamData(); }, 30 * 60 * 1000);
 
 // ─── 초기 실행 ───
 loadData();
+loadSteamData();
 </script>
 </body>
 </html>
