@@ -656,15 +656,18 @@ def estimate_daily_sales(data, output_dir='output'):
                  color='#A8D5A2', alpha=0.8)
 
     # 경계 연결 (누적)
+    # ✅ FIX: len(hist_items) 인덱스 대신 이미 분리된 h_cum_*/r_cum_* 리스트 직접 사용
+    # cum_list[len(hist_items)]는 hist 항목이 daily_sales 앞에 연속적으로 있다고
+    # 가정하는데, 날짜 겹침 등 예외 상황에서 인덱스가 틀어질 수 있음
     if hist_items and real_items and h_cum_dates and r_cum_dates:
-        for cum_list, color in [
-            (cumulative_std,   '#2E86AB'),
-            (cumulative_dlx,   '#A23B72'),
-            (cumulative_total, '#27AE60'),
+        for h_last, r_first, color in [
+            (h_cum_std[-1],  r_cum_std[0],  '#2E86AB'),
+            (h_cum_dlx[-1],  r_cum_dlx[0],  '#A23B72'),
+            (h_cum_tot[-1],  r_cum_tot[0],  '#27AE60'),
         ]:
             ax2.plot(
                 [h_cum_dates[-1], r_cum_dates[0]],
-                [cum_list[len(hist_items) - 1], cum_list[len(hist_items)]],
+                [h_last, r_first],
                 '--', linewidth=1, color=color, alpha=0.5
             )
 
