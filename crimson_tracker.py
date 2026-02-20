@@ -6,7 +6,9 @@ import re
 import os
 import json
 import requests
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+KST = timezone(timedelta(hours=9))
 from io import BytesIO
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -279,7 +281,7 @@ def send_discord(results, combined_avg):
     
     # 히스토리 업데이트
     history.append({
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(KST).isoformat(),
         "averages": {"combined": combined_avg},
         "raw_results": results
     })
