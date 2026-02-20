@@ -3,6 +3,7 @@
 일별 국가별 S,D 순위 그래프 생성 스크립트
 """
 import json
+import copy  # ✅ FIX: deepcopy를 위해 추가
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime
@@ -16,7 +17,6 @@ from io import BytesIO
 def setup_korean_font():
     """한글 폰트 설정 (이모지 지원 포함)"""
     try:
-        # 시스템에 설치된 한글 폰트 찾기
         font_list = fm.findSystemFonts(fontpaths=None, fontext='ttf')
         korean_fonts = [
             'NanumGothic', 'NanumBarunGothic', 'NanumSquare',
@@ -34,14 +34,11 @@ def setup_korean_font():
                 break
         
         if korean_font_found:
-            # 이모지 지원을 위한 폰트 폴백 설정
-            # Noto Color Emoji, Apple Color Emoji, Segoe UI Emoji 등을 fallback으로 추가
             plt.rcParams['font.family'] = [font_name, 'DejaVu Sans', 'sans-serif']
             plt.rcParams['font.sans-serif'] = [font_name, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'DejaVu Sans']
             plt.rcParams['axes.unicode_minus'] = False
             print(f'✓ Korean font set: {font_name} (with emoji support)')
         else:
-            # 한글 폰트를 찾지 못한 경우 기본 설정 + 이모지 지원
             print('⚠️  Korean font not found, using default font with emoji support')
             plt.rcParams['font.family'] = ['DejaVu Sans', 'sans-serif']
             plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji']
@@ -61,14 +58,13 @@ def load_data(filepath):
 # 공통 상수 (crimson_tracker의 MARKET_WEIGHTS와 통일)
 # =============================================================================
 
-# crimson_tracker MARKET_WEIGHTS 기준, 미국=10으로 정규화
 _US_BASE = 30.0
 PS_MARKET_MULTIPLIER = {
     # Americas
-    '미국': 30.0 / _US_BASE * 10,   # 10.00
-    '캐나다': 4.5  / _US_BASE * 10,  # 1.50
-    '브라질': 2.5  / _US_BASE * 10,  # 0.83
-    '멕시코': 2.0  / _US_BASE * 10,  # 0.67
+    '미국': 30.0 / _US_BASE * 10,
+    '캐나다': 4.5  / _US_BASE * 10,
+    '브라질': 2.5  / _US_BASE * 10,
+    '멕시코': 2.0  / _US_BASE * 10,
     '아르헨티나': 0.9 / _US_BASE * 10,
     '칠레':   0.8 / _US_BASE * 10,
     '콜롬비아': 0.7 / _US_BASE * 10,
@@ -78,11 +74,11 @@ PS_MARKET_MULTIPLIER = {
     '과테말라': 0.2 / _US_BASE * 10,
     '온두라스': 0.2 / _US_BASE * 10,
     # Europe & Middle East
-    '영국':   8.5 / _US_BASE * 10,  # 2.83
-    '독일':   6.5 / _US_BASE * 10,  # 2.17
-    '프랑스':  6.0 / _US_BASE * 10,  # 2.00
-    '스페인':  4.0 / _US_BASE * 10,  # 1.33
-    '이탈리아': 3.5 / _US_BASE * 10,  # 1.17
+    '영국':   8.5 / _US_BASE * 10,
+    '독일':   6.5 / _US_BASE * 10,
+    '프랑스':  6.0 / _US_BASE * 10,
+    '스페인':  4.0 / _US_BASE * 10,
+    '이탈리아': 3.5 / _US_BASE * 10,
     '네덜란드': 1.8 / _US_BASE * 10,
     '사우디아라비아': 1.5 / _US_BASE * 10,
     '아랍에미리트': 1.2 / _US_BASE * 10,
@@ -102,9 +98,9 @@ PS_MARKET_MULTIPLIER = {
     '슬로바키아': 0.3 / _US_BASE * 10,
     '슬로베니아': 0.3 / _US_BASE * 10,
     # Asia & Oceania
-    '일본':   8.0 / _US_BASE * 10,  # 2.67
-    '호주':   3.0 / _US_BASE * 10,  # 1.00
-    '한국':   2.8 / _US_BASE * 10,  # 0.93
+    '일본':   8.0 / _US_BASE * 10,
+    '호주':   3.0 / _US_BASE * 10,
+    '한국':   2.8 / _US_BASE * 10,
     '인도':   2.0 / _US_BASE * 10,
     '대만':   1.0 / _US_BASE * 10,
     '싱가포르': 0.8 / _US_BASE * 10,
@@ -117,24 +113,20 @@ PS_MARKET_MULTIPLIER = {
     '뉴질랜드': 0.6 / _US_BASE * 10,
     '중국':   0.2 / _US_BASE * 10,
 }
-# 위 테이블에 없는 국가의 기본값
 PS_MARKET_MULTIPLIER_DEFAULT = 0.10
 
 import math as _math
 
-# 연속성 확보를 위한 구간 계수 사전 계산
-# 앵커: 1위=600, 20위=70, 100위=15
 _A1   = 600.0
 _A20  = 70.0
 _A100 = 15.0
-_k1   = _math.log(_A1 / _A20)  / (20 - 1)   # 1~20위 감쇠 상수
-_k2   = _math.log(_A20 / _A100) / (100 - 20) # 20~100위 감쇠 상수
+_k1   = _math.log(_A1 / _A20)  / (20 - 1)
+_k2   = _math.log(_A20 / _A100) / (100 - 20)
 
 def rank_to_daily_sales(rank):
     """
     순위 → 일일 판매량(기본 시장 기준).
-    - 1위=600, 20위=70, 100위=15 앵커 기반 두 구간 지수 곡선
-    - 경계(20위)에서 완전 연속, 50→51 역전 버그 없음
+    1위=600, 20위=70, 100위=15 앵커 기반 두 구간 지수 곡선
     """
     if rank is None or rank == '-':
         return 0.0
@@ -145,7 +137,7 @@ def rank_to_daily_sales(rank):
         return _A20 * _math.exp(-_k2 * (r - 20))
 
 def get_multiplier(country: str) -> float:
-    """국가명 → PS 시장 배율 반환 (PS_MARKET_MULTIPLIER 단일 소스)"""
+    """국가명 → PS 시장 배율 반환"""
     return PS_MARKET_MULTIPLIER.get(country, PS_MARKET_MULTIPLIER_DEFAULT)
 
 def parse_data(data):
@@ -153,14 +145,12 @@ def parse_data(data):
     countries = set()
     dates = []
     
-    # 모든 국가 목록 추출
     for entry in data:
         countries.update(entry['raw_results'].keys())
         dates.append(datetime.fromisoformat(entry['timestamp']))
     
     countries = sorted(list(countries))
     
-    # 국가별 데이터 구조 생성
     country_data = {
         country: {
             'dates': [],
@@ -170,7 +160,6 @@ def parse_data(data):
         for country in countries
     }
     
-    # 데이터 채우기
     for entry in data:
         date = datetime.fromisoformat(entry['timestamp'])
         for country in countries:
@@ -184,7 +173,6 @@ def parse_data(data):
 def create_ranking_table(data, output_dir='output'):
     """에디션별 순위를 텍스트 형식으로 생성 (Discord용)"""
     
-    # 국기 이모지 매핑 (PlayStation Store가 있는 국가만)
     country_flags = {
         # 아메리카
         '미국': '🇺🇸', 'USA': '🇺🇸', 'United States': '🇺🇸', 'US': '🇺🇸',
@@ -195,7 +183,6 @@ def create_ranking_table(data, output_dir='output'):
         '칠레': '🇨🇱', 'Chile': '🇨🇱',
         '콜롬비아': '🇨🇴', 'Colombia': '🇨🇴',
         '페루': '🇵🇪', 'Peru': '🇵🇪',
-        
         # 유럽 - 서유럽
         '영국': '🇬🇧', 'UK': '🇬🇧', 'United Kingdom': '🇬🇧', 'Britain': '🇬🇧',
         '독일': '🇩🇪', 'Germany': '🇩🇪', 'Deutschland': '🇩🇪',
@@ -209,14 +196,12 @@ def create_ranking_table(data, output_dir='output'):
         '아일랜드': '🇮🇪', 'Ireland': '🇮🇪',
         '포르투갈': '🇵🇹', 'Portugal': '🇵🇹',
         '룩셈부르크': '🇱🇺', 'Luxembourg': '🇱🇺',
-        
         # 유럽 - 북유럽
         '스웨덴': '🇸🇪', 'Sweden': '🇸🇪',
         '노르웨이': '🇳🇴', 'Norway': '🇳🇴',
         '덴마크': '🇩🇰', 'Denmark': '🇩🇰',
         '핀란드': '🇫🇮', 'Finland': '🇫🇮',
         '아이슬란드': '🇮🇸', 'Iceland': '🇮🇸',
-        
         # 유럽 - 동유럽
         '폴란드': '🇵🇱', 'Poland': '🇵🇱',
         '체코': '🇨🇿', 'Czech Republic': '🇨🇿', 'Czechia': '🇨🇿',
@@ -229,17 +214,14 @@ def create_ranking_table(data, output_dir='output'):
         '그리스': '🇬🇷', 'Greece': '🇬🇷',
         '러시아': '🇷🇺', 'Russia': '🇷🇺',
         '우크라이나': '🇺🇦', 'Ukraine': '🇺🇦',
-        
         # 유럽 - 발트 3국
         '에스토니아': '🇪🇪', 'Estonia': '🇪🇪',
         '라트비아': '🇱🇻', 'Latvia': '🇱🇻',
         '리투아니아': '🇱🇹', 'Lithuania': '🇱🇹',
-        
         # 유럽 - 기타
         '터키': '🇹🇷', 'Turkey': '🇹🇷', 'Türkiye': '🇹🇷',
         '키프로스': '🇨🇾', 'Cyprus': '🇨🇾',
         '몰타': '🇲🇹', 'Malta': '🇲🇹',
-        
         # 아시아-태평양
         '일본': '🇯🇵', 'Japan': '🇯🇵',
         '한국': '🇰🇷', '대한민국': '🇰🇷', 'Korea': '🇰🇷', 'South Korea': '🇰🇷',
@@ -253,7 +235,6 @@ def create_ranking_table(data, output_dir='output'):
         '태국': '🇹🇭', 'Thailand': '🇹🇭',
         '인도네시아': '🇮🇩', 'Indonesia': '🇮🇩',
         '인도': '🇮🇳', 'India': '🇮🇳',
-        
         # 중동
         '사우디아라비아': '🇸🇦', 'Saudi Arabia': '🇸🇦',
         '아랍에미리트': '🇦🇪', 'UAE': '🇦🇪', 'United Arab Emirates': '🇦🇪',
@@ -262,14 +243,10 @@ def create_ranking_table(data, output_dir='output'):
         '바레인': '🇧🇭', 'Bahrain': '🇧🇭',
         '오만': '🇴🇲', 'Oman': '🇴🇲',
         '이스라엘': '🇮🇱', 'Israel': '🇮🇱',
-        
         # 아프리카
         '남아공': '🇿🇦', 'South Africa': '🇿🇦',
     }
     
-    # PlayStation 국가별 시장 규모 배율 → 공통 get_multiplier() 사용
-    
-    # 최신 데이터 가져오기
     latest_entry = data[-1]
     raw_results = latest_entry['raw_results']
     
@@ -282,7 +259,6 @@ def create_ranking_table(data, output_dir='output'):
                 rank_groups_std[std_rank] = []
             rank_groups_std[std_rank].append(country)
     
-    # 각 순위 내에서 점유율 순으로 정렬
     for rank in rank_groups_std:
         rank_groups_std[rank] = sorted(
             rank_groups_std[rank],
@@ -305,7 +281,6 @@ def create_ranking_table(data, output_dir='output'):
                 rank_groups_dlx[dlx_rank] = []
             rank_groups_dlx[dlx_rank].append(country)
     
-    # 각 순위 내에서 점유율 순으로 정렬
     for rank in rank_groups_dlx:
         rank_groups_dlx[rank] = sorted(
             rank_groups_dlx[rank],
@@ -321,7 +296,6 @@ def create_ranking_table(data, output_dir='output'):
     
     print('✓ Generated ranking text for Discord')
     
-    # 텍스트를 반환 (이미지 파일 대신)
     return {
         'standard': std_text,
         'deluxe': dlx_text
@@ -332,7 +306,6 @@ def get_latest_rankings(data):
     latest_entry = data[-1]
     timestamp = datetime.fromisoformat(latest_entry['timestamp'])
     
-    # Standard 순위로 정렬
     countries_sorted = sorted(
         latest_entry['raw_results'].items(),
         key=lambda x: x[1]['standard'] if x[1]['standard'] is not None else 999
@@ -344,7 +317,7 @@ def get_latest_rankings(data):
     }
 
 def calculate_current_sales(rankings):
-    """현재 순위 기반으로 실시간 판매량 추산 (공통 rank_to_daily_sales / get_multiplier 사용)"""
+    """현재 순위 기반으로 실시간 판매량 추산"""
     std_sales = 0.0
     dlx_sales = 0.0
 
@@ -367,18 +340,22 @@ def calculate_current_sales(rankings):
 def estimate_daily_sales(data, output_dir='output'):
     """일별 에디션별 판매량 추산 (PS 점유율 기반 가중치)"""
     import os as os_module
-    
-    # 히스토리 데이터 로드 및 병합 (판매량 추산용)
+
+    # ✅ FIX: 원본 data를 건드리지 않도록 deepcopy 사용
+    # 기존 data.copy()는 얕은 복사(shallow copy)라 내부 딕셔너리가
+    # 같은 참조를 공유 → is_historical 플래그 추가 시 원본이 오염되어
+    # rank_history.json이 변경된 것으로 감지 → git rebase 에러 발생
+    sales_data_raw = copy.deepcopy(data)
+
     historical_file = 'historical_ranking_data.json'
-    sales_data = data.copy()  # 원본 데이터는 건드리지 않음
-    
+    sales_data = sales_data_raw
+
     if os_module.path.exists(historical_file):
         with open(historical_file, 'r', encoding='utf-8') as f:
             historical_data = json.load(f)
         
         print(f'📜 Loaded {len(historical_data)} historical ranking points for sales estimation')
         
-        # 현재 데이터에서 Standard/Deluxe 평균 이격도 계산
         std_ranks = []
         dlx_ranks = []
         
@@ -395,7 +372,6 @@ def estimate_daily_sales(data, output_dir='output'):
         
         print(f'   Average rank gap (Std - Dlx): {rank_gap:.1f}')
         
-        # 히스토리 데이터를 현재 데이터 형식으로 변환
         historical_entries = []
         
         if data:
@@ -405,12 +381,8 @@ def estimate_daily_sales(data, output_dir='output'):
         
         for item in historical_data:
             date_str  = item['date']
-            # historical_data 항목에 country_ranks가 있으면 직접 사용,
-            # 없으면 avg_rank 단일값으로 fallback
-            country_ranks = item.get('country_ranks', {})  # {"미국":12, "일본":17, ...}
+            country_ranks = item.get('country_ranks', {})
 
-            # ── 가중평균 순위 계산 (보간용) ──────────────────────────────
-            # 표에 있는 국가들의 가중평균을 나머지 국가에 적용
             wa_num, wa_den = 0.0, 0.0
             for c, v in country_ranks.items():
                 if v is not None:
@@ -420,12 +392,8 @@ def estimate_daily_sales(data, output_dir='output'):
             if wa_den > 0:
                 weighted_avg_rank = wa_num / wa_den
             else:
-                # country_ranks가 없으면 avg_rank 사용
                 weighted_avg_rank = item.get('average_rank', 15)
 
-            # ── Standard / Deluxe 분리 ────────────────────────────────
-            # 표에 있는 국가: 실제 순위 그대로, std = rank + gap/2, dlx = rank - gap/2
-            # 표에 없는 국가: 가중평균 순위로 보간
             raw_results = {}
             for country in countries:
                 if country in country_ranks and country_ranks[country] is not None:
@@ -441,22 +409,25 @@ def estimate_daily_sales(data, output_dir='output'):
 
             historical_entries.append({
                 'timestamp': f'{date_str}T08:00:00',
-                'raw_results': raw_results
+                'raw_results': raw_results,
+                'is_historical': True  # ✅ FIX: 새로 만드는 객체에 직접 플래그 설정
             })
         
-        # 히스토리 + 현재 데이터 병합 (판매량 추산용만)
-        # historical_entries에 is_historical 플래그 마킹
-        for e in historical_entries:
-            e['is_historical'] = True
-        for e in data:
+        # ✅ FIX: deepcopy된 sales_data_raw에만 플래그 추가 (원본 data는 절대 수정 안 함)
+        for e in sales_data_raw:
             e['is_historical'] = False
-        sales_data = historical_entries + data
+
+        sales_data = historical_entries + sales_data_raw
         print(f'   Total data points for sales estimation: {len(sales_data)}')
-    
+    else:
+        # historical 파일이 없는 경우에도 deepcopy 본에 플래그 추가
+        for e in sales_data_raw:
+            e['is_historical'] = False
+        sales_data = sales_data_raw
+
     os.makedirs(output_dir, exist_ok=True)
 
-    # ── 날짜별 그룹화 → 국가별 최고 순위 → 판매량 계산 ─────────────────
-    # 공통 rank_to_daily_sales / get_multiplier 사용
+    # 날짜별 그룹화 → 국가별 최고 순위 → 판매량 계산
     daily_sales: list = []
     date_groups: dict = {}
 
@@ -472,10 +443,8 @@ def estimate_daily_sales(data, output_dir='output'):
     for date_str in sorted(date_groups.keys()):
         entries = date_groups[date_str]
         representative_timestamp = entries[0]['timestamp']
-        # 해당 날짜가 하나라도 실제 데이터면 False
         is_historical = all(e['is_historical'] for e in entries)
 
-        # 해당 날짜의 모든 항목에서 국가별 최고 순위 취합
         all_countries: set = set()
         for e in entries:
             all_countries.update(e['raw_results'].keys())
@@ -521,7 +490,6 @@ def estimate_daily_sales(data, output_dir='output'):
             f"{int(item['total']):,}"
         ])
     
-    # matplotlib 표 생성
     fig, ax = plt.subplots(figsize=(10, max(10, len(table_data) * 0.35)))
     ax.axis('tight')
     ax.axis('off')
@@ -540,13 +508,11 @@ def estimate_daily_sales(data, output_dir='output'):
     table.set_fontsize(9)
     table.scale(1, 1.8)
     
-    # 헤더 스타일
     for i in range(4):
         cell = table[(0, i)]
         cell.set_facecolor('#2E5984')
         cell.set_text_props(weight='bold', color='white')
     
-    # 행 스타일 — 히스토리: 주황 계열, 실제: 흰/회색
     for i, item in enumerate(daily_sales, start=1):
         for j in range(4):
             cell = table[(i, j)]
@@ -556,7 +522,6 @@ def estimate_daily_sales(data, output_dir='output'):
             else:
                 cell.set_facecolor('#F0F0F0' if i % 2 == 0 else '#FFFFFF')
     
-    # 추정 기준 정보 추가 (좌측 하단)
     criteria_text = (
         "Estimation Criteria:\n"
         "• Rank → Base Sales (continuous 2-segment curve):\n"
@@ -574,24 +539,24 @@ def estimate_daily_sales(data, output_dir='output'):
         "• Total: 49 countries combined"
     )
     
-    fig.text(0.02, 0.02, criteria_text, 
-             fontsize=7, 
+    fig.text(0.02, 0.02, criteria_text,
+             fontsize=7,
              verticalalignment='bottom',
              horizontalalignment='left',
              bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.3))
     
-    plt.tight_layout(rect=[0, 0.15, 1, 1])  # 하단 여백 확보
+    plt.tight_layout(rect=[0, 0.15, 1, 1])
     sales_table_path = f'{output_dir}/daily_sales_estimate.png'
     plt.savefig(sales_table_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close()
     
     print(f'✓ Generated: daily_sales_estimate.png')
     
-    # ── 히스토리 / 실제 구간 분리 ──────────────────────────────────────
+    # 히스토리 / 실제 구간 분리
     hist_items = [item for item in daily_sales if     item['is_historical']]
     real_items = [item for item in daily_sales if not item['is_historical']]
 
-    # 경계 연결용: 히스토리 마지막 + 실제 첫 번째 점을 이어서 연속선 표현
+    # 경계 연결용
     bridge_std, bridge_dlx, bridge_tot, bridge_dates = [], [], [], []
     if hist_items and real_items:
         bridge_items = [hist_items[-1], real_items[0]]
@@ -610,9 +575,8 @@ def estimate_daily_sales(data, output_dir='output'):
     r_dlx   = [it['deluxe']   for it in real_items]
     r_tot   = [it['total']    for it in real_items]
 
-    # 누적 (전체 순서 유지)
-    all_total = [it['total'] for it in daily_sales]
-    all_dates = [it['date']  for it in daily_sales]
+    # 누적 계산 (전체 순서 유지)
+    all_dates = [it['date'] for it in daily_sales]
     cumulative_std   = []
     cumulative_dlx   = []
     cumulative_total = []
@@ -621,10 +585,28 @@ def estimate_daily_sales(data, output_dir='output'):
         cumulative_dlx.append(sum(it['deluxe']   for it in daily_sales[:i+1]))
         cumulative_total.append(sum(it['total']  for it in daily_sales[:i+1]))
 
+    # ✅ FIX: 누적 구간 분리 — len(hist_items) 인덱스 슬라이싱 대신
+    # daily_sales의 is_historical 플래그 기준으로 직접 분리
+    # 기존 방식은 hist_items가 daily_sales 앞부분에 연속적으로 위치한다고
+    # 가정하지만, 날짜 겹침 등으로 순서가 뒤섞일 경우 인덱스가 틀어짐
+    h_cum_dates, h_cum_std, h_cum_dlx, h_cum_tot = [], [], [], []
+    r_cum_dates, r_cum_std, r_cum_dlx, r_cum_tot = [], [], [], []
+
+    for i, item in enumerate(daily_sales):
+        if item['is_historical']:
+            h_cum_dates.append(all_dates[i])
+            h_cum_std.append(cumulative_std[i])
+            h_cum_dlx.append(cumulative_dlx[i])
+            h_cum_tot.append(cumulative_total[i])
+        else:
+            r_cum_dates.append(all_dates[i])
+            r_cum_std.append(cumulative_std[i])
+            r_cum_dlx.append(cumulative_dlx[i])
+            r_cum_tot.append(cumulative_total[i])
+
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 12))
 
-    # ── 상단: 일별 에디션별 판매량 ──────────────────────────────────────
-    # 히스토리 구간 (점선 + 연한 색)
+    # 상단: 일별 에디션별 판매량
     if h_dates:
         ax1.plot(h_dates, h_std, 'o--', label='Standard – Est. (historical avg)',
                  linewidth=1.5, markersize=4, color='#90CAF9', alpha=0.8)
@@ -633,19 +615,16 @@ def estimate_daily_sales(data, output_dir='output'):
         ax1.fill_between(h_dates, h_std, alpha=0.06, color='#2E86AB')
         ax1.fill_between(h_dates, h_dlx, alpha=0.06, color='#A23B72')
 
-    # 경계 연결 (점선)
     if bridge_dates:
         ax1.plot(bridge_dates, bridge_std, '--', linewidth=1, color='#90CAF9', alpha=0.5)
         ax1.plot(bridge_dates, bridge_dlx, '--', linewidth=1, color='#F48FB1', alpha=0.5)
 
-    # 실제 구간 (실선 + 진한 색)
     if r_dates:
         ax1.plot(r_dates, r_std, 'o-', label='Standard – Est. (per-country data)',
                  linewidth=2, markersize=5, color='#2E86AB')
         ax1.plot(r_dates, r_dlx, 's-', label='Deluxe – Est. (per-country data)',
                  linewidth=2, markersize=5, color='#A23B72')
 
-    # 구분선
     if hist_items and real_items:
         boundary = real_items[0]['date']
         ax1.axvline(x=boundary, color='gray', linestyle=':', linewidth=1.5, alpha=0.7)
@@ -663,22 +642,10 @@ def estimate_daily_sales(data, output_dir='output'):
     ax1.xaxis.set_major_locator(mdates.DayLocator(interval=3))
     plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45)
 
-    # ── 하단: 누적 판매량 (히스토리/실제 구분 음영) ──────────────────────
-    # 히스토리 누적 구간 배경
+    # 하단: 누적 판매량
     if hist_items:
-        h_idx_end = len(hist_items)
-        ax2.axvspan(all_dates[0], all_dates[h_idx_end - 1],
+        ax2.axvspan(all_dates[0], all_dates[len(hist_items) - 1],
                     alpha=0.07, color='orange', label='Historical estimate period')
-
-    h_cum_std   = cumulative_std[:len(hist_items)]
-    h_cum_dlx   = cumulative_dlx[:len(hist_items)]
-    h_cum_tot   = cumulative_total[:len(hist_items)]
-    h_cum_dates = all_dates[:len(hist_items)]
-
-    r_cum_std   = cumulative_std[len(hist_items):]
-    r_cum_dlx   = cumulative_dlx[len(hist_items):]
-    r_cum_tot   = cumulative_total[len(hist_items):]
-    r_cum_dates = all_dates[len(hist_items):]
 
     if h_cum_dates:
         ax2.plot(h_cum_dates, h_cum_std, 'o--', linewidth=1.5, markersize=3,
@@ -688,16 +655,18 @@ def estimate_daily_sales(data, output_dir='output'):
         ax2.plot(h_cum_dates, h_cum_tot, '^--', linewidth=1.5, markersize=3,
                  color='#A8D5A2', alpha=0.8)
 
-    # 경계 연결
-    if hist_items and real_items:
+    # 경계 연결 (누적)
+    if hist_items and real_items and h_cum_dates and r_cum_dates:
         for cum_list, color in [
             (cumulative_std,   '#2E86AB'),
             (cumulative_dlx,   '#A23B72'),
             (cumulative_total, '#27AE60'),
         ]:
-            ax2.plot([all_dates[len(hist_items)-1], all_dates[len(hist_items)]],
-                     [cum_list[len(hist_items)-1],  cum_list[len(hist_items)]],
-                     '--', linewidth=1, color=color, alpha=0.5)
+            ax2.plot(
+                [h_cum_dates[-1], r_cum_dates[0]],
+                [cum_list[len(hist_items) - 1], cum_list[len(hist_items)]],
+                '--', linewidth=1, color=color, alpha=0.5
+            )
 
     if r_cum_dates:
         ax2.plot(r_cum_dates, r_cum_std,  'o-',
@@ -730,7 +699,6 @@ def estimate_daily_sales(data, output_dir='output'):
     ax2.xaxis.set_major_locator(mdates.DayLocator(interval=3))
     plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45)
     
-    # 추정 기준 정보 추가
     criteria_text = (
         "Estimation Criteria:\n"
         "Rank → Base Sales (continuous 2-segment curve): "
@@ -740,13 +708,13 @@ def estimate_daily_sales(data, output_dir='output'):
         "Total: 49 countries combined (PlayStation Store pre-order rankings)"
     )
     
-    fig.text(0.5, 0.01, criteria_text, 
-             fontsize=8, 
+    fig.text(0.5, 0.01, criteria_text,
+             fontsize=8,
              verticalalignment='bottom',
              horizontalalignment='center',
              bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.3))
     
-    plt.tight_layout(rect=[0, 0.05, 1, 1])  # 하단 여백 확보
+    plt.tight_layout(rect=[0, 0.05, 1, 1])
     sales_chart_path = f'{output_dir}/daily_sales_chart.png'
     plt.savefig(sales_chart_path, dpi=150, bbox_inches='tight')
     plt.close()
@@ -765,26 +733,22 @@ def plot_country_rankings(country_data, output_dir='output'):
             
         fig, ax = plt.subplots(figsize=(14, 7))
         
-        # 순위 그래프 (낮을수록 좋으므로 y축 반전)
         ax.plot(data['dates'], data['standard'], 'o-', label='Standard', linewidth=2, markersize=4)
         ax.plot(data['dates'], data['deluxe'], 's-', label='Deluxe', linewidth=2, markersize=4)
         
-        # 축 설정
         ax.set_xlabel('Date', fontsize=12)
         ax.set_ylabel('Rank', fontsize=12)
         ax.set_title(f'{country} - Daily Ranking Trends', fontsize=14, fontweight='bold')
-        ax.invert_yaxis()  # 순위는 낮을수록 좋음
+        ax.invert_yaxis()
         ax.grid(True, alpha=0.3)
         ax.legend(fontsize=10)
         
-        # 날짜 포맷 설정
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
         ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
         plt.xticks(rotation=45)
         
         plt.tight_layout()
         
-        # 파일명에서 특수문자 제거
         safe_country = country.replace('/', '_').replace('\\', '_')
         plt.savefig(f'{output_dir}/{safe_country}_ranking.png', dpi=150, bbox_inches='tight')
         plt.close()
@@ -801,11 +765,10 @@ def plot_all_countries_standard(country_data, output_dir='output'):
         if data['dates']:
             ax.plot(data['dates'], data['standard'], 'o-', label=country, linewidth=1.5, markersize=3, alpha=0.7)
             
-            # 최근 날짜의 순위 표시
             if data['standard'] and data['standard'][-1] is not None:
                 last_date = data['dates'][-1]
                 last_rank = data['standard'][-1]
-                ax.annotate(f'{int(last_rank)}', 
+                ax.annotate(f'{int(last_rank)}',
                            xy=(last_date, last_rank),
                            xytext=(5, 0), textcoords='offset points',
                            fontsize=7, fontweight='bold',
@@ -838,11 +801,10 @@ def plot_all_countries_deluxe(country_data, output_dir='output'):
         if data['dates']:
             ax.plot(data['dates'], data['deluxe'], 's-', label=country, linewidth=1.5, markersize=3, alpha=0.7)
             
-            # 최근 날짜의 순위 표시
             if data['deluxe'] and data['deluxe'][-1] is not None:
                 last_date = data['dates'][-1]
                 last_rank = data['deluxe'][-1]
-                ax.annotate(f'{int(last_rank)}', 
+                ax.annotate(f'{int(last_rank)}',
                            xy=(last_date, last_rank),
                            xytext=(5, 0), textcoords='offset points',
                            fontsize=7, fontweight='bold',
@@ -869,7 +831,6 @@ def plot_daily_averages(country_data, output_dir='output'):
     """일별 Standard와 Deluxe 평균 순위 그래프"""
     os.makedirs(output_dir, exist_ok=True)
     
-    # 날짜별로 평균 계산
     date_averages = {}
     
     for country, data in country_data.items():
@@ -881,13 +842,11 @@ def plot_daily_averages(country_data, output_dir='output'):
                     'standard': [],
                     'deluxe': []
                 }
-            # None 값 필터링
             if data['standard'][i] is not None:
                 date_averages[date_str]['standard'].append(data['standard'][i])
             if data['deluxe'][i] is not None:
                 date_averages[date_str]['deluxe'].append(data['deluxe'][i])
     
-    # 날짜별 평균 계산
     dates = []
     standard_avgs = []
     deluxe_avgs = []
@@ -896,7 +855,6 @@ def plot_daily_averages(country_data, output_dir='output'):
         std_list = date_averages[date_str]['standard']
         dlx_list = date_averages[date_str]['deluxe']
         
-        # 데이터가 있는 경우에만 추가
         if std_list and dlx_list:
             dates.append(date_averages[date_str]['date'])
             standard_avgs.append(sum(std_list) / len(std_list))
@@ -906,29 +864,24 @@ def plot_daily_averages(country_data, output_dir='output'):
         print('⚠️  No data to plot for daily averages')
         return
     
-    # 그래프 생성
     fig, ax = plt.subplots(figsize=(14, 7))
     
     ax.plot(dates, deluxe_avgs, 's-', label='Deluxe Average', linewidth=2, markersize=5, color='#A23B72')
     ax.plot(dates, standard_avgs, 'o-', label='Standard Average', linewidth=2, markersize=5, color='#2E86AB')
     
-    # 날짜별 순위 표시
     for i, date in enumerate(dates):
-        # Deluxe 순위 표시
-        ax.annotate(f'{deluxe_avgs[i]:.1f}', 
+        ax.annotate(f'{deluxe_avgs[i]:.1f}',
                    xy=(date, deluxe_avgs[i]),
                    xytext=(0, 8), textcoords='offset points',
                    fontsize=7, ha='center',
                    bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.6, edgecolor='none'))
         
-        # Standard 순위 표시
-        ax.annotate(f'{standard_avgs[i]:.1f}', 
+        ax.annotate(f'{standard_avgs[i]:.1f}',
                    xy=(date, standard_avgs[i]),
                    xytext=(0, -12), textcoords='offset points',
                    fontsize=7, ha='center',
                    bbox=dict(boxstyle='round,pad=0.3', facecolor='lightblue', alpha=0.6, edgecolor='none'))
     
-    # Standard 최고/최저 표시
     std_min_rank = min(standard_avgs)
     std_max_rank = max(standard_avgs)
     std_min_idx = standard_avgs.index(std_min_rank)
@@ -936,7 +889,6 @@ def plot_daily_averages(country_data, output_dir='output'):
     ax.plot(dates[std_min_idx], std_min_rank, 'go', markersize=10, label=f'Std Best: {std_min_rank:.1f}', zorder=5)
     ax.plot(dates[std_max_idx], std_max_rank, 'ro', markersize=10, label=f'Std Worst: {std_max_rank:.1f}', zorder=5)
     
-    # Deluxe 최고/최저 표시
     dlx_min_rank = min(deluxe_avgs)
     dlx_max_rank = max(deluxe_avgs)
     dlx_min_idx = deluxe_avgs.index(dlx_min_rank)
@@ -967,17 +919,15 @@ def plot_top_countries(country_data, countries_to_plot, output_dir='output'):
     
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 12))
     
-    # Standard 그래프
     for country in countries_to_plot:
         if country in country_data and country_data[country]['dates']:
             data = country_data[country]
             ax1.plot(data['dates'], data['standard'], 'o-', label=country, linewidth=2, markersize=4)
             
-            # 최근 순위 표시
             if data['standard'] and data['standard'][-1] is not None:
                 last_date = data['dates'][-1]
                 last_rank = data['standard'][-1]
-                ax1.annotate(f'{int(last_rank)}', 
+                ax1.annotate(f'{int(last_rank)}',
                            xy=(last_date, last_rank),
                            xytext=(5, 0), textcoords='offset points',
                            fontsize=8, fontweight='bold')
@@ -992,17 +942,15 @@ def plot_top_countries(country_data, countries_to_plot, output_dir='output'):
     ax1.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45)
     
-    # Deluxe 그래프
     for country in countries_to_plot:
         if country in country_data and country_data[country]['dates']:
             data = country_data[country]
             ax2.plot(data['dates'], data['deluxe'], 's-', label=country, linewidth=2, markersize=4)
             
-            # 최근 순위 표시
             if data['deluxe'] and data['deluxe'][-1] is not None:
                 last_date = data['dates'][-1]
                 last_rank = data['deluxe'][-1]
-                ax2.annotate(f'{int(last_rank)}', 
+                ax2.annotate(f'{int(last_rank)}',
                            xy=(last_date, last_rank),
                            xytext=(5, 0), textcoords='offset points',
                            fontsize=8, fontweight='bold')
@@ -1033,14 +981,12 @@ def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_texts, d
         timestamp = latest_rankings['timestamp']
         rankings = latest_rankings['rankings']
         
-        # 최신 판매량 추산 데이터 (현재 순위로 실시간 계산)
         latest_sales = calculate_current_sales(rankings) if rankings else None
         
-        # 디스코드 임베드 메시지 생성
         embed = {
             "title": "📊 Latest Rankings Update",
             "description": f"**{timestamp.strftime('%Y-%m-%d %H:%M:%S')}** 기준 최신 순위",
-            "color": 3066993,  # 초록색
+            "color": 3066993,
             "fields": [
                 {
                     "name": "📈 Total Countries Tracked",
@@ -1054,7 +1000,6 @@ def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_texts, d
             "timestamp": datetime.utcnow().isoformat()
         }
         
-        # 판매량 추산 정보 추가
         if latest_sales:
             sales_text = (
                 f"**Standard**: {int(latest_sales['standard']):,} units\n"
@@ -1068,20 +1013,18 @@ def send_latest_rankings_to_discord(webhook_url, latest_rankings, table_texts, d
                 "inline": True
             })
         
-        # 순위 텍스트 추가 (이미지 대신)
         if table_texts:
             embed["fields"].append({
                 "name": "📋 All Rankings (Standard)",
-                "value": table_texts['standard'][:1024],  # Discord 필드 제한
+                "value": table_texts['standard'][:1024],
                 "inline": False
             })
             embed["fields"].append({
                 "name": "📋 All Rankings (Deluxe)",
-                "value": table_texts['deluxe'][:1024],  # Discord 필드 제한
+                "value": table_texts['deluxe'][:1024],
                 "inline": False
             })
         
-        # 웹훅으로 전송
         payload = {
             "username": "Ranking Bot",
             "embeds": [embed]
@@ -1106,20 +1049,16 @@ def send_discord_notification(webhook_url, country_data, dates, output_dir='outp
         print('⚠️  Discord webhook URL not provided, skipping notification')
         return
     
-    print(f'🔍 Discord webhook URL: {webhook_url[:50]}...')  # 앞부분만 출력
+    print(f'🔍 Discord webhook URL: {webhook_url[:50]}...')
     
     try:
-        # 기본 통계 계산
         num_countries = len(country_data)
         date_range = f"{dates[0].strftime('%Y-%m-%d')} to {dates[-1].strftime('%Y-%m-%d')}"
         
-        # 주요 국가 지정 (일본, 미국, 영국, 독일, 프랑스, 한국)
         target_countries = ['일본', '미국', '영국', '독일', '프랑스', '한국']
         countries_to_plot = []
         
-        # 실제 데이터에서 해당 국가 찾기
         for target in target_countries:
-            # 여러 표기법 체크
             possible_names = [target]
             if target == '한국':
                 possible_names.extend(['대한민국', 'Korea', 'South Korea'])
@@ -1139,7 +1078,6 @@ def send_discord_notification(webhook_url, country_data, dates, output_dir='outp
                     countries_to_plot.append(name)
                     break
         
-        # 주요 국가 그래프 생성
         if countries_to_plot:
             plot_top_countries(country_data, countries_to_plot, output_dir)
         
@@ -1147,68 +1085,41 @@ def send_discord_notification(webhook_url, country_data, dates, output_dir='outp
         top_changes = []
         for country, data in country_data.items():
             if len(data['standard']) >= 2:
-                # None 값 체크 및 실제 변화가 있는 경우만
-                if data['standard'][-1] is not None and data['standard'][-2] is not None:
-                    change = abs(data['standard'][-1] - data['standard'][-2])
-                    if change > 0:  # 변화가 있는 경우만 추가
-                        top_changes.append((country, change, data['standard'][-1]))
+                prev_std = data['standard'][-2]
+                curr_std = data['standard'][-1]
+                if prev_std is not None and curr_std is not None:
+                    change = prev_std - curr_std  # 양수 = 순위 상승
+                    top_changes.append((country, change, curr_std))
         
-        top_changes.sort(key=lambda x: x[1], reverse=True)
-        top_5_changes = top_changes[:5]
+        top_changes.sort(key=lambda x: abs(x[1]), reverse=True)
+        top_changes = top_changes[:5]
         
-        # 디스코드 임베드 메시지 생성
+        changes_text = ""
+        for country, change, curr_rank in top_changes:
+            arrow = "⬆️" if change > 0 else "⬇️" if change < 0 else "➡️"
+            changes_text += f"{arrow} **{country}**: {abs(int(change))} ranks ({'up' if change > 0 else 'down' if change < 0 else 'no change'}) → #{int(curr_rank)}\n"
+        
         embed = {
-            "title": "📊 Ranking Graphs Generated!",
-            "description": f"새로운 순위 그래프가 생성되었습니다.",
-            "color": 5814783,  # 파란색
-            "fields": [
-                {
-                    "name": "📅 Date Range",
-                    "value": date_range,
-                    "inline": False
-                },
-                {
-                    "name": "🌍 Countries",
-                    "value": str(num_countries),
-                    "inline": True
-                },
-                {
-                    "name": "📈 Total Graphs",
-                    "value": f"{num_countries + 5} files",  # 개별 + 통합 + 평균 그래프들
-                    "inline": True
-                }
-            ],
+            "title": "📈 Ranking Update - Charts",
+            "description": f"**{date_range}** | {num_countries} countries tracked",
+            "color": 5814783,
+            "fields": [],
             "footer": {
-                "text": "Ranking Visualization Bot"
+                "text": "Ranking Bot | Auto-update"
             },
             "timestamp": datetime.utcnow().isoformat()
         }
         
-        # 주요 국가 정보 추가
-        if countries_to_plot:
-            countries_text = ", ".join([f"**{country}**" for country in countries_to_plot])
+        if changes_text:
             embed["fields"].append({
-                "name": "🌏 Major Countries",
-                "value": countries_text,
-                "inline": False
-            })
-        
-        # 최근 변화가 큰 국가 추가
-        if top_5_changes:
-            changes_text = "\n".join([
-                f"**{country}**: Rank {rank} (±{int(change)})"
-                for country, change, rank in top_5_changes
-            ])
-            embed["fields"].append({
-                "name": "🔥 Top Ranking Changes (Standard)",
+                "name": "🔄 Notable Changes (Standard)",
                 "value": changes_text,
                 "inline": False
             })
         
-        # 주요 그래프 이미지 첨부
         files_to_send = {}
         image_files = [
-            ('daily_sales_chart.png', 'sales_chart'),  # 판매량 그래프 추가
+            ('daily_sales_chart.png', 'sales_chart'),
             ('top_countries_rankings.png', 'top_countries'),
             ('all_countries_deluxe.png', 'deluxe_chart'),
             ('all_countries_standard.png', 'standard_chart'),
@@ -1220,11 +1131,9 @@ def send_discord_notification(webhook_url, country_data, dates, output_dir='outp
             if os.path.exists(filepath):
                 files_to_send[file_key] = (filename, open(filepath, 'rb'), 'image/png')
         
-        # 첫 번째 이미지를 임베드에 표시
         if files_to_send:
             embed["image"] = {"url": f"attachment://{image_files[0][0]}"}
         
-        # 웹훅으로 전송
         payload = {
             "username": "Ranking Bot",
             "embeds": [embed]
@@ -1233,18 +1142,15 @@ def send_discord_notification(webhook_url, country_data, dates, output_dir='outp
         print(f'📤 Sending to Discord with {len(files_to_send)} images...')
         
         if files_to_send:
-            # 파일과 함께 전송
             response = requests.post(
-                webhook_url, 
+                webhook_url,
                 data={"payload_json": json.dumps(payload)},
                 files=files_to_send,
                 timeout=30
             )
-            # 파일 핸들 닫기
             for file_tuple in files_to_send.values():
                 file_tuple[1].close()
         else:
-            # 파일 없이 전송
             response = requests.post(webhook_url, json=payload, timeout=10)
         
         print(f'📬 Response status: {response.status_code}')
@@ -1265,20 +1171,11 @@ def send_discord_notification(webhook_url, country_data, dates, output_dir='outp
 def build_historical_data_from_weekly(output_path='historical_ranking_data.json'):
     """
     이미지에서 수집한 주단위 국가별 순위를 historical_ranking_data.json 형식으로 변환.
-    각 항목: {"date": "YYYY-MM-DD", "average_rank": float, "country_ranks": {...}}
-
-    주 → 일 변환: 해당 주의 모든 날짜에 동일 데이터 복제 (월~일 7일).
-    이미 rank_history.json에 있는 날짜(1/11 이후)는 제외해야 하므로
-    cutoff_date 이전 날짜만 생성.
     """
     import math as _m
     from datetime import timedelta
 
-    # 이미지(주단위 평균 순위표)에서 정확히 읽은 데이터
-    # None = 표에서 '-' (해당 주 데이터 없음)
-    # 컬럼: 미국, 일본, 홍콩, 인도, 영국, 독일, 프랑스, 멕시코, 캐나다, 한국, 호주, 브라질, 스페인
     weekly_raw = [
-        # (주 시작일,  국가별 순위 dict)
         ("2025-09-22", {"미국":12,"일본":17,"홍콩":14,"인도":4, "영국":18,"독일":12,"프랑스":9, "멕시코":17,"캐나다":15,"한국":4, "호주":12,"브라질":12,"스페인":14}),
         ("2025-09-29", {"미국":11,"일본":None,"홍콩":17,"인도":6, "영국":22,"독일":16,"프랑스":12,"멕시코":13,"캐나다":20,"한국":4, "호주":21,"브라질":11,"스페인":11}),
         ("2025-10-06", {"미국":16,"일본":15,"홍콩":12,"인도":17,"영국":18,"독일":19,"프랑스":13,"멕시코":13,"캐나다":20,"한국":4, "호주":21,"브라질":11,"스페인":11}),
@@ -1297,13 +1194,13 @@ def build_historical_data_from_weekly(output_path='historical_ranking_data.json'
         ("2026-01-05", {"미국":15,"일본":None,"홍콩":15,"인도":9, "영국":17,"독일":14,"프랑스":11,"멕시코":14,"캐나다":15,"한국":10,"호주":20,"브라질":11,"스페인":13}),
     ]
 
-    CUTOFF = datetime.strptime("2026-01-11", "%Y-%m-%d")  # 이 날짜 이전만 생성
+    CUTOFF = datetime.strptime("2026-01-11", "%Y-%m-%d")
 
+    from datetime import timedelta
     result = []
     for week_start_str, country_ranks in weekly_raw:
         week_start = datetime.strptime(week_start_str, "%Y-%m-%d")
 
-        # 가중평균 순위 계산
         wa_num, wa_den = 0.0, 0.0
         for c, v in country_ranks.items():
             if v is not None:
@@ -1311,7 +1208,6 @@ def build_historical_data_from_weekly(output_path='historical_ranking_data.json'
                 wa_num += v * m; wa_den += m
         avg_rank = round(wa_num / wa_den, 1) if wa_den > 0 else 15.0
 
-        # 주의 7일을 개별 날짜로 전개, cutoff 이전만
         for day_offset in range(7):
             day = week_start + timedelta(days=day_offset)
             if day >= CUTOFF:
@@ -1322,7 +1218,6 @@ def build_historical_data_from_weekly(output_path='historical_ranking_data.json'
                 "country_ranks": country_ranks
             })
 
-    # 날짜 중복 제거 (같은 날짜가 여러 주에 걸쳐 있을 경우 나중 항목 우선)
     seen = {}
     for item in result:
         seen[item['date']] = item
@@ -1337,13 +1232,9 @@ def build_historical_data_from_weekly(output_path='historical_ranking_data.json'
 
 def main():
     """메인 실행 함수"""
-    # 한글 폰트 설정
     setup_korean_font()
     
-    # 데이터 파일 경로
     data_file = 'rank_history.json'
-    
-    # 디스코드 웹훅 URL (환경 변수에서 가져오기)
     discord_webhook = os.environ.get('DISCORD_WEBHOOK', '')
     
     if not os.path.exists(data_file):
@@ -1360,13 +1251,10 @@ def main():
     print(f'🌍 Countries: {len(country_data)}')
     print()
     
-    # 순위 텍스트 생성
     print('📋 Creating ranking text...')
     table_texts = create_ranking_table(data)
     print()
     
-    # 판매량 추산
-    # historical_ranking_data.json 없으면 주단위 데이터로 자동 생성
     historical_file = 'historical_ranking_data.json'
     if not os.path.exists(historical_file):
         print('📅 historical_ranking_data.json not found → building from weekly data...')
@@ -1377,7 +1265,6 @@ def main():
     sales_table_path, sales_chart_path, daily_sales = estimate_daily_sales(data)
     print()
     
-    # 최신 순위 정보 추출
     latest_rankings = get_latest_rankings(data)
     
     print('🎨 Generating individual country plots...')
@@ -1400,14 +1287,11 @@ def main():
     print(f'📁 Output directory: output/')
     print()
     
-    # 디스코드 알림 전송
     if discord_webhook:
-        # 1. 최신 순위 전송
         print('📤 Sending latest rankings to Discord...')
         send_latest_rankings_to_discord(discord_webhook, latest_rankings, table_texts, daily_sales)
         print()
         
-        # 2. 그래프 알림 전송
         print('📤 Sending graph notification to Discord...')
         send_discord_notification(discord_webhook, country_data, dates)
     else:
