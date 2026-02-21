@@ -165,6 +165,52 @@ for country in ALL_COUNTRIES:
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 
 # =============================================================================
+# 출시 후 자동 URL 전환 설정
+# =============================================================================
+
+# 출시일 (한국 3/20 기준, 글로벌은 3/19이지만 KST로 통일)
+# 중국은 사전예약도 목록 없으므로 제외
+RELEASE_DATE_KST = datetime(2026, 3, 20, tzinfo=KST)
+
+SKIP_COUNTRIES = {"중국"}  # 추적 제외 국가
+
+PREORDER_CATEGORY   = "3bf499d7-7acf-4931-97dd-2667494ee2c9"
+BESTSELLER_CATEGORY = "e1699f77-77e1-43ca-a296-26d08abacb0f"  # PS Store 신작 베스트셀러 (미국/영국 확인)
+
+LOCALE_MAP = {
+    "미국": "en-us", "캐나다": "en-ca", "브라질": "pt-br", "멕시코": "es-mx",
+    "아르헨티나": "es-ar", "칠레": "es-cl", "콜롬비아": "es-co", "페루": "es-pe",
+    "우루과이": "es-uy", "볼리비아": "es-bo", "과테말라": "es-gt", "온두라스": "es-hn",
+    "영국": "en-gb", "독일": "de-de", "프랑스": "fr-fr", "스페인": "es-es",
+    "이탈리아": "it-it", "네덜란드": "nl-nl", "폴란드": "pl-pl", "스위스": "de-ch",
+    "스웨덴": "sv-se", "노르웨이": "no-no", "덴마크": "da-dk", "핀란드": "fi-fi",
+    "포르투갈": "pt-pt", "그리스": "el-gr", "체코": "cs-cz", "헝가리": "hu-hu",
+    "루마니아": "ro-ro", "슬로바키아": "sk-sk", "슬로베니아": "sl-si", "우크라이나": "uk-ua",
+    "사우디아라비아": "en-sa", "아랍에미리트": "en-ae", "남아공": "en-za",
+    "일본": "ja-jp", "한국": "ko-kr", "호주": "en-au", "인도": "en-in",
+    "태국": "th-th", "싱가포르": "en-sg", "말레이시아": "en-my", "인도네시아": "id-id",
+    "필리핀": "en-ph", "베트남": "vi-vn", "홍콩": "zh-hk", "대만": "zh-tw",
+    "뉴질랜드": "en-nz",
+}
+
+def is_post_release():
+    return datetime.now(KST) >= RELEASE_DATE_KST
+
+def get_active_url(country):
+    """
+    출시 전 → 사전예약 카테고리 URL
+    출시 후 → 베스트셀러 카테고리 URL
+    중국 등 제외 국가 → None 반환
+    """
+    if country in SKIP_COUNTRIES:
+        return None
+    locale = LOCALE_MAP.get(country)
+    if not locale:
+        return URLS.get(country)  # fallback: 기존 URL
+    category = BESTSELLER_CATEGORY if is_post_release() else PREORDER_CATEGORY
+    return f"https://store.playstation.com/{locale}/category/{category}/1"
+
+# =============================================================================
 # 유틸리티
 # =============================================================================
 
@@ -318,8 +364,9 @@ def send_discord(results, combined_avg):
             plt.close()
 
     # 요약 메시지 (그래프 포함)
+    mode_label = "🚀 베스트셀러 차트" if is_post_release() else "⏳ 사전예약 차트"
     summary_desc = f"📊 **전체 가중 평균**: `{combined_avg:.1f}위` {'(' + combined_diff_text + ')' if combined_diff_text else ''}\n"
-    summary_desc += f"🌐 **추적 중인 국가**: {len(results)}개국\n\n"
+    summary_desc += f"🌐 **추적 중인 국가**: {len(results)}개국 | {mode_label}\n\n"
     
     # 지역별 평균 계산
     for region_name in ["Americas", "Europe & Middle East", "Asia & Oceania"]:
@@ -412,19 +459,31 @@ def main():
     print("=" * 60)
     print("🎮 Crimson Desert PS Store 순위 추적")
     print("=" * 60)
-    
+
+    if is_post_release():
+        print("🚀 출시 후 모드: 베스트셀러 카테고리 추적 중")
+    else:
+        print("⏳ 출시 전 모드: 사전예약 카테고리 추적 중")
+    print(f"   (출시일 기준: {RELEASE_DATE_KST.strftime('%Y-%m-%d')} KST)")
+    print()
+
     start_time = time.time()
     driver = setup_driver()
-    
+
     results = {}
-    
+
     try:
         all_countries = []
         for region_countries in REGIONS.values():
             all_countries.extend(region_countries)
-        
+
         for country in all_countries:
-            url = URLS.get(country)
+            if country in SKIP_COUNTRIES:
+                print(f"⏭️  스킵: {country} (추적 제외 국가)")
+                results[country] = {"standard": None, "deluxe": None}
+                continue
+
+            url = get_active_url(country)
             if url:
                 print(f"크롤링 중: {country}...")
                 results[country] = crawl_country(driver, country, url)
