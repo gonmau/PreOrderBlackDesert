@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
   <style>
     :root {
       --bg: #0a0608;
@@ -1128,6 +1129,63 @@ function setHeroStat(valId, diffId, curr, prev, suffix='') {
   }
 }
 
+// ─── 붉은사막 주요 이벤트 ───
+const CD_EVENTS = [
+  { date: '2026-01-05', label: '🎬 유튜브 게임쇼 라이브',       color: '#9b59b6' },
+  { date: '2026-01-09', label: '🖥️ CES 2026 시연 (라스베이거스)', color: '#3498db' },
+  { date: '2026-01-10', label: '🎤 미국 홍보이사 인터뷰',         color: '#3498db' },
+  { date: '2026-01-17', label: '🎥 프리뷰 #1 (오픈월드)',         color: '#e67e22' },
+  { date: '2026-01-21', label: '🏆 골드마스터 선언',              color: '#f1c40f' },
+  { date: '2026-01-25', label: '🎥 프리뷰 #2 (전투 시스템)',      color: '#e67e22' },
+  { date: '2026-02-01', label: '🎥 프리뷰 #3 (NPC·퀘스트)',      color: '#e67e22' },
+  { date: '2026-02-15', label: '🎮 크리에이터 사전 시연회',       color: '#2ecc71' },
+  { date: '2026-03-19', label: '🚀 글로벌 출시 (북미)',           color: '#e74c3c' },
+  { date: '2026-03-20', label: '🚀 한국 출시',                    color: '#e74c3c' },
+];
+
+function buildEventAnnotations(labels) {
+  // labels 배열에서 날짜 인덱스 찾기
+  const annotations = {};
+  CD_EVENTS.forEach((ev, idx) => {
+    const evDate = new Date(ev.date);
+    const evLabel = `${evDate.getMonth()+1}/${evDate.getDate()}`;
+    // 가장 가까운 라벨 인덱스 찾기
+    let bestIdx = labels.indexOf(evLabel);
+    if (bestIdx < 0) {
+      // 정확히 없으면 가장 가까운 날짜 인덱스 찾기
+      bestIdx = labels.reduce((prev, cur, i) => {
+        const [m, d] = cur.split('/').map(Number);
+        const curDate = new Date(2026, m-1, d);
+        const [pm, pd] = labels[prev].split('/').map(Number);
+        const prevDate = new Date(2026, pm-1, pd);
+        return Math.abs(curDate - evDate) < Math.abs(prevDate - evDate) ? i : prev;
+      }, 0);
+    }
+    if (bestIdx < 0 || bestIdx >= labels.length) return;
+
+    annotations[`ev${idx}`] = {
+      type: 'line',
+      xMin: bestIdx,
+      xMax: bestIdx,
+      borderColor: ev.color,
+      borderWidth: 1.5,
+      borderDash: [4, 3],
+      label: {
+        display: true,
+        content: ev.label,
+        position: idx % 2 === 0 ? '5%' : '20%',  // 짝수/홀수 교차 배치
+        backgroundColor: 'rgba(26,19,24,0.85)',
+        color: ev.color,
+        font: { size: 9, weight: 'bold' },
+        padding: { x: 5, y: 3 },
+        borderRadius: 3,
+      }
+    };
+  });
+  return annotations;
+}
+
+
 function renderChart() {
   const labels = allHistory.map(h => {
     const d = new Date(h.timestamp);
@@ -1193,6 +1251,9 @@ function renderChart() {
           callbacks: {
             label: ctx2 => `가중 평균: ${ctx2.raw?.toFixed(1) ?? '—'}위`
           }
+        },
+        annotation: {
+          annotations: buildEventAnnotations(labels)
         }
       }
     }
