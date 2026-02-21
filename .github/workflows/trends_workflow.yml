@@ -43,4 +43,7 @@ jobs:
         
         git add trends_history.json
         git commit -m "Update trends history [skip ci]" || exit 0
+        
+        # push 직전 한 번 더 rebase (동시 실행 충돌 방지)
+        git pull origin main --rebase
         git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main
