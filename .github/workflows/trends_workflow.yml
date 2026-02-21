@@ -44,6 +44,10 @@ jobs:
         git add trends_history.json
         git commit -m "Update trends history [skip ci]" || exit 0
         
-        # push 직전 한 번 더 rebase (동시 실행 충돌 방지)
-        git pull origin main --rebase
-        git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main
+        # push 실패 시 최대 5회 재시도 (동시 실행 충돌 방지)
+        for i in 1 2 3 4 5; do
+          git pull origin main --rebase && \
+          git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main && break
+          echo "Push 실패 ($i/5) - 5초 후 재시도..."
+          sleep 5
+        done
