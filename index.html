@@ -1727,22 +1727,6 @@ function renderTrends(data) {
   document.getElementById('trends-google-peak').textContent = peak;
   document.getElementById('trends-google-peak-date').textContent = fmtDate(peakEntry.timestamp);
 
-  // YouTube
-  const ytEntries = data.filter(e => e.youtube?.score != null);
-  if (ytEntries.length) {
-    const ytLatest = ytEntries[ytEntries.length - 1];
-    const ytPrev   = ytEntries.length >= 2 ? ytEntries[ytEntries.length - 2] : null;
-    document.getElementById('trends-yt-now').textContent = ytLatest.youtube.score;
-    const ytDiffEl = document.getElementById('trends-yt-diff');
-    if (ytPrev?.youtube?.score != null) {
-      const d = ytLatest.youtube.score - ytPrev.youtube.score;
-      ytDiffEl.textContent = d > 0 ? `▲ ${d} 상승` : d < 0 ? `▼ ${Math.abs(d)} 하락` : '변동 없음';
-      ytDiffEl.style.color = d > 0 ? 'var(--up)' : d < 0 ? 'var(--down)' : 'var(--muted)';
-    } else {
-      ytDiffEl.textContent = '/ 100';
-    }
-  }
-
   // ── 차트 ──
   const labels = gEntries.map(e => {
     const d = new Date(e.timestamp);
