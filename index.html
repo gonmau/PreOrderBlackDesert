@@ -953,11 +953,6 @@
           <div class="trends-stat-value high" id="trends-google-peak">—</div>
           <div class="trends-stat-sub" id="trends-google-peak-date"></div>
         </div>
-        <div class="trends-stat-box">
-          <div class="trends-stat-label">YouTube 현재</div>
-          <div class="trends-stat-value yt" id="trends-yt-now">—</div>
-          <div class="trends-stat-sub" id="trends-yt-diff">/ 100</div>
-        </div>
       </div>
 
       <!-- 글로벌 히스토리 차트 -->
@@ -1294,7 +1289,7 @@ function setHeroStat(valId, diffId, curr, prev, suffix='') {
 function renderChart() {
   const labels = allHistory.map(h => {
     const d = new Date(h.timestamp);
-    return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    return `${d.getMonth()+1}/${d.getDate()}`;
   });
   const dataPoints = allHistory.map(h => h.averages?.combined ?? null);
 
@@ -1754,10 +1749,6 @@ function renderTrends(data) {
     return `${d.getMonth()+1}/${d.getDate()}`;
   });
   const gScores  = gEntries.map(e => e.google.score);
-  const ytScores = gEntries.map(e => {
-    const match = data.find(d => d.timestamp === e.timestamp);
-    return match?.youtube?.score ?? null;
-  });
 
   const ctx = document.getElementById('trendsChart').getContext('2d');
   if (trendsChartInstance) trendsChartInstance.destroy();
@@ -1777,18 +1768,6 @@ function renderTrends(data) {
           pointHoverRadius: 5,
           tension: 0.4,
           fill: true,
-          spanGaps: true,
-        },
-        {
-          label: 'YouTube',
-          data: ytScores,
-          borderColor: '#FF0000',
-          backgroundColor: 'rgba(255,0,0,0.05)',
-          borderWidth: 1.5,
-          pointRadius: 0,
-          pointHoverRadius: 4,
-          tension: 0.4,
-          fill: false,
           spanGaps: true,
         }
       ]
@@ -1898,7 +1877,7 @@ function renderSteam() {
   // 차트
   const labels = steamHistory.map(h => {
     const d = new Date(h.timestamp);
-    return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    return `${d.getMonth()+1}/${d.getDate()}`;
   });
   const rankData = steamHistory.map(h => h.rank);
 
@@ -1999,7 +1978,7 @@ function openCountryModal(country) {
   // 차트
   const labels = allHistory.map(h => {
     const dt = new Date(h.timestamp);
-    return `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+    return `${dt.getMonth()+1}/${dt.getDate()}`;
   });
   const stdData = allHistory.map(h => h.raw_results?.[country]?.standard ?? null);
   const dlxData = allHistory.map(h => h.raw_results?.[country]?.deluxe   ?? null);
