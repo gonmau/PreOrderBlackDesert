@@ -1071,6 +1071,13 @@
       </div>
       <div class="steam-chart-box">
         <div class="steam-chart-label">위시리스트 순위 히스토리</div>
+        <div class="event-toggle-wrap">
+          <div class="event-toggle-header" onclick="toggleEvPanel('steam')">
+            <span class="event-toggle-title">📅 이벤트 표시</span>
+            <span class="event-toggle-arrow" id="ev-arrow-steam">▼</span>
+          </div>
+          <div class="event-toggle-panel" id="ev-panel-steam"></div>
+        </div>
         <div class="steam-chart-inner">
           <canvas id="steamChart"></canvas>
         </div>
@@ -1362,7 +1369,7 @@ const evPanelOpen = { rank: false, sales: false, trends: false };
 CD_EVENTS.forEach((_, idx) => { evState[idx] = false; });
 
 function initEvPanels() {
-  ['rank', 'sales', 'trends'].forEach(chartId => {
+  ['rank', 'sales', 'trends', 'steam'].forEach(chartId => {
     const panel = document.getElementById(`ev-panel-${chartId}`);
     if (!panel) return;
     panel.innerHTML = '';
@@ -1426,7 +1433,7 @@ function buildEventAnnotations() {
 
 function updateAllAnnotations() {
   const anns = buildEventAnnotations();
-  [chartInstance, salesChartInstance, trendsChartInstance].forEach(chart => {
+  [chartInstance, salesChartInstance, trendsChartInstance, steamChartInstance].forEach(chart => {
     if (!chart) return;
     chart.options.plugins.annotation.annotations = anns;
     chart.update('none');
@@ -2010,11 +2017,7 @@ function renderSteam() {
   document.getElementById('steam-count').textContent = steamHistory.length;
 
   // 차트
-  const labels = steamHistory.map(h => {
-    const d = new Date(h.timestamp);
-    return `${d.getMonth()+1}/${d.getDate()}`;
-  });
-  const rankData = steamHistory.map(h => h.rank);
+  const rankData = steamHistory.map(h => ({ x: new Date(h.timestamp), y: h.rank }));
 
   const ctx = document.getElementById('steamChart').getContext('2d');
   if (steamChartInstance) steamChartInstance.destroy();
@@ -2022,7 +2025,6 @@ function renderSteam() {
   steamChartInstance = new Chart(ctx, {
     type: 'line',
     data: {
-      labels,
       datasets: [{
         label: 'Steam 위시리스트 순위',
         data: rankData,
@@ -2053,12 +2055,9 @@ function renderSteam() {
           border: { color: '#2a1f22' }
         },
         x: {
-          ticks: {
-            color: '#7a6a65',
-            font: { size: 10 },
-            maxTicksLimit: 12,
-            maxRotation: 0
-          },
+          type: 'time',
+          time: { unit: 'day', displayFormats: { day: 'M/d' } },
+          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 20, maxRotation: 45 },
           grid: { display: false },
           border: { color: '#2a1f22' }
         }
@@ -2072,9 +2071,10 @@ function renderSteam() {
           titleColor: '#e8ddd5',
           bodyColor: '#4fc3f7',
           callbacks: {
-            label: ctx2 => ctx2.raw != null ? `위시리스트 순위: #${ctx2.raw}` : '데이터 없음'
+            label: ctx2 => ctx2.parsed.y != null ? `위시리스트 순위: #${ctx2.parsed.y}` : '데이터 없음'
           }
-        }
+        },
+        annotation: { annotations: buildEventAnnotations() }
       }
     }
   });
