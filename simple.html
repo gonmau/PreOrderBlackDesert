@@ -191,6 +191,52 @@
 
     .chart-wrapper { position: relative; height: 220px; }
 
+    /* ─── EVENT TOGGLE ─── */
+    .event-toggle-wrap {
+      margin-bottom: 10px;
+    }
+    .event-toggle-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .event-toggle-title {
+      font-size: 0.68rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .event-toggle-arrow {
+      font-size: 0.7rem;
+      color: var(--muted);
+      transition: transform 0.2s;
+    }
+    .event-toggle-arrow.open { transform: rotate(180deg); }
+    .event-toggle-panel {
+      display: none;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 8px 0;
+    }
+    .event-toggle-panel.open { display: flex; }
+    .ev-btn {
+      font-size: 0.68rem;
+      padding: 3px 8px;
+      border-radius: 3px;
+      border: 1px solid;
+      cursor: pointer;
+      background: transparent;
+      opacity: 0.4;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+    .ev-btn.active { opacity: 1; }
+
+
+
     /* ─── REGION TABS ─── */
     .tabs {
       display: flex;
@@ -785,6 +831,13 @@
     <!-- CHART -->
     <div class="chart-section fade-in">
       <div class="section-title">순위 히스토리 (가중 평균)</div>
+      <div class="event-toggle-wrap" id="ev-toggle-rank">
+        <div class="event-toggle-header" onclick="toggleEvPanel('rank')">
+          <span class="event-toggle-title">📅 이벤트 표시</span>
+          <span class="event-toggle-arrow" id="ev-arrow-rank">▼</span>
+        </div>
+        <div class="event-toggle-panel" id="ev-panel-rank"></div>
+      </div>
       <div class="chart-wrapper">
         <canvas id="rankChart"></canvas>
       </div>
@@ -818,7 +871,14 @@
 
       <!-- 글로벌 히스토리 차트 -->
       <div class="trends-chart-box">
-        <div style="font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">검색 관심도 히스토리 (글로벌)</div>
+        <div style="font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">검색 관심도 히스토리 (글로벌)</div>
+        <div class="event-toggle-wrap">
+          <div class="event-toggle-header" onclick="toggleEvPanel('trends')">
+            <span class="event-toggle-title">📅 이벤트 표시</span>
+            <span class="event-toggle-arrow" id="ev-arrow-trends">▼</span>
+          </div>
+          <div class="event-toggle-panel" id="ev-panel-trends"></div>
+        </div>
         <div class="trends-chart-inner">
           <canvas id="trendsChart"></canvas>
         </div>
@@ -1148,10 +1208,53 @@ const CD_EVENTS = [
   { date: '2026-03-20', label: '🚀 한국 출시',                     color: '#e74c3c' },
 ];
 
+// ─── 이벤트 토글 상태 ───
+const evState = {}; // { idx: true/false } 기본 false (꺼짐)
+const evPanelOpen = { rank: false, sales: false, trends: false };
+
+CD_EVENTS.forEach((_, idx) => { evState[idx] = false; });
+
+function initEvPanels() {
+  ['rank', 'sales', 'trends'].forEach(chartId => {
+    const panel = document.getElementById(`ev-panel-${chartId}`);
+    if (!panel) return;
+    panel.innerHTML = '';
+    CD_EVENTS.forEach((ev, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'ev-btn';
+      btn.textContent = ev.label;
+      btn.style.borderColor = ev.color;
+      btn.style.color = ev.color;
+      btn.dataset.idx = idx;
+      btn.onclick = () => toggleEvent(idx);
+      panel.appendChild(btn);
+    });
+  });
+}
+
+function toggleEvPanel(chartId) {
+  evPanelOpen[chartId] = !evPanelOpen[chartId];
+  const panel = document.getElementById(`ev-panel-${chartId}`);
+  const arrow = document.getElementById(`ev-arrow-${chartId}`);
+  if (panel) panel.classList.toggle('open', evPanelOpen[chartId]);
+  if (arrow) arrow.classList.toggle('open', evPanelOpen[chartId]);
+}
+
+function toggleEvent(idx) {
+  evState[idx] = !evState[idx];
+  // 모든 패널의 같은 인덱스 버튼 상태 동기화
+  document.querySelectorAll(`.ev-btn[data-idx="${idx}"]`).forEach(btn => {
+    btn.classList.toggle('active', evState[idx]);
+  });
+  // 세 차트 모두 annotation 갱신
+  updateAllAnnotations();
+}
+
 function buildEventAnnotations() {
   const annotations = {};
   const positions = ['5%', '18%', '31%', '44%', '57%', '70%', '83%'];
   CD_EVENTS.forEach((ev, idx) => {
+    if (!evState[idx]) return; // 꺼진 이벤트는 제외
     annotations[`ev${idx}`] = {
       type: 'line',
       xMin: ev.date,
@@ -1173,6 +1276,16 @@ function buildEventAnnotations() {
   });
   return annotations;
 }
+
+function updateAllAnnotations() {
+  const anns = buildEventAnnotations();
+  [chartInstance, salesChartInstance, trendsChartInstance].forEach(chart => {
+    if (!chart) return;
+    chart.options.plugins.annotation.annotations = anns;
+    chart.update('none');
+  });
+}
+
 
 function renderChart() {
   // {x: Date, y: rank} 형태로 변환 (time scale용)
@@ -1735,6 +1848,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDi
 setInterval(() => { loadData(); loadSteamData(); loadTrendsData(); }, 30 * 60 * 1000);
 
 // ─── 초기 실행 ───
+initEvPanels();
 loadData();
 loadSteamData();
 loadTrendsData();
