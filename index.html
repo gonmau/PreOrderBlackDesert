@@ -1100,60 +1100,42 @@ const FLAGS = {
   "일본":"🇯🇵","한국":"🇰🇷","중국":"🇨🇳","호주":"🇦🇺","인도":"🇮🇳","태국":"🇹🇭","싱가포르":"🇸🇬","말레이시아":"🇲🇾","인도네시아":"🇮🇩","필리핀":"🇵🇭","베트남":"🇻🇳","홍콩":"🇭🇰","대만":"🇹🇼","뉴질랜드":"🇳🇿"
 };
 
-const URLS = {
-  // Americas
-  "미국":       "https://store.playstation.com/en-us/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "캐나다":     "https://store.playstation.com/en-ca/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "브라질":     "https://store.playstation.com/pt-br/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "멕시코":     "https://store.playstation.com/es-mx/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "아르헨티나": "https://store.playstation.com/es-ar/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "칠레":       "https://store.playstation.com/es-cl/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "콜롬비아":   "https://store.playstation.com/es-co/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "페루":       "https://store.playstation.com/es-pe/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "우루과이":   "https://store.playstation.com/es-uy/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "볼리비아":   "https://store.playstation.com/es-bo/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "과테말라":   "https://store.playstation.com/es-gt/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "온두라스":   "https://store.playstation.com/es-hn/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  // Europe & Middle East
-  "영국":       "https://store.playstation.com/en-gb/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "독일":       "https://store.playstation.com/de-de/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "프랑스":     "https://store.playstation.com/fr-fr/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "스페인":     "https://store.playstation.com/es-es/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "이탈리아":   "https://store.playstation.com/it-it/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "네덜란드":   "https://store.playstation.com/nl-nl/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "폴란드":     "https://store.playstation.com/pl-pl/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "스위스":     "https://store.playstation.com/de-ch/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "스웨덴":     "https://store.playstation.com/sv-se/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "노르웨이":   "https://store.playstation.com/no-no/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "덴마크":     "https://store.playstation.com/da-dk/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "핀란드":     "https://store.playstation.com/fi-fi/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "포르투갈":   "https://store.playstation.com/pt-pt/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "그리스":     "https://store.playstation.com/el-gr/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "체코":       "https://store.playstation.com/cs-cz/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "헝가리":     "https://store.playstation.com/hu-hu/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "루마니아":   "https://store.playstation.com/ro-ro/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "슬로바키아": "https://store.playstation.com/sk-sk/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "슬로베니아": "https://store.playstation.com/sl-si/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "우크라이나": "https://store.playstation.com/uk-ua/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "사우디아라비아": "https://store.playstation.com/ar-sa/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "아랍에미리트":   "https://store.playstation.com/ar-ae/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "남아공":     "https://store.playstation.com/en-za/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  // Asia & Oceania
-  "일본":       "https://store.playstation.com/ja-jp/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "한국":       "https://store.playstation.com/ko-kr/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "중국":       "https://store.playstation.com/zh-hans-hk/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "호주":       "https://store.playstation.com/en-au/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "인도":       "https://store.playstation.com/en-in/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "태국":       "https://store.playstation.com/th-th/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "싱가포르":   "https://store.playstation.com/en-sg/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "말레이시아": "https://store.playstation.com/en-my/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "인도네시아": "https://store.playstation.com/id-id/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "필리핀":     "https://store.playstation.com/en-ph/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "베트남":     "https://store.playstation.com/vi-vn/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "홍콩":       "https://store.playstation.com/zh-hant-hk/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "대만":       "https://store.playstation.com/zh-hant-tw/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
-  "뉴질랜드":   "https://store.playstation.com/en-nz/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+// ─── PS Store URL 자동 전환 (출시 전: 사전예약 / 출시 후: 신작 베스트셀러) ───
+const PREORDER_CATEGORY   = "3bf499d7-7acf-4931-97dd-2667494ee2c9";
+const BESTSELLER_CATEGORY = "e1699f77-77e1-43ca-a296-26d08abacb0f";
+const RELEASE_DATE_KST    = new Date("2026-03-20T00:00:00+09:00");
+
+const LOCALE_MAP = {
+  "미국": "en-us", "캐나다": "en-ca", "브라질": "pt-br", "멕시코": "es-mx",
+  "아르헨티나": "es-ar", "칠레": "es-cl", "콜롬비아": "es-co", "페루": "es-pe",
+  "우루과이": "es-uy", "볼리비아": "es-bo", "과테말라": "es-gt", "온두라스": "es-hn",
+  "영국": "en-gb", "독일": "de-de", "프랑스": "fr-fr", "스페인": "es-es",
+  "이탈리아": "it-it", "네덜란드": "nl-nl", "폴란드": "pl-pl", "스위스": "de-ch",
+  "스웨덴": "sv-se", "노르웨이": "no-no", "덴마크": "da-dk", "핀란드": "fi-fi",
+  "포르투갈": "pt-pt", "그리스": "el-gr", "체코": "cs-cz", "헝가리": "hu-hu",
+  "루마니아": "ro-ro", "슬로바키아": "sk-sk", "슬로베니아": "sl-si", "우크라이나": "uk-ua",
+  "사우디아라비아": "en-sa", "아랍에미리트": "en-ae", "남아공": "en-za",
+  "일본": "ja-jp", "한국": "ko-kr", "호주": "en-au", "인도": "en-in",
+  "태국": "th-th", "싱가포르": "en-sg", "말레이시아": "en-my", "인도네시아": "id-id",
+  "필리핀": "en-ph", "베트남": "vi-vn", "홍콩": "zh-hant-hk", "대만": "zh-hant-tw",
+  "뉴질랜드": "en-nz",
 };
+
+function isPostRelease() {
+  return new Date() >= RELEASE_DATE_KST;
+}
+
+function getPsStoreUrl(country) {
+  const locale = LOCALE_MAP[country];
+  if (!locale) return null;  // 중국 등 locale 없는 국가
+  const category = isPostRelease() ? BESTSELLER_CATEGORY : PREORDER_CATEGORY;
+  return `https://store.playstation.com/${locale}/category/${category}/1`;
+}
+
+// 하위 호환용 URLS 객체 (기존 코드에서 URLS[country] 참조하는 곳 대응)
+const URLS = new Proxy({}, {
+  get(_, country) { return getPsStoreUrl(country); }
+});
 
 // ─── 유틸 함수 ───
 function combinedRank(s, d) {
