@@ -1133,8 +1133,11 @@ function setHeroStat(valId, diffId, curr, prev, suffix='') {
 // ─── 붉은사막 주요 이벤트 ───
 const CD_EVENTS = [
   { date: '2026-01-08', label: '📋 리뷰 코드 배포 언급',           color: '#9b59b6' },
+  { date: '2026-01-17', label: '🎥 오버뷰 영상 #1 (오픈월드)',     color: '#e67e22' },
   { date: '2026-01-21', label: '🏆 출시일·골드마스터 공식 발표',   color: '#f1c40f' },
+  { date: '2026-01-25', label: '🎥 오버뷰 영상 #2 (전투 시스템)', color: '#e67e22' },
   { date: '2026-01-28', label: '🎤 윌 파워스 1v1 인터뷰 시리즈',  color: '#3498db' },
+  { date: '2026-02-01', label: '🎥 오버뷰 영상 #3 (NPC·퀘스트)', color: '#e67e22' },
   { date: '2026-02-08', label: '🎪 IGN Fan Fest 참가 확인',        color: '#3498db' },
   { date: '2026-02-14', label: '🎤 윌 파워스 추가 인터뷰',         color: '#3498db' },
   { date: '2026-02-19', label: '🎮 핸즈온 이벤트·게임플레이 리빌', color: '#2ecc71' },
@@ -1215,7 +1218,7 @@ function renderChart() {
         x: {
           type: 'time',
           time: { unit: 'day', displayFormats: { day: 'M/d' } },
-          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 12, maxRotation: 0 },
+          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 20, maxRotation: 45 },
           grid: { display: false },
           border: { color: '#2a1f22' }
         }
@@ -1391,27 +1394,20 @@ function renderTrends(data) {
   document.getElementById('trends-google-peak-date').textContent = fmtDate(peakEntry.timestamp);
 
   // ── 차트 ──
-  const labels = gEntries.map(e => {
-    const d = new Date(e.timestamp);
-    return `${d.getMonth()+1}/${d.getDate()}`;
-  });
-  const gScores  = gEntries.map(e => e.google.score);
-
   const ctx = document.getElementById('trendsChart').getContext('2d');
   if (trendsChartInstance) trendsChartInstance.destroy();
 
   trendsChartInstance = new Chart(ctx, {
     type: 'line',
     data: {
-      labels,
       datasets: [
         {
           label: 'Google 글로벌',
-          data: gScores,
+          data: gEntries.map(e => ({ x: new Date(e.timestamp), y: e.google.score })),
           borderColor: '#4285F4',
           backgroundColor: 'rgba(66,133,244,0.08)',
           borderWidth: 2,
-          pointRadius: gScores.length > 60 ? 0 : 3,
+          pointRadius: gEntries.length > 60 ? 0 : 3,
           pointHoverRadius: 5,
           tension: 0.4,
           fill: true,
@@ -1430,7 +1426,9 @@ function renderTrends(data) {
           border: { color: '#2a1f22' }
         },
         x: {
-          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 12, maxRotation: 0 },
+          type: 'time',
+          time: { unit: 'day', displayFormats: { day: 'M/d' } },
+          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 20, maxRotation: 45 },
           grid:  { display: false },
           border: { color: '#2a1f22' }
         }
@@ -1440,8 +1438,9 @@ function renderTrends(data) {
         tooltip: {
           backgroundColor: '#1a1318', borderColor: '#2a1f22', borderWidth: 1,
           titleColor: '#e8ddd5', bodyColor: '#e8ddd5',
-          callbacks: { label: ctx2 => ctx2.raw != null ? `${ctx2.dataset.label}: ${ctx2.raw}/100` : null }
-        }
+          callbacks: { label: ctx2 => ctx2.parsed.y != null ? `${ctx2.dataset.label}: ${ctx2.parsed.y}/100` : null }
+        },
+        annotation: { annotations: buildEventAnnotations() }
       }
     }
   });

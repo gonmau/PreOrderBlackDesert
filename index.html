@@ -1273,8 +1273,11 @@ function setHeroStat(valId, diffId, curr, prev, suffix='') {
 // ─── 붉은사막 주요 이벤트 ───
 const CD_EVENTS = [
   { date: '2026-01-08', label: '📋 리뷰 코드 배포 언급',           color: '#9b59b6' },
+  { date: '2026-01-17', label: '🎥 오버뷰 영상 #1 (오픈월드)',     color: '#e67e22' },
   { date: '2026-01-21', label: '🏆 출시일·골드마스터 공식 발표',   color: '#f1c40f' },
+  { date: '2026-01-25', label: '🎥 오버뷰 영상 #2 (전투 시스템)', color: '#e67e22' },
   { date: '2026-01-28', label: '🎤 윌 파워스 1v1 인터뷰 시리즈',  color: '#3498db' },
+  { date: '2026-02-01', label: '🎥 오버뷰 영상 #3 (NPC·퀘스트)', color: '#e67e22' },
   { date: '2026-02-08', label: '🎪 IGN Fan Fest 참가 확인',        color: '#3498db' },
   { date: '2026-02-14', label: '🎤 윌 파워스 추가 인터뷰',         color: '#3498db' },
   { date: '2026-02-19', label: '🎮 핸즈온 이벤트·게임플레이 리빌', color: '#2ecc71' },
@@ -1355,7 +1358,7 @@ function renderChart() {
         x: {
           type: 'time',
           time: { unit: 'day', displayFormats: { day: 'M/d' } },
-          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 12, maxRotation: 0 },
+          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 20, maxRotation: 45, source: 'auto' },
           grid: { display: false },
           border: { color: '#2a1f22' }
         }
@@ -1614,27 +1617,23 @@ function renderSalesChart() {
   const ctx = document.getElementById('salesChart').getContext('2d');
   if (salesChartInstance) salesChartInstance.destroy();
 
-  const labels = salesDailyData.map(d => {
-    const dt = d.date;
-    return `${dt.getMonth()+1}/${dt.getDate()}`;
-  });
+  // time scale용 {x: Date, y: value} 변환 헬퍼
+  const toXY = (arr) => arr.map((v, i) => ({ x: salesDailyData[i].date, y: v }));
 
   let datasets;
   if (salesMode === 'daily') {
-    // 히스토리 / 실제 구간 분리 (점선 vs 실선)
     const histStd = salesDailyData.map(d => d.isHistorical ? d.std : null);
     const histDlx = salesDailyData.map(d => d.isHistorical ? d.dlx : null);
     const realStd = salesDailyData.map(d => !d.isHistorical ? d.std : null);
     const realDlx = salesDailyData.map(d => !d.isHistorical ? d.dlx : null);
 
     datasets = [
-      { label:'스탠다드 (추정)', data: histStd, borderColor:'#90CAF9', backgroundColor:'rgba(46,134,171,0.06)', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0.4, spanGaps:false, fill:true },
-      { label:'디럭스 (추정)',   data: histDlx, borderColor:'#F48FB1', backgroundColor:'rgba(162,59,114,0.06)', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0.4, spanGaps:false, fill:true },
-      { label:'스탠다드 (실제)', data: realStd, borderColor:'#2E86AB', backgroundColor:'rgba(46,134,171,0.1)',  borderWidth:2,   pointRadius: salesDailyData.length>60?0:3, tension:0.4, spanGaps:false, fill:true },
-      { label:'디럭스 (실제)',   data: realDlx, borderColor:'#A23B72', backgroundColor:'rgba(162,59,114,0.1)', borderWidth:2,   pointRadius: salesDailyData.length>60?0:3, tension:0.4, spanGaps:false, fill:true },
+      { label:'스탠다드 (추정)', data: toXY(histStd), borderColor:'#90CAF9', backgroundColor:'rgba(46,134,171,0.06)', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0.4, spanGaps:false, fill:true },
+      { label:'디럭스 (추정)',   data: toXY(histDlx), borderColor:'#F48FB1', backgroundColor:'rgba(162,59,114,0.06)', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0.4, spanGaps:false, fill:true },
+      { label:'스탠다드 (실제)', data: toXY(realStd), borderColor:'#2E86AB', backgroundColor:'rgba(46,134,171,0.1)',  borderWidth:2,   pointRadius: salesDailyData.length>60?0:3, tension:0.4, spanGaps:false, fill:true },
+      { label:'디럭스 (실제)',   data: toXY(realDlx), borderColor:'#A23B72', backgroundColor:'rgba(162,59,114,0.1)', borderWidth:2,   pointRadius: salesDailyData.length>60?0:3, tension:0.4, spanGaps:false, fill:true },
     ];
   } else {
-    // 누적
     let cumStdH=0, cumDlxH=0, cumStdR=0, cumDlxR=0;
     const cumHistStd=[], cumHistDlx=[], cumRealStd=[], cumRealDlx=[];
     let switchIdx = -1;
@@ -1655,18 +1654,18 @@ function renderSalesChart() {
     const cumRealTot = cumRealStd.map((s,i) => s!=null&&cumRealDlx[i]!=null ? s+cumRealDlx[i] : null);
 
     datasets = [
-      { label:'누적 스탠다드 (추정)', data:cumHistStd, borderColor:'#90CAF9', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0.4, spanGaps:false, fill:false },
-      { label:'누적 디럭스 (추정)',   data:cumHistDlx, borderColor:'#F48FB1', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0.4, spanGaps:false, fill:false },
-      { label:'누적 합계 (추정)',     data:cumHistTot, borderColor:'#A8D5A2', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0.4, spanGaps:false, fill:false },
-      { label:'누적 스탠다드 (실제)', data:cumRealStd, borderColor:'#2E86AB', borderWidth:2,   pointRadius:0, tension:0.4, spanGaps:false, fill:false },
-      { label:'누적 디럭스 (실제)',   data:cumRealDlx, borderColor:'#A23B72', borderWidth:2,   pointRadius:0, tension:0.4, spanGaps:false, fill:false },
-      { label:'누적 합계 (실제)',     data:cumRealTot, borderColor:'#27AE60', borderWidth:2.5, pointRadius:0, tension:0.4, spanGaps:false, fill:false },
+      { label:'누적 스탠다드 (추정)', data:toXY(cumHistStd), borderColor:'#90CAF9', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0.4, spanGaps:false, fill:false },
+      { label:'누적 디럭스 (추정)',   data:toXY(cumHistDlx), borderColor:'#F48FB1', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0.4, spanGaps:false, fill:false },
+      { label:'누적 합계 (추정)',     data:toXY(cumHistTot), borderColor:'#A8D5A2', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0.4, spanGaps:false, fill:false },
+      { label:'누적 스탠다드 (실제)', data:toXY(cumRealStd), borderColor:'#2E86AB', borderWidth:2,   pointRadius:0, tension:0.4, spanGaps:false, fill:false },
+      { label:'누적 디럭스 (실제)',   data:toXY(cumRealDlx), borderColor:'#A23B72', borderWidth:2,   pointRadius:0, tension:0.4, spanGaps:false, fill:false },
+      { label:'누적 합계 (실제)',     data:toXY(cumRealTot), borderColor:'#27AE60', borderWidth:2.5, pointRadius:0, tension:0.4, spanGaps:false, fill:false },
     ];
   }
 
   salesChartInstance = new Chart(ctx, {
     type: 'line',
-    data: { labels, datasets },
+    data: { datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -1678,7 +1677,9 @@ function renderSalesChart() {
           border: { color:'#2a1f22' }
         },
         x: {
-          ticks: { color:'#7a6a65', font:{size:10}, maxTicksLimit:14, maxRotation:0 },
+          type: 'time',
+          time: { unit: 'day', displayFormats: { day: 'M/d' } },
+          ticks: { color:'#7a6a65', font:{size:10}, maxTicksLimit:20, maxRotation:45 },
           grid:  { display:false },
           border: { color:'#2a1f22' }
         }
@@ -1688,8 +1689,9 @@ function renderSalesChart() {
         tooltip: {
           backgroundColor:'#1a1318', borderColor:'#2a1f22', borderWidth:1,
           titleColor:'#e8ddd5', bodyColor:'#e8ddd5',
-          callbacks: { label: ctx2 => ctx2.raw != null ? `${ctx2.dataset.label}: ${Math.round(ctx2.raw).toLocaleString()} units` : null }
-        }
+          callbacks: { label: ctx2 => ctx2.parsed.y != null ? `${ctx2.dataset.label}: ${Math.round(ctx2.parsed.y).toLocaleString()} units` : null }
+        },
+        annotation: { annotations: buildEventAnnotations() }
       }
     }
   });
@@ -1767,15 +1769,14 @@ function renderTrends(data) {
   trendsChartInstance = new Chart(ctx, {
     type: 'line',
     data: {
-      labels,
       datasets: [
         {
           label: 'Google 글로벌',
-          data: gScores,
+          data: gEntries.map(e => ({ x: new Date(e.timestamp), y: e.google.score })),
           borderColor: '#4285F4',
           backgroundColor: 'rgba(66,133,244,0.08)',
           borderWidth: 2,
-          pointRadius: gScores.length > 60 ? 0 : 3,
+          pointRadius: gEntries.length > 60 ? 0 : 3,
           pointHoverRadius: 5,
           tension: 0.4,
           fill: true,
@@ -1794,7 +1795,9 @@ function renderTrends(data) {
           border: { color: '#2a1f22' }
         },
         x: {
-          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 12, maxRotation: 0 },
+          type: 'time',
+          time: { unit: 'day', displayFormats: { day: 'M/d' } },
+          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 20, maxRotation: 45 },
           grid:  { display: false },
           border: { color: '#2a1f22' }
         }
@@ -1804,8 +1807,9 @@ function renderTrends(data) {
         tooltip: {
           backgroundColor: '#1a1318', borderColor: '#2a1f22', borderWidth: 1,
           titleColor: '#e8ddd5', bodyColor: '#e8ddd5',
-          callbacks: { label: ctx2 => ctx2.raw != null ? `${ctx2.dataset.label}: ${ctx2.raw}/100` : null }
-        }
+          callbacks: { label: ctx2 => ctx2.parsed.y != null ? `${ctx2.dataset.label}: ${ctx2.parsed.y}/100` : null }
+        },
+        annotation: { annotations: buildEventAnnotations() }
       }
     }
   });
