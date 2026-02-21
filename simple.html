@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
   <style>
     :root {
       --bg: #0a0608;
@@ -1143,37 +1144,21 @@ const CD_EVENTS = [
   { date: '2026-03-20', label: '🚀 한국 출시',                    color: '#e74c3c' },
 ];
 
-function buildEventAnnotations(labels) {
-  // labels 배열에서 날짜 인덱스 찾기
+function buildEventAnnotations() {
   const annotations = {};
+  const positions = ['5%', '18%', '31%', '44%', '57%', '70%', '83%'];
   CD_EVENTS.forEach((ev, idx) => {
-    const evDate = new Date(ev.date);
-    const evLabel = `${evDate.getMonth()+1}/${evDate.getDate()}`;
-    // 가장 가까운 라벨 인덱스 찾기
-    let bestIdx = labels.indexOf(evLabel);
-    if (bestIdx < 0) {
-      // 정확히 없으면 가장 가까운 날짜 인덱스 찾기
-      bestIdx = labels.reduce((prev, cur, i) => {
-        const [m, d] = cur.split('/').map(Number);
-        const curDate = new Date(2026, m-1, d);
-        const [pm, pd] = labels[prev].split('/').map(Number);
-        const prevDate = new Date(2026, pm-1, pd);
-        return Math.abs(curDate - evDate) < Math.abs(prevDate - evDate) ? i : prev;
-      }, 0);
-    }
-    if (bestIdx < 0 || bestIdx >= labels.length) return;
-
     annotations[`ev${idx}`] = {
       type: 'line',
-      xMin: bestIdx,
-      xMax: bestIdx,
+      xMin: ev.date,
+      xMax: ev.date,
       borderColor: ev.color,
       borderWidth: 1.5,
       borderDash: [4, 3],
       label: {
         display: true,
         content: ev.label,
-        position: idx % 2 === 0 ? '5%' : '20%',  // 짝수/홀수 교차 배치
+        position: positions[idx % positions.length],
         backgroundColor: 'rgba(26,19,24,0.85)',
         color: ev.color,
         font: { size: 9, weight: 'bold' },
@@ -1185,13 +1170,11 @@ function buildEventAnnotations(labels) {
   return annotations;
 }
 
-
 function renderChart() {
-  const labels = allHistory.map(h => {
-    const d = new Date(h.timestamp);
-    return `${d.getMonth()+1}/${d.getDate()}`;
-  });
-  const dataPoints = allHistory.map(h => h.averages?.combined ?? null);
+  // {x: Date, y: rank} 형태로 변환 (time scale용)
+  const dataPoints = allHistory
+    .filter(h => h.averages?.combined != null)
+    .map(h => ({ x: new Date(h.timestamp), y: h.averages.combined }));
 
   const ctx = document.getElementById('rankChart').getContext('2d');
   if (chartInstance) chartInstance.destroy();
@@ -1199,7 +1182,6 @@ function renderChart() {
   chartInstance = new Chart(ctx, {
     type: 'line',
     data: {
-      labels,
       datasets: [{
         label: '가중 평균 순위',
         data: dataPoints,
@@ -1224,18 +1206,15 @@ function renderChart() {
       maintainAspectRatio: false,
       scales: {
         y: {
-          reverse: true, // 순위 낮을수록 위
+          reverse: true,
           ticks: { color: '#7a6a65', font: { size: 11 } },
           grid: { color: 'rgba(42,31,34,0.8)' },
           border: { color: '#2a1f22' }
         },
         x: {
-          ticks: {
-            color: '#7a6a65',
-            font: { size: 10 },
-            maxTicksLimit: 12,
-            maxRotation: 0
-          },
+          type: 'time',
+          time: { unit: 'day', displayFormats: { day: 'M/d' } },
+          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 12, maxRotation: 0 },
           grid: { display: false },
           border: { color: '#2a1f22' }
         }
@@ -1249,11 +1228,15 @@ function renderChart() {
           titleColor: '#e8ddd5',
           bodyColor: '#c0392b',
           callbacks: {
-            label: ctx2 => `가중 평균: ${ctx2.raw?.toFixed(1) ?? '—'}위`
+            title: items => {
+              const d = new Date(items[0].parsed.x);
+              return `${d.getMonth()+1}/${d.getDate()}`;
+            },
+            label: ctx2 => `가중 평균: ${ctx2.parsed.y?.toFixed(1) ?? '—'}위`
           }
         },
         annotation: {
-          annotations: buildEventAnnotations(labels)
+          annotations: buildEventAnnotations()
         }
       }
     }
