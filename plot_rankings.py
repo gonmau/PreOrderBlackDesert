@@ -6,7 +6,16 @@ import json
 import copy  # ✅ FIX: deepcopy를 위해 추가
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+KST = timezone(timedelta(hours=9))
+
+def parse_dt(ts: str) -> datetime:
+    """timezone naive/aware 혼재 문제 해결 - 모두 KST aware로 통일"""
+    dt = datetime.fromisoformat(ts)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=KST)
+    return dt
 import os
 import requests
 from pathlib import Path
@@ -147,7 +156,7 @@ def parse_data(data):
     
     for entry in data:
         countries.update(entry['raw_results'].keys())
-        dates.append(datetime.fromisoformat(entry['timestamp']))
+        dates.append(parse_dt(entry["timestamp"]))
     
     countries = sorted(list(countries))
     
@@ -161,7 +170,7 @@ def parse_data(data):
     }
     
     for entry in data:
-        date = datetime.fromisoformat(entry['timestamp'])
+        date = parse_dt(entry["timestamp"])
         for country in countries:
             if country in entry['raw_results']:
                 country_data[country]['dates'].append(date)
@@ -304,7 +313,7 @@ def create_ranking_table(data, output_dir='output'):
 def get_latest_rankings(data):
     """최신 순위 데이터를 딕셔너리 형태로 반환"""
     latest_entry = data[-1]
-    timestamp = datetime.fromisoformat(latest_entry['timestamp'])
+    timestamp = parse_dt(latest_entry["timestamp"])
     
     countries_sorted = sorted(
         latest_entry['raw_results'].items(),
@@ -432,7 +441,7 @@ def estimate_daily_sales(data, output_dir='output'):
     date_groups: dict = {}
 
     for entry in sales_data:
-        timestamp = datetime.fromisoformat(entry['timestamp'])
+        timestamp = parse_dt(entry["timestamp"])
         date_str  = timestamp.strftime('%Y-%m-%d')
         date_groups.setdefault(date_str, []).append({
             'timestamp':     timestamp,
