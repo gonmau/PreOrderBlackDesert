@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crimson Desert — PS Store Global Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0a0608;
+      --surface: #110d0f;
+      --surface2: #1a1318;
+      --border: #2a1f22;
+      --red: #c0392b;
+      --red-glow: #e74c3c;
+      --gold: #d4a017;
+      --text: #e8ddd5;
+      --muted: #7a6a65;
+      --up: #2ecc71;
+      --down: #e74c3c;
+      --same: #5a5a5a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* 배경 텍스처 */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 40% at 50% -10%, rgba(192,57,43,0.12) 0%, transparent 70%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 24px 60px; }
+
+    /* ─── HEADER ─── */
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px 32px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    .logo-line {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 4px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--red);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      animation: pulse-icon 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-icon {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(192,57,43,0.4); }
+      50% { box-shadow: 0 0 20px 6px rgba(192,57,43,0.2); }
+    }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      letter-spacing: 4px;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    h1 span { color: var(--red-glow); }
+
+    .subtitle {
+      font-size: 0.75rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .meta-row {
+      display: flex;
+      gap: 24px;
+      margin-top: 16px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .meta-row strong { color: var(--text); }
+
+    /* ─── HERO STATS ─── */
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1px;
+      margin: 32px 0;
+      border: 1px solid var(--border);
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .stat-box {
+      background: var(--surface);
+      padding: 24px 20px;
+      text-align: center;
+      transition: background 0.2s;
+    }
+
+    .stat-box:hover { background: var(--surface2); }
+
+    .stat-label {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.4rem;
+      line-height: 1;
+      color: var(--red-glow);
+    }
+
+    .stat-value.gold { color: var(--gold); }
+    .stat-value.neutral { color: var(--text); }
+
+    .stat-diff {
+      font-size: 0.75rem;
+      margin-top: 4px;
+      color: var(--muted);
+    }
+
+    .stat-diff.up { color: var(--up); }
+    .stat-diff.down { color: var(--down); }
+
+    /* ─── CHART ─── */
+    .chart-section {
+      margin-bottom: 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 24px;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 3px;
+      color: var(--muted);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .chart-wrapper { position: relative; height: 220px; }
+
+    /* ─── REGION TABS ─── */
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 0;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 4px 4px 0 0;
+      overflow: hidden;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px 8px;
+      background: var(--surface);
+      border: none;
+      color: var(--muted);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-right: 1px solid var(--border);
+    }
+
+    .tab-btn:last-child { border-right: none; }
+    .tab-btn:hover { background: var(--surface2); color: var(--text); }
+    .tab-btn.active { background: var(--red); color: #fff; }
+
+    /* ─── COUNTRY TABLE ─── */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0 0 4px 4px;
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead tr {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      padding: 10px 16px;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      font-weight: 400;
+    }
+
+    th:not(:first-child) { text-align: center; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+
+    td {
+      padding: 12px 16px;
+      font-size: 0.85rem;
+    }
+
+    td:not(:first-child) { text-align: center; }
+
+    .country-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .flag { font-size: 1.2rem; }
+
+    .country-name { font-weight: 700; }
+
+    .weight-badge {
+      font-size: 0.65rem;
+      color: var(--muted);
+      background: var(--surface2);
+      padding: 2px 6px;
+      border-radius: 2px;
+    }
+
+    .rank-val { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; }
+
+    .rank-val.no-data { color: var(--muted); font-size: 0.8rem; }
+
+    .diff-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      font-size: 0.7rem;
+      padding: 2px 5px;
+      border-radius: 2px;
+      margin-left: 4px;
+    }
+
+    .diff-badge.up { color: var(--up); background: rgba(46,204,113,0.1); }
+    .diff-badge.down { color: var(--down); background: rgba(231,76,60,0.1); }
+    .diff-badge.same { color: var(--same); }
+
+    .combined-cell { font-weight: 700; }
+
+    /* ─── HEATMAP ─── */
+    .heatmap-section {
+      margin-bottom: 32px;
+    }
+
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 6px;
+    }
+
+    .heatmap-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 10px 12px;
+      cursor: default;
+      transition: transform 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .heatmap-card:hover { transform: scale(1.03); }
+
+    .heatmap-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+    }
+
+    .heatmap-card .hm-flag { font-size: 1.4rem; line-height: 1; }
+    .heatmap-card .hm-country {
+      font-size: 0.78rem;
+      color: var(--text);
+      font-weight: 700;
+      margin: 4px 0 2px;
+      letter-spacing: 0.3px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+    .heatmap-card .hm-rank {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    /* ─── COUNTRY MODAL ─── */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      width: 100%;
+      max-width: 680px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(20px);
+      transition: transform 0.25s;
+      position: relative;
+    }
+    .modal-backdrop.open .modal {
+      transform: translateY(0);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .modal-flag { font-size: 2rem; }
+    .modal-country-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 2px;
+      color: var(--text);
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 3px;
+      line-height: 1;
+      transition: color 0.15s, background 0.15s;
+    }
+    .modal-close:hover { color: var(--text); background: var(--surface2); }
+
+    .modal-stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-stat {
+      background: var(--surface2);
+      padding: 14px 16px;
+      text-align: center;
+    }
+    .modal-stat-label {
+      font-size: 0.62rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .modal-stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      line-height: 1;
+      color: var(--red-glow);
+    }
+    .modal-stat-value.gold { color: var(--gold); }
+    .modal-stat-diff {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+    .modal-stat-diff.up { color: var(--up); }
+    .modal-stat-diff.down { color: var(--down); }
+
+    .modal-chart-wrap {
+      padding: 20px 24px 16px;
+    }
+    .modal-chart-title {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .modal-chart-inner { position: relative; height: 200px; }
+
+    /* ─── TRENDS SECTION ─── */
+    .trends-section { margin-bottom: 32px; }
+
+    .trends-stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border-radius: 4px 4px 0 0;
+      overflow: hidden;
+      margin-bottom: 1px;
+    }
+
+    .trends-stat-box {
+      background: var(--surface);
+      padding: 16px 20px;
+      text-align: center;
+    }
+
+    .trends-stat-label {
+      font-size: 0.62rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .trends-stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      line-height: 1;
+      color: #4285F4;
+    }
+
+    .trends-stat-value.yt   { color: #FF0000; }
+    .trends-stat-value.high { color: var(--gold); }
+
+    .trends-stat-sub {
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .trends-chart-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0 0 4px 4px;
+      padding: 20px 24px 16px;
+    }
+
+    .trends-chart-inner { position: relative; height: 220px; }
+
+    .trends-countries-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 6px;
+      margin-top: 16px;
+    }
+
+    .trends-country-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .trends-country-flag { font-size: 1.2rem; }
+
+    .trends-country-info { flex: 1; min-width: 0; }
+
+    .trends-country-name {
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .trends-country-score {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      line-height: 1;
+      color: #4285F4;
+    }
+
+    .trends-score-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 4px;
+      overflow: hidden;
+    }
+
+    .trends-score-fill {
+      height: 100%;
+      background: #4285F4;
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    /* ─── STEAM SECTION ─── */
+    .steam-section {
+      margin-bottom: 32px;
+    }
+
+    .steam-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .steam-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .steam-icon {
+      font-size: 1.2rem;
+    }
+
+    .steamdb-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: #1b2838;
+      border: 1px solid #2a475e;
+      border-radius: 3px;
+      color: #c7d5e0;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      text-decoration: none;
+      font-family: 'Noto Sans KR', sans-serif;
+      transition: background 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+
+    .steamdb-btn:hover {
+      background: #2a475e;
+      border-color: #4fc3f7;
+      color: #fff;
+    }
+
+    .steam-stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border-radius: 4px 4px 0 0;
+      overflow: hidden;
+      margin-bottom: 1px;
+    }
+
+    .steam-stat-box {
+      background: var(--surface);
+      padding: 16px 20px;
+      text-align: center;
+    }
+
+    .steam-stat-label {
+      font-size: 0.62rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .steam-stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      line-height: 1;
+      color: #4fc3f7;
+    }
+
+    .steam-stat-diff {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .steam-stat-diff.up   { color: var(--up); }
+    .steam-stat-diff.down { color: var(--down); }
+
+    .steam-chart-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0 0 4px 4px;
+      padding: 20px 24px 16px;
+    }
+
+    .steam-chart-label {
+      font-size: 0.62rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .steam-chart-inner { position: relative; height: 200px; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      letter-spacing: 1px;
+    }
+
+    /* ─── LOADING / ERROR ─── */
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      transition: opacity 0.5s;
+    }
+
+    .loader-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 6px;
+      color: var(--red-glow);
+      margin-bottom: 20px;
+    }
+
+    .loader-bar {
+      width: 200px;
+      height: 2px;
+      background: var(--border);
+      border-radius: 1px;
+      overflow: hidden;
+    }
+
+    .loader-fill {
+      height: 100%;
+      background: var(--red-glow);
+      animation: load-anim 1.5s ease-in-out infinite;
+    }
+
+    @keyframes load-anim {
+      0% { width: 0%; margin-left: 0; }
+      50% { width: 60%; margin-left: 20%; }
+      100% { width: 0%; margin-left: 100%; }
+    }
+
+    .fade-in { animation: fadeIn 0.5s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .row-enter { animation: rowEnter 0.3s ease forwards; }
+    @keyframes rowEnter { from { opacity: 0; } to { opacity: 1; } }
+
+    /* 반응형 */
+    @media (max-width: 640px) {
+      .hero-stats { grid-template-columns: repeat(2, 1fr); }
+      .tabs { font-size: 0.8rem; }
+      th, td { padding: 8px 10px; }
+      .weight-badge { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <div class="loader-title">LOADING DATA</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<div id="app" style="opacity:0">
+  <header>
+    <div class="logo-line">
+      <div class="logo-icon">⚔️</div>
+      <h1>CRIMSON <span>DESERT</span></h1>
+    </div>
+    <div class="subtitle">PlayStation Store — Global Pre-order Rank Tracker</div>
+    <div class="meta-row">
+      <span>마지막 업데이트: <strong id="last-updated">—</strong></span>
+      <span>추적 국가: <strong id="country-count">—</strong>개국</span>
+      <span>히스토리: <strong id="history-count">—</strong>회</span>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- HERO STATS -->
+    <div class="hero-stats fade-in" id="hero-stats">
+      <div class="stat-box">
+        <div class="stat-label">전체 가중 평균 순위</div>
+        <div class="stat-value" id="stat-combined">—</div>
+        <div class="stat-diff" id="stat-combined-diff"></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Americas 평균</div>
+        <div class="stat-value gold" id="stat-americas">—</div>
+        <div class="stat-diff" id="stat-americas-diff"></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Europe & ME 평균</div>
+        <div class="stat-value neutral" id="stat-europe">—</div>
+        <div class="stat-diff" id="stat-europe-diff"></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Asia & Oceania 평균</div>
+        <div class="stat-value" id="stat-asia">—</div>
+        <div class="stat-diff" id="stat-asia-diff"></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">최고 순위 국가</div>
+        <div class="stat-value gold" id="stat-best-flag" style="font-size:2rem">—</div>
+        <div class="stat-diff" id="stat-best-name"></div>
+      </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="chart-section fade-in">
+      <div class="section-title">순위 히스토리 (가중 평균)</div>
+      <div class="chart-wrapper">
+        <canvas id="rankChart"></canvas>
+      </div>
+    </div>
+
+    <!-- TRENDS SECTION -->
+    <div class="trends-section fade-in">
+      <div class="steam-header">
+        <div class="section-title" style="margin-bottom:0">🔍 Google 검색 트렌드</div>
+        <span style="font-size:0.68rem;color:var(--muted)">관심도 0~100 (상대 수치)</span>
+      </div>
+
+      <!-- 스탯 -->
+      <div class="trends-stats-row">
+        <div class="trends-stat-box">
+          <div class="trends-stat-label">Google 글로벌 현재</div>
+          <div class="trends-stat-value" id="trends-google-now">—</div>
+          <div class="trends-stat-sub" id="trends-google-diff">/ 100</div>
+        </div>
+        <div class="trends-stat-box">
+          <div class="trends-stat-label">Google 전체 평균</div>
+          <div class="trends-stat-value" id="trends-google-avg">—</div>
+          <div class="trends-stat-sub">/ 100</div>
+        </div>
+        <div class="trends-stat-box">
+          <div class="trends-stat-label">역대 최고</div>
+          <div class="trends-stat-value high" id="trends-google-peak">—</div>
+          <div class="trends-stat-sub" id="trends-google-peak-date"></div>
+        </div>
+      </div>
+
+      <!-- 글로벌 히스토리 차트 -->
+      <div class="trends-chart-box">
+        <div style="font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">검색 관심도 히스토리 (글로벌)</div>
+        <div class="trends-chart-inner">
+          <canvas id="trendsChart"></canvas>
+        </div>
+
+        <!-- 국가별 최신 스코어 -->
+        <div style="font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px">콘솔 주요 5개국 최신 관심도</div>
+        <div class="trends-countries-grid" id="trends-countries-grid"></div>
+      </div>
+    </div>
+
+    <!-- STEAM SECTION -->
+    <div class="steam-section fade-in">
+      <div class="steam-header">
+        <div class="steam-title-row">
+          <div class="section-title" style="margin-bottom:0">🎮 Steam 위시리스트 순위</div>
+        </div>
+        <a class="steamdb-btn" href="https://steamdb.info/app/3321460/charts/" target="_blank">
+          🔗 SteamDB에서 자세히 보기 ↗
+        </a>
+      </div>
+      <div class="steam-stats-row">
+        <div class="steam-stat-box">
+          <div class="steam-stat-label">현재 순위</div>
+          <div class="steam-stat-value" id="steam-rank-current">—</div>
+          <div class="steam-stat-diff" id="steam-rank-diff"></div>
+        </div>
+        <div class="steam-stat-box">
+          <div class="steam-stat-label">최고 순위</div>
+          <div class="steam-stat-value" id="steam-rank-best">—</div>
+          <div class="steam-stat-diff" style="color:var(--muted);font-size:0.7rem" id="steam-rank-best-date"></div>
+        </div>
+        <div class="steam-stat-box">
+          <div class="steam-stat-label">추적 시작</div>
+          <div class="steam-stat-value" id="steam-rank-first">—</div>
+          <div class="steam-stat-diff" id="steam-rank-first-date"></div>
+        </div>
+        <div class="steam-stat-box">
+          <div class="steam-stat-label">총 기록 수</div>
+          <div class="steam-stat-value" id="steam-count">—</div>
+          <div class="steam-stat-diff">개 데이터포인트</div>
+        </div>
+      </div>
+      <div class="steam-chart-box">
+        <div class="steam-chart-label">위시리스트 순위 히스토리</div>
+        <div class="steam-chart-inner">
+          <canvas id="steamChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEATMAP -->
+    <div class="heatmap-section fade-in">
+      <div class="section-title">전세계 현황 한눈에</div>
+      <div class="heatmap-grid" id="heatmap-grid"></div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="fade-in">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('all', this)">ALL</button>
+        <button class="tab-btn" onclick="switchTab('americas', this)">Americas</button>
+        <button class="tab-btn" onclick="switchTab('europe', this)">Europe & ME</button>
+        <button class="tab-btn" onclick="switchTab('asia', this)">Asia & Oceania</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>국가</th>
+              <th>스탠다드</th>
+              <th>디럭스</th>
+              <th>종합 (Best)</th>
+              <th>가중치</th>
+            </tr>
+          </thead>
+          <tbody id="rank-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- COUNTRY DETAIL MODAL -->
+  <div class="modal-backdrop" id="country-modal" onclick="closeModal(event)">
+    <div class="modal" id="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span class="modal-flag" id="modal-flag"></span>
+          <span class="modal-country-name" id="modal-name"></span>
+        </div>
+        <button class="modal-close" onclick="closeModalDirect()">✕</button>
+      </div>
+      <div class="modal-stats-row">
+        <div class="modal-stat">
+          <div class="modal-stat-label">스탠다드</div>
+          <div class="modal-stat-value" id="modal-standard">—</div>
+          <div class="modal-stat-diff" id="modal-standard-diff"></div>
+        </div>
+        <div class="modal-stat">
+          <div class="modal-stat-label">디럭스</div>
+          <div class="modal-stat-value" id="modal-deluxe">—</div>
+          <div class="modal-stat-diff" id="modal-deluxe-diff"></div>
+        </div>
+        <div class="modal-stat">
+          <div class="modal-stat-label">종합 (Best)</div>
+          <div class="modal-stat-value gold" id="modal-combined">—</div>
+          <div class="modal-stat-diff" id="modal-combined-diff"></div>
+        </div>
+      </div>
+      <div class="modal-chart-wrap">
+        <div class="modal-chart-title">순위 히스토리</div>
+        <div class="modal-chart-inner">
+          <canvas id="modalChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    CRIMSON DESERT PS STORE TRACKER &nbsp;·&nbsp; DATA UPDATES VIA GITHUB ACTIONS &nbsp;·&nbsp; AUTO-REFRESHES EVERY 30 MIN
+  </footer>
+</div>
+
+<script>
+// ─── 데이터 설정 ───
+const REGIONS = {
+  "Americas": ["미국","캐나다","브라질","멕시코","아르헨티나","칠레","콜롬비아","페루","우루과이","볼리비아","과테말라","온두라스"],
+  "Europe & Middle East": ["영국","독일","프랑스","스페인","이탈리아","네덜란드","폴란드","스위스","스웨덴","노르웨이","덴마크","핀란드","포르투갈","그리스","체코","헝가리","루마니아","슬로바키아","슬로베니아","우크라이나","사우디아라비아","아랍에미리트","남아공"],
+  "Asia & Oceania": ["일본","한국","중국","호주","인도","태국","싱가포르","말레이시아","인도네시아","필리핀","베트남","홍콩","대만","뉴질랜드"]
+};
+
+const MARKET_WEIGHTS = {
+  "미국":30.0,"캐나다":4.5,"브라질":2.5,"멕시코":2.0,"아르헨티나":0.9,"칠레":0.8,"콜롬비아":0.7,"페루":0.4,"우루과이":0.3,"볼리비아":0.2,"과테말라":0.2,"온두라스":0.2,
+  "영국":8.5,"독일":6.5,"프랑스":6.0,"스페인":4.0,"이탈리아":3.5,"네덜란드":1.8,"사우디아라비아":1.5,"아랍에미리트":1.2,"폴란드":1.2,"스위스":1.0,"스웨덴":1.0,"덴마크":0.9,"포르투갈":0.8,"핀란드":0.8,"노르웨이":0.8,"남아공":0.8,"체코":0.7,"루마니아":0.6,"그리스":0.5,"헝가리":0.5,"우크라이나":0.5,"슬로바키아":0.3,"슬로베니아":0.3,
+  "일본":8.0,"호주":3.0,"한국":2.8,"인도":2.0,"대만":1.0,"싱가포르":0.8,"태국":0.9,"홍콩":0.9,"인도네시아":0.8,"말레이시아":0.7,"베트남":0.7,"필리핀":0.6,"뉴질랜드":0.6,"중국":0.2
+};
+
+const FLAGS = {
+  "미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","아르헨티나":"🇦🇷","칠레":"🇨🇱","콜롬비아":"🇨🇴","페루":"🇵🇪","우루과이":"🇺🇾","볼리비아":"🇧🇴","과테말라":"🇬🇹","온두라스":"🇭🇳",
+  "영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","네덜란드":"🇳🇱","폴란드":"🇵🇱","스위스":"🇨🇭","스웨덴":"🇸🇪","노르웨이":"🇳🇴","덴마크":"🇩🇰","핀란드":"🇫🇮","포르투갈":"🇵🇹","그리스":"🇬🇷","체코":"🇨🇿","헝가리":"🇭🇺","루마니아":"🇷🇴","슬로바키아":"🇸🇰","슬로베니아":"🇸🇮","우크라이나":"🇺🇦","사우디아라비아":"🇸🇦","아랍에미리트":"🇦🇪","남아공":"🇿🇦",
+  "일본":"🇯🇵","한국":"🇰🇷","중국":"🇨🇳","호주":"🇦🇺","인도":"🇮🇳","태국":"🇹🇭","싱가포르":"🇸🇬","말레이시아":"🇲🇾","인도네시아":"🇮🇩","필리핀":"🇵🇭","베트남":"🇻🇳","홍콩":"🇭🇰","대만":"🇹🇼","뉴질랜드":"🇳🇿"
+};
+
+const URLS = {
+  // Americas
+  "미국":       "https://store.playstation.com/en-us/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "캐나다":     "https://store.playstation.com/en-ca/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "브라질":     "https://store.playstation.com/pt-br/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "멕시코":     "https://store.playstation.com/es-mx/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "아르헨티나": "https://store.playstation.com/es-ar/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "칠레":       "https://store.playstation.com/es-cl/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "콜롬비아":   "https://store.playstation.com/es-co/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "페루":       "https://store.playstation.com/es-pe/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "우루과이":   "https://store.playstation.com/es-uy/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "볼리비아":   "https://store.playstation.com/es-bo/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "과테말라":   "https://store.playstation.com/es-gt/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "온두라스":   "https://store.playstation.com/es-hn/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  // Europe & Middle East
+  "영국":       "https://store.playstation.com/en-gb/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "독일":       "https://store.playstation.com/de-de/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "프랑스":     "https://store.playstation.com/fr-fr/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "스페인":     "https://store.playstation.com/es-es/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "이탈리아":   "https://store.playstation.com/it-it/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "네덜란드":   "https://store.playstation.com/nl-nl/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "폴란드":     "https://store.playstation.com/pl-pl/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "스위스":     "https://store.playstation.com/de-ch/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "스웨덴":     "https://store.playstation.com/sv-se/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "노르웨이":   "https://store.playstation.com/no-no/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "덴마크":     "https://store.playstation.com/da-dk/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "핀란드":     "https://store.playstation.com/fi-fi/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "포르투갈":   "https://store.playstation.com/pt-pt/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "그리스":     "https://store.playstation.com/el-gr/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "체코":       "https://store.playstation.com/cs-cz/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "헝가리":     "https://store.playstation.com/hu-hu/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "루마니아":   "https://store.playstation.com/ro-ro/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "슬로바키아": "https://store.playstation.com/sk-sk/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "슬로베니아": "https://store.playstation.com/sl-si/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "우크라이나": "https://store.playstation.com/uk-ua/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "사우디아라비아": "https://store.playstation.com/ar-sa/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "아랍에미리트":   "https://store.playstation.com/ar-ae/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "남아공":     "https://store.playstation.com/en-za/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  // Asia & Oceania
+  "일본":       "https://store.playstation.com/ja-jp/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "한국":       "https://store.playstation.com/ko-kr/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "중국":       "https://store.playstation.com/zh-hans-hk/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "호주":       "https://store.playstation.com/en-au/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "인도":       "https://store.playstation.com/en-in/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "태국":       "https://store.playstation.com/th-th/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "싱가포르":   "https://store.playstation.com/en-sg/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "말레이시아": "https://store.playstation.com/en-my/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "인도네시아": "https://store.playstation.com/id-id/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "필리핀":     "https://store.playstation.com/en-ph/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "베트남":     "https://store.playstation.com/vi-vn/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "홍콩":       "https://store.playstation.com/zh-hant-hk/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "대만":       "https://store.playstation.com/zh-hant-tw/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+  "뉴질랜드":   "https://store.playstation.com/en-nz/category/3bf499d7-7acf-4931-97dd-2667494ee2c9/1",
+};
+
+// ─── 유틸 함수 ───
+function combinedRank(s, d) {
+  if (s && d) return Math.min(s, d);
+  return s || d || null;
+}
+
+function calcAvg(rawResults, countries) {
+  let sum = 0, w = 0;
+  const list = countries || Object.keys(rawResults);
+  list.forEach(c => {
+    if (!rawResults[c]) return;
+    const cr = combinedRank(rawResults[c].standard, rawResults[c].deluxe);
+    const wt = MARKET_WEIGHTS[c] || 1;
+    if (cr) { sum += cr * wt; w += wt; }
+  });
+  return w > 0 ? sum / w : null;
+}
+
+function diffBadge(curr, prev) {
+  if (curr == null || prev == null) return '';
+  const d = prev - curr; // 작아지면 상승
+  if (d > 0) return `<span class="diff-badge up">▲${d}</span>`;
+  if (d < 0) return `<span class="diff-badge down">▼${Math.abs(d)}</span>`;
+  return `<span class="diff-badge same">—</span>`;
+}
+
+function rankColor(rank) {
+  if (rank == null) return '#2a1f22';
+  if (rank <= 5)  return 'rgba(212,160,23,0.6)';
+  if (rank <= 10) return 'rgba(192,57,43,0.5)';
+  if (rank <= 20) return 'rgba(192,57,43,0.25)';
+  if (rank <= 40) return 'rgba(192,57,43,0.1)';
+  return 'rgba(50,40,45,0.5)';
+}
+
+function getRegion(country) {
+  for (const [r, cs] of Object.entries(REGIONS)) {
+    if (cs.includes(country)) return r;
+  }
+  return null;
+}
+
+// ─── 전역 상태 ───
+let allHistory = [];
+let currentTab = 'all';
+let chartInstance = null;
+
+// ─── 메인 로직 ───
+async function loadData() {
+  try {
+    const res = await fetch('rank_history.json?t=' + Date.now());
+    if (!res.ok) throw new Error('fetch failed');
+    allHistory = await res.json();
+  } catch (e) {
+    // 데이터 로드 실패 시 에러 표시
+    document.getElementById('loading-screen').style.opacity = 0;
+    setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
+    document.getElementById('app').style.opacity = 1;
+    document.getElementById('last-updated').textContent = '데이터 로드 실패 — rank_history.json 확인';
+    return;
+  }
+
+  render();
+
+  // 로딩 숨기기
+  const ls = document.getElementById('loading-screen');
+  ls.style.opacity = 0;
+  setTimeout(() => ls.style.display = 'none', 500);
+  const app = document.getElementById('app');
+  app.style.transition = 'opacity 0.5s';
+  app.style.opacity = 1;
+}
+
+function render() {
+  if (!allHistory.length) return;
+
+  const latest = allHistory[allHistory.length - 1];
+  const prev   = allHistory.length >= 2 ? allHistory[allHistory.length - 2] : null;
+  const raw    = latest.raw_results;
+
+  // 메타 정보
+  const dt = new Date(latest.timestamp);
+  document.getElementById('last-updated').textContent = dt.toLocaleString('ko-KR');
+  document.getElementById('country-count').textContent = Object.keys(raw).length;
+  document.getElementById('history-count').textContent = allHistory.length;
+
+  // HERO STATS
+  const combinedAvg = calcAvg(raw, null);
+  const prevCombinedAvg = prev ? calcAvg(prev.raw_results, null) : null;
+  setHeroStat('stat-combined', 'stat-combined-diff', combinedAvg, prevCombinedAvg, '위');
+
+  for (const [regionKey, regionName] of [['americas','Americas'],['europe','Europe & Middle East'],['asia','Asia & Oceania']]) {
+    const countries = REGIONS[regionName];
+    const avg = calcAvg(raw, countries);
+    const prevAvg = prev ? calcAvg(prev.raw_results, countries) : null;
+    setHeroStat(`stat-${regionKey}`, `stat-${regionKey}-diff`, avg, prevAvg, '위');
+  }
+
+  // 최고 순위 국가
+  let bestCountry = null, bestRank = Infinity;
+  Object.entries(raw).forEach(([c, d]) => {
+    const cr = combinedRank(d.standard, d.deluxe);
+    if (cr && cr < bestRank) { bestRank = cr; bestCountry = c; }
+  });
+  if (bestCountry) {
+    document.getElementById('stat-best-flag').textContent = FLAGS[bestCountry] || '?';
+    document.getElementById('stat-best-name').textContent = `${bestCountry} · ${bestRank}위`;
+  }
+
+  // CHART
+  renderChart();
+
+  // HEATMAP
+  renderHeatmap(raw, prev?.raw_results);
+
+  // TABLE
+  renderTable(currentTab, raw, prev?.raw_results);
+}
+
+function setHeroStat(valId, diffId, curr, prev, suffix='') {
+  const el = document.getElementById(valId);
+  const diffEl = document.getElementById(diffId);
+  el.textContent = curr ? `${curr.toFixed(1)}${suffix}` : '—';
+  if (diffEl && curr && prev) {
+    const d = prev - curr; // 작을수록 좋으니까 prev > curr이면 상승
+    if (d > 0) { diffEl.textContent = `▲ ${d.toFixed(1)} 상승`; diffEl.className = 'stat-diff up'; }
+    else if (d < 0) { diffEl.textContent = `▼ ${Math.abs(d).toFixed(1)} 하락`; diffEl.className = 'stat-diff down'; }
+    else { diffEl.textContent = '변동 없음'; diffEl.className = 'stat-diff'; }
+  }
+}
+
+function renderChart() {
+  const labels = allHistory.map(h => {
+    const d = new Date(h.timestamp);
+    return `${d.getMonth()+1}/${d.getDate()}`;
+  });
+  const dataPoints = allHistory.map(h => h.averages?.combined ?? null);
+
+  const ctx = document.getElementById('rankChart').getContext('2d');
+  if (chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: '가중 평균 순위',
+        data: dataPoints,
+        borderColor: '#c0392b',
+        backgroundColor: (ctx2) => {
+          const g = ctx2.chart.ctx.createLinearGradient(0, 0, 0, 220);
+          g.addColorStop(0, 'rgba(192,57,43,0.25)');
+          g.addColorStop(1, 'rgba(192,57,43,0)');
+          return g;
+        },
+        borderWidth: 2,
+        pointBackgroundColor: '#e74c3c',
+        pointRadius: dataPoints.length > 30 ? 0 : 4,
+        pointHoverRadius: 6,
+        tension: 0.4,
+        fill: true,
+        spanGaps: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          reverse: true, // 순위 낮을수록 위
+          ticks: { color: '#7a6a65', font: { size: 11 } },
+          grid: { color: 'rgba(42,31,34,0.8)' },
+          border: { color: '#2a1f22' }
+        },
+        x: {
+          ticks: {
+            color: '#7a6a65',
+            font: { size: 10 },
+            maxTicksLimit: 12,
+            maxRotation: 0
+          },
+          grid: { display: false },
+          border: { color: '#2a1f22' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1318',
+          borderColor: '#2a1f22',
+          borderWidth: 1,
+          titleColor: '#e8ddd5',
+          bodyColor: '#c0392b',
+          callbacks: {
+            label: ctx2 => `가중 평균: ${ctx2.raw?.toFixed(1) ?? '—'}위`
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderHeatmap(raw, prevRaw) {
+  const grid = document.getElementById('heatmap-grid');
+  const allCountries = Object.values(REGIONS).flat();
+  
+  // 순위 기준 정렬 (순위 없는 건 뒤로)
+  const sorted = allCountries.slice().sort((a, b) => {
+    const ra = combinedRank(raw[a]?.standard, raw[a]?.deluxe) ?? 9999;
+    const rb = combinedRank(raw[b]?.standard, raw[b]?.deluxe) ?? 9999;
+    return ra - rb;
+  });
+
+  grid.innerHTML = sorted.map(c => {
+    const d = raw[c] || {};
+    const cr = combinedRank(d.standard, d.deluxe);
+    const prevCr = prevRaw ? combinedRank(prevRaw[c]?.standard, prevRaw[c]?.deluxe) : null;
+    const diff = cr && prevCr ? prevCr - cr : 0;
+    const arrowColor = diff > 0 ? '#2ecc71' : diff < 0 ? '#e74c3c' : 'transparent';
+    const bgColor = rankColor(cr);
+
+    return `
+      <div class="heatmap-card" style="background:${bgColor};cursor:pointer" title="${c}: S${d.standard ?? '-'} / D${d.deluxe ?? '-'}" onclick="openCountryModal('${c}')">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${arrowColor}"></div>
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
+          <span class="hm-flag">${FLAGS[c] || ''}</span>
+          <span class="hm-country">${c}</span>
+        </div>
+        <div class="hm-rank" style="color:${cr && cr <= 10 ? '#d4a017' : '#e8ddd5'}">${cr ? `${cr}위` : '—'}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderTable(tab, raw, prevRaw) {
+  const tbody = document.getElementById('rank-table');
+
+  let countries;
+  if (tab === 'all') {
+    countries = Object.values(REGIONS).flat();
+  } else if (tab === 'americas') {
+    countries = REGIONS['Americas'];
+  } else if (tab === 'europe') {
+    countries = REGIONS['Europe & Middle East'];
+  } else {
+    countries = REGIONS['Asia & Oceania'];
+  }
+
+  // 가중치 순 정렬
+  const sorted = countries.slice().sort((a, b) => (MARKET_WEIGHTS[b] || 0) - (MARKET_WEIGHTS[a] || 0));
+
+  tbody.innerHTML = sorted.map((c, i) => {
+    const d = raw[c] || {};
+    const pd = prevRaw?.[c] || {};
+    const cr = combinedRank(d.standard, d.deluxe);
+    const prevCr = combinedRank(pd.standard, pd.deluxe);
+    const url = URLS[c];
+    const nameLink = url
+      ? `<a href="${url}" target="_blank" style="color:var(--text);text-decoration:none">${c}</a>`
+      : c;
+
+    return `
+      <tr class="row-enter" style="animation-delay:${i * 0.02}s">
+        <td>
+          <div class="country-cell">
+            <span class="flag">${FLAGS[c] || ''}</span>
+            <span class="country-name">${nameLink}</span>
+          </div>
+        </td>
+        <td>
+          <span class="rank-val ${d.standard ? '' : 'no-data'}">${d.standard ? `${d.standard}위` : '—'}</span>
+          ${diffBadge(d.standard, pd.standard)}
+        </td>
+        <td>
+          <span class="rank-val ${d.deluxe ? '' : 'no-data'}">${d.deluxe ? `${d.deluxe}위` : '—'}</span>
+          ${diffBadge(d.deluxe, pd.deluxe)}
+        </td>
+        <td class="combined-cell">
+          <span class="rank-val ${cr ? '' : 'no-data'}" style="color:${cr && cr <= 10 ? 'var(--gold)' : 'var(--text)'}">${cr ? `${cr}위` : '—'}</span>
+          ${diffBadge(cr, prevCr)}
+        </td>
+        <td><span class="weight-badge">${(MARKET_WEIGHTS[c] || 0).toFixed(1)}</span></td>
+      </tr>`;
+  }).join('');
+}
+
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (allHistory.length) {
+    const latest = allHistory[allHistory.length - 1];
+    const prev   = allHistory.length >= 2 ? allHistory[allHistory.length - 2] : null;
+    renderTable(tab, latest.raw_results, prev?.raw_results);
+  }
+}
+
+// ─── 구글 트렌드 ───
+let trendsChartInstance = null;
+
+const CONSOLE_COUNTRY_FLAGS = {
+  'United States': '🇺🇸',
+  'Japan':         '🇯🇵',
+  'United Kingdom':'🇬🇧',
+  'Germany':       '🇩🇪',
+  'France':        '🇫🇷',
+};
+
+async function loadTrendsData() {
+  try {
+    const res = await fetch('trends_history.json?t=' + Date.now());
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.length) return;
+    renderTrends(data);
+  } catch (e) {
+    console.warn('trends_history.json 로드 실패:', e);
+  }
+}
+
+function renderTrends(data) {
+  // google 데이터 있는 항목만
+  const gEntries = data.filter(e => e.google?.score != null);
+  if (!gEntries.length) return;
+
+  const latest  = gEntries[gEntries.length - 1];
+  const prev    = gEntries.length >= 2 ? gEntries[gEntries.length - 2] : null;
+  const scores  = gEntries.map(e => e.google.score);
+  const peak    = Math.max(...scores);
+  const peakEntry = gEntries[scores.indexOf(peak)];
+  const avg     = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+
+  // Google 현재
+  const gNow = latest.google.score;
+  document.getElementById('trends-google-now').textContent = gNow;
+  const gDiffEl = document.getElementById('trends-google-diff');
+  if (prev?.google?.score != null) {
+    const d = gNow - prev.google.score;
+    gDiffEl.textContent = d > 0 ? `▲ ${d} 상승` : d < 0 ? `▼ ${Math.abs(d)} 하락` : '변동 없음';
+    gDiffEl.style.color = d > 0 ? 'var(--up)' : d < 0 ? 'var(--down)' : 'var(--muted)';
+  } else {
+    gDiffEl.textContent = '/ 100';
+  }
+
+  // 평균 / 최고
+  document.getElementById('trends-google-avg').textContent  = avg;
+  document.getElementById('trends-google-peak').textContent = peak;
+  document.getElementById('trends-google-peak-date').textContent = fmtDate(peakEntry.timestamp);
+
+  // ── 차트 ──
+  const labels = gEntries.map(e => {
+    const d = new Date(e.timestamp);
+    return `${d.getMonth()+1}/${d.getDate()}`;
+  });
+  const gScores  = gEntries.map(e => e.google.score);
+
+  const ctx = document.getElementById('trendsChart').getContext('2d');
+  if (trendsChartInstance) trendsChartInstance.destroy();
+
+  trendsChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Google 글로벌',
+          data: gScores,
+          borderColor: '#4285F4',
+          backgroundColor: 'rgba(66,133,244,0.08)',
+          borderWidth: 2,
+          pointRadius: gScores.length > 60 ? 0 : 3,
+          pointHoverRadius: 5,
+          tension: 0.4,
+          fill: true,
+          spanGaps: true,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          min: 0, max: 105,
+          ticks: { color: '#7a6a65', font: { size: 11 } },
+          grid:  { color: 'rgba(42,31,34,0.8)' },
+          border: { color: '#2a1f22' }
+        },
+        x: {
+          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 12, maxRotation: 0 },
+          grid:  { display: false },
+          border: { color: '#2a1f22' }
+        }
+      },
+      plugins: {
+        legend: { display: true, labels: { color: '#e8ddd5', font: { size: 11 }, boxWidth: 10, padding: 14 } },
+        tooltip: {
+          backgroundColor: '#1a1318', borderColor: '#2a1f22', borderWidth: 1,
+          titleColor: '#e8ddd5', bodyColor: '#e8ddd5',
+          callbacks: { label: ctx2 => ctx2.raw != null ? `${ctx2.dataset.label}: ${ctx2.raw}/100` : null }
+        }
+      }
+    }
+  });
+
+  // ── 국가별 카드 ──
+  // console_markets 있는 항목 중 가장 최근
+  const consoleEntry = [...data].reverse().find(e => e.console_markets && Object.keys(e.console_markets).length > 0);
+  const grid = document.getElementById('trends-countries-grid');
+  grid.innerHTML = '';
+  if (consoleEntry) {
+    for (const [country, info] of Object.entries(consoleEntry.console_markets)) {
+      if (!info) continue;
+      const score = info.score ?? 0;
+      const avg1m = info.avg_1m ?? 0;
+      const flag  = CONSOLE_COUNTRY_FLAGS[country] || '🌍';
+      const barColor = score >= 70 ? '#4285F4' : score >= 40 ? '#FBBC05' : '#EA4335';
+      grid.innerHTML += `
+        <div class="trends-country-card">
+          <span class="trends-country-flag">${flag}</span>
+          <div class="trends-country-info">
+            <div class="trends-country-name">${country}</div>
+            <div class="trends-country-score" style="color:${barColor}">${score}<span style="font-size:0.7rem;color:var(--muted)">/100</span></div>
+            <div class="trends-score-bar"><div class="trends-score-fill" style="width:${score}%;background:${barColor}"></div></div>
+            <div style="font-size:0.62rem;color:var(--muted);margin-top:2px">1개월 평균 ${avg1m}/100</div>
+          </div>
+        </div>`;
+    }
+  }
+}
+
+// ─── STEAM 데이터 ───
+let steamHistory = [];
+let steamChartInstance = null;
+
+async function loadSteamData() {
+  try {
+    const res = await fetch('steam_history.json?t=' + Date.now());
+    if (!res.ok) throw new Error('steam fetch failed');
+    steamHistory = await res.json();
+    renderSteam();
+  } catch (e) {
+    console.warn('steam_history.json 로드 실패:', e);
+    // Steam 섹션 숨기지 않고 — 표시 유지
+  }
+}
+
+function renderSteam() {
+  if (!steamHistory.length) return;
+
+  const valid = steamHistory.filter(h => h.rank != null);
+  if (!valid.length) return;
+
+  const latest   = valid[valid.length - 1];
+  const prev     = valid.length >= 2 ? valid[valid.length - 2] : null;
+  const best     = valid.reduce((a, b) => a.rank <= b.rank ? a : b);
+  const first    = valid[0];
+
+  // 현재 순위
+  const rankEl = document.getElementById('steam-rank-current');
+  const diffEl = document.getElementById('steam-rank-diff');
+  rankEl.textContent = `#${latest.rank}`;
+  if (prev) {
+    const d = prev.rank - latest.rank;
+    if (d > 0)      { diffEl.textContent = `▲ ${d} 상승`; diffEl.className = 'steam-stat-diff up'; }
+    else if (d < 0) { diffEl.textContent = `▼ ${Math.abs(d)} 하락`; diffEl.className = 'steam-stat-diff down'; }
+    else            { diffEl.textContent = '변동 없음'; diffEl.className = 'steam-stat-diff'; }
+  }
+
+  // 최고 순위
+  document.getElementById('steam-rank-best').textContent = `#${best.rank}`;
+  document.getElementById('steam-rank-best-date').textContent = fmtDate(best.timestamp);
+
+  // 추적 시작 순위
+  document.getElementById('steam-rank-first').textContent = `#${first.rank}`;
+  document.getElementById('steam-rank-first-date').textContent = fmtDate(first.timestamp);
+
+  // 총 기록 수
+  document.getElementById('steam-count').textContent = steamHistory.length;
+
+  // 차트
+  const labels = steamHistory.map(h => {
+    const d = new Date(h.timestamp);
+    return `${d.getMonth()+1}/${d.getDate()}`;
+  });
+  const rankData = steamHistory.map(h => h.rank);
+
+  const ctx = document.getElementById('steamChart').getContext('2d');
+  if (steamChartInstance) steamChartInstance.destroy();
+
+  steamChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Steam 위시리스트 순위',
+        data: rankData,
+        borderColor: '#4fc3f7',
+        backgroundColor: (ctx2) => {
+          const g = ctx2.chart.ctx.createLinearGradient(0, 0, 0, 200);
+          g.addColorStop(0, 'rgba(79,195,247,0.2)');
+          g.addColorStop(1, 'rgba(79,195,247,0)');
+          return g;
+        },
+        borderWidth: 2,
+        pointBackgroundColor: '#4fc3f7',
+        pointRadius: rankData.length > 50 ? 0 : 3,
+        pointHoverRadius: 5,
+        tension: 0.4,
+        fill: true,
+        spanGaps: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          reverse: true,
+          ticks: { color: '#7a6a65', font: { size: 11 }, stepSize: 1 },
+          grid:  { color: 'rgba(42,31,34,0.8)' },
+          border: { color: '#2a1f22' }
+        },
+        x: {
+          ticks: {
+            color: '#7a6a65',
+            font: { size: 10 },
+            maxTicksLimit: 12,
+            maxRotation: 0
+          },
+          grid: { display: false },
+          border: { color: '#2a1f22' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1318',
+          borderColor: '#2a1f22',
+          borderWidth: 1,
+          titleColor: '#e8ddd5',
+          bodyColor: '#4fc3f7',
+          callbacks: {
+            label: ctx2 => ctx2.raw != null ? `위시리스트 순위: #${ctx2.raw}` : '데이터 없음'
+          }
+        }
+      }
+    }
+  });
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
+}
+
+// ─── 국가 모달 ───
+let modalChartInstance = null;
+
+function openCountryModal(country) {
+  if (!allHistory.length) return;
+
+  const latest = allHistory[allHistory.length - 1];
+  const prev   = allHistory.length >= 2 ? allHistory[allHistory.length - 2] : null;
+  const raw    = latest.raw_results;
+  const prevRaw = prev?.raw_results;
+
+  const d  = raw[country]    || {};
+  const pd = prevRaw?.[country] || {};
+  const cr  = combinedRank(d.standard, d.deluxe);
+  const pcr = combinedRank(pd.standard, pd.deluxe);
+
+  // 헤더
+  document.getElementById('modal-flag').textContent  = FLAGS[country] || '🏳️';
+  document.getElementById('modal-name').textContent  = country;
+
+  // 스탯
+  setModalStat('modal-standard', 'modal-standard-diff', d.standard, pd.standard);
+  setModalStat('modal-deluxe',   'modal-deluxe-diff',   d.deluxe,   pd.deluxe);
+  setModalStat('modal-combined', 'modal-combined-diff', cr,          pcr);
+
+  // 차트
+  const labels = allHistory.map(h => {
+    const dt = new Date(h.timestamp);
+    return `${dt.getMonth()+1}/${dt.getDate()}`;
+  });
+  const stdData = allHistory.map(h => h.raw_results?.[country]?.standard ?? null);
+  const dlxData = allHistory.map(h => h.raw_results?.[country]?.deluxe   ?? null);
+
+  const ctx = document.getElementById('modalChart').getContext('2d');
+  if (modalChartInstance) modalChartInstance.destroy();
+
+  modalChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: '스탠다드',
+          data: stdData,
+          borderColor: '#e74c3c',
+          backgroundColor: 'rgba(231,76,60,0.08)',
+          borderWidth: 2,
+          pointRadius: stdData.length > 30 ? 0 : 3,
+          pointHoverRadius: 5,
+          tension: 0.4,
+          fill: true,
+          spanGaps: true,
+        },
+        {
+          label: '디럭스',
+          data: dlxData,
+          borderColor: '#d4a017',
+          backgroundColor: 'rgba(212,160,23,0.08)',
+          borderWidth: 2,
+          pointRadius: dlxData.length > 30 ? 0 : 3,
+          pointHoverRadius: 5,
+          tension: 0.4,
+          fill: true,
+          spanGaps: true,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          reverse: true,
+          ticks: { color: '#7a6a65', font: { size: 11 }, stepSize: 1 },
+          grid:  { color: 'rgba(42,31,34,0.8)' },
+          border: { color: '#2a1f22' }
+        },
+        x: {
+          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 10, maxRotation: 0 },
+          grid:  { display: false },
+          border: { color: '#2a1f22' }
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          labels: { color: '#e8ddd5', font: { size: 11 }, boxWidth: 12, padding: 16 }
+        },
+        tooltip: {
+          backgroundColor: '#1a1318',
+          borderColor: '#2a1f22',
+          borderWidth: 1,
+          titleColor: '#e8ddd5',
+          bodyColor: '#e8ddd5',
+          callbacks: {
+            label: ctx2 => `${ctx2.dataset.label}: ${ctx2.raw != null ? ctx2.raw + '위' : '—'}`
+          }
+        }
+      }
+    }
+  });
+
+  // 모달 열기
+  document.getElementById('country-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function setModalStat(valId, diffId, curr, prev) {
+  const el     = document.getElementById(valId);
+  const diffEl = document.getElementById(diffId);
+  el.textContent = curr != null ? `${curr}위` : '—';
+  if (diffEl) {
+    if (curr != null && prev != null) {
+      const d = prev - curr;
+      if (d > 0)      { diffEl.textContent = `▲ ${d} 상승`; diffEl.className = 'modal-stat-diff up'; }
+      else if (d < 0) { diffEl.textContent = `▼ ${Math.abs(d)} 하락`; diffEl.className = 'modal-stat-diff down'; }
+      else            { diffEl.textContent = '변동 없음'; diffEl.className = 'modal-stat-diff'; }
+    } else {
+      diffEl.textContent = ''; diffEl.className = 'modal-stat-diff';
+    }
+  }
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('country-modal')) closeModalDirect();
+}
+
+function closeModalDirect() {
+  document.getElementById('country-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ESC 키로 닫기
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
+
+// ─── 자동 갱신 (30분) ───
+setInterval(() => { loadData(); loadSteamData(); loadTrendsData(); }, 30 * 60 * 1000);
+
+// ─── 초기 실행 ───
+loadData();
+loadSteamData();
+loadTrendsData();
+</script>
+</body>
+</html>
