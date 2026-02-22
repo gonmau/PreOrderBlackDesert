@@ -1112,6 +1112,8 @@ function getRegion(country) {
 let allHistory = [];
 let currentTab = 'all';
 let chartInstance = null;
+let salesChartInstance = null;
+let trendsChartInstance = null;
 
 // ─── 메인 로직 ───
 async function loadData() {
@@ -1288,6 +1290,9 @@ function updateAllAnnotations() {
   const anns = buildEventAnnotations();
   [chartInstance, salesChartInstance, trendsChartInstance].forEach(chart => {
     if (!chart) return;
+    if (!chart.options.plugins.annotation) {
+      chart.options.plugins.annotation = {};
+    }
     chart.options.plugins.annotation.annotations = anns;
     chart.update('none');
   });
