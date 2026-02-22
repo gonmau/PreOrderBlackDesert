@@ -1130,9 +1130,13 @@ async function loadData() {
     return;
   }
 
-  render();
+  try {
+    render();
+  } catch(e) {
+    console.error('render 에러:', e);
+  }
 
-  // 로딩 숨기기
+  // 로딩 숨기기 (render 에러 여부 관계없이 반드시 실행)
   const ls = document.getElementById('loading-screen');
   ls.style.opacity = 0;
   setTimeout(() => ls.style.display = 'none', 500);
