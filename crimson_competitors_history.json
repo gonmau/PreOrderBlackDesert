@@ -17,8 +17,8 @@
   },
   "프랑스": {
     "games": [
-      "Resident Evil Requiem",
       "Resident Evil Requiem Deluxe Edition",
+      "Resident Evil Requiem",
       "WWE 2K26 Édition Monday Night War"
     ],
     "crimson_rank": 4
@@ -87,27 +87,26 @@
     "games": [
       "Resident Evil Requiem",
       "Resident Evil Requiem Deluxe Edition",
-      "WWE 2K26 Monday Night War Edition",
-      "Diablo® IV: Lord of Hatred™ – Standard Edition"
+      "WWE 2K26 Monday Night War Edition"
     ],
-    "crimson_rank": 5
+    "crimson_rank": 4
   },
   "포르투갈": {
     "games": [
       "Resident Evil Requiem",
-      "Resident Evil Requiem Deluxe Edition"
+      "Resident Evil Requiem Deluxe Edition",
+      "WWE 2K26 Monday Night War Edition"
     ],
-    "crimson_rank": 3
+    "crimson_rank": 4
   },
   "그리스": {
     "games": [
       "Resident Evil Requiem",
       "Resident Evil Requiem Deluxe Edition",
-      "WWE 2K26 King of Kings Edition",
       "WWE 2K26 Monday Night War Edition",
-      "MARVEL Tōkon: Fighting Souls Ultimate Edition"
+      "WWE 2K26 King of Kings Edition"
     ],
-    "crimson_rank": 6
+    "crimson_rank": 5
   },
   "체코": {
     "games": [
@@ -163,8 +162,8 @@
     "games": [
       "Resident Evil Requiem",
       "Resident Evil Requiem Deluxe Edition",
-      "WWE 2K26 Standard Edition",
       "WWE 2K26 Monday Night War Edition",
+      "WWE 2K26 Standard Edition",
       "WWE 2K26 King of Kings Edition"
     ],
     "crimson_rank": 6
@@ -182,10 +181,9 @@
     "games": [
       "Resident Evil Requiem",
       "Resident Evil Requiem Deluxe Edition",
-      "WWE 2K26 Monday Night War Edition",
-      "Diablo® IV: Lord of Hatred™ - Ultimate Edition"
+      "WWE 2K26 Monday Night War Edition"
     ],
-    "crimson_rank": 5
+    "crimson_rank": 4
   },
   "미국": {
     "games": [
@@ -218,11 +216,10 @@
       "Resident Evil Requiem",
       "Edición Monday Night War de WWE 2K26",
       "Edición Estándar WWE 2K26",
-      "MARVEL Tōkon: Fighting Souls Ultimate Edition",
       "Edición digital deluxe de MLB® The Show™ 26",
-      "MLB® The Show™ 26"
+      "MARVEL Tōkon: Fighting Souls Ultimate Edition"
     ],
-    "crimson_rank": 8
+    "crimson_rank": 7
   },
   "아르헨티나": {
     "games": [
@@ -245,15 +242,14 @@
     "games": [
       "Resident Evil Requiem",
       "Resident Evil Requiem Deluxe Edition",
-      "Edición digital deluxe de MLB® The Show™ 26",
       "MARVEL Tōkon: Fighting Souls Ultimate Edition"
     ],
-    "crimson_rank": 5
+    "crimson_rank": 4
   },
   "페루": {
     "games": [
-      "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
+      "Resident Evil Requiem Deluxe Edition",
       "Edición Monday Night War de WWE 2K26",
       "Edición Attitude Era de WWE 2K26",
       "Edición King of Kings de WWE 2K26",
@@ -266,24 +262,17 @@
       "Resident Evil Requiem",
       "Resident Evil Requiem Deluxe Edition",
       "Edición Monday Night War de WWE 2K26",
-      "Edición King of Kings de WWE 2K26",
-      "LEGO® Batman™: El Legado del Caballero de la Noche Edición Deluxe",
-      "Edición Estándar WWE 2K26",
-      "Diablo® IV: Lord of Hatred™ - Standard Edition",
-      "007 First Light",
-      "Coffee Talk Tokyo",
-      "Coffee Talk Tokyo - Deluxe Edition"
+      "Edición King of Kings de WWE 2K26"
     ],
-    "crimson_rank": 11
+    "crimson_rank": 5
   },
   "볼리비아": {
     "games": [
       "Resident Evil Requiem",
       "Resident Evil Requiem Deluxe Edition",
-      "LEGO® Batman™: El Legado del Caballero de la Noche Edición Deluxe",
-      "007 First Light"
+      "LEGO® Batman™: El Legado del Caballero de la Noche Edición Deluxe"
     ],
-    "crimson_rank": 5
+    "crimson_rank": 4
   },
   "과테말라": {
     "games": [
@@ -297,9 +286,10 @@
     "games": [
       "Resident Evil Requiem",
       "Resident Evil Requiem Deluxe Edition",
+      "Edición King of Kings de WWE 2K26",
       "MARVEL Tōkon: Fighting Souls Digital Deluxe Edition"
     ],
-    "crimson_rank": 4
+    "crimson_rank": 5
   },
   "일본": {
     "games": [
@@ -331,10 +321,9 @@
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "WWE 2K26 Monday Night War Edition",
-      "WWE 2K26 Standard Edition",
-      "007 First Light"
+      "WWE 2K26 Standard Edition"
     ],
-    "crimson_rank": 6
+    "crimson_rank": 5
   },
   "태국": {
     "games": [
@@ -355,8 +344,8 @@
     "games": [
       "Resident Evil Requiem Deluxe Edition (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
       "Resident Evil Requiem (Simplified Chinese, English, Korean, Japanese, Traditional Chinese)",
-      "MARVEL Tōkon: Fighting Souls Ultimate Edition (English/Chinese/Korean/Japanese Ver.)",
       "WWE 2K26 Monday Night War Edition (English)",
+      "MARVEL Tōkon: Fighting Souls Ultimate Edition (English/Chinese/Korean/Japanese Ver.)",
       "WWE 2K26 Standard Edition (English)",
       "WWE 2K26 Attitude Era Edition (English)",
       "Diablo® IV: Lord of Hatred™ - Ultimate Edition (English/Chinese/Korean Ver.)"
@@ -397,10 +386,9 @@
       "《暗黑破壞神® IV：憎恨之王™》標準版 (中英韓文版)",
       "首都高賽車 (簡體中文, 英文, 繁體中文, 日文)",
       "《暗黑破壞神® IV：憎恨時代合輯》 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
-      "Monster Hunter Stories 3: 命運雙龍 高級豪華版 (中日英韓文版)",
-      "Monster Hunter Stories 3: 命運雙龍 (簡體中文, 韓文, 英文, 繁體中文, 日文)"
+      "Monster Hunter Stories 3: 命運雙龍 高級豪華版 (中日英韓文版)"
     ],
-    "crimson_rank": 8
+    "crimson_rank": 7
   },
   "대만": {
     "games": [
@@ -410,9 +398,9 @@
       "Monster Hunter Stories 3: 命運雙龍 高級豪華版 (中日英韓文版)",
       "MLB® The Show™ 26 (英文)",
       "首都高賽車 (簡體中文, 英文, 繁體中文, 日文)",
+      "Monster Hunter Stories 3: 命運雙龍 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "《暗黑破壞神® IV：憎恨之王™》標準版 (中英韓文版)",
       "《暗黑破壞神® IV：憎恨時代合輯》 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
-      "Monster Hunter Stories 3: 命運雙龍 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "《暗黑破壞神® IV：憎恨之王™》終極版 (中英韓文版)"
     ],
     "crimson_rank": 11
