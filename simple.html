@@ -1113,7 +1113,6 @@ let allHistory = [];
 let currentTab = 'all';
 let chartInstance = null;
 let salesChartInstance = null;
-let trendsChartInstance = null;
 
 // ─── 메인 로직 ───
 async function loadData() {
@@ -1223,12 +1222,12 @@ const CD_EVENTS = [
 
 // ─── 이벤트 토글 상태 ───
 const evState = {}; // { idx: true/false } 기본 false (꺼짐)
-const evPanelOpen = { rank: false, sales: false, trends: false };
+const evPanelOpen = { rank: false, sales: false, trends: false, steam: false };
 
 CD_EVENTS.forEach((_, idx) => { evState[idx] = false; });
 
 function initEvPanels() {
-  ['rank', 'sales', 'trends'].forEach(chartId => {
+  ['rank', 'trends', 'steam'].forEach(chartId => {
     const panel = document.getElementById(`ev-panel-${chartId}`);
     if (!panel) return;
     panel.innerHTML = '';
@@ -1292,7 +1291,7 @@ function buildEventAnnotations() {
 
 function updateAllAnnotations() {
   const anns = buildEventAnnotations();
-  [chartInstance, salesChartInstance, trendsChartInstance].forEach(chart => {
+  [chartInstance, trendsChartInstance, steamChartInstance].forEach(chart => {
     if (!chart) return;
     if (!chart.options.plugins.annotation) {
       chart.options.plugins.annotation = {};
