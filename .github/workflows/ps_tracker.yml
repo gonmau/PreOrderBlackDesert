@@ -9,6 +9,12 @@ on:
 permissions:
   contents: write
 
+# [중요] 동시 실행 방지 - 같은 group은 순차적으로 1개씩만 실행
+# rank_history.json 동시 쓰기로 인한 데이터 초기화 방지
+concurrency:
+  group: rank-history
+  cancel-in-progress: false  # 취소하지 않고 순차 대기
+
 jobs:
   track:
     runs-on: ubuntu-latest
@@ -38,16 +44,20 @@ jobs:
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
         
-        # 1. 현재 수정된 파일(rank_history.json)을 임시 저장소로 보냄
-        git stash
+        # 1. 크롤링으로 생성된 rank_history.json을 별도 백업
+        #    (git stash 방식은 pull --rebase 후 stash pop 시
+        #     서버 최신 데이터를 덮어써서 데이터 손실 위험이 있음)
+        cp rank_history.json rank_history_new.json
         
-        # 2. 서버의 최신 데이터를 가져옴
+        # 2. rank_history.json을 서버 상태로 되돌리고 최신 pull
+        git checkout rank_history.json
         git pull origin main --rebase
         
-        # 3. 임시 저장했던 내 수정사항을 다시 꺼내옴
-        git stash pop || echo "No changes to pop"
+        # 3. 크롤링 결과(새 데이터)를 다시 적용
+        cp rank_history_new.json rank_history.json
+        rm rank_history_new.json
         
-        # 4. 변경사항을 커밋하고 푸시
+        # 4. 변경사항 커밋 & 푸시
         git add rank_history.json
         git commit -m "Update rank history [skip ci]" || exit 0
         git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main
