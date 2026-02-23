@@ -305,6 +305,57 @@ def get_emoji(diff_text):
         return "🔴"  # 하락 (순위가 나빠짐)
     return ""
 
+def load_history_safe(history_file):
+    """
+    rank_history.json을 안전하게 읽어 반환한다.
+    - 읽기/파싱 실패 시 .backup 파일로 자동 복구 시도
+    - .backup도 실패하면 RuntimeError를 raise해 호출부에서 스크립트를 중단
+    - 성공 시 (history 리스트, 복구 여부 bool) 튜플 반환
+    """
+    import shutil
+
+    backup_file = history_file + ".backup"
+
+    def _try_load(path):
+        """파일을 읽어 list를 반환. 실패 시 None 반환."""
+        if not os.path.exists(path):
+            return None
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if not isinstance(data, list):
+                print(f"⚠️  {path} 형식 오류: list가 아닙니다.")
+                return None
+            return data
+        except json.JSONDecodeError as e:
+            print(f"⚠️  {path} JSON 파싱 실패: {e}")
+            return None
+        except Exception as e:
+            print(f"⚠️  {path} 읽기 실패: {e}")
+            return None
+
+    # 1차: 메인 파일 시도
+    history = _try_load(history_file)
+    if history is not None:
+        return history, False  # 정상 로드, 복구 없음
+
+    # 2차: backup 파일로 복구 시도
+    print(f"⚠️  메인 파일 로드 실패 → {backup_file} 으로 복구를 시도합니다...")
+    history = _try_load(backup_file)
+    if history is not None:
+        # backup → 메인 파일로 복원
+        shutil.copy2(backup_file, history_file)
+        print(f"✅  {backup_file} 에서 복구 성공! ({len(history)}개 레코드)")
+        return history, True  # 복구 성공
+
+    # 둘 다 실패 → 호출부에서 중단 처리
+    raise RuntimeError(
+        f"❌  {history_file} 과 {backup_file} 모두 읽기 실패.\n"
+        f"   데이터 손실 방지를 위해 스크립트를 중단합니다.\n"
+        f"   파일을 수동으로 확인해 주세요."
+    )
+
+
 def send_discord(results, combined_avg):
     if not DISCORD_WEBHOOK:
         return
@@ -312,27 +363,14 @@ def send_discord(results, combined_avg):
     import shutil
 
     history_file = "rank_history.json"
-    history = []
-    load_failed = False
+    backup_file = history_file + ".backup"
 
-    if os.path.exists(history_file):
-        with open(history_file, "r", encoding="utf-8") as f:
-            try:
-                history = json.load(f)
-                if not isinstance(history, list):
-                    print(f"⚠️  rank_history.json 형식 오류: list가 아님. 덮어쓰기 중단.")
-                    load_failed = True
-                    history = []
-            except json.JSONDecodeError as e:
-                print(f"⚠️  rank_history.json 파싱 실패: {e}")
-                print(f"⚠️  기존 데이터 보호를 위해 덮어쓰기를 중단합니다.")
-                load_failed = True
-                history = []
-            except Exception as e:
-                print(f"⚠️  rank_history.json 읽기 실패: {e}")
-                print(f"⚠️  기존 데이터 보호를 위해 덮어쓰기를 중단합니다.")
-                load_failed = True
-                history = []
+    # 안전하게 히스토리 로드 (실패 시 backup 자동 복구, 둘 다 실패 시 중단)
+    try:
+        history, was_recovered = load_history_safe(history_file)
+    except RuntimeError as e:
+        print(str(e))
+        raise SystemExit(1)  # 다른 코드들도 오염되지 않도록 즉시 종료
 
     # 이전 실행 데이터
     prev_run = history[-1] if history else None
@@ -347,23 +385,17 @@ def send_discord(results, combined_avg):
         "averages": {"combined": combined_avg},
         "raw_results": results
     }
+    history.append(new_entry)
 
-    if load_failed:
-        # 읽기/파싱 실패 시: 기존 파일 백업 후 새 항목은 별도 파일에 저장
-        # 절대 기존 rank_history.json을 덮어쓰지 않음
-        backup_file = history_file + ".backup"
-        if os.path.exists(history_file):
-            shutil.copy2(history_file, backup_file)
-            print(f"⚠️  기존 파일을 {backup_file} 으로 백업했습니다.")
-        emergency_file = f"rank_history_emergency_{datetime.now(KST).strftime('%Y%m%d_%H%M%S')}.json"
-        with open(emergency_file, "w", encoding="utf-8") as f:
-            json.dump([new_entry], f, indent=2, ensure_ascii=False)
-        print(f"⚠️  새 데이터를 {emergency_file} 에 임시 저장했습니다. 수동 병합이 필요합니다.")
-    else:
-        # 정상적으로 읽었을 때만 append 후 저장
-        history.append(new_entry)
-        with open(history_file, "w", encoding="utf-8") as f:
-            json.dump(history, f, indent=2, ensure_ascii=False)
+    # 저장 전에 현재 파일을 backup으로 먼저 복사 (다음 실패 시 복구용)
+    if os.path.exists(history_file):
+        shutil.copy2(history_file, backup_file)
+
+    with open(history_file, "w", encoding="utf-8") as f:
+        json.dump(history, f, indent=2, ensure_ascii=False)
+
+    if was_recovered:
+        print(f"✅  backup에서 복구된 데이터에 새 항목을 추가해 저장했습니다.")
 
     # 그래프 생성
     img_buf = None
