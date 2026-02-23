@@ -17,8 +17,8 @@
   },
   "프랑스": {
     "games": [
-      "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
+      "Resident Evil Requiem Deluxe Edition",
       "WWE 2K26 Édition Monday Night War"
     ],
     "crimson_rank": 4
@@ -153,8 +153,8 @@
   },
   "우크라이나": {
     "games": [
-      "Resident Evil Requiem: видання Deluxe",
-      "Resident Evil Requiem"
+      "Resident Evil Requiem",
+      "Resident Evil Requiem: видання Deluxe"
     ],
     "crimson_rank": 3
   },
@@ -181,9 +181,10 @@
     "games": [
       "Resident Evil Requiem",
       "Resident Evil Requiem Deluxe Edition",
-      "WWE 2K26 Monday Night War Edition"
+      "WWE 2K26 Monday Night War Edition",
+      "WWE 2K26 Standard Edition"
     ],
-    "crimson_rank": 4
+    "crimson_rank": 5
   },
   "미국": {
     "games": [
@@ -215,8 +216,8 @@
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
       "Edición Monday Night War de WWE 2K26",
-      "Edición Estándar WWE 2K26",
       "Edición digital deluxe de MLB® The Show™ 26",
+      "Edición Estándar WWE 2K26",
       "MARVEL Tōkon: Fighting Souls Ultimate Edition"
     ],
     "crimson_rank": 7
@@ -253,9 +254,10 @@
       "Edición Monday Night War de WWE 2K26",
       "Edición Attitude Era de WWE 2K26",
       "Edición King of Kings de WWE 2K26",
-      "MARVEL Tōkon: Fighting Souls Ultimate Edition"
+      "MARVEL Tōkon: Fighting Souls Ultimate Edition",
+      "Edición Estándar WWE 2K26"
     ],
-    "crimson_rank": 7
+    "crimson_rank": 8
   },
   "우루과이": {
     "games": [
@@ -396,8 +398,8 @@
       "Resident Evil Requiem (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "《MLB® The Show™ 26》數位豪華版 (英文版)",
       "Monster Hunter Stories 3: 命運雙龍 高級豪華版 (中日英韓文版)",
-      "MLB® The Show™ 26 (英文)",
       "首都高賽車 (簡體中文, 英文, 繁體中文, 日文)",
+      "MLB® The Show™ 26 (英文)",
       "Monster Hunter Stories 3: 命運雙龍 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
       "《暗黑破壞神® IV：憎恨之王™》標準版 (中英韓文版)",
       "《暗黑破壞神® IV：憎恨時代合輯》 (簡體中文, 韓文, 英文, 繁體中文, 日文)",
