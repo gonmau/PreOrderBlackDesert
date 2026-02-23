@@ -308,31 +308,62 @@ def get_emoji(diff_text):
 def send_discord(results, combined_avg):
     if not DISCORD_WEBHOOK:
         return
-    
+
+    import shutil
+
     history_file = "rank_history.json"
     history = []
+    load_failed = False
+
     if os.path.exists(history_file):
         with open(history_file, "r", encoding="utf-8") as f:
             try:
                 history = json.load(f)
-            except:
+                if not isinstance(history, list):
+                    print(f"⚠️  rank_history.json 형식 오류: list가 아님. 덮어쓰기 중단.")
+                    load_failed = True
+                    history = []
+            except json.JSONDecodeError as e:
+                print(f"⚠️  rank_history.json 파싱 실패: {e}")
+                print(f"⚠️  기존 데이터 보호를 위해 덮어쓰기를 중단합니다.")
+                load_failed = True
+                history = []
+            except Exception as e:
+                print(f"⚠️  rank_history.json 읽기 실패: {e}")
+                print(f"⚠️  기존 데이터 보호를 위해 덮어쓰기를 중단합니다.")
+                load_failed = True
                 history = []
 
     # 이전 실행 데이터
     prev_run = history[-1] if history else None
-    
+
     # 평균 변동폭
     prev_combined_avg = prev_run['averages'].get('combined') if prev_run else None
     combined_diff_text = format_diff(combined_avg, prev_combined_avg)
-    
+
     # 히스토리 업데이트
-    history.append({
+    new_entry = {
         "timestamp": datetime.now(KST).isoformat(),
         "averages": {"combined": combined_avg},
         "raw_results": results
-    })
-    with open(history_file, "w", encoding="utf-8") as f:
-        json.dump(history[:], f, indent=2)
+    }
+
+    if load_failed:
+        # 읽기/파싱 실패 시: 기존 파일 백업 후 새 항목은 별도 파일에 저장
+        # 절대 기존 rank_history.json을 덮어쓰지 않음
+        backup_file = history_file + ".backup"
+        if os.path.exists(history_file):
+            shutil.copy2(history_file, backup_file)
+            print(f"⚠️  기존 파일을 {backup_file} 으로 백업했습니다.")
+        emergency_file = f"rank_history_emergency_{datetime.now(KST).strftime('%Y%m%d_%H%M%S')}.json"
+        with open(emergency_file, "w", encoding="utf-8") as f:
+            json.dump([new_entry], f, indent=2, ensure_ascii=False)
+        print(f"⚠️  새 데이터를 {emergency_file} 에 임시 저장했습니다. 수동 병합이 필요합니다.")
+    else:
+        # 정상적으로 읽었을 때만 append 후 저장
+        history.append(new_entry)
+        with open(history_file, "w", encoding="utf-8") as f:
+            json.dump(history, f, indent=2, ensure_ascii=False)
 
     # 그래프 생성
     img_buf = None
