@@ -1153,7 +1153,8 @@ function render() {
 
   // 메타 정보
   const dt = new Date(latest.timestamp);
-  document.getElementById('last-updated').textContent = dt.toLocaleString('ko-KR');
+  const kstDt = new Date(dt.getTime() + (dt.getTimezoneOffset() * 60000) + (9 * 3600000));
+  document.getElementById('last-updated').textContent = kstDt.toLocaleString('ko-KR');
   document.getElementById('country-count').textContent = Object.keys(raw).length;
   document.getElementById('history-count').textContent = allHistory.length;
 
@@ -1362,7 +1363,8 @@ function renderChart() {
           callbacks: {
             title: items => {
               const d = new Date(items[0].parsed.x);
-              return `${d.getMonth()+1}/${d.getDate()}`;
+              const kst = new Date(d.getTime() + (d.getTimezoneOffset() * 60000) + (9 * 3600000));
+              return `${kst.getMonth()+1}/${kst.getDate()}`;
             },
             label: ctx2 => `가중 평균: ${ctx2.parsed.y?.toFixed(1) ?? '—'}위`
           }
@@ -1714,7 +1716,8 @@ function renderSteam() {
 
 function fmtDate(iso) {
   const d = new Date(iso);
-  return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
+  const kst = new Date(d.getTime() + (d.getTimezoneOffset() * 60000) + (9 * 3600000));
+  return `${kst.getFullYear()}.${kst.getMonth()+1}.${kst.getDate()}`;
 }
 
 // ─── 국가 모달 ───
@@ -1745,7 +1748,8 @@ function openCountryModal(country) {
   // 차트
   const labels = allHistory.map(h => {
     const dt = new Date(h.timestamp);
-    return `${dt.getMonth()+1}/${dt.getDate()}`;
+    const kst = new Date(dt.getTime() + (dt.getTimezoneOffset() * 60000) + (9 * 3600000));
+    return `${kst.getMonth()+1}/${kst.getDate()}`;
   });
   const stdData = allHistory.map(h => h.raw_results?.[country]?.standard ?? null);
   const dlxData = allHistory.map(h => h.raw_results?.[country]?.deluxe   ?? null);
