@@ -2285,11 +2285,11 @@ setInterval(() => { loadData(); loadSteamData(); loadTrendsData(); }, 30 * 60 * 
 // ─── 초기 실행 ───
 // ─── 출시 카운트다운 ───
 const RELEASE_TIMES = [
-  { flag: '🇰🇷', country: '한국',  iso: '2026-03-20T07:00:00+09:00' },
-  { flag: '🇯🇵', country: '일본',  iso: '2026-03-20T07:00:00+09:00' },
-  { flag: '🇺🇸', country: '미국',  iso: '2026-03-19T15:00:00-07:00' },  // PT
-  { flag: '🇬🇧', country: '영국',  iso: '2026-03-19T22:00:00+00:00' },  // GMT
-  { flag: '🇩🇪', country: '독일',  iso: '2026-03-19T23:00:00+01:00' },  // CET
+  { flag: '🇰🇷', country: '한국', iso: '2026-03-20T07:00:00+09:00', localLabel: '3/20 07:00 KST' },
+  { flag: '🇯🇵', country: '일본', iso: '2026-03-20T07:00:00+09:00', localLabel: '3/20 07:00 JST' },
+  { flag: '🇺🇸', country: '미국', iso: '2026-03-19T15:00:00-07:00', localLabel: '3/19 15:00 PT'  },
+  { flag: '🇬🇧', country: '영국', iso: '2026-03-19T22:00:00+00:00', localLabel: '3/19 22:00 GMT' },
+  { flag: '🇩🇪', country: '독일', iso: '2026-03-19T23:00:00+01:00', localLabel: '3/19 23:00 CET' },
 ];
 
 function pad2(n) { return String(n).padStart(2, '0'); }
@@ -2303,12 +2303,7 @@ function renderCountdown() {
     const target = new Date(r.iso).getTime();
     const diff = target - now;
     const released = diff <= 0;
-
-    // 현지 출시 시각 표시 (브라우저 로컬 기준)
-    const localStr = new Date(r.iso).toLocaleString('ko-KR', {
-      month: 'numeric', day: 'numeric',
-      hour: '2-digit', minute: '2-digit', hour12: false
-    });
+    const localStr = r.localLabel;
 
     if (released) {
       return `
