@@ -1,4 +1,12 @@
 {
+  "영국": {
+    "games": [
+      "Resident Evil Requiem Deluxe Edition",
+      "Resident Evil Requiem",
+      "WWE 2K26 Monday Night War Edition"
+    ],
+    "crimson_rank": 4
+  },
   "독일": {
     "games": [
       "Resident Evil Requiem Deluxe Edition",
@@ -164,9 +172,10 @@
     "games": [
       "Resident Evil Requiem Deluxe Edition",
       "Resident Evil Requiem",
-      "WWE 2K26 Monday Night War Edition"
+      "WWE 2K26 Monday Night War Edition",
+      "WWE 2K26 Standard Edition"
     ],
-    "crimson_rank": 4
+    "crimson_rank": 5
   },
   "남아공": {
     "games": [
