@@ -497,7 +497,7 @@ def send_discord(results, combined_avg):
             d_part = f"{curr_d or '-'} {d_diff}" if d_diff else f"{curr_d or '-'}"
             c_part = f"{curr_combined or '-'} {c_diff}" if c_diff else f"{curr_combined or '-'}"
             
-            store_url = URLS.get(c)
+            store_url = get_active_url(c)
             flag = FLAGS.get(c, "")
             country_label = f"{flag} [{c}]({store_url})" if store_url else f"{flag} {c}"
 
