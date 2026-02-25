@@ -162,6 +162,59 @@
     .stat-diff.up { color: var(--up); }
     .stat-diff.down { color: var(--down); }
 
+    /* ─── COUNTDOWN ─── */
+    .countdown-section {
+      margin-bottom: 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .countdown-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 50% 120%, rgba(192,57,43,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .countdown-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 3px;
+      color: var(--muted);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .countdown-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .countdown-regions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+    }
+    .countdown-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 14px 16px;
+      text-align: center;
+    }
+    .countdown-card.released { border-color: var(--up); }
+    .countdown-card.released .countdown-flag { opacity: 0.6; }
+    .countdown-flag { font-size: 1.6rem; line-height: 1; margin-bottom: 4px; }
+    .countdown-country { font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .countdown-digits { display: flex; justify-content: center; gap: 4px; margin-bottom: 6px; }
+    .cd-unit { display: flex; flex-direction: column; align-items: center; }
+    .cd-num { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; line-height: 1; color: var(--red-glow); min-width: 28px; text-align: center; }
+    .cd-sep { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--border); line-height: 1; padding-bottom: 10px; align-self: flex-end; }
+    .cd-label { font-size: 0.52rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+    .countdown-localtime { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.5px; }
+    .countdown-released-badge { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 2px; color: var(--up); margin: 6px 0; }
+    @media (max-width: 640px) { .countdown-regions { grid-template-columns: repeat(2, 1fr); } }
+
     /* ─── CHART ─── */
     .chart-section {
       margin-bottom: 32px;
@@ -917,6 +970,12 @@
         <div class="stat-value gold" id="stat-best-flag" style="font-size:2rem">—</div>
         <div class="stat-diff" id="stat-best-name"></div>
       </div>
+    </div>
+
+    <!-- COUNTDOWN -->
+    <div class="countdown-section fade-in">
+      <div class="countdown-title">🚀 출시 카운트다운</div>
+      <div class="countdown-regions" id="countdown-grid"></div>
     </div>
 
     <!-- CHART -->
@@ -2224,6 +2283,69 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDi
 setInterval(() => { loadData(); loadSteamData(); loadTrendsData(); }, 30 * 60 * 1000);
 
 // ─── 초기 실행 ───
+// ─── 출시 카운트다운 ───
+const RELEASE_TIMES = [
+  { flag: '🇰🇷', country: '한국',  iso: '2026-03-20T07:00:00+09:00' },
+  { flag: '🇯🇵', country: '일본',  iso: '2026-03-20T07:00:00+09:00' },
+  { flag: '🇺🇸', country: '미국',  iso: '2026-03-19T15:00:00-07:00' },  // PT
+  { flag: '🇬🇧', country: '영국',  iso: '2026-03-19T22:00:00+00:00' },  // GMT
+  { flag: '🇩🇪', country: '독일',  iso: '2026-03-19T23:00:00+01:00' },  // CET
+];
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+function renderCountdown() {
+  const grid = document.getElementById('countdown-grid');
+  if (!grid) return;
+  const now = Date.now();
+
+  grid.innerHTML = RELEASE_TIMES.map(r => {
+    const target = new Date(r.iso).getTime();
+    const diff = target - now;
+    const released = diff <= 0;
+
+    // 현지 출시 시각 표시 (브라우저 로컬 기준)
+    const localStr = new Date(r.iso).toLocaleString('ko-KR', {
+      month: 'numeric', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: false
+    });
+
+    if (released) {
+      return `
+        <div class="countdown-card released" id="cd-${r.country}">
+          <div class="countdown-flag">${r.flag}</div>
+          <div class="countdown-country">${r.country}</div>
+          <div class="countdown-released-badge">✅ 출시됨</div>
+          <div class="countdown-localtime">${localStr}</div>
+        </div>`;
+    }
+
+    const days  = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins  = Math.floor((diff % 3600000) / 60000);
+    const secs  = Math.floor((diff % 60000) / 1000);
+
+    return `
+      <div class="countdown-card" id="cd-${r.country}">
+        <div class="countdown-flag">${r.flag}</div>
+        <div class="countdown-country">${r.country}</div>
+        <div class="countdown-digits">
+          <div class="cd-unit"><div class="cd-num">${pad2(days)}</div><div class="cd-label">일</div></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit"><div class="cd-num">${pad2(hours)}</div><div class="cd-label">시</div></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit"><div class="cd-num">${pad2(mins)}</div><div class="cd-label">분</div></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit"><div class="cd-num">${pad2(secs)}</div><div class="cd-label">초</div></div>
+        </div>
+        <div class="countdown-localtime">${localStr} 출시</div>
+      </div>`;
+  }).join('');
+}
+
+renderCountdown();
+setInterval(renderCountdown, 1000);
+
 initEvPanels();
 loadData().then(() => renderSalesEstimate());
 loadSteamData();
