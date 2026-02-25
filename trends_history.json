@@ -6315,5 +6315,11 @@
     "data": {
       "example_metric": 100
     }
+  },
+  {
+    "timestamp": "2026-02-26T07:35:53.129932+09:00",
+    "data": {
+      "example_metric": 100
+    }
   }
 ]
