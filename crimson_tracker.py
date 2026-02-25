@@ -445,7 +445,7 @@ def send_discord(results, combined_avg):
             "description": summary_desc,
             "color": 0x00B0F4,
             "image": {"url": "attachment://graph.png"} if img_buf else None,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(KST).isoformat()
         }]
     }
     
@@ -512,7 +512,7 @@ def send_discord(results, combined_avg):
                     "title": f"🌐 {region_name}",
                     "description": region_desc,
                     "color": 0x00B0F4,
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": datetime.now(KST).isoformat()
                 }]
             }
             requests.post(DISCORD_WEBHOOK, json=region_payload)
