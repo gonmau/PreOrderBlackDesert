@@ -1,0 +1,70 @@
+name: Combined Tracker
+
+on:
+  schedule:
+    - cron: '10 23,1,2,3,4,5,6,7,8,11 * * *'  # KST: 08시, 10~17시(핵심), 20시 / 하루 10회
+  workflow_dispatch:      # 수동 실행 가능
+
+# [중요] 쓰기 권한 추가
+permissions:
+  contents: write
+
+# [중요] 동시 실행 방지 - 같은 group은 순차적으로 1개씩만 실행
+# rank_history.json 동시 쓰기로 인한 데이터 초기화 방지
+concurrency:
+  group: rank-history
+  cancel-in-progress: false  # 취소하지 않고 순차 대기
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install Dependencies
+      run: |
+        pip install selenium webdriver-manager requests matplotlib pytrends pandas
+    
+    - name: Run Trackers
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      run: |
+        python crimson_tracker.py
+        python steamdb_store_tracker.py
+        python trends_tracker.py
+    
+    - name: Commit and Push changes
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        
+        # 1. 크롤링으로 생성된 파일들 백업
+        cp rank_history.json rank_history_new.json
+        cp store_state.json store_state_new.json 2>/dev/null || true
+        cp steam_history.json steam_history_new.json 2>/dev/null || true
+        cp trends_history.json trends_history_new.json 2>/dev/null || true
+        
+        # 2. 서버 상태로 되돌리고 최신 pull
+        git checkout rank_history.json store_state.json steam_history.json trends_history.json 2>/dev/null || true
+        git pull origin main --rebase
+        
+        # 3. 크롤링 결과 다시 적용
+        cp rank_history_new.json rank_history.json
+        cp store_state_new.json store_state.json 2>/dev/null || true
+        cp steam_history_new.json steam_history.json 2>/dev/null || true
+        cp trends_history_new.json trends_history.json 2>/dev/null || true
+        rm -f rank_history_new.json store_state_new.json steam_history_new.json trends_history_new.json
+        
+        # 4. 변경사항 커밋 & 푸시
+        git add rank_history.json store_state.json steam_history.json trends_history.json
+        git commit -m "Update tracker history [skip ci]" || exit 0
+        git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main
