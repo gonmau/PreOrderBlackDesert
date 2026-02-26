@@ -36,9 +36,9 @@ jobs:
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       run: |
-        python crimson_tracker.py
         python steamdb_store_tracker.py
         python trends_tracker.py
+        python crimson_tracker.py
     
     - name: Commit and Push changes
       env:
