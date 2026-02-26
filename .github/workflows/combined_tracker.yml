@@ -39,6 +39,7 @@ jobs:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       run: |
         python steamdb_store_tracker.py
+        python steam_topseller_tracker.py
         python trends_tracker.py
         python crimson_tracker.py
     
