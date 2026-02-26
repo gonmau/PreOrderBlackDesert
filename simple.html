@@ -1158,11 +1158,26 @@ function diffBadge(curr, prev) {
 
 function rankColor(rank) {
   if (rank == null) return '#2a1f22';
-  if (rank <= 5)  return 'rgba(212,160,23,0.6)';
-  if (rank <= 10) return 'rgba(192,57,43,0.5)';
-  if (rank <= 20) return 'rgba(192,57,43,0.25)';
-  if (rank <= 40) return 'rgba(192,57,43,0.1)';
+  if (rank === 1)  return 'rgba(255,215,0,0.25)';
+  if (rank === 2)  return 'rgba(192,192,192,0.2)';
+  if (rank === 3)  return 'rgba(205,127,50,0.2)';
+  if (rank === 4)  return 'rgba(64,190,172,0.15)';
+  if (rank === 5)  return 'rgba(180,120,220,0.15)';
+  if (rank <= 10) return 'rgba(192,57,43,0.4)';
+  if (rank <= 20) return 'rgba(192,57,43,0.2)';
+  if (rank <= 40) return 'rgba(192,57,43,0.08)';
   return 'rgba(50,40,45,0.5)';
+}
+
+function rankTextColor(rank) {
+  if (!rank) return 'var(--text)';
+  if (rank === 1) return '#FFD700';
+  if (rank === 2) return '#C0C0C0';
+  if (rank === 3) return '#CD7F32';
+  if (rank === 4) return '#40BEAC';
+  if (rank === 5) return '#B478DC';
+  if (rank <= 10) return '#e74c3c';
+  return 'var(--text)';
 }
 
 function getRegion(country) {
@@ -1546,15 +1561,15 @@ function renderTable(tab, raw, prevRaw) {
           </div>
         </td>
         <td>
-          <span class="rank-val ${d.standard ? '' : 'no-data'}">${d.standard ? `${d.standard}위` : '—'}</span>
+          <span class="rank-val ${d.standard ? '' : 'no-data'}" style="color:${rankTextColor(d.standard)}">${d.standard ? `${d.standard}위` : '—'}</span>
           ${diffBadge(d.standard, pd.standard)}
         </td>
         <td>
-          <span class="rank-val ${d.deluxe ? '' : 'no-data'}">${d.deluxe ? `${d.deluxe}위` : '—'}</span>
+          <span class="rank-val ${d.deluxe ? '' : 'no-data'}" style="color:${rankTextColor(d.deluxe)}">${d.deluxe ? `${d.deluxe}위` : '—'}</span>
           ${diffBadge(d.deluxe, pd.deluxe)}
         </td>
         <td class="combined-cell">
-          <span class="rank-val ${cr ? '' : 'no-data'}" style="color:${cr && cr <= 10 ? 'var(--gold)' : 'var(--text)'}">${cr ? `${cr}위` : '—'}</span>
+          <span class="rank-val ${cr ? '' : 'no-data'}" style="color:${rankTextColor(cr)}">${cr ? `${cr}위` : '—'}</span>
           ${diffBadge(cr, prevCr)}
         </td>
         <td><span class="weight-badge">${(MARKET_WEIGHTS[c] || 0).toFixed(1)}</span></td>
