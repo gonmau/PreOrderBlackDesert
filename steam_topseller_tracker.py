@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Steam 국가별 Top Seller 순위 추적기 (테스트용 - 5개국)
+Steam 국가별 Top Seller 순위 추적기 (10개국)
 - Steam 공식 API: getappsincategory (최대 100개)
-- 대상: 미국, 영국, 일본, 한국, 독일
+- 대상: 미국, 영국, 독일, 프랑스, 캐나다, 브라질, 일본, 한국, 중국, 러시아
 """
 
 import json
@@ -74,9 +74,19 @@ KST = timezone(timedelta(hours=9))
 TARGET_COUNTRIES = {
     "us": "미국",
     "gb": "영국",
+    "de": "독일",
+    "fr": "프랑스",
+    "ca": "캐나다",
+    "br": "브라질",
     "jp": "일본",
     "kr": "한국",
-    "de": "독일",
+    "cn": "중국",
+    "ru": "러시아",
+}
+
+STORE_LINKS = {
+    cc: f"https://store.steampowered.com/search/?cc={cc}&filter=topsellers"
+    for cc in ["us","gb","de","fr","ca","br","jp","kr","cn","ru"]
 }
 
 HEADERS = {
@@ -125,7 +135,7 @@ def send_discord(msg, embed=None):
 # ======================
 def main():
     print("=" * 60)
-    print("🎮 Steam Top Seller 순위 추적기 (테스트 - 5개국)")
+    print("🎮 Steam Top Seller 순위 추적기 (10개국)")
     print("=" * 60)
 
     now_kst = datetime.now(KST)
@@ -154,10 +164,13 @@ def main():
 
     # Discord 알림
     lines = []
+    cc_by_name = {v: k for k, v in TARGET_COUNTRIES.items()}
     for name, data in results.items():
         rank = data.get("rank")
         rank_str = f"**#{rank}**" if rank else "순위권 밖"
-        lines.append(f"**{name}**: {rank_str}")
+        cc = cc_by_name.get(name, "")
+        link = STORE_LINKS.get(cc, "")
+        lines.append(f"[**{name}**]({link}): {rank_str}")
 
     embed = {
         "title": "🎮 Steam Top Seller — Crimson Desert",
