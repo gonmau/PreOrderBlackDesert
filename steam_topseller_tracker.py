@@ -3,7 +3,7 @@
 
 """
 Steam 국가별 Top Seller 순위 추적기 (테스트용 - 5개국)
-- Steam 공식 API: featuredcategories
+- Steam 공식 API: getappsincategory (최대 100개)
 - 대상: 미국, 영국, 일본, 한국, 독일
 """
 
@@ -14,7 +14,50 @@ from datetime import datetime, timezone, timedelta
 import requests
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
-STEAM_APP_ID = "3321460"
+STEAM_APP_IDS = {"3321460", "1418525"}  # 스탠다드 + 디럭스 에디션
+
+# ======================
+# Steam API 호출
+# ======================
+def get_top_sellers(cc):
+    """Steam getappsincategory API로 국가별 top seller 가져오기 (최대 100개)"""
+    url = f"https://store.steampowered.com/api/getappsincategory/?cc={cc}&category=topsellers&start=0&count=100&l=en"
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=15)
+        if r.status_code != 200:
+            print(f"  ⚠️ {cc} 응답 실패: {r.status_code}")
+            return None
+
+        data = r.json()
+        items = data.get("apps", [])
+        if not items:
+            print(f"  ⚠️ {cc} 데이터 없음, 키 목록: {list(data.keys())}")
+            return None
+
+        rank = None
+        top20 = []
+        seen = set()  # 중복 제거
+
+        real_rank = 0
+        for item in items:
+            appid = str(item.get("id") or item.get("appid", ""))
+            name = item.get("name", "")
+            if appid in seen:
+                continue
+            seen.add(appid)
+            real_rank += 1
+            top20.append({"rank": real_rank, "appid": appid, "name": name})
+            if appid in STEAM_APP_IDS:
+                rank = real_rank
+            if real_rank >= 20:
+                break
+
+        print(f"  ✅ {cc}: Crimson Desert {'#' + str(rank) if rank else '순위권 밖 (100위 이내)'}")
+        return {"rank": rank, "top20": top20}
+
+    except Exception as e:
+        print(f"  ❌ {cc} 오류: {e}")
+        return None
 HISTORY_FILE = "steam_topseller_history.json"
 
 KST = timezone(timedelta(hours=9))
@@ -37,39 +80,7 @@ HEADERS = {
 # ======================
 # Steam API 호출
 # ======================
-def get_top_sellers(cc):
-    """Steam featuredcategories API로 국가별 top seller 가져오기"""
-    url = f"https://store.steampowered.com/api/featuredcategories/?cc={cc}&l=en"
-    try:
-        r = requests.get(url, headers=HEADERS, timeout=15)
-        if r.status_code != 200:
-            print(f"  ⚠️ {cc} 응답 실패: {r.status_code}")
-            return None
 
-        data = r.json()
-        if "top_sellers" not in data:
-            print(f"  ⚠️ {cc} top_sellers 없음")
-            return None
-
-        items = data["top_sellers"].get("items", [])
-        rank = None
-        top10 = []
-
-        for i, item in enumerate(items[:20]):
-            top10.append({
-                "rank": i + 1,
-                "appid": str(item.get("id")),
-                "name": item.get("name", "")
-            })
-            if str(item.get("id")) == STEAM_APP_ID:
-                rank = i + 1
-
-        print(f"  ✅ {cc}: Crimson Desert {'#' + str(rank) if rank else '순위권 밖'}")
-        return {"rank": rank, "top20": top10}
-
-    except Exception as e:
-        print(f"  ❌ {cc} 오류: {e}")
-        return None
 
 # ======================
 # 히스토리 관리
