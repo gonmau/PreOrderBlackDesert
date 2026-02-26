@@ -40,8 +40,8 @@ jobs:
       run: |
         python steamdb_store_tracker.py
         python steam_topseller_tracker.py
-        python trends_tracker.py
-        python crimson_tracker.py
+        # python trends_tracker.py
+        # python crimson_tracker.py
     
     - name: Commit and Push changes
       env:
