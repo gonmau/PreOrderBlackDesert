@@ -1158,25 +1158,25 @@ function diffBadge(curr, prev) {
 
 function rankColor(rank) {
   if (rank == null) return '#2a1f22';
-  if (rank === 1)  return 'rgba(255,215,0,0.25)';
-  if (rank === 2)  return 'rgba(192,192,192,0.2)';
-  if (rank === 3)  return 'rgba(205,127,50,0.2)';
-  if (rank === 4)  return 'rgba(64,190,172,0.15)';
-  if (rank === 5)  return 'rgba(180,120,220,0.15)';
-  if (rank <= 10) return 'rgba(192,57,43,0.4)';
-  if (rank <= 20) return 'rgba(192,57,43,0.2)';
-  if (rank <= 40) return 'rgba(192,57,43,0.08)';
+  if (rank === 1)  return 'rgba(231,76,60,0.25)';
+  if (rank === 2)  return 'rgba(52,152,219,0.2)';
+  if (rank === 3)  return 'rgba(241,196,15,0.2)';
+  if (rank === 4)  return 'rgba(46,204,113,0.15)';
+  if (rank === 5)  return 'rgba(155,89,182,0.15)';
+  if (rank <= 10) return 'rgba(160,82,45,0.3)';
+  if (rank <= 20) return 'rgba(160,82,45,0.15)';
+  if (rank <= 40) return 'rgba(160,82,45,0.07)';
   return 'rgba(50,40,45,0.5)';
 }
 
 function rankTextColor(rank) {
   if (!rank) return 'var(--text)';
-  if (rank === 1) return '#FFD700';
-  if (rank === 2) return '#C0C0C0';
-  if (rank === 3) return '#CD7F32';
-  if (rank === 4) return '#40BEAC';
-  if (rank === 5) return '#B478DC';
-  if (rank <= 10) return '#e74c3c';
+  if (rank === 1) return '#e74c3c';
+  if (rank === 2) return '#3498db';
+  if (rank === 3) return '#f1c40f';
+  if (rank === 4) return '#2ecc71';
+  if (rank === 5) return '#9b59b6';
+  if (rank <= 10) return '#a0522d';
   return 'var(--text)';
 }
 
