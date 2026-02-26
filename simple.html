@@ -319,6 +319,11 @@
     .tab-btn:hover { background: var(--surface2); color: var(--text); }
     .tab-btn.active { background: var(--red); color: #fff; }
 
+    .sortable { cursor: pointer; user-select: none; }
+    .sortable:hover { color: var(--red-glow); }
+    .sort-icon { font-size: 0.75rem; color: var(--muted); margin-left: 4px; }
+    .sort-icon.asc, .sort-icon.desc { color: var(--gold); }
+
     /* ─── COUNTRY TABLE ─── */
     .table-wrap {
       background: var(--surface);
@@ -1013,11 +1018,11 @@
         <table>
           <thead>
             <tr>
-              <th>국가</th>
-              <th>스탠다드</th>
-              <th>디럭스</th>
-              <th>종합 (Best)</th>
-              <th>가중치</th>
+              <th class="sortable" onclick="setSort('name')">국가 <span class="sort-icon" id="sort-icon-name">⇅</span></th>
+              <th class="sortable" onclick="setSort('standard')">스탠다드 <span class="sort-icon" id="sort-icon-standard">⇅</span></th>
+              <th class="sortable" onclick="setSort('deluxe')">디럭스 <span class="sort-icon" id="sort-icon-deluxe">⇅</span></th>
+              <th class="sortable" onclick="setSort('combined')">종합 (Best) <span class="sort-icon" id="sort-icon-combined">⇅</span></th>
+              <th class="sortable" onclick="setSort('weight')">가중치 <span class="sort-icon" id="sort-icon-weight">⇅</span></th>
             </tr>
           </thead>
           <tbody id="rank-table"></tbody>
@@ -1465,6 +1470,29 @@ function renderHeatmap(raw, prevRaw) {
   }).join('');
 }
 
+let currentSortKey = 'weight';
+let currentSortDir = 'desc';
+
+function setSort(key) {
+  if (currentSortKey === key) {
+    currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    currentSortKey = key;
+    currentSortDir = key === 'name' ? 'asc' : 'asc';
+  }
+  ['name','standard','deluxe','combined','weight'].forEach(k => {
+    const el = document.getElementById('sort-icon-' + k);
+    if (!el) return;
+    el.className = 'sort-icon';
+    if (k === currentSortKey) el.classList.add(currentSortDir);
+  });
+  if (allHistory.length) {
+    const latest = allHistory[allHistory.length - 1];
+    const prev   = allHistory.length >= 2 ? allHistory[allHistory.length - 2] : null;
+    renderTable(currentTab, latest.raw_results, prev?.raw_results);
+  }
+}
+
 function renderTable(tab, raw, prevRaw) {
   const tbody = document.getElementById('rank-table');
 
@@ -1480,7 +1508,24 @@ function renderTable(tab, raw, prevRaw) {
   }
 
   // 가중치 순 정렬
-  const sorted = countries.slice().sort((a, b) => (MARKET_WEIGHTS[b] || 0) - (MARKET_WEIGHTS[a] || 0));
+  const sorted = countries.slice().sort((a, b) => {
+    const da = raw[a] || {}, db = raw[b] || {};
+    const crA = combinedRank(da.standard, da.deluxe);
+    const crB = combinedRank(db.standard, db.deluxe);
+    let valA, valB;
+    if (currentSortKey === 'name') {
+      return currentSortDir === 'asc' ? a.localeCompare(b) : b.localeCompare(a);
+    } else if (currentSortKey === 'standard') {
+      valA = da.standard ?? 9999; valB = db.standard ?? 9999;
+    } else if (currentSortKey === 'deluxe') {
+      valA = da.deluxe ?? 9999; valB = db.deluxe ?? 9999;
+    } else if (currentSortKey === 'combined') {
+      valA = crA ?? 9999; valB = crB ?? 9999;
+    } else {
+      valA = MARKET_WEIGHTS[a] || 0; valB = MARKET_WEIGHTS[b] || 0;
+    }
+    return currentSortDir === 'asc' ? valA - valB : valB - valA;
+  });
 
   tbody.innerHTML = sorted.map((c, i) => {
     const d = raw[c] || {};
