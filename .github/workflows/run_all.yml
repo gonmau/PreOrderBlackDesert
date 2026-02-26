@@ -2,8 +2,8 @@ name: Run All Trackers
 on:
   schedule:
     - cron: '0 22 * * *'    # 오전 7시 KST (UTC+9)
-    - cron: '30 6 * * *'    # 오후 3시 30분 KST
     - cron: '0 10 * * *'    # 오후 7시 KST
+    # 오후 3시 30분 KST (UTC 06:30) 제거 → ps_tracker 핵심 크롤링 구간(UTC 01~08시)과 겹침
   workflow_dispatch:
 jobs:
   trigger-all:
