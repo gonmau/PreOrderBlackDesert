@@ -1473,7 +1473,8 @@ function renderHeatmap(raw, prevRaw) {
   const sorted = allCountries.slice().sort((a, b) => {
     const ra = combinedRank(raw[a]?.standard, raw[a]?.deluxe) ?? 9999;
     const rb = combinedRank(raw[b]?.standard, raw[b]?.deluxe) ?? 9999;
-    return ra - rb;
+    if (ra !== rb) return ra - rb;
+    return (MARKET_WEIGHTS[b] || 0) - (MARKET_WEIGHTS[a] || 0);
   });
 
   grid.innerHTML = sorted.map(c => {
@@ -1492,9 +1493,9 @@ function renderHeatmap(raw, prevRaw) {
         <div style="position:absolute;inset:0;background:rgba(0,0,0,0.52);border-radius:inherit;pointer-events:none"></div>
         <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${arrowColor}"></div>
         <div style="position:relative;display:flex;align-items:center;gap:5px;margin-bottom:4px">
-          <span class="hm-country" style="color:#ffffff;font-weight:700">${c}</span>
+          <span class="hm-country" style="color:#ffffff;font-weight:700;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">${c}</span>
         </div>
-        <div class="hm-rank" style="position:relative;color:#ffffff">${cr ? `${cr}위` : '—'}</div>
+        <div class="hm-rank" style="position:relative;color:#ffffff;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">${cr ? `${cr}위` : '—'}</div>
       </div>`;
   }).join('');
 }
