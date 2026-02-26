@@ -1265,6 +1265,13 @@ const LOCALE_MAP = {
   "뉴질랜드": "en-nz",
 };
 
+function getFlagUrl(country) {
+  const locale = LOCALE_MAP[country];
+  if (!locale) return null;
+  const code = locale.split('-').pop().toLowerCase();
+  return `https://flagcdn.com/w160/${code}.png`;
+}
+
 function isPostRelease() {
   return new Date() >= RELEASE_DATE_KST;
 }
@@ -1618,16 +1625,19 @@ function renderHeatmap(raw, prevRaw) {
     const prevCr = prevRaw ? combinedRank(prevRaw[c]?.standard, prevRaw[c]?.deluxe) : null;
     const diff = cr && prevCr ? prevCr - cr : 0;
     const arrowColor = diff > 0 ? '#2ecc71' : diff < 0 ? '#e74c3c' : 'transparent';
-    const bgColor = rankColor(cr);
+    const flagUrl = getFlagUrl(c);
+    const flagBg = flagUrl
+      ? `background-image:url(${flagUrl});background-size:cover;background-position:center;`
+      : 'background:#1a1318;';
 
     return `
-      <div class="heatmap-card" style="background:${bgColor};cursor:pointer" title="${c}: S${d.standard ?? '-'} / D${d.deluxe ?? '-'}" onclick="openCountryModal('${c}')">
+      <div class="heatmap-card" style="${flagBg}cursor:pointer" title="${c}: S${d.standard ?? '-'} / D${d.deluxe ?? '-'}" onclick="openCountryModal('${c}')">
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.52);border-radius:inherit;pointer-events:none"></div>
         <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${arrowColor}"></div>
-        <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
-          <span class="hm-flag">${FLAGS[c] || ''}</span>
-          <span class="hm-country" style="color:${rankCardTextColor(cr)}">${c}</span>
+        <div style="position:relative;display:flex;align-items:center;gap:5px;margin-bottom:4px">
+          <span class="hm-country" style="color:#ffffff;font-weight:700">${c}</span>
         </div>
-        <div class="hm-rank" style="color:${rankCardTextColor(cr)}">${cr ? `${cr}위` : '—'}</div>
+        <div class="hm-rank" style="position:relative;color:#ffffff">${cr ? `${cr}위` : '—'}</div>
       </div>`;
   }).join('');
 }
