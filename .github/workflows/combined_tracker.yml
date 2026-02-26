@@ -57,8 +57,8 @@ jobs:
         cp steam_topseller_history.json steam_topseller_history_new.json 2>/dev/null || true
         cp trends_history.json trends_history_new.json 2>/dev/null || true
         
-        # 2. 서버 상태로 되돌리고 최신 pull
-        git checkout rank_history.json store_state.json steam_history.json steam_topseller_history.json trends_history.json 2>/dev/null || true
+        # 2. 서버 상태로 되돌리고 최신 pull (기존 파일만 checkout)
+        git checkout rank_history.json store_state.json steam_history.json trends_history.json 2>/dev/null || true
         git pull origin main --rebase
         
         # 3. 크롤링 결과 다시 적용
