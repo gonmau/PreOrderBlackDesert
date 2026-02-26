@@ -54,20 +54,22 @@ jobs:
         cp rank_history.json rank_history_new.json
         cp store_state.json store_state_new.json 2>/dev/null || true
         cp steam_history.json steam_history_new.json 2>/dev/null || true
+        cp steam_topseller_history.json steam_topseller_history_new.json 2>/dev/null || true
         cp trends_history.json trends_history_new.json 2>/dev/null || true
         
         # 2. 서버 상태로 되돌리고 최신 pull
-        git checkout rank_history.json store_state.json steam_history.json trends_history.json 2>/dev/null || true
+        git checkout rank_history.json store_state.json steam_history.json steam_topseller_history.json trends_history.json 2>/dev/null || true
         git pull origin main --rebase
         
         # 3. 크롤링 결과 다시 적용
         cp rank_history_new.json rank_history.json
         cp store_state_new.json store_state.json 2>/dev/null || true
         cp steam_history_new.json steam_history.json 2>/dev/null || true
+        cp steam_topseller_history_new.json steam_topseller_history.json 2>/dev/null || true
         cp trends_history_new.json trends_history.json 2>/dev/null || true
-        rm -f rank_history_new.json store_state_new.json steam_history_new.json trends_history_new.json
+        rm -f rank_history_new.json store_state_new.json steam_history_new.json steam_topseller_history_new.json trends_history_new.json
         
         # 4. 변경사항 커밋 & 푸시
-        git add rank_history.json store_state.json steam_history.json trends_history.json
+        git add rank_history.json store_state.json steam_history.json steam_topseller_history.json trends_history.json
         git commit -m "Update tracker history [skip ci]" || exit 0
         git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main
