@@ -31,8 +31,16 @@ def get_top_sellers(cc):
         data = r.json()
         items = data.get("apps", [])
         if not items:
-            print(f"  ⚠️ {cc} 데이터 없음, 키 목록: {list(data.keys())}")
-            return None
+            print(f"  ⚠️ {cc} 데이터 없음, 키 목록: {list(data.keys())}, status: {data.get('status')}")
+            # fallback: featuredcategories API 시도
+            url2 = f"https://store.steampowered.com/api/featuredcategories/?cc={cc}&l=en"
+            r2 = requests.get(url2, headers=HEADERS, timeout=15)
+            if r2.status_code == 200:
+                data2 = r2.json()
+                items = data2.get("top_sellers", {}).get("items", [])
+                print(f"  ↩️ fallback 사용, 항목 수: {len(items)}")
+            if not items:
+                return None
 
         rank = None
         top20 = []
