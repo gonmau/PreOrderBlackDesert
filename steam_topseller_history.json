@@ -1,0 +1,282 @@
+[
+  {
+    "timestamp": "2026-02-26T20:32:35.970545+09:00",
+    "results": {
+      "미국": {
+        "rank": null,
+        "top20": [
+          {
+            "rank": 1,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 2,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 3,
+            "appid": "3065800",
+            "name": "Marathon"
+          },
+          {
+            "rank": 4,
+            "appid": "54029",
+            "name": "Prime Status Upgrade"
+          },
+          {
+            "rank": 5,
+            "appid": "686060",
+            "name": "Mewgenics"
+          },
+          {
+            "rank": 6,
+            "appid": "1808500",
+            "name": "ARC Raiders"
+          },
+          {
+            "rank": 7,
+            "appid": "4069520",
+            "name": "Super Battle Golf"
+          },
+          {
+            "rank": 8,
+            "appid": "68126",
+            "name": "RESIDENT EVIL RELOAD COLLECTION EXTRA"
+          },
+          {
+            "rank": 9,
+            "appid": "3065800",
+            "name": "Marathon"
+          },
+          {
+            "rank": 10,
+            "appid": "2246340",
+            "name": "Monster Hunter Wilds"
+          }
+        ]
+      },
+      "영국": {
+        "rank": null,
+        "top20": [
+          {
+            "rank": 1,
+            "appid": "1675200",
+            "name": "Steam Deck"
+          },
+          {
+            "rank": 2,
+            "appid": "1675200",
+            "name": "Steam Deck"
+          },
+          {
+            "rank": 3,
+            "appid": "1675200",
+            "name": "Steam Deck"
+          },
+          {
+            "rank": 4,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 5,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 6,
+            "appid": "686060",
+            "name": "Mewgenics"
+          },
+          {
+            "rank": 7,
+            "appid": "3065800",
+            "name": "Marathon"
+          },
+          {
+            "rank": 8,
+            "appid": "1808500",
+            "name": "ARC Raiders"
+          },
+          {
+            "rank": 9,
+            "appid": "4247850",
+            "name": "Warhammer 40,000: Space Marine 2 - Voice Pack 1"
+          },
+          {
+            "rank": 10,
+            "appid": "68126",
+            "name": "RESIDENT EVIL RELOAD COLLECTION EXTRA"
+          }
+        ]
+      },
+      "일본": {
+        "rank": null,
+        "top20": [
+          {
+            "rank": 1,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 2,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 3,
+            "appid": "2399830",
+            "name": "ARK: Survival Ascended"
+          },
+          {
+            "rank": 4,
+            "appid": "2246340",
+            "name": "Monster Hunter Wilds"
+          },
+          {
+            "rank": 5,
+            "appid": "2499860",
+            "name": "DRAGON QUEST VII Reimagined"
+          },
+          {
+            "rank": 6,
+            "appid": "2331020",
+            "name": "Tales of Berseria Remastered"
+          },
+          {
+            "rank": 7,
+            "appid": "44687",
+            "name": "ARK: Bob's Bundle"
+          },
+          {
+            "rank": 8,
+            "appid": "68127",
+            "name": "BIOHAZARD RELOAD COLLECTION EXTRA Z Version"
+          },
+          {
+            "rank": 9,
+            "appid": "2881150",
+            "name": "ARK: Bob's Tall Tales"
+          },
+          {
+            "rank": 10,
+            "appid": "3681010",
+            "name": "Nioh 3"
+          }
+        ]
+      },
+      "한국": {
+        "rank": null,
+        "top20": [
+          {
+            "rank": 1,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 2,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 3,
+            "appid": "2246340",
+            "name": "Monster Hunter Wilds"
+          },
+          {
+            "rank": 4,
+            "appid": "2536520",
+            "name": "Diablo II: Resurrected – Infernal Edition"
+          },
+          {
+            "rank": 5,
+            "appid": "1418525",
+            "name": "Crimson Desert Deluxe Edition"
+          },
+          {
+            "rank": 6,
+            "appid": "1621690",
+            "name": "Core Keeper"
+          },
+          {
+            "rank": 7,
+            "appid": "2399830",
+            "name": "ARK: Survival Ascended"
+          },
+          {
+            "rank": 8,
+            "appid": "1623730",
+            "name": "Palworld"
+          },
+          {
+            "rank": 9,
+            "appid": "2909580",
+            "name": "Viractal: Will You Trust Your Party?"
+          },
+          {
+            "rank": 10,
+            "appid": "1771300",
+            "name": "Kingdom Come: Deliverance II"
+          }
+        ]
+      },
+      "독일": {
+        "rank": null,
+        "top20": [
+          {
+            "rank": 1,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 2,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 3,
+            "appid": "2399830",
+            "name": "ARK: Survival Ascended"
+          },
+          {
+            "rank": 4,
+            "appid": "686060",
+            "name": "Mewgenics"
+          },
+          {
+            "rank": 5,
+            "appid": "1808500",
+            "name": "ARC Raiders"
+          },
+          {
+            "rank": 6,
+            "appid": "2483190",
+            "name": "Forza Horizon 6"
+          },
+          {
+            "rank": 7,
+            "appid": "2483190",
+            "name": "Forza Horizon 6"
+          },
+          {
+            "rank": 8,
+            "appid": "2483190",
+            "name": "Forza Horizon 6"
+          },
+          {
+            "rank": 9,
+            "appid": "1771300",
+            "name": "Kingdom Come: Deliverance II"
+          },
+          {
+            "rank": 10,
+            "appid": "44687",
+            "name": "ARK: Bob's Bundle"
+          }
+        ]
+      }
+    }
+  }
+]
