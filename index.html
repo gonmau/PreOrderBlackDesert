@@ -1309,15 +1309,26 @@ function diffBadge(curr, prev) {
 
 function rankColor(rank) {
   if (rank == null) return '#2a1f22';
-  if (rank === 1)  return 'rgba(231,76,60,0.25)';
-  if (rank === 2)  return 'rgba(52,152,219,0.2)';
-  if (rank === 3)  return 'rgba(241,196,15,0.2)';
-  if (rank === 4)  return 'rgba(46,204,113,0.15)';
-  if (rank === 5)  return 'rgba(155,89,182,0.15)';
-  if (rank <= 10) return 'rgba(160,82,45,0.3)';
+  if (rank === 1)  return 'rgba(231,76,60,0.55)';
+  if (rank === 2)  return 'rgba(52,152,219,0.45)';
+  if (rank === 3)  return 'rgba(241,196,15,0.45)';
+  if (rank === 4)  return 'rgba(46,204,113,0.35)';
+  if (rank === 5)  return 'rgba(155,89,182,0.35)';
+  if (rank <= 10) return 'rgba(160,82,45,0.45)';
   if (rank <= 20) return 'rgba(160,82,45,0.15)';
   if (rank <= 40) return 'rgba(160,82,45,0.07)';
   return 'rgba(50,40,45,0.5)';
+}
+
+function rankCardTextColor(rank) {
+  if (!rank) return '#e8ddd5';
+  if (rank === 1) return '#ffffff';
+  if (rank === 2) return '#ffffff';
+  if (rank === 3) return '#1a1318';
+  if (rank === 4) return '#0a2e1a';
+  if (rank === 5) return '#ffffff';
+  if (rank <= 10) return '#ffffff';
+  return '#e8ddd5';
 }
 
 function rankTextColor(rank) {
@@ -1621,9 +1632,9 @@ function renderHeatmap(raw, prevRaw) {
         <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${arrowColor}"></div>
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
           <span class="hm-flag">${FLAGS[c] || ''}</span>
-          <span class="hm-country">${c}</span>
+          <span class="hm-country" style="color:${rankCardTextColor(cr)}">${c}</span>
         </div>
-        <div class="hm-rank" style="color:${cr && cr <= 10 ? '#d4a017' : '#e8ddd5'}">${cr ? `${cr}위` : '—'}</div>
+        <div class="hm-rank" style="color:${rankCardTextColor(cr)}">${cr ? `${cr}위` : '—'}</div>
       </div>`;
   }).join('');
 }
