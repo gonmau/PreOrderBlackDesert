@@ -1,0 +1,53 @@
+name: Trends Tracker
+
+on:
+  schedule:
+    - cron: '10 23,1,2,3,4,5,6,7,8,11 * * *'  # KST: 08시, 10~17시(핵심), 20시 / 하루 10회
+  workflow_dispatch:        # 수동 실행 가능
+
+permissions:
+  contents: write
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install Dependencies
+      run: |
+        pip install pytrends requests matplotlib pandas
+    
+    - name: Run Trends Tracker
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      run: python trends_tracker.py
+    
+    - name: Commit and Push changes
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        
+        git stash
+        git pull origin main --rebase
+        git stash pop || echo "No changes to pop"
+        
+        git add trends_history.json
+        git commit -m "Update trends history [skip ci]" || exit 0
+        
+        # push 실패 시 최대 5회 재시도 (동시 실행 충돌 방지)
+        for i in 1 2 3 4 5; do
+          git pull origin main --rebase && \
+          git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main && break
+          echo "Push 실패 ($i/5) - 5초 후 재시도..."
+          sleep 5
+        done
