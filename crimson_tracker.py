@@ -356,12 +356,13 @@ def load_history_safe(history_file):
     )
 
 
-def save_latest_ranking(results, combined_avg, timestamp_str):
-    """최신 순위를 CSV와 텍스트 표 형식으로 저장"""
+def generate_csv_buffer(results):
+    """순위 결과를 CSV 형식의 BytesIO 버퍼로 반환"""
     import csv
-
-    # 국가 순서: REGIONS 순서대로
-    rows = []
+    from io import StringIO
+    buf = StringIO()
+    writer = csv.DictWriter(buf, fieldnames=["region", "country", "flag", "standard", "deluxe", "combined"])
+    writer.writeheader()
     for region_name, region_countries in REGIONS.items():
         for country in region_countries:
             if country not in results or country in SKIP_COUNTRIES:
@@ -370,7 +371,7 @@ def save_latest_ranking(results, combined_avg, timestamp_str):
             standard = data.get("standard")
             deluxe = data.get("deluxe")
             combined = calculate_combined_rank(standard, deluxe)
-            rows.append({
+            writer.writerow({
                 "region": region_name,
                 "country": country,
                 "flag": FLAGS.get(country, ""),
@@ -378,57 +379,8 @@ def save_latest_ranking(results, combined_avg, timestamp_str):
                 "deluxe": deluxe if deluxe else "-",
                 "combined": combined if combined else "-",
             })
-
-    # ── CSV 저장 (utf-8-sig: 엑셀 한글 호환) ─────────────
-    csv_file = "latest_ranking.csv"
-    with open(csv_file, "w", newline="", encoding="utf-8-sig") as f:
-        writer = csv.DictWriter(f, fieldnames=["region", "country", "flag", "standard", "deluxe", "combined"])
-        writer.writeheader()
-        writer.writerows(rows)
-
-    # ── 텍스트 표 저장 ───────────────────────────────────
-    txt_file = "latest_ranking.txt"
-    col_widths = {"region": 22, "country": 14, "standard": 10, "deluxe": 8, "combined": 10}
-    header = (
-        f"{'Region':<{col_widths['region']}}"
-        f"{'Country':<{col_widths['country']}}"
-        f"{'Standard':>{col_widths['standard']}}"
-        f"{'Deluxe':>{col_widths['deluxe']}}"
-        f"{'Combined':>{col_widths['combined']}}"
-    )
-    sep = "-" * sum(col_widths.values())
-
-    lines = []
-    lines.append(f"Crimson Desert PS Store 순위 — {timestamp_str}")
-    lines.append(f"전체 가중 평균: {combined_avg:.1f}위" if combined_avg else "전체 가중 평균: -")
-    lines.append(sep)
-    lines.append(header)
-    lines.append(sep)
-
-    last_region = None
-    for r in rows:
-        if r["region"] != last_region:
-            if last_region is not None:
-                lines.append("")  # 지역 사이 빈줄
-            last_region = r["region"]
-            region_display = r["region"]
-        else:
-            region_display = ""
-        line = (
-            f"{region_display:<{col_widths['region']}}"
-            f"{r['flag']} {r['country']:<{col_widths['country'] - 2}}"
-            f"{str(r['standard']):>{col_widths['standard']}}"
-            f"{str(r['deluxe']):>{col_widths['deluxe']}}"
-            f"{str(r['combined']):>{col_widths['combined']}}"
-        )
-        lines.append(line)
-
-    lines.append(sep)
-
-    with open(txt_file, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines) + "\n")
-
-    print(f"✅ 최신 순위 저장 완료: {csv_file}, {txt_file}")
+    from io import BytesIO
+    return BytesIO(buf.getvalue().encode("utf-8-sig"))
 
 
 def send_discord(results, combined_avg):
@@ -468,6 +420,7 @@ def send_discord(results, combined_avg):
 
     with open(history_file, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=2, ensure_ascii=False)
+
 
     if was_recovered:
         print(f"✅  backup에서 복구된 데이터에 새 항목을 추가해 저장했습니다.")
@@ -593,6 +546,14 @@ def send_discord(results, combined_avg):
             requests.post(DISCORD_WEBHOOK, json=region_payload)
             time.sleep(1)  # Discord API rate limit 방지
 
+    # CSV 파일 생성 후 디스코드로 전송
+    csv_buf = generate_csv_buffer(results)
+    if csv_buf:
+        timestamp_label = datetime.now(KST).strftime('%Y-%m-%d %H:%M')
+        files = {"file": (f"ranking_{datetime.now(KST).strftime('%Y%m%d_%H%M')}.csv", csv_buf, "text/csv")}
+        payload = {"payload_json": json.dumps({"content": f"📎 **순위 데이터** ({timestamp_label} KST)"})}
+        requests.post(DISCORD_WEBHOOK, data=payload, files=files)
+
 def main():
     print("=" * 60)
     print("🎮 Crimson Desert PS Store 순위 추적")
@@ -653,9 +614,6 @@ def main():
     if combined_avg:
         print(f"\n전체 가중 평균: {combined_avg:.1f}위")
     
-    # 최신 순위를 CSV / 텍스트 표로 저장 (Webhook 유무와 무관하게 항상 실행)
-    save_latest_ranking(results, combined_avg, datetime.now(KST).isoformat())
-
     # Discord 전송
     send_discord(results, combined_avg)
 
