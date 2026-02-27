@@ -918,6 +918,18 @@
     .fade-in { animation: fadeIn 0.5s ease forwards; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
+    .rank-divider td {
+      padding: 4px 16px;
+      background: var(--surface2);
+      border-top: 1px solid var(--border);
+    }
+    .rank-divider span {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      color: var(--red-glow);
+      opacity: 0.7;
+    }
     .row-enter { animation: rowEnter 0.3s ease forwards; }
     @keyframes rowEnter { from { opacity: 0; } to { opacity: 1; } }
 
@@ -1702,7 +1714,10 @@ function renderTable(tab, raw, prevRaw) {
     return currentSortDir === 'asc' ? valA - valB : valB - valA;
   });
 
-  tbody.innerHTML = sorted.map((c, i) => {
+  let lastCr = undefined;
+  const rows = [];
+
+  sorted.forEach((c, i) => {
     const d = raw[c] || {};
     const pd = prevRaw?.[c] || {};
     const cr = combinedRank(d.standard, d.deluxe);
@@ -1712,7 +1727,13 @@ function renderTable(tab, raw, prevRaw) {
       ? `<a href="${url}" target="_blank" style="color:var(--text);text-decoration:none">${c}</a>`
       : c;
 
-    return `
+    const crKey = cr ?? 'none';
+    if (i === 0 || crKey !== lastCr) {
+      rows.push(`<tr class="rank-divider"><td colspan="5"><span>${cr ? `${cr}위` : '순위 없음'}</span></td></tr>`);
+    }
+    lastCr = crKey;
+
+    rows.push(`
       <tr class="row-enter" style="animation-delay:${i * 0.02}s">
         <td>
           <div class="country-cell">
@@ -1733,8 +1754,10 @@ function renderTable(tab, raw, prevRaw) {
           ${diffBadge(cr, prevCr)}
         </td>
         <td><span class="weight-badge">${(MARKET_WEIGHTS[c] || 0).toFixed(1)}</span></td>
-      </tr>`;
-  }).join('');
+      </tr>`);
+  });
+
+  tbody.innerHTML = rows.join('');
 }
 
 function switchTab(tab, btn) {
