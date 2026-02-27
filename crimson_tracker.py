@@ -469,9 +469,6 @@ def send_discord(results, combined_avg):
     with open(history_file, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=2, ensure_ascii=False)
 
-    # 최신 순위를 CSV / 텍스트 표로 저장
-    save_latest_ranking(results, combined_avg, new_entry["timestamp"])
-
     if was_recovered:
         print(f"✅  backup에서 복구된 데이터에 새 항목을 추가해 저장했습니다.")
 
@@ -656,6 +653,9 @@ def main():
     if combined_avg:
         print(f"\n전체 가중 평균: {combined_avg:.1f}위")
     
+    # 최신 순위를 CSV / 텍스트 표로 저장 (Webhook 유무와 무관하게 항상 실행)
+    save_latest_ranking(results, combined_avg, datetime.now(KST).isoformat())
+
     # Discord 전송
     send_discord(results, combined_avg)
 
