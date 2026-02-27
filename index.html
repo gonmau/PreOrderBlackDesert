@@ -1098,6 +1098,10 @@
 
     <!-- TABLE -->
     <div class="fade-in">
+      <div class="section-title" style="display:flex;align-items:center;cursor:pointer" onclick="toggleTable()">
+        국가별 순위
+        <button id="table-toggle-btn" style="margin-left:auto;font-size:0.68rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:4px 10px;cursor:pointer">▲ 접기</button>
+      </div>
       <div id="table-collapse" style="display:block">
       <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('all', this)">ALL</button>
@@ -1791,7 +1795,10 @@ function renderHeatmap(raw, prevRaw) {
         </div>`;
     }).join('');
     return `<div class="heatmap-rank-row">
-      <div class="heatmap-rank-label">${key !== 'none' ? key + '위' : '—'}</div>
+      <div class="heatmap-rank-label" style="flex-direction:column;gap:2px;align-items:flex-end">
+        <span>${key !== 'none' ? key + '위' : '—'}</span>
+        <span style="font-size:0.6rem;color:var(--muted);letter-spacing:1px">(${rankGroups[key].length})</span>
+      </div>
       <div class="heatmap-cards-wrap">${cards}</div>
     </div>`;
   }).join('');
