@@ -478,10 +478,11 @@
       line-height: 1.3;
     }
     .heatmap-card .hm-edition {
-      font-size: 0.68rem;
-      color: rgba(255,255,255,0.8);
+      font-size: 0.78rem;
+      color: #ffffff;
       line-height: 1.4;
       margin-top: 3px;
+      text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;
     }
     /* ─── FLAG CONTROLS ─── */
     .flag-controls {
@@ -1654,7 +1655,7 @@ function renderHeatmap(raw, prevRaw) {
     return `<div class="heatmap-rank-row">
       <div class="heatmap-rank-label" style="flex-direction:column;gap:2px;align-items:flex-end">
         <span>${key !== 'none' ? key + '위' : '—'}</span>
-        <span style="font-size:0.6rem;color:var(--muted);letter-spacing:1px">(${rankGroups[key].length})</span>
+        <span style="font-size:0.85rem;font-family:'Bebas Neue',sans-serif;color:var(--muted);letter-spacing:1px">(${rankGroups[key].length})</span>
       </div>
       <div class="heatmap-cards-wrap">${cards}</div>
     </div>`;
