@@ -423,54 +423,56 @@
       display: flex;
       align-items: stretch;
       gap: 6px;
-      flex-wrap: wrap;
     }
     .heatmap-rank-label {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 0.75rem;
+      font-size: 1.1rem;
       letter-spacing: 2px;
       color: var(--red-glow);
-      opacity: 0.7;
-      width: 36px;
+      width: 44px;
       flex-shrink: 0;
       display: flex;
       align-items: center;
-      padding-top: 2px;
+      justify-content: flex-end;
+      padding-right: 8px;
+    }
+    .heatmap-cards-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      flex: 1;
     }
 
     .heatmap-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 3px;
-      padding: 10px 12px;
-      cursor: default;
+      padding: 8px 10px;
+      cursor: pointer;
       transition: transform 0.15s;
       position: relative;
       overflow: hidden;
+      width: 90px;
+      flex-shrink: 0;
+      box-sizing: border-box;
     }
 
     .heatmap-card:hover { transform: scale(1.03); }
 
-    .heatmap-card::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 3px;
-    }
-
-    .heatmap-card .hm-flag { font-size: 1.4rem; line-height: 1; }
     .heatmap-card .hm-country {
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       color: #ffffff;
       font-weight: 700;
-      margin: 4px 0 2px;
+      margin-bottom: 4px;
       letter-spacing: 0.3px;
-      text-shadow: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .heatmap-card .hm-rank {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.5rem;
-      line-height: 1;
+    .heatmap-card .hm-edition {
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.4;
     }
 
     /* ─── COUNTRY MODAL ─── */
@@ -1655,8 +1657,7 @@ function renderHeatmap(raw, prevRaw) {
   });
 
   grid.innerHTML = rankKeys.map(key => {
-    const countries = rankGroups[key];
-    const cards = countries.map(c => {
+    const cards = rankGroups[key].map(c => {
       const d = raw[c] || {};
       const cr = combinedRank(d.standard, d.deluxe);
       const prevCr = prevRaw ? combinedRank(prevRaw[c]?.standard, prevRaw[c]?.deluxe) : null;
@@ -1666,19 +1667,34 @@ function renderHeatmap(raw, prevRaw) {
       const flagBg = flagUrl
         ? `background-image:url(${flagUrl});background-size:cover;background-position:center;`
         : 'background:#1a1318;';
+
+      let editionLine = '';
+      if (d.standard && d.deluxe) {
+        if (cr === d.standard) {
+          editionLine = `<div class="hm-edition">${d.deluxe}위 (D)</div>`;
+        } else {
+          editionLine = `<div class="hm-edition">${d.standard}위 (S)</div>`;
+        }
+      } else if (d.standard && !d.deluxe) {
+        editionLine = `<div class="hm-edition">(S)</div>`;
+      } else if (!d.standard && d.deluxe) {
+        editionLine = `<div class="hm-edition">(D)</div>`;
+      }
+
       return `
-        <div class="heatmap-card" style="${flagBg}cursor:pointer" title="${c}: S${d.standard ?? '-'} / D${d.deluxe ?? '-'}" onclick="openCountryModal('${c}')">
+        <div class="heatmap-card" style="${flagBg}" title="${c}: S${d.standard ?? '-'} / D${d.deluxe ?? '-'}" onclick="openCountryModal('${c}')">
           <div style="position:absolute;inset:0;background:rgba(0,0,0,0.52);border-radius:inherit;pointer-events:none"></div>
           <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${arrowColor}"></div>
-          <div style="position:relative;display:flex;align-items:center;gap:5px;margin-bottom:4px">
-            <span class="hm-country" style="color:#ffffff;font-weight:700;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">${c}</span>
+          <div style="position:relative">
+            <div class="hm-country" style="text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">${c}</div>
+            ${editionLine}
           </div>
-          <div class="hm-rank" style="position:relative;color:#ffffff;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">${cr ? `${cr}위` : '—'}</div>
         </div>`;
     }).join('');
+
     return `<div class="heatmap-rank-row">
       <div class="heatmap-rank-label">${key !== 'none' ? key + '위' : '—'}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;flex:1">${cards}</div>
+      <div class="heatmap-cards-wrap">${cards}</div>
     </div>`;
   }).join('');
 }
