@@ -356,6 +356,81 @@ def load_history_safe(history_file):
     )
 
 
+def save_latest_ranking(results, combined_avg, timestamp_str):
+    """최신 순위를 CSV와 텍스트 표 형식으로 저장"""
+    import csv
+
+    # 국가 순서: REGIONS 순서대로
+    rows = []
+    for region_name, region_countries in REGIONS.items():
+        for country in region_countries:
+            if country not in results or country in SKIP_COUNTRIES:
+                continue
+            data = results[country]
+            standard = data.get("standard")
+            deluxe = data.get("deluxe")
+            combined = calculate_combined_rank(standard, deluxe)
+            rows.append({
+                "region": region_name,
+                "country": country,
+                "flag": FLAGS.get(country, ""),
+                "standard": standard if standard else "-",
+                "deluxe": deluxe if deluxe else "-",
+                "combined": combined if combined else "-",
+            })
+
+    # ── CSV 저장 (utf-8-sig: 엑셀 한글 호환) ─────────────
+    csv_file = "latest_ranking.csv"
+    with open(csv_file, "w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.DictWriter(f, fieldnames=["region", "country", "flag", "standard", "deluxe", "combined"])
+        writer.writeheader()
+        writer.writerows(rows)
+
+    # ── 텍스트 표 저장 ───────────────────────────────────
+    txt_file = "latest_ranking.txt"
+    col_widths = {"region": 22, "country": 14, "standard": 10, "deluxe": 8, "combined": 10}
+    header = (
+        f"{'Region':<{col_widths['region']}}"
+        f"{'Country':<{col_widths['country']}}"
+        f"{'Standard':>{col_widths['standard']}}"
+        f"{'Deluxe':>{col_widths['deluxe']}}"
+        f"{'Combined':>{col_widths['combined']}}"
+    )
+    sep = "-" * sum(col_widths.values())
+
+    lines = []
+    lines.append(f"Crimson Desert PS Store 순위 — {timestamp_str}")
+    lines.append(f"전체 가중 평균: {combined_avg:.1f}위" if combined_avg else "전체 가중 평균: -")
+    lines.append(sep)
+    lines.append(header)
+    lines.append(sep)
+
+    last_region = None
+    for r in rows:
+        if r["region"] != last_region:
+            if last_region is not None:
+                lines.append("")  # 지역 사이 빈줄
+            last_region = r["region"]
+            region_display = r["region"]
+        else:
+            region_display = ""
+        line = (
+            f"{region_display:<{col_widths['region']}}"
+            f"{r['flag']} {r['country']:<{col_widths['country'] - 2}}"
+            f"{str(r['standard']):>{col_widths['standard']}}"
+            f"{str(r['deluxe']):>{col_widths['deluxe']}}"
+            f"{str(r['combined']):>{col_widths['combined']}}"
+        )
+        lines.append(line)
+
+    lines.append(sep)
+
+    with open(txt_file, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+
+    print(f"✅ 최신 순위 저장 완료: {csv_file}, {txt_file}")
+
+
 def send_discord(results, combined_avg):
     if not DISCORD_WEBHOOK:
         return
@@ -393,6 +468,9 @@ def send_discord(results, combined_avg):
 
     with open(history_file, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=2, ensure_ascii=False)
+
+    # 최신 순위를 CSV / 텍스트 표로 저장
+    save_latest_ranking(results, combined_avg, new_entry["timestamp"])
 
     if was_recovered:
         print(f"✅  backup에서 복구된 데이터에 새 항목을 추가해 저장했습니다.")
