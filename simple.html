@@ -411,9 +411,27 @@
     }
 
     .heatmap-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      display: flex;
+      flex-direction: column;
       gap: 6px;
+    }
+    .heatmap-rank-row {
+      display: flex;
+      align-items: stretch;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .heatmap-rank-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      color: var(--red-glow);
+      opacity: 0.7;
+      width: 36px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      padding-top: 2px;
     }
 
     .heatmap-card {
@@ -822,19 +840,6 @@
 
     .fade-in { animation: fadeIn 0.5s ease forwards; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-
-    .rank-divider td {
-      padding: 4px 16px;
-      background: var(--surface2);
-      border-top: 1px solid var(--border);
-    }
-    .rank-divider span {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 0.7rem;
-      letter-spacing: 2px;
-      color: var(--red-glow);
-      opacity: 0.7;
-    }
 
     .row-enter { animation: rowEnter 0.3s ease forwards; }
     @keyframes rowEnter { from { opacity: 0; } to { opacity: 1; } }
@@ -1490,26 +1495,48 @@ function renderHeatmap(raw, prevRaw) {
     return (MARKET_WEIGHTS[b] || 0) - (MARKET_WEIGHTS[a] || 0);
   });
 
-  grid.innerHTML = sorted.map(c => {
+  // 순위별 그룹핑
+  const rankGroups = {};
+  sorted.forEach(c => {
     const d = raw[c] || {};
     const cr = combinedRank(d.standard, d.deluxe);
-    const prevCr = prevRaw ? combinedRank(prevRaw[c]?.standard, prevRaw[c]?.deluxe) : null;
-    const diff = cr && prevCr ? prevCr - cr : 0;
-    const arrowColor = diff > 0 ? '#2ecc71' : diff < 0 ? '#e74c3c' : 'transparent';
-    const flagUrl = getFlagUrl(c);
-    const flagBg = flagUrl
-      ? `background-image:url(${flagUrl});background-size:cover;background-position:center;`
-      : 'background:#1a1318;';
+    const key = cr ?? 'none';
+    if (!rankGroups[key]) rankGroups[key] = [];
+    rankGroups[key].push(c);
+  });
 
-    return `
-      <div class="heatmap-card" style="${flagBg}cursor:pointer" title="${c}: S${d.standard ?? '-'} / D${d.deluxe ?? '-'}" onclick="openCountryModal('${c}')">
-        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.52);border-radius:inherit;pointer-events:none"></div>
-        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${arrowColor}"></div>
-        <div style="position:relative;display:flex;align-items:center;gap:5px;margin-bottom:4px">
-          <span class="hm-country" style="color:#ffffff;font-weight:700;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">${c}</span>
-        </div>
-        <div class="hm-rank" style="position:relative;color:#ffffff;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">${cr ? `${cr}위` : '—'}</div>
-      </div>`;
+  const rankKeys = Object.keys(rankGroups).sort((a, b) => {
+    if (a === 'none') return 1;
+    if (b === 'none') return -1;
+    return Number(a) - Number(b);
+  });
+
+  grid.innerHTML = rankKeys.map(key => {
+    const countries = rankGroups[key];
+    const cards = countries.map(c => {
+      const d = raw[c] || {};
+      const cr = combinedRank(d.standard, d.deluxe);
+      const prevCr = prevRaw ? combinedRank(prevRaw[c]?.standard, prevRaw[c]?.deluxe) : null;
+      const diff = cr && prevCr ? prevCr - cr : 0;
+      const arrowColor = diff > 0 ? '#2ecc71' : diff < 0 ? '#e74c3c' : 'transparent';
+      const flagUrl = getFlagUrl(c);
+      const flagBg = flagUrl
+        ? `background-image:url(${flagUrl});background-size:cover;background-position:center;`
+        : 'background:#1a1318;';
+      return `
+        <div class="heatmap-card" style="${flagBg}cursor:pointer" title="${c}: S${d.standard ?? '-'} / D${d.deluxe ?? '-'}" onclick="openCountryModal('${c}')">
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,0.52);border-radius:inherit;pointer-events:none"></div>
+          <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${arrowColor}"></div>
+          <div style="position:relative;display:flex;align-items:center;gap:5px;margin-bottom:4px">
+            <span class="hm-country" style="color:#ffffff;font-weight:700;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">${c}</span>
+          </div>
+          <div class="hm-rank" style="position:relative;color:#ffffff;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">${cr ? `${cr}위` : '—'}</div>
+        </div>`;
+    }).join('');
+    return `<div class="heatmap-rank-row">
+      <div class="heatmap-rank-label">${key !== 'none' ? key + '위' : '—'}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;flex:1">${cards}</div>
+    </div>`;
   }).join('');
 }
 
@@ -1570,10 +1597,7 @@ function renderTable(tab, raw, prevRaw) {
     return currentSortDir === 'asc' ? valA - valB : valB - valA;
   });
 
-  let lastCr = undefined;
-  const rows = [];
-
-  sorted.forEach((c, i) => {
+  tbody.innerHTML = sorted.map((c, i) => {
     const d = raw[c] || {};
     const pd = prevRaw?.[c] || {};
     const cr = combinedRank(d.standard, d.deluxe);
@@ -1583,16 +1607,7 @@ function renderTable(tab, raw, prevRaw) {
       ? `<a href="${url}" target="_blank" style="color:var(--text);text-decoration:none">${c}</a>`
       : c;
 
-    // 순위가 바뀔 때마다 구분선 삽입 (순위 없는 국가는 맨 아래 한 번만)
-    const crKey = cr ?? 'none';
-    if (i > 0 && crKey !== lastCr) {
-      rows.push(`<tr class="rank-divider"><td colspan="5"><span>${cr ? `${cr}위` : '순위 없음'}</span></td></tr>`);
-    } else if (i === 0) {
-      rows.push(`<tr class="rank-divider"><td colspan="5"><span>${cr ? `${cr}위` : '순위 없음'}</span></td></tr>`);
-    }
-    lastCr = crKey;
-
-    rows.push(`
+    return `
       <tr class="row-enter" style="animation-delay:${i * 0.02}s">
         <td>
           <div class="country-cell">
@@ -1613,10 +1628,8 @@ function renderTable(tab, raw, prevRaw) {
           ${diffBadge(cr, prevCr)}
         </td>
         <td><span class="weight-badge">${(MARKET_WEIGHTS[c] || 0).toFixed(1)}</span></td>
-      </tr>`);
-  });
-
-  tbody.innerHTML = rows.join('');
+      </tr>`;
+  }).join('');
 }
 
 function switchTab(tab, btn) {
