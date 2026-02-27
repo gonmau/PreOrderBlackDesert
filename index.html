@@ -487,6 +487,67 @@
       margin-top: 3px;
     }
 
+
+    /* ─── FLAG CONTROLS ─── */
+    .flag-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+    }
+    .flag-toggle-btn {
+      font-size: 0.68rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+    .flag-toggle-btn:hover { color: var(--text); border-color: var(--muted); }
+    .flag-toggle-btn.active { color: var(--red-glow); border-color: var(--red-glow); }
+    .flag-opacity-wrap {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .flag-opacity-label {
+      font-size: 0.68rem;
+      letter-spacing: 1px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .flag-opacity-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 90px;
+      height: 3px;
+      border-radius: 2px;
+      background: var(--border);
+      outline: none;
+      cursor: pointer;
+    }
+    .flag-opacity-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--red-glow);
+      cursor: pointer;
+    }
+    .flag-opacity-slider::-moz-range-thumb {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--red-glow);
+      cursor: pointer;
+      border: none;
+    }
     /* ─── COUNTRY MODAL ─── */
     .modal-backdrop {
       position: fixed;
@@ -1186,7 +1247,17 @@
 
     <!-- HEATMAP -->
     <div class="heatmap-section fade-in">
-      <div class="section-title">전세계 현황 한눈에</div>
+      <div class="section-title" style="display:flex;align-items:center">
+        전세계 현황 한눈에
+        <div class="flag-controls">
+          <button class="flag-toggle-btn active" id="flag-toggle-btn" onclick="toggleFlag()">🏳 국기 ON</button>
+          <div class="flag-opacity-wrap" id="flag-opacity-wrap">
+            <span class="flag-opacity-label">투명도</span>
+            <input type="range" class="flag-opacity-slider" id="flag-opacity-slider"
+              min="0" max="100" value="52" oninput="updateFlagOpacity(this.value)">
+          </div>
+        </div>
+      </div>
       <div class="heatmap-grid" id="heatmap-grid"></div>
     </div>
 
@@ -1640,6 +1711,34 @@ function renderChart() {
   });
 }
 
+
+// ─── 국기 컨트롤 ───
+let flagEnabled = true;
+let flagOpacity = 0.52;
+
+function toggleFlag() {
+  flagEnabled = !flagEnabled;
+  const btn = document.getElementById('flag-toggle-btn');
+  const opacityWrap = document.getElementById('flag-opacity-wrap');
+  btn.textContent = flagEnabled ? '🏳 국기 ON' : '🏳 국기 OFF';
+  btn.classList.toggle('active', flagEnabled);
+  opacityWrap.style.opacity = flagEnabled ? '1' : '0.3';
+  opacityWrap.style.pointerEvents = flagEnabled ? '' : 'none';
+  refreshHeatmap();
+}
+
+function updateFlagOpacity(val) {
+  flagOpacity = val / 100;
+  refreshHeatmap();
+}
+
+function refreshHeatmap() {
+  if (!allHistory.length) return;
+  const latest = allHistory[allHistory.length - 1];
+  const prev   = allHistory.length >= 2 ? allHistory[allHistory.length - 2] : null;
+  renderHeatmap(latest.raw_results, prev?.raw_results);
+}
+
 function renderHeatmap(raw, prevRaw) {
   const grid = document.getElementById('heatmap-grid');
   const allCountries = Object.values(REGIONS).flat();
@@ -1709,14 +1808,15 @@ function renderHeatmap(raw, prevRaw) {
 
       const diff = cr && pcr ? pcr - cr : 0;
       const arrowColor = diff > 0 ? '#2ecc71' : diff < 0 ? '#e74c3c' : 'transparent';
-      const flagUrl = getFlagUrl(c);
+      const flagUrl = flagEnabled ? getFlagUrl(c) : null;
       const flagBg = flagUrl
         ? `background-image:url(${flagUrl});background-size:cover;background-position:center;`
         : 'background:#1a1318;';
+      const overlayAlpha = flagEnabled ? flagOpacity.toFixed(2) : 0;
 
       return `
         <div class="heatmap-card" style="${flagBg}" title="${c}: S${d.standard ?? '-'} / D${d.deluxe ?? '-'}" onclick="openCountryModal('${c}')">
-          <div style="position:absolute;inset:0;background:rgba(0,0,0,0.52);border-radius:inherit;pointer-events:none"></div>
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,${overlayAlpha});border-radius:inherit;pointer-events:none"></div>
           <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${arrowColor}"></div>
           <div style="position:relative">
             <div class="hm-country">${countryHtml}</div>
