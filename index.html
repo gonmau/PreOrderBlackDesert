@@ -417,24 +417,29 @@
     .heatmap-grid {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 0;
     }
     .heatmap-rank-row {
       display: flex;
       align-items: stretch;
-      gap: 6px;
+      gap: 8px;
+      padding: 8px 0;
+      border-top: 1px solid var(--border);
+    }
+    .heatmap-rank-row:first-child {
+      border-top: none;
     }
     .heatmap-rank-label {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.1rem;
+      font-size: 1.3rem;
       letter-spacing: 2px;
       color: var(--red-glow);
-      width: 44px;
+      width: 48px;
       flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      padding-right: 8px;
+      padding-right: 10px;
     }
     .heatmap-cards-wrap {
       display: flex;
@@ -447,32 +452,39 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 3px;
-      padding: 8px 10px;
+      padding: 8px 6px;
       cursor: pointer;
       transition: transform 0.15s;
       position: relative;
       overflow: hidden;
-      width: 90px;
+      width: 88px;
       flex-shrink: 0;
       box-sizing: border-box;
+      text-align: center;
     }
 
     .heatmap-card:hover { transform: scale(1.03); }
 
     .heatmap-card .hm-country {
-      font-size: 0.75rem;
+      font-size: 0.82rem;
       color: #ffffff;
       font-weight: 700;
-      margin-bottom: 4px;
       letter-spacing: 0.3px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;
+    }
+    .heatmap-card .hm-cdiff {
+      font-size: 0.65rem;
+      font-weight: 700;
+      line-height: 1.3;
     }
     .heatmap-card .hm-edition {
-      font-size: 0.65rem;
-      color: rgba(255,255,255,0.75);
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.8);
       line-height: 1.4;
+      margin-top: 3px;
     }
 
     /* ─── COUNTRY MODAL ─── */
@@ -1656,38 +1668,59 @@ function renderHeatmap(raw, prevRaw) {
     return Number(a) - Number(b);
   });
 
+  function fmtDiff(curr, prev) {
+    if (curr == null || prev == null) return '';
+    const d = prev - curr;
+    if (d > 0) return `<span style="color:#2ecc71">+${d}</span>`;
+    if (d < 0) return `<span style="color:#e74c3c">${d}</span>`;
+    return '';
+  }
+
   grid.innerHTML = rankKeys.map(key => {
     const cards = rankGroups[key].map(c => {
-      const d = raw[c] || {};
-      const cr = combinedRank(d.standard, d.deluxe);
-      const prevCr = prevRaw ? combinedRank(prevRaw[c]?.standard, prevRaw[c]?.deluxe) : null;
-      const diff = cr && prevCr ? prevCr - cr : 0;
+      const d   = raw[c]     || {};
+      const pd  = prevRaw?.[c] || {};
+      const cr  = combinedRank(d.standard, d.deluxe);
+      const pcr = combinedRank(pd.standard, pd.deluxe);
+
+      const cDiffHtml = fmtDiff(cr, pcr);
+      const countryHtml = cDiffHtml
+        ? `${c}&nbsp;<span class="hm-cdiff">(${cDiffHtml})</span>`
+        : c;
+
+      let editionLine = '';
+      if (d.standard && d.deluxe) {
+        if (cr === d.standard) {
+          const eDiff = fmtDiff(d.deluxe, pd.deluxe);
+          editionLine = eDiff
+            ? `${d.deluxe}위 (D, ${fmtDiff(d.deluxe, pd.deluxe)}위)`
+            : `${d.deluxe}위 (D)`;
+        } else {
+          const eDiff = fmtDiff(d.standard, pd.standard);
+          editionLine = eDiff
+            ? `${d.standard}위 (S, ${fmtDiff(d.standard, pd.standard)}위)`
+            : `${d.standard}위 (S)`;
+        }
+      } else if (d.standard && !d.deluxe) {
+        editionLine = `(S only)`;
+      } else if (!d.standard && d.deluxe) {
+        editionLine = `(D only)`;
+      }
+
+      const diff = cr && pcr ? pcr - cr : 0;
       const arrowColor = diff > 0 ? '#2ecc71' : diff < 0 ? '#e74c3c' : 'transparent';
       const flagUrl = getFlagUrl(c);
       const flagBg = flagUrl
         ? `background-image:url(${flagUrl});background-size:cover;background-position:center;`
         : 'background:#1a1318;';
 
-      let editionLine = '';
-      if (d.standard && d.deluxe) {
-        if (cr === d.standard) {
-          editionLine = `<div class="hm-edition">${d.deluxe}위 (D)</div>`;
-        } else {
-          editionLine = `<div class="hm-edition">${d.standard}위 (S)</div>`;
-        }
-      } else if (d.standard && !d.deluxe) {
-        editionLine = `<div class="hm-edition">(S)</div>`;
-      } else if (!d.standard && d.deluxe) {
-        editionLine = `<div class="hm-edition">(D)</div>`;
-      }
-
       return `
         <div class="heatmap-card" style="${flagBg}" title="${c}: S${d.standard ?? '-'} / D${d.deluxe ?? '-'}" onclick="openCountryModal('${c}')">
           <div style="position:absolute;inset:0;background:rgba(0,0,0,0.52);border-radius:inherit;pointer-events:none"></div>
           <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${arrowColor}"></div>
           <div style="position:relative">
-            <div class="hm-country" style="text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">${c}</div>
-            ${editionLine}
+            <div class="hm-country">${countryHtml}</div>
+            ${editionLine ? `<div class="hm-edition">${editionLine}</div>` : ''}
           </div>
         </div>`;
     }).join('');
