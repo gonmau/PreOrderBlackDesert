@@ -1232,7 +1232,7 @@
     <!-- HEATMAP -->
     <div class="heatmap-section fade-in">
       <div class="section-title heatmap-title collapsible-header" style="display:flex;align-items:center" onclick="toggleSection('heatmap-body', this)">
-        전세계 현황 한눈에
+        🌍 전세계 현황 한눈에
         <div class="flag-controls" onclick="event.stopPropagation()">
           <button class="flag-toggle-btn active" id="flag-toggle-btn" onclick="toggleFlag()">🏳 국기 ON</button>
           <div class="flag-opacity-wrap" id="flag-opacity-wrap">
@@ -1250,7 +1250,7 @@
     <!-- TABLE -->
     <div class="fade-in">
       <div class="section-title collapsible-header" style="display:flex;align-items:center" onclick="toggleSection('table-collapse', this)">
-        국가별 순위
+        📊 국가별 순위
         <button class="collapse-btn">▼ 펼치기</button>
       </div>
       <div class="collapsible-body collapsed" id="table-collapse">
@@ -1280,18 +1280,16 @@
 
     <!-- STEAM SECTION -->
     <div class="steam-section fade-in">
-      <div class="steam-header collapsible-header" onclick="toggleSection('steam-body', this)" style="cursor:pointer">
+      <div class="steam-header" style="cursor:default">
         <div class="steam-title-row">
           <div class="section-title" style="margin-bottom:0">🎮 Steam 위시리스트 순위</div>
         </div>
         <div style="display:flex;align-items:center;gap:12px">
-          <a class="steamdb-btn" href="https://steamdb.info/app/3321460/charts/" target="_blank" onclick="event.stopPropagation()">
+          <a class="steamdb-btn" href="https://steamdb.info/app/3321460/charts/" target="_blank">
             🔗 SteamDB에서 자세히 보기 ↗
           </a>
-          <button class="collapse-btn">▼ 펼치기</button>
         </div>
       </div>
-      <div class="collapsible-body collapsed" id="steam-body">
       <div class="steam-stats-row">
         <div class="steam-stat-box">
           <div class="steam-stat-label">현재 순위</div>
@@ -1314,8 +1312,9 @@
           <div class="steam-stat-diff">개 데이터포인트</div>
         </div>
       </div>
+      <div class="collapsible-body collapsed" id="steam-body">
       <div class="steam-chart-box">
-        <div class="steam-chart-label">위시리스트 순위 히스토리</div>
+        <div class="section-title collapsible-header" style="margin-bottom:12px" onclick="toggleSection('steam-body', this)">위시리스트 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button></div>
         <div class="event-toggle-wrap">
           <div class="event-toggle-header" onclick="toggleEvPanel('steam')">
             <span class="event-toggle-title">📅 이벤트 표시</span>
@@ -1327,21 +1326,19 @@
           <canvas id="steamChart"></canvas>
         </div>
       </div>
-      </div>
+      </div><!-- /steam-body -->
     </div>
 
     <!-- TRENDS SECTION -->
     <div class="trends-section fade-in">
-      <div class="steam-header collapsible-header" onclick="toggleSection('trends-body', this)" style="cursor:pointer">
+      <div class="steam-header" style="cursor:default">
         <div class="section-title" style="margin-bottom:0">🔍 Google 검색 트렌드</div>
         <div style="display:flex;align-items:center;gap:12px">
           <span style="font-size:0.68rem;color:var(--muted)">관심도 0~100 (상대 수치)</span>
-          <button class="collapse-btn">▼ 펼치기</button>
         </div>
       </div>
-      <div class="collapsible-body collapsed" id="trends-body">
 
-      <!-- 스탯 -->
+      <!-- 스탯 항상 표시 -->
       <div class="trends-stats-row">
         <div class="trends-stat-box">
           <div class="trends-stat-label">Google 글로벌 현재</div>
@@ -1360,9 +1357,10 @@
         </div>
       </div>
 
-      <!-- 글로벌 히스토리 차트 -->
+      <!-- 글로벌 히스토리 차트 (접기/펼치기) -->
+      <div class="collapsible-body collapsed" id="trends-body">
       <div class="trends-chart-box">
-        <div style="font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">검색 관심도 히스토리 (글로벌)</div>
+        <div class="section-title collapsible-header" style="margin-bottom:12px" onclick="toggleSection('trends-body', this)">검색 관심도 히스토리 <button class="collapse-btn">▼ 펼치기</button></div>
         <div class="event-toggle-wrap">
           <div class="event-toggle-header" onclick="toggleEvPanel('trends')">
             <span class="event-toggle-title">📅 이벤트 표시</span>
@@ -1378,21 +1376,19 @@
         <div style="font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px">콘솔 주요 5개국 최신 관심도</div>
         <div class="trends-countries-grid" id="trends-countries-grid"></div>
       </div>
-      </div>
+      </div><!-- /trends-body -->
     </div>
 
     <!-- SALES ESTIMATE SECTION -->
     <div class="sales-section fade-in">
-      <div class="steam-header collapsible-header" onclick="toggleSection('sales-body', this)" style="cursor:pointer">
+      <div class="steam-header" style="cursor:default">
         <div class="section-title" style="margin-bottom:0">💰 예상 판매량 추산</div>
         <div style="display:flex;align-items:center;gap:12px">
           <span style="font-size:0.68rem;color:var(--muted)">순위 → 판매량 모델 기반 추정치 (참고용)</span>
-          <button class="collapse-btn">▼ 펼치기</button>
         </div>
       </div>
-      <div class="collapsible-body collapsed" id="sales-body">
 
-      <!-- 오늘 추산 스탯 -->
+      <!-- 오늘 추산 스탯 항상 표시 -->
       <div class="sales-stats-row">
         <div class="sales-stat-box">
           <div class="sales-stat-label">오늘 스탠다드 추산</div>
@@ -1416,10 +1412,11 @@
         </div>
       </div>
 
-      <!-- 차트 -->
+      <!-- 차트 (접기/펼치기) -->
+      <div class="collapsible-body collapsed" id="sales-body">
       <div class="sales-chart-box">
+        <div class="section-title collapsible-header" style="margin-bottom:12px" onclick="toggleSection('sales-body', this)">일별 / 누적 판매량 추산 <button class="collapse-btn">▼ 펼치기</button></div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-          <span style="font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">일별 / 누적 판매량 추산</span>
           <div class="sales-tab-row">
             <button class="sales-tab-btn active" onclick="switchSalesTab('daily', this)">일별</button>
             <button class="sales-tab-btn" onclick="switchSalesTab('cumulative', this)">누적</button>
@@ -1440,6 +1437,7 @@
           🟡 점선 구간 = 과거 평균 순위 기반 추정 (2025.9~2026.1.11) | 실선 구간 = 국가별 실제 데이터 (2026.1.12~)
         </div>
       </div>
+      </div><!-- /sales-chart-box -->
       </div><!-- /sales-body -->
     </div>
 
