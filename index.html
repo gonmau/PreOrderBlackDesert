@@ -67,13 +67,15 @@
     /* 배경이 있는 stat/chart box 투명화 */
     .stat-box, .stat-box:hover,
     .countdown-section, .countdown-card,
-    .chart-section, .table-wrap, .heatmap-card,
+    .chart-section, .table-wrap,
     .sales-stat-box, .trends-stat-box, .steam-stat-box,
     .sales-chart-box, .trends-chart-box,
     .steam-stats-row, .sales-stats-row, .trends-stats-row,
     .trends-country-card, .modal, .modal-stat {
       background: rgba(10,6,8,0.42) !important;
     }
+    /* heatmap-card는 국기 배경이미지 유지, 국기 꺼졌을 때만 기본색 */
+    .heatmap-card { background: #1a1318; }
     thead tr {
       background: rgba(20,10,14,0.55) !important;
     }
@@ -1210,6 +1212,11 @@
         <div class="stat-value gold" id="stat-best-flag" style="font-size:2rem">—</div>
         <div class="stat-diff" id="stat-best-name"></div>
       </div>
+      <div class="stat-box">
+        <div class="stat-label">최하 순위 국가</div>
+        <div class="stat-value" id="stat-worst-flag" style="font-size:2rem;color:#e74c3c">—</div>
+        <div class="stat-diff" id="stat-worst-name"></div>
+      </div>
     </div>
 
     <!-- CHART -->
@@ -1665,13 +1672,19 @@ function render() {
 
   // 최고 순위 국가
   let bestCountry = null, bestRank = Infinity;
+  let worstCountry = null, worstRank = -Infinity;
   Object.entries(raw).forEach(([c, d]) => {
     const cr = combinedRank(d.standard, d.deluxe);
     if (cr && cr < bestRank) { bestRank = cr; bestCountry = c; }
+    if (cr && cr > worstRank) { worstRank = cr; worstCountry = c; }
   });
   if (bestCountry) {
     document.getElementById('stat-best-flag').textContent = FLAGS[bestCountry] || '?';
     document.getElementById('stat-best-name').textContent = `${bestCountry} · ${bestRank}위`;
+  }
+  if (worstCountry) {
+    document.getElementById('stat-worst-flag').textContent = FLAGS[worstCountry] || '?';
+    document.getElementById('stat-worst-name').textContent = `${worstCountry} · ${worstRank}위`;
   }
 
   // CHART
