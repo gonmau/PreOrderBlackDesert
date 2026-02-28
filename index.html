@@ -1433,6 +1433,16 @@
             <button class="sales-tab-btn" onclick="switchScenario('gta', this)" title="GTA / 역대급 기대작">GTA급</button>
           </div>
         </div>
+
+        <!-- 사전예약 보정 슬라이더 -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;background:var(--surface);border-radius:8px;padding:10px 14px">
+          <span style="font-size:0.75rem;color:var(--muted);white-space:nowrap">📦 사전예약 보정</span>
+          <input type="range" id="preorder-slider" min="5" max="100" step="5" value="100"
+            style="flex:1;min-width:120px;accent-color:var(--gold)"
+            oninput="updatePreorderRate(this.value)">
+          <span style="font-size:0.8rem;color:var(--gold);font-weight:bold;min-width:42px;text-align:right" id="preorder-rate-label">100%</span>
+          <span style="font-size:0.68rem;color:var(--muted)">(사전예약 순위 → 실판매 전환율)</span>
+        </div>
         <div class="event-toggle-wrap">
           <div class="event-toggle-header" onclick="toggleEvPanel('sales')">
             <span class="event-toggle-title">📅 이벤트 표시</span>
@@ -2113,6 +2123,7 @@ let salesChartInstance = null;
 let salesMode = 'daily';
 let salesDailyData = []; // { dateStr, date, std, dlx, tot, isHistorical }
 let salesScenario = 'normal'; // 현재 선택된 시나리오
+let preorderRate = 1.0; // 사전예약 보정 계수 (1.0 = 보정없음)
 
 // ── 흥행 시나리오별 기준값 ──────────────────────
 const SCENARIOS = {
@@ -2173,7 +2184,9 @@ async function renderSalesEstimate() {
   if (!allHistory.length) return;
 
   const historical = await loadHistoricalData();
-  const rts = getRankToSales(salesScenario); // 현재 시나리오 기준 함수
+  const _rts = getRankToSales(salesScenario);
+  // 사전예약 보정 계수 적용 — 현재 전체 기간이 사전예약이므로 전체에 적용
+  const rts = (rank) => _rts(rank) * preorderRate;
 
   // ── 실제 데이터: rank_history.json에서 일별 집계 ──
   const realByDate = {};
@@ -2291,7 +2304,8 @@ async function renderSalesEstimate() {
   // 시나리오 설명 업데이트
   const s = SCENARIOS[salesScenario];
   const descEl = document.getElementById('scenario-desc');
-  if (descEl) descEl.textContent = `${s.label} — 1위=${s.a1.toLocaleString()}장/일, 20위=${s.a20.toLocaleString()}장/일, 100위=${s.a100.toLocaleString()}장/일 (${s.desc})`;
+  const rateLabel = Math.round(preorderRate * 100);
+  if (descEl) descEl.textContent = `${s.label} — 1위=${s.a1.toLocaleString()}장/일, 20위=${s.a20.toLocaleString()}장/일, 100위=${s.a100.toLocaleString()}장/일 (${s.desc}) × 사전예약 보정 ${rateLabel}%`;
 
   renderSalesChart();
 }
@@ -2384,21 +2398,21 @@ function renderSalesChart() {
 
 function switchSalesTab(mode, btn) {
   salesMode = mode;
-  document.querySelectorAll('.sales-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sales-tab-row:first-child .sales-tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  // 시나리오 버튼 active 복원
-  document.querySelectorAll('#scenario-btns .sales-tab-btn').forEach(b => {
-    if (b.onclick.toString().includes(`'${salesScenario}'`)) b.classList.add('active');
-  });
   renderSalesChart();
 }
 
 async function switchScenario(scenario, btn) {
   salesScenario = scenario;
-  // 시나리오 버튼만 active 토글
   document.querySelectorAll('#scenario-btns .sales-tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  // 데이터 재계산 후 차트 갱신
+  await renderSalesEstimate();
+}
+
+async function updatePreorderRate(val) {
+  preorderRate = parseFloat(val) / 100;
+  document.getElementById('preorder-rate-label').textContent = `${val}%`;
   await renderSalesEstimate();
 }
 
