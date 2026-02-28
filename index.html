@@ -1281,8 +1281,9 @@
           <tbody id="rank-table"></tbody>
         </table>
       </div>
-      </div><!-- /table-collapse -->
+      </div>
     </div>
+      </div><!-- /table-collapse -->
 
     <!-- STEAM SECTION -->
     <div class="steam-section fade-in">
@@ -1318,9 +1319,9 @@
           <div class="steam-stat-diff">개 데이터포인트</div>
         </div>
       </div>
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('steam-body', this)">📈 위시리스트 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button></div>
       <div class="collapsible-body collapsed" id="steam-body">
       <div class="steam-chart-box">
+        <div class="section-title collapsible-header" style="margin-bottom:12px" onclick="toggleSection('steam-body', this)">위시리스트 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button></div>
         <div class="event-toggle-wrap">
           <div class="event-toggle-header" onclick="toggleEvPanel('steam')">
             <span class="event-toggle-title">📅 이벤트 표시</span>
@@ -1364,9 +1365,9 @@
       </div>
 
       <!-- 글로벌 히스토리 차트 (접기/펼치기) -->
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('trends-body', this)">📈 검색 관심도 히스토리 <button class="collapse-btn">▼ 펼치기</button></div>
       <div class="collapsible-body collapsed" id="trends-body">
       <div class="trends-chart-box">
+        <div class="section-title collapsible-header" style="margin-bottom:12px" onclick="toggleSection('trends-body', this)">검색 관심도 히스토리 <button class="collapse-btn">▼ 펼치기</button></div>
         <div class="event-toggle-wrap">
           <div class="event-toggle-header" onclick="toggleEvPanel('trends')">
             <span class="event-toggle-title">📅 이벤트 표시</span>
@@ -1377,6 +1378,8 @@
         <div class="trends-chart-inner">
           <canvas id="trendsChart"></canvas>
         </div>
+
+        <!-- 국가별 최신 스코어 -->
         <div style="font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px">콘솔 주요 5개국 최신 관심도</div>
         <div class="trends-countries-grid" id="trends-countries-grid"></div>
       </div>
@@ -1417,9 +1420,9 @@
       </div>
 
       <!-- 차트 (접기/펼치기) -->
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sales-body', this)">📈 일별 / 누적 판매량 추산 <button class="collapse-btn">▼ 펼치기</button></div>
       <div class="collapsible-body collapsed" id="sales-body">
       <div class="sales-chart-box">
+        <div class="section-title collapsible-header" style="margin-bottom:12px" onclick="toggleSection('sales-body', this)">일별 / 누적 판매량 추산 <button class="collapse-btn">▼ 펼치기</button></div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <div class="sales-tab-row">
             <button class="sales-tab-btn active" onclick="switchSalesTab('daily', this)">일별</button>
@@ -1438,12 +1441,12 @@
         </div>
         <div class="sales-note">
           📌 추산 기준: 순위→판매량 2구간 지수 곡선 (1위=600/일, 20위=70/일, 100위=15/일) × 국가별 PS 시장 가중치 (미국=10 기준)<br>
-          🟡 점선 구간 = 과거 평균 순위 기반 추정 (2025.9~2026.1.11) | 실선 구간 = 국가별 실제 데이터 (2026.1.12~)
+          🟡 점선 구간 = 실제 데이터 기반 국가별 순위 비율(ratio)을 과거 전체 평균 순위에 역산 적용 (2025.9~실제데이터 시작 전) | 실선 구간 = 국가별 실제 데이터 (2026.1.12~)
         </div>
       </div>
+      </div><!-- /sales-chart-box -->
       </div><!-- /sales-body -->
-    </div><!-- /sales-section -->
-  </div><!-- /container -->
+    </div>
 
   <!-- COUNTRY DETAIL MODAL -->
   <div class="modal-backdrop" id="country-modal" onclick="closeModal(event)">
@@ -2174,37 +2177,67 @@ async function renderSalesEstimate() {
   }
 
   // ── 과거 데이터: historical_ranking_data.json ──
-  // 실제 데이터의 첫 날짜 이전 것만 사용
   const realFirstDate = realDays.length ? realDays[0].dateStr : '9999-12-31';
-
-  // 실제 데이터에서 std/dlx 평균 갭 계산
-  let sumStd=0, sumDlx=0, cnt=0;
-  for (const entry of allHistory) {
-    for (const d of Object.values(entry.raw_results)) {
-      if (d.standard) { sumStd += d.standard; cnt++; }
-      if (d.deluxe)   { sumDlx += d.deluxe; }
-    }
-  }
-  const avgStd = cnt ? sumStd/cnt : 15;
-  const avgDlx = cnt ? sumDlx/cnt : 8;
-  const rankGap = avgStd - avgDlx;
-
   const countries = Object.keys(allHistory[0]?.raw_results || {});
 
+  // ── 실제 데이터 2달치에서 국가별 패턴 학습 ──
+  // 각 국가의 std/dlx 순위를 전체 평균 대비 ratio로 계산
+  const countryStdSum = {}, countryDlxSum = {}, countryDayCnt = {};
+  let globalStdSum = 0, globalDlxSum = 0, globalDayCnt = 0;
+
+  for (const [ds, entries] of Object.entries(realByDate).sort()) {
+    // 하루 최고순위 집계
+    const best = {};
+    for (const raw of entries) {
+      for (const [c, d] of Object.entries(raw)) {
+        if (!best[c]) best[c] = { standard: null, deluxe: null };
+        if (d.standard && (!best[c].standard || d.standard < best[c].standard)) best[c].standard = d.standard;
+        if (d.deluxe   && (!best[c].deluxe   || d.deluxe   < best[c].deluxe  )) best[c].deluxe   = d.deluxe;
+      }
+    }
+    // 그날의 전체 평균 순위 계산 (차트인 국가만)
+    let dayStdSum = 0, dayDlxSum = 0, dayStdCnt = 0, dayDlxCnt = 0;
+    for (const [c, r] of Object.entries(best)) {
+      if (r.standard) { dayStdSum += r.standard; dayStdCnt++; }
+      if (r.deluxe)   { dayDlxSum += r.deluxe;   dayDlxCnt++; }
+    }
+    const dayAvgStd = dayStdCnt ? dayStdSum / dayStdCnt : null;
+    const dayAvgDlx = dayDlxCnt ? dayDlxSum / dayDlxCnt : null;
+    if (!dayAvgStd) continue;
+
+    globalStdSum += dayAvgStd; globalDlxSum += (dayAvgDlx || dayAvgStd); globalDayCnt++;
+
+    for (const [c, r] of Object.entries(best)) {
+      if (!countryStdSum[c]) { countryStdSum[c] = 0; countryDlxSum[c] = 0; countryDayCnt[c] = 0; }
+      if (r.standard) { countryStdSum[c] += r.standard / dayAvgStd; countryDayCnt[c]++; }
+      if (r.deluxe && dayAvgDlx) countryDlxSum[c] += r.deluxe / dayAvgDlx;
+    }
+  }
+
+  // 국가별 ratio: 전체 평균 대비 해당 국가의 순위 비율 (1.0 = 평균과 동일, 0.5 = 절반 순위 = 더 좋음)
+  const stdRatio = {}, dlxRatio = {};
+  const globalAvgStd = globalDayCnt ? globalStdSum / globalDayCnt : 15;
+  const globalAvgDlx = globalDayCnt ? globalDlxSum / globalDayCnt : 10;
+
+  for (const c of countries) {
+    const cnt = countryDayCnt[c] || 0;
+    stdRatio[c] = cnt ? countryStdSum[c] / cnt : 1.0;  // ratio 없으면 평균과 동일로 처리
+    dlxRatio[c] = cnt ? (countryDlxSum[c] / cnt || stdRatio[c]) : stdRatio[c];
+  }
+
+  // ── 과거 구간: average_rank × 국가별 ratio로 국가별 순위 추정 ──
   const histDays = [];
   for (const item of historical) {
     if (item.date >= realFirstDate) continue;
     const avgRank = item.average_rank ?? 15;
-    const countryRanks = item.country_ranks || {};
 
-    let std=0, dlx=0;
+    let std = 0, dlx = 0;
     for (const c of countries) {
-      const base = countryRanks[c] ?? avgRank;
-      const stdR = Math.max(1, Math.round(base + rankGap/2));
-      const dlxR = Math.max(1, Math.round(base - rankGap/2));
+      const estStd = Math.max(1, Math.round(avgRank * stdRatio[c]));
+      const estDlx = Math.max(1, Math.round(avgRank * dlxRatio[c]));
       const m = getMultiplier(c);
-      std += rankToSales(stdR) * m;
-      dlx += rankToSales(dlxR) * m;
+      std += rankToSales(estStd) * m;
+      dlx += rankToSales(estDlx) * m;
     }
     histDays.push({ dateStr: item.date, date: new Date(item.date+'T12:00:00'), std: Math.round(std), dlx: Math.round(dlx), tot: Math.round(std+dlx), isHistorical: true });
   }
