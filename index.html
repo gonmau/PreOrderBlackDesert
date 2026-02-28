@@ -1426,6 +1426,12 @@
             <button class="sales-tab-btn active" onclick="switchSalesTab('daily', this)">일별</button>
             <button class="sales-tab-btn" onclick="switchSalesTab('cumulative', this)">누적</button>
           </div>
+          <div class="sales-tab-row" id="scenario-btns">
+            <button class="sales-tab-btn active" onclick="switchScenario('normal', this)" title="일반 AAA급 (현재 기준)">보통 AAA</button>
+            <button class="sales-tab-btn" onclick="switchScenario('big', this)" title="호라이즌 / 스파이더맨급">대형 AAA</button>
+            <button class="sales-tab-btn" onclick="switchScenario('mega', this)" title="엘든링급">메가히트</button>
+            <button class="sales-tab-btn" onclick="switchScenario('gta', this)" title="GTA / 역대급 기대작">GTA급</button>
+          </div>
         </div>
         <div class="event-toggle-wrap">
           <div class="event-toggle-header" onclick="toggleEvPanel('sales')">
@@ -1438,8 +1444,9 @@
           <canvas id="salesChart"></canvas>
         </div>
         <div class="sales-note">
-          📌 추산 기준: 순위→판매량 2구간 지수 곡선 (1위=600/일, 20위=70/일, 100위=15/일) × 국가별 PS 시장 가중치 (미국=10 기준)<br>
-          🟡 점선 구간 = 실제 데이터 기반 국가별 순위 비율(ratio)을 과거 전체 평균 순위에 역산 적용 (2025.9~실제데이터 시작 전) | 실선 구간 = 국가별 실제 데이터 (2026.1.12~)
+          📌 추산 기준: 순위→판매량 2구간 지수 곡선 × 국가별 PS 시장 가중치 (미국=10 기준)<br>
+          🎮 시나리오: <span id="scenario-desc">보통 AAA — 1위=600장/일, 20위=70장/일, 100위=15장/일</span><br>
+          🟡 점선 구간 = 실제 데이터 기반 국가별 순위 비율(ratio)을 과거 전체 평균 순위에 역산 적용 | 실선 구간 = 국가별 실제 데이터
         </div>
       </div>
       </div><!-- /sales-body -->
@@ -2105,8 +2112,30 @@ function switchTab(tab, btn) {
 let salesChartInstance = null;
 let salesMode = 'daily';
 let salesDailyData = []; // { dateStr, date, std, dlx, tot, isHistorical }
+let salesScenario = 'normal'; // 현재 선택된 시나리오
 
-// Python의 rank_to_daily_sales 동일 로직
+// ── 흥행 시나리오별 기준값 ──────────────────────
+const SCENARIOS = {
+  normal: { label: '보통 AAA',        a1: 600,  a20: 70,  a100: 15,  desc: '일반 AAA급 (현재 기준)' },
+  big:    { label: '대형 AAA',        a1: 2000, a20: 250, a100: 50,  desc: '호라이즌 / 스파이더맨급' },
+  mega:   { label: '메가히트',        a1: 5000, a20: 700, a100: 120, desc: '엘든링급' },
+  gta:    { label: 'GTA급',           a1:15000, a20:2000, a100: 350, desc: 'GTA / 역대급 기대작' },
+};
+
+function getRankToSales(scenario) {
+  const s = SCENARIOS[scenario] || SCENARIOS.normal;
+  const k1 = Math.log(s.a1 / s.a20) / (20 - 1);
+  const k2 = Math.log(s.a20 / s.a100) / (100 - 20);
+  return function(rank) {
+    if (!rank) return 0;
+    const r = parseInt(rank);
+    return r <= 20
+      ? s.a1  * Math.exp(-k1 * (r - 1))
+      : s.a20 * Math.exp(-k2 * (r - 20));
+  };
+}
+
+// 기본 rankToSales (보통 AAA 기준, 하위 호환용)
 const _A1=600, _A20=70, _A100=15;
 const _k1 = Math.log(_A1/_A20)/(20-1);
 const _k2 = Math.log(_A20/_A100)/(100-20);
@@ -2144,6 +2173,7 @@ async function renderSalesEstimate() {
   if (!allHistory.length) return;
 
   const historical = await loadHistoricalData();
+  const rts = getRankToSales(salesScenario); // 현재 시나리오 기준 함수
 
   // ── 실제 데이터: rank_history.json에서 일별 집계 ──
   const realByDate = {};
@@ -2168,8 +2198,8 @@ async function renderSalesEstimate() {
     let std=0, dlx=0;
     for (const [c, r] of Object.entries(best)) {
       const m = getMultiplier(c);
-      if (r.standard) std += rankToSales(r.standard) * m;
-      if (r.deluxe)   dlx += rankToSales(r.deluxe)   * m;
+      if (r.standard) std += rts(r.standard) * m;
+      if (r.deluxe)   dlx += rts(r.deluxe)   * m;
     }
     realDays.push({ dateStr: ds, date: new Date(ds+'T12:00:00'), std: Math.round(std), dlx: Math.round(dlx), tot: Math.round(std+dlx), isHistorical: false });
   }
@@ -2234,8 +2264,8 @@ async function renderSalesEstimate() {
       const estStd = Math.max(1, Math.round(avgRank * stdRatio[c]));
       const estDlx = Math.max(1, Math.round(avgRank * dlxRatio[c]));
       const m = getMultiplier(c);
-      std += rankToSales(estStd) * m;
-      dlx += rankToSales(estDlx) * m;
+      std += rts(estStd) * m;
+      dlx += rts(estDlx) * m;
     }
     histDays.push({ dateStr: item.date, date: new Date(item.date+'T12:00:00'), std: Math.round(std), dlx: Math.round(dlx), tot: Math.round(std+dlx), isHistorical: true });
   }
@@ -2257,6 +2287,11 @@ async function renderSalesEstimate() {
     document.getElementById('sales-cumulative-range').textContent =
       `${salesDailyData[0].dateStr} ~ ${salesDailyData[salesDailyData.length-1].dateStr}`;
   }
+
+  // 시나리오 설명 업데이트
+  const s = SCENARIOS[salesScenario];
+  const descEl = document.getElementById('scenario-desc');
+  if (descEl) descEl.textContent = `${s.label} — 1위=${s.a1.toLocaleString()}장/일, 20위=${s.a20.toLocaleString()}장/일, 100위=${s.a100.toLocaleString()}장/일 (${s.desc})`;
 
   renderSalesChart();
 }
@@ -2351,7 +2386,20 @@ function switchSalesTab(mode, btn) {
   salesMode = mode;
   document.querySelectorAll('.sales-tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  // 시나리오 버튼 active 복원
+  document.querySelectorAll('#scenario-btns .sales-tab-btn').forEach(b => {
+    if (b.onclick.toString().includes(`'${salesScenario}'`)) b.classList.add('active');
+  });
   renderSalesChart();
+}
+
+async function switchScenario(scenario, btn) {
+  salesScenario = scenario;
+  // 시나리오 버튼만 active 토글
+  document.querySelectorAll('#scenario-btns .sales-tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // 데이터 재계산 후 차트 갱신
+  await renderSalesEstimate();
 }
 
 // ─── 구글 트렌드 ───
