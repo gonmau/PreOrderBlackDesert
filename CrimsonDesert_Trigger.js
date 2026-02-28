@@ -12,7 +12,7 @@
 // ═══════════════════════════════════════════════
 
 // ── 설정 ──────────────────────────────────────
-const GITHUB_TOKEN = "YOUR_PAT_HERE"; // ← 여기에 PAT 붙여넣기
+const GITHUB_TOKEN = "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"; // ← 여기에 PAT 붙여넣기
 const OWNER        = "gonmau";
 const REPO         = "PreOrderBlackDesert";
 const WORKFLOW     = "combined_tracker.yml";
