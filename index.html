@@ -1281,9 +1281,8 @@
           <tbody id="rank-table"></tbody>
         </table>
       </div>
-      </div>
-    </div>
       </div><!-- /table-collapse -->
+    </div>
 
     <!-- STEAM SECTION -->
     <div class="steam-section fade-in">
@@ -1319,9 +1318,9 @@
           <div class="steam-stat-diff">개 데이터포인트</div>
         </div>
       </div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('steam-body', this)">📈 위시리스트 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button></div>
       <div class="collapsible-body collapsed" id="steam-body">
       <div class="steam-chart-box">
-        <div class="section-title collapsible-header" style="margin-bottom:12px" onclick="toggleSection('steam-body', this)">위시리스트 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button></div>
         <div class="event-toggle-wrap">
           <div class="event-toggle-header" onclick="toggleEvPanel('steam')">
             <span class="event-toggle-title">📅 이벤트 표시</span>
@@ -1365,9 +1364,9 @@
       </div>
 
       <!-- 글로벌 히스토리 차트 (접기/펼치기) -->
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('trends-body', this)">📈 검색 관심도 히스토리 <button class="collapse-btn">▼ 펼치기</button></div>
       <div class="collapsible-body collapsed" id="trends-body">
       <div class="trends-chart-box">
-        <div class="section-title collapsible-header" style="margin-bottom:12px" onclick="toggleSection('trends-body', this)">검색 관심도 히스토리 <button class="collapse-btn">▼ 펼치기</button></div>
         <div class="event-toggle-wrap">
           <div class="event-toggle-header" onclick="toggleEvPanel('trends')">
             <span class="event-toggle-title">📅 이벤트 표시</span>
@@ -1378,7 +1377,6 @@
         <div class="trends-chart-inner">
           <canvas id="trendsChart"></canvas>
         </div>
-
         <!-- 국가별 최신 스코어 -->
         <div style="font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px">콘솔 주요 5개국 최신 관심도</div>
         <div class="trends-countries-grid" id="trends-countries-grid"></div>
@@ -1420,9 +1418,9 @@
       </div>
 
       <!-- 차트 (접기/펼치기) -->
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sales-body', this)">📈 일별 / 누적 판매량 추산 <button class="collapse-btn">▼ 펼치기</button></div>
       <div class="collapsible-body collapsed" id="sales-body">
       <div class="sales-chart-box">
-        <div class="section-title collapsible-header" style="margin-bottom:12px" onclick="toggleSection('sales-body', this)">일별 / 누적 판매량 추산 <button class="collapse-btn">▼ 펼치기</button></div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <div class="sales-tab-row">
             <button class="sales-tab-btn active" onclick="switchSalesTab('daily', this)">일별</button>
@@ -1444,9 +1442,9 @@
           🟡 점선 구간 = 실제 데이터 기반 국가별 순위 비율(ratio)을 과거 전체 평균 순위에 역산 적용 (2025.9~실제데이터 시작 전) | 실선 구간 = 국가별 실제 데이터 (2026.1.12~)
         </div>
       </div>
-      </div><!-- /sales-chart-box -->
       </div><!-- /sales-body -->
-    </div>
+    </div><!-- /sales-section -->
+  </div><!-- /container -->
 
   <!-- COUNTRY DETAIL MODAL -->
   <div class="modal-backdrop" id="country-modal" onclick="closeModal(event)">
