@@ -599,7 +599,7 @@ def main():
             url = get_active_url(country)
             if url:
                 print(f"크롤링 중: {country}...")
-                results[country] = crawl_country(driver, country, url)
+                results[country] = crawl_country(driver, country, url) or {"standard": None, "deluxe": None}
             else:
                 print(f"URL 없음: {country}")
                 results[country] = {"standard": None, "deluxe": None}
@@ -621,7 +621,7 @@ def main():
         print(f"\n{region_name}:")
         for country in region_countries:
             if country in results:
-                data = results[country]
+                data = results[country] or {}
                 combined = calculate_combined_rank(data.get('standard'), data.get('deluxe'))
                 print(f"  {country}: S {data.get('standard', '-')}위 / D {data.get('deluxe', '-')}위 → {combined or '-'}위")
     
