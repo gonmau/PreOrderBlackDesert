@@ -275,6 +275,8 @@ def crawl_country(driver, country, url):
                 res["standard"] = p["rank"]
     if len(found_products) == 1 and res["standard"] is None and res["deluxe"] is None:
         res["standard"] = found_products[0]["rank"]
+    return res
+
 def calculate_combined_rank(standard, deluxe):
     """두 에디션을 하나의 순위로 통합 (더 좋은 순위 선택)"""
     if standard and deluxe:
