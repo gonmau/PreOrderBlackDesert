@@ -248,7 +248,7 @@ def crawl_country(driver, country, url):
                     label = (link_el.get_attribute("aria-label") or "").lower()
                     text = (item.text or "").lower()
                     if any(t.lower() in label or t.lower() in text for t in terms):
-                        print(f'  [LABEL_LOG] {country} rank={total_rank} label={label!r} text={text[:60].strip()!r}')
+                        print(f'  [LABEL_LOG] {country} rank={total_rank} href={href} label={label!r} text={text[:60].strip()!r}')
                         found_products.append({'rank': total_rank, 'label': label, 'text': text})
                         if len(found_products) >= 2:
                             break
