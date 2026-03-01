@@ -177,7 +177,7 @@ DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 # 중국은 사전예약도 목록 없으므로 제외
 RELEASE_DATE_KST = datetime(2026, 3, 20, tzinfo=KST)
 
-SKIP_COUNTRIES = {"중국", "베트남", "슬로베니아", "필리핀"}  # 추적 제외 국가
+SKIP_COUNTRIES = {"중국", "베트남", "슬로베니아", "필리핀", "크로아티아"}  # 추적 제외 국가
 
 PREORDER_CATEGORY   = "3bf499d7-7acf-4931-97dd-2667494ee2c9"
 BESTSELLER_CATEGORY = "e1699f77-77e1-43ca-a296-26d08abacb0f"  # PS Store 신작 베스트셀러 (미국/영국 확인)
@@ -260,10 +260,10 @@ def crawl_country(driver, country, url):
 
     res = {"standard": None, "deluxe": None}
     if len(found_products) >= 2:
-        if country in ["헝가리", "슬로바키아"]:
-            res["standard"], res["deluxe"] = found_products[0]['rank'], found_products[1]['rank']
-        else:
+        if country in ["한국", "스페인", "인도네시아", "루마니아"]:
             res["deluxe"], res["standard"] = found_products[0]['rank'], found_products[1]['rank']
+        else:
+            res["standard"], res["deluxe"] = found_products[0]['rank'], found_products[1]['rank']
     elif len(found_products) == 1:
         res["standard"] = found_products[0]['rank']
     return res
