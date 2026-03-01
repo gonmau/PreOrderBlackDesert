@@ -260,10 +260,17 @@ def crawl_country(driver, country, url):
 
     res = {"standard": None, "deluxe": None}
     if len(found_products) >= 2:
-        if country in ["한국", "스페인", "인도네시아", "루마니아"]:
+        if country in ["터키", "핀란드", "폴란드", "온두라스", "아르헨티나", "스웨덴", "브라질",
+                        "헝가리", "슬로바키아", "페루", "콜롬비아", "캐나다", "칠레", "우루과이",
+                        "인도", "멕시코", "이스라엘"]:
+            # 스탠다드가 먼저 나오는 나라
+            res["standard"], res["deluxe"] = found_products[0]['rank'], found_products[1]['rank']
+        elif country in ["한국", "스페인", "인도네시아", "루마니아"]:
+            # 디럭스가 먼저 나오는 나라
             res["deluxe"], res["standard"] = found_products[0]['rank'], found_products[1]['rank']
         else:
-            res["standard"], res["deluxe"] = found_products[0]['rank'], found_products[1]['rank']
+            # 미확인 나라 - 기존 방식 유지 (디럭스 우선)
+            res["deluxe"], res["standard"] = found_products[0]['rank'], found_products[1]['rank']
     elif len(found_products) == 1:
         res["standard"] = found_products[0]['rank']
     return res
