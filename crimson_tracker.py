@@ -248,8 +248,7 @@ def crawl_country(driver, country, url):
                     label = (link_el.get_attribute("aria-label") or "").lower()
                     text = (item.text or "").lower()
                     if any(t.lower() in label or t.lower() in text for t in terms):
-                        print(f'  [LABEL_LOG] {country} rank={total_rank} href={href} label={label!r} text={text[:60].strip()!r}')
-                        found_products.append({'rank': total_rank, 'label': label, 'text': text})
+                        found_products.append({'rank': total_rank, 'href': href})
                         if len(found_products) >= 2:
                             break
                 except:
@@ -259,38 +258,23 @@ def crawl_country(driver, country, url):
         except:
             continue
 
+    # Product ID 기반 에디션 자동 구분 (국가별 예외처리 불필요)
+    DELUXE_IDS   = {"0655875232157653", "0347209645474317"}  # 글로벌 디럭스, 한국 디럭스
+    STANDARD_IDS = {"0470822165475407", "0469040252458022"}  # 글로벌 스탠다드, 한국 스탠다드
+
     res = {"standard": None, "deluxe": None}
-    if len(found_products) >= 2:
-        # label에 deluxe/edition 포함 여부로 에디션 자동 구분 시도
-        label0 = found_products[0].get('label', '')
-        label1 = found_products[1].get('label', '')
-        deluxe_keywords = ['deluxe', 'digital deluxe', '디럭스']
-        is_first_deluxe  = any(k in label0 for k in deluxe_keywords)
-        is_second_deluxe = any(k in label1 for k in deluxe_keywords)
-
-        if is_first_deluxe and not is_second_deluxe:
-            # label로 명확히 구분됨: 첫번째=디럭스
-            print(f"  [LABEL_DETECT] {country}: label로 구분 → 첫번째=디럭스")
-            res["deluxe"], res["standard"] = found_products[0]['rank'], found_products[1]['rank']
-        elif is_second_deluxe and not is_first_deluxe:
-            # label로 명확히 구분됨: 두번째=디럭스
-            print(f"  [LABEL_DETECT] {country}: label로 구분 → 두번째=디럭스")
-            res["standard"], res["deluxe"] = found_products[0]['rank'], found_products[1]['rank']
+    for p in found_products:
+        pid = p.get("href", "").split("-")[-1]
+        if pid in DELUXE_IDS:
+            res["deluxe"] = p["rank"]
+        elif pid in STANDARD_IDS:
+            res["standard"] = p["rank"]
         else:
-            # label로 구분 불가 → 기존 국가별 예외처리 사용
-            print(f'  [LABEL_DETECT] {country}: label 구분 불가(fallback) label0={label0[:40]!r} label1={label1[:40]!r}')
-            if country in ["터키", "핀란드", "폴란드", "온두라스", "아르헨티나", "스웨덴", "브라질",
-                            "헝가리", "슬로바키아", "페루", "콜롬비아", "캐나다", "칠레", "우루과이",
-                            "인도", "멕시코", "이스라엘"]:
-                res["standard"], res["deluxe"] = found_products[0]['rank'], found_products[1]['rank']
-            elif country in ["한국", "스페인", "인도네시아", "루마니아"]:
-                res["deluxe"], res["standard"] = found_products[0]['rank'], found_products[1]['rank']
-            else:
-                res["deluxe"], res["standard"] = found_products[0]['rank'], found_products[1]['rank']
-    elif len(found_products) == 1:
-        res["standard"] = found_products[0]['rank']
-    return res
-
+            # 알 수 없는 ID → standard fallback
+            if res["standard"] is None:
+                res["standard"] = p["rank"]
+    if len(found_products) == 1 and res["standard"] is None and res["deluxe"] is None:
+        res["standard"] = found_products[0]["rank"]
 def calculate_combined_rank(standard, deluxe):
     """두 에디션을 하나의 순위로 통합 (더 좋은 순위 선택)"""
     if standard and deluxe:
