@@ -248,7 +248,8 @@ def crawl_country(driver, country, url):
                     label = (link_el.get_attribute("aria-label") or "").lower()
                     text = (item.text or "").lower()
                     if any(t.lower() in label or t.lower() in text for t in terms):
-                        found_products.append({'rank': total_rank})
+                        print(f"  [LABEL_LOG] {country} rank={total_rank} label="{label}" text="{text[:60].strip()}"")
+                        found_products.append({'rank': total_rank, 'label': label, 'text': text})
                         if len(found_products) >= 2:
                             break
                 except:
@@ -260,17 +261,32 @@ def crawl_country(driver, country, url):
 
     res = {"standard": None, "deluxe": None}
     if len(found_products) >= 2:
-        if country in ["터키", "핀란드", "폴란드", "온두라스", "아르헨티나", "스웨덴", "브라질",
-                        "헝가리", "슬로바키아", "페루", "콜롬비아", "캐나다", "칠레", "우루과이",
-                        "인도", "멕시코", "이스라엘"]:
-            # 스탠다드가 먼저 나오는 나라
+        # label에 deluxe/edition 포함 여부로 에디션 자동 구분 시도
+        label0 = found_products[0].get('label', '')
+        label1 = found_products[1].get('label', '')
+        deluxe_keywords = ['deluxe', 'digital deluxe', '디럭스']
+        is_first_deluxe  = any(k in label0 for k in deluxe_keywords)
+        is_second_deluxe = any(k in label1 for k in deluxe_keywords)
+
+        if is_first_deluxe and not is_second_deluxe:
+            # label로 명확히 구분됨: 첫번째=디럭스
+            print(f"  [LABEL_DETECT] {country}: label로 구분 → 첫번째=디럭스")
+            res["deluxe"], res["standard"] = found_products[0]['rank'], found_products[1]['rank']
+        elif is_second_deluxe and not is_first_deluxe:
+            # label로 명확히 구분됨: 두번째=디럭스
+            print(f"  [LABEL_DETECT] {country}: label로 구분 → 두번째=디럭스")
             res["standard"], res["deluxe"] = found_products[0]['rank'], found_products[1]['rank']
-        elif country in ["한국", "스페인", "인도네시아", "루마니아"]:
-            # 디럭스가 먼저 나오는 나라
-            res["deluxe"], res["standard"] = found_products[0]['rank'], found_products[1]['rank']
         else:
-            # 미확인 나라 - 기존 방식 유지 (디럭스 우선)
-            res["deluxe"], res["standard"] = found_products[0]['rank'], found_products[1]['rank']
+            # label로 구분 불가 → 기존 국가별 예외처리 사용
+            print(f"  [LABEL_DETECT] {country}: label 구분 불가(fallback) label0="{label0[:40]}" label1="{label1[:40]}"")
+            if country in ["터키", "핀란드", "폴란드", "온두라스", "아르헨티나", "스웨덴", "브라질",
+                            "헝가리", "슬로바키아", "페루", "콜롬비아", "캐나다", "칠레", "우루과이",
+                            "인도", "멕시코", "이스라엘"]:
+                res["standard"], res["deluxe"] = found_products[0]['rank'], found_products[1]['rank']
+            elif country in ["한국", "스페인", "인도네시아", "루마니아"]:
+                res["deluxe"], res["standard"] = found_products[0]['rank'], found_products[1]['rank']
+            else:
+                res["deluxe"], res["standard"] = found_products[0]['rank'], found_products[1]['rank']
     elif len(found_products) == 1:
         res["standard"] = found_products[0]['rank']
     return res
