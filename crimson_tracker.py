@@ -248,7 +248,7 @@ def crawl_country(driver, country, url):
                     label = (link_el.get_attribute("aria-label") or "").lower()
                     text = (item.text or "").lower()
                     if any(t.lower() in label or t.lower() in text for t in terms):
-                        print(f"  [LABEL_LOG] {country} rank={total_rank} label="{label}" text="{text[:60].strip()}"")
+                        print(f'  [LABEL_LOG] {country} rank={total_rank} label={label!r} text={text[:60].strip()!r}')
                         found_products.append({'rank': total_rank, 'label': label, 'text': text})
                         if len(found_products) >= 2:
                             break
@@ -278,7 +278,7 @@ def crawl_country(driver, country, url):
             res["standard"], res["deluxe"] = found_products[0]['rank'], found_products[1]['rank']
         else:
             # label로 구분 불가 → 기존 국가별 예외처리 사용
-            print(f"  [LABEL_DETECT] {country}: label 구분 불가(fallback) label0="{label0[:40]}" label1="{label1[:40]}"")
+            print(f'  [LABEL_DETECT] {country}: label 구분 불가(fallback) label0={label0[:40]!r} label1={label1[:40]!r}')
             if country in ["터키", "핀란드", "폴란드", "온두라스", "아르헨티나", "스웨덴", "브라질",
                             "헝가리", "슬로바키아", "페루", "콜롬비아", "캐나다", "칠레", "우루과이",
                             "인도", "멕시코", "이스라엘"]:
