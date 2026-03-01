@@ -1246,6 +1246,10 @@
             <span class="flag-opacity-label">투명도</span>
             <input type="range" class="flag-opacity-slider" id="flag-opacity-slider" min="0" max="100" value="52" oninput="updateFlagOpacity(this.value)">
           </div>
+          <div class="flag-opacity-wrap" id="card-bg-wrap" style="opacity:0.3;pointer-events:none">
+            <span class="flag-opacity-label">카드 배경색</span>
+            <input type="color" id="card-bg-color" value="#1a1318" oninput="updateCardBgColor(this.value)" style="width:32px;height:22px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px;">
+          </div>
         </div>
         <button class="collapse-btn">▼ 펼치기</button>
       </div>
@@ -1907,14 +1911,22 @@ function renderChart() {
 // ─── 국기 컨트롤 ───
 let flagEnabled = true;
 let flagOpacity = 0.52;
+let cardBgColor = '#1a1318';
+function updateCardBgColor(val) {
+  cardBgColor = val;
+  refreshHeatmap();
+}
 function toggleFlag() {
   flagEnabled = !flagEnabled;
   const btn = document.getElementById('flag-toggle-btn');
   const opacityWrap = document.getElementById('flag-opacity-wrap');
+  const cardBgWrap = document.getElementById('card-bg-wrap');
   btn.textContent = flagEnabled ? '🏳 국기 ON' : '🏳 국기 OFF';
   btn.classList.toggle('active', flagEnabled);
   opacityWrap.style.opacity = flagEnabled ? '1' : '0.3';
   opacityWrap.style.pointerEvents = flagEnabled ? '' : 'none';
+  cardBgWrap.style.opacity = flagEnabled ? '0.3' : '1';
+  cardBgWrap.style.pointerEvents = flagEnabled ? 'none' : '';
   refreshHeatmap();
 }
 function updateFlagOpacity(val) {
@@ -1984,7 +1996,7 @@ function renderHeatmap(raw, prevRaw) {
       const diff = cr && pcr ? pcr - cr : 0;
       const arrowColor = diff > 0 ? '#2ecc71' : diff < 0 ? '#e74c3c' : 'transparent';
       const flagUrl = flagEnabled ? getFlagUrl(c) : null;
-      const flagBg = flagUrl ? `background-image:url(${flagUrl});background-size:cover;background-position:center;` : 'background:#1a1318;';
+      const flagBg = flagUrl ? `background-image:url(${flagUrl});background-size:cover;background-position:center;` : `background:${cardBgColor};`;
       const overlayAlpha = flagEnabled ? flagOpacity.toFixed(2) : 0;
       return `
         <div class="heatmap-card" style="${flagBg}" title="${c}: S${d.standard ?? '-'} / D${d.deluxe ?? '-'}" onclick="openCountryModal('${c}')">
