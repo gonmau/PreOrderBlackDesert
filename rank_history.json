@@ -79934,5 +79934,229 @@
         "deluxe": 2
       }
     }
+  },
+  {
+    "timestamp": "2026-03-01T14:14:05.734184+09:00",
+    "averages": {
+      "combined": 2.3895870736086176
+    },
+    "raw_results": {
+      "영국": {
+        "standard": 4,
+        "deluxe": 3
+      },
+      "독일": {
+        "standard": 3,
+        "deluxe": 2
+      },
+      "프랑스": {
+        "standard": 3,
+        "deluxe": 2
+      },
+      "스페인": {
+        "standard": 2,
+        "deluxe": 1
+      },
+      "이탈리아": {
+        "standard": 3,
+        "deluxe": 2
+      },
+      "네덜란드": {
+        "standard": 3,
+        "deluxe": 1
+      },
+      "폴란드": {
+        "standard": 1,
+        "deluxe": 3
+      },
+      "스위스": {
+        "standard": 3,
+        "deluxe": 1
+      },
+      "스웨덴": {
+        "standard": 1,
+        "deluxe": 2
+      },
+      "노르웨이": {
+        "standard": 3,
+        "deluxe": 1
+      },
+      "덴마크": {
+        "standard": 3,
+        "deluxe": 1
+      },
+      "핀란드": {
+        "standard": 1,
+        "deluxe": 2
+      },
+      "포르투갈": {
+        "standard": 3,
+        "deluxe": 2
+      },
+      "그리스": {
+        "standard": 3,
+        "deluxe": 1
+      },
+      "체코": {
+        "standard": 3,
+        "deluxe": 1
+      },
+      "헝가리": {
+        "standard": 1,
+        "deluxe": 2
+      },
+      "루마니아": {
+        "standard": 2,
+        "deluxe": 1
+      },
+      "슬로바키아": {
+        "standard": 1,
+        "deluxe": 3
+      },
+      "슬로베니아": {
+        "standard": null,
+        "deluxe": null
+      },
+      "우크라이나": {
+        "standard": 2,
+        "deluxe": 1
+      },
+      "사우디아라비아": {
+        "standard": 5,
+        "deluxe": 4
+      },
+      "아랍에미리트": {
+        "standard": 5,
+        "deluxe": 4
+      },
+      "남아공": {
+        "standard": 3,
+        "deluxe": 2
+      },
+      "터키": {
+        "standard": 1,
+        "deluxe": 5
+      },
+      "벨기에": {
+        "standard": 3,
+        "deluxe": 2
+      },
+      "오스트리아": {
+        "standard": 3,
+        "deluxe": 2
+      },
+      "이스라엘": {
+        "standard": 3,
+        "deluxe": 6
+      },
+      "크로아티아": {
+        "standard": null,
+        "deluxe": null
+      },
+      "미국": {
+        "standard": 6,
+        "deluxe": 3
+      },
+      "캐나다": {
+        "standard": 3,
+        "deluxe": 4
+      },
+      "브라질": {
+        "standard": 1,
+        "deluxe": 2
+      },
+      "멕시코": {
+        "standard": 4,
+        "deluxe": 6
+      },
+      "아르헨티나": {
+        "standard": 1,
+        "deluxe": 4
+      },
+      "칠레": {
+        "standard": 2,
+        "deluxe": 3
+      },
+      "콜롬비아": {
+        "standard": 1,
+        "deluxe": 3
+      },
+      "페루": {
+        "standard": 2,
+        "deluxe": 6
+      },
+      "우루과이": {
+        "standard": 2,
+        "deluxe": 4
+      },
+      "볼리비아": {
+        "standard": 8,
+        "deluxe": 1
+      },
+      "과테말라": {
+        "standard": 16,
+        "deluxe": 1
+      },
+      "온두라스": {
+        "standard": 1,
+        "deluxe": 2
+      },
+      "일본": {
+        "standard": 9,
+        "deluxe": 3
+      },
+      "한국": {
+        "standard": 2,
+        "deluxe": 1
+      },
+      "중국": {
+        "standard": null,
+        "deluxe": null
+      },
+      "호주": {
+        "standard": 7,
+        "deluxe": 2
+      },
+      "인도": {
+        "standard": 3,
+        "deluxe": 4
+      },
+      "태국": {
+        "standard": 2,
+        "deluxe": 1
+      },
+      "싱가포르": {
+        "standard": 3,
+        "deluxe": 2
+      },
+      "말레이시아": {
+        "standard": 4,
+        "deluxe": 2
+      },
+      "인도네시아": {
+        "standard": 3,
+        "deluxe": 2
+      },
+      "필리핀": {
+        "standard": null,
+        "deluxe": null
+      },
+      "베트남": {
+        "standard": null,
+        "deluxe": null
+      },
+      "홍콩": {
+        "standard": 5,
+        "deluxe": 2
+      },
+      "대만": {
+        "standard": 11,
+        "deluxe": 6
+      },
+      "뉴질랜드": {
+        "standard": 4,
+        "deluxe": 2
+      }
+    }
   }
 ]
