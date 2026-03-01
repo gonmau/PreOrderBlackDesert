@@ -1843,17 +1843,20 @@ function renderHeatmap(raw, prevRaw) {
       const diff = cr && pcr ? pcr - cr : 0;
       const arrowColor = diff > 0 ? '#2ecc71' : diff < 0 ? '#e74c3c' : 'transparent';
       const flagUrl = flagEnabled ? getFlagUrl(c) : null;
-      const allWeights = Object.values(MARKET_WEIGHTS).filter(w => w > 0);
+      // 가중치 기반 투명도 계산
+const allWeights = Object.values(MARKET_WEIGHTS).filter(w => w > 0);
 const maxW = Math.max(...allWeights);
 const minW = Math.min(...allWeights);
 const w = MARKET_WEIGHTS[c] || minW;
-const weightAlpha = weightOpacityEnabled
-  ? 0.15 + ((w - minW) / (maxW - minW)) * 0.85
-  : 1.0;
+const normalizedW = (w - minW) / (maxW - minW);
+const weightAlpha = weightOpacityEnabled ? 0.15 + normalizedW * 0.85 : 1.0;
 const rgb = hexToRgb(cardBgColor);
 const bgColorWithAlpha = `rgba(${rgb.r},${rgb.g},${rgb.b},${weightAlpha.toFixed(2)})`;
 const flagBg = flagUrl ? `background-image:url(${flagUrl});background-size:cover;background-position:center;` : `background:${bgColorWithAlpha};`;
-      const overlayAlpha = flagEnabled ? flagOpacity.toFixed(2) : 0;
+const baseOverlay = flagEnabled ? parseFloat(flagOpacity) : 0;
+const overlayAlpha = (flagEnabled && weightOpacityEnabled)
+  ? Math.min(0.92, baseOverlay + (1 - normalizedW) * (1 - baseOverlay) * 0.75)
+  : baseOverlay;
       return `
         <div class="heatmap-card" style="${flagBg}" title="${c}: S${d.standard ?? '-'} / D${d.deluxe ?? '-'}" onclick="openCountryModal('${c}')">
           <div style="position:absolute;inset:0;background:rgba(0,0,0,${overlayAlpha});border-radius:inherit;pointer-events:none"></div>
