@@ -286,8 +286,10 @@ def calculate_avg(results):
     combined_sum, combined_w = 0, 0
     
     for c, data in results.items():
+        if not data:
+            continue
         w = MARKET_WEIGHTS.get(c, 1.0)
-        combined = calculate_combined_rank(data['standard'], data['deluxe'])
+        combined = calculate_combined_rank(data.get('standard'), data.get('deluxe'))
         
         if combined:
             combined_sum += combined * w
@@ -511,8 +513,8 @@ def send_discord(results, combined_avg):
         )
         
         for c in sorted_countries:
-            curr_s = results[c]['standard']
-            curr_d = results[c]['deluxe']
+            curr_s = (results[c] or {}).get('standard')
+            curr_d = (results[c] or {}).get('deluxe')
             curr_combined = calculate_combined_rank(curr_s, curr_d)
             
             # 이전 개별 국가 순위
