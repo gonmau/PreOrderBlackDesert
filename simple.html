@@ -1848,7 +1848,11 @@ const allWeights = Object.values(MARKET_WEIGHTS).filter(w => w > 0);
 const maxW = Math.max(...allWeights);
 const minW = Math.min(...allWeights);
 const w = MARKET_WEIGHTS[c] || minW;
-const normalizedW = (w - minW) / (maxW - minW);
+// 로그 스케일로 정규화 - 미국 독주로 인한 차이 왜곡 방지
+const logW = Math.log1p(w);
+const logMax = Math.log1p(maxW);
+const logMin = Math.log1p(minW);
+const normalizedW = (logW - logMin) / (logMax - logMin);
 const weightAlpha = weightOpacityEnabled ? 0.15 + normalizedW * 0.85 : 1.0;
 const rgb = hexToRgb(cardBgColor);
 const bgColorWithAlpha = `rgba(${rgb.r},${rgb.g},${rgb.b},${weightAlpha.toFixed(2)})`;

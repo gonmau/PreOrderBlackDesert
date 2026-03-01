@@ -2017,7 +2017,11 @@ const allWeights = Object.values(MARKET_WEIGHTS).filter(w => w > 0);
 const maxW = Math.max(...allWeights);
 const minW = Math.min(...allWeights);
 const w = MARKET_WEIGHTS[c] || minW;
-const normalizedW = (w - minW) / (maxW - minW);  // 0(최소)~1(최대)
+// 로그 스케일로 정규화 - 미국 독주로 인한 차이 왜곡 방지
+const logW = Math.log1p(w);
+const logMax = Math.log1p(maxW);
+const logMin = Math.log1p(minW);
+const normalizedW = (logW - logMin) / (logMax - logMin);  // 0(최소)~1(최대)
 // 배경색: 가중치 낮을수록 연하게
 const weightAlpha = weightOpacityEnabled ? 0.15 + normalizedW * 0.85 : 1.0;
 const rgb = hexToRgb(cardBgColor);
