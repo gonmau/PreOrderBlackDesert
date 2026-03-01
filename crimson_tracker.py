@@ -554,17 +554,34 @@ def send_discord(results, combined_avg):
             )
         
         if lines:
-            region_desc = "\n".join(lines)
-            region_payload = {
-                "embeds": [{
-                    "title": f"🌐 {region_name}",
-                    "description": region_desc,
-                    "color": 0x00B0F4,
-                    "timestamp": datetime.now(KST).isoformat()
-                }]
-            }
-            requests.post(DISCORD_WEBHOOK, json=region_payload)
-            time.sleep(1)  # Discord API rate limit 방지
+            # Discord embed description 최대 4096자 제한 → 초과 시 분할 전송
+            CHUNK_LIMIT = 3800
+            chunks = []
+            current_chunk = []
+            current_len = 0
+            for line in lines:
+                if current_len + len(line) + 1 > CHUNK_LIMIT and current_chunk:
+                    chunks.append(current_chunk)
+                    current_chunk = [line]
+                    current_len = len(line)
+                else:
+                    current_chunk.append(line)
+                    current_len += len(line) + 1
+            if current_chunk:
+                chunks.append(current_chunk)
+
+            for i, chunk in enumerate(chunks):
+                part_label = f" ({i+1}/{len(chunks)})" if len(chunks) > 1 else ""
+                region_payload = {
+                    "embeds": [{
+                        "title": f"🌐 {region_name}{part_label}",
+                        "description": "\n".join(chunk),
+                        "color": 0x00B0F4,
+                        "timestamp": datetime.now(KST).isoformat()
+                    }]
+                }
+                requests.post(DISCORD_WEBHOOK, json=region_payload)
+                time.sleep(1)  # Discord API rate limit 방지
 
     # CSV 파일 생성 후 디스코드로 전송
     csv_buf = generate_csv_buffer(results)
