@@ -14,7 +14,7 @@ from datetime import datetime, timezone, timedelta
 import requests
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
-STEAM_APP_IDS = {"3321460", "1418525"}  # 스탠다드 + 디럭스 에디션
+STEAM_APP_IDS = {"3321460"}  # Crimson Desert (스탠다드/디럭스 동일 App ID, 1418525는 sub ID라 제거)
 
 # ======================
 # Steam API 호출
@@ -57,7 +57,7 @@ def get_top_sellers(cc):
             top20.append({"rank": real_rank, "appid": appid, "name": name})
             if appid in STEAM_APP_IDS:
                 rank = real_rank
-            if real_rank >= 20:
+            if real_rank >= 100:
                 break
 
         print(f"  ✅ {cc}: Crimson Desert {'#' + str(rank) if rank else '순위권 밖 (100위 이내)'}")
@@ -85,7 +85,7 @@ TARGET_COUNTRIES = {
 }
 
 STORE_LINKS = {
-    cc: f"https://store.steampowered.com/search/?cc={cc}&filter=topsellers"
+    cc: f"https://store.steampowered.com/charts/topselling/{cc.upper()}"
     for cc in ["us","gb","de","fr","ca","br","jp","kr","cn","ru"]
 }
 
