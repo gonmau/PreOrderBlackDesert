@@ -20,14 +20,15 @@ STEAM_APP_IDS = {"3321460"}  # Crimson Desert (스탠다드/디럭스 동일 App
 # Steam API 호출
 # ======================
 def get_top_sellers(cc):
-    """Steam /search/results/ API로 국가별 top seller 가져오기 (JSON, 최대 100개)"""
+    """Steam /search/results/ API로 국가별 top seller 가져오기 (logo URL에서 appid 추출)"""
+    import re
     url = "https://store.steampowered.com/search/results/"
     rank = None
-    top20 = []
+    all_items = []
     seen = set()
     real_rank = 0
 
-    for page in range(1, 5):  # 페이지당 25개, 4페이지 = 100개
+    for page in range(1, 5):  # 페이지당 ~10개, 4페이지 시도
         params = {
             "filter": "topsellers",
             "cc": cc,
@@ -44,16 +45,19 @@ def get_top_sellers(cc):
             data = r.json()
             items = data.get("items", [])
             if not items:
-                break  # 더 이상 결과 없음
+                break
 
             for item in items:
-                appid = str(item.get("id") or item.get("appid", ""))
+                logo = item.get("logo", "")
                 name = item.get("name", "")
-                if appid in seen:
+                # logo URL에서 appid 추출: /steam/apps/숫자/
+                m = re.search(r'/steam/apps/(\d+)/', logo)
+                appid = m.group(1) if m else ""
+                if not appid or appid in seen:
                     continue
                 seen.add(appid)
                 real_rank += 1
-                top20.append({"rank": real_rank, "appid": appid, "name": name})
+                all_items.append({"rank": real_rank, "appid": appid, "name": name})
                 if appid in STEAM_APP_IDS:
                     rank = real_rank
 
@@ -63,12 +67,12 @@ def get_top_sellers(cc):
             print(f"  ❌ {cc} p{page} 오류: {e}")
             break
 
-    if not top20:
+    if not all_items:
         print(f"  ⚠️ {cc} 데이터 없음")
         return None
 
     print(f"  ✅ {cc}: 총 {real_rank}개 파싱, Crimson Desert {'#' + str(rank) if rank else '순위권 밖'}")
-    return {"rank": rank, "top20": top20}
+    return {"rank": rank, "top20": all_items}
 HISTORY_FILE = "steam_topseller_history.json"
 
 KST = timezone(timedelta(hours=9))
