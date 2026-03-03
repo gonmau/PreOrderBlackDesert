@@ -20,53 +20,55 @@ STEAM_APP_IDS = {"3321460"}  # Crimson Desert (스탠다드/디럭스 동일 App
 # Steam API 호출
 # ======================
 def get_top_sellers(cc):
-    """Steam charts/topselling 페이지에서 국가별 top seller 파싱 (최대 100개)"""
-    url = f"https://store.steampowered.com/charts/topselling/{cc.upper()}"
-    try:
-        r = requests.get(url, headers=HEADERS, timeout=15)
-        if r.status_code != 200:
-            print(f"  ⚠️ {cc} 응답 실패: {r.status_code}")
-            return None
+    """Steam /search/results/ API로 국가별 top seller 가져오기 (JSON, 최대 100개)"""
+    url = "https://store.steampowered.com/search/results/"
+    rank = None
+    top20 = []
+    seen = set()
+    real_rank = 0
 
-        html = r.text
-
-        # charts 페이지는 JSON 데이터를 _popularityData 또는 script 태그에 포함
-        # "appid":3321460 형태로 검색
-        import re
-
-        # 방법1: script 내 JSON 파싱 (Steam charts 페이지 구조)
-        # data-ds-appid 또는 href="/app/{appid}" 패턴으로 순위 추출
-        app_ids_in_order = []
-        seen = set()
-
-        # href="/app/숫자" 패턴으로 appid 순서대로 추출
-        pattern = re.compile(r'href="https://store\.steampowered\.com/app/(\d+)/')
-        matches = pattern.findall(html)
-
-        for appid in matches:
-            if appid not in seen:
-                seen.add(appid)
-                app_ids_in_order.append(appid)
-            if len(app_ids_in_order) >= 100:
+    for page in range(1, 5):  # 페이지당 25개, 4페이지 = 100개
+        params = {
+            "filter": "topsellers",
+            "cc": cc,
+            "l": "en",
+            "json": 1,
+            "page": page,
+        }
+        try:
+            r = requests.get(url, params=params, headers=HEADERS, timeout=15)
+            if r.status_code != 200:
+                print(f"  ⚠️ {cc} p{page} 응답 실패: {r.status_code}")
                 break
 
-        if not app_ids_in_order:
-            print(f"  ⚠️ {cc} HTML 파싱 실패 (앱 목록 없음), HTML 길이: {len(html)}")
-            return None
+            data = r.json()
+            items = data.get("items", [])
+            if not items:
+                break  # 더 이상 결과 없음
 
-        rank = None
-        top20 = []
-        for i, appid in enumerate(app_ids_in_order, 1):
-            top20.append({"rank": i, "appid": appid})
-            if appid in STEAM_APP_IDS:
-                rank = i
+            for item in items:
+                appid = str(item.get("id") or item.get("appid", ""))
+                name = item.get("name", "")
+                if appid in seen:
+                    continue
+                seen.add(appid)
+                real_rank += 1
+                top20.append({"rank": real_rank, "appid": appid, "name": name})
+                if appid in STEAM_APP_IDS:
+                    rank = real_rank
 
-        print(f"  ✅ {cc}: 총 {len(app_ids_in_order)}개 파싱, Crimson Desert {'#' + str(rank) if rank else '순위권 밖'}")
-        return {"rank": rank, "top20": top20}
+            time.sleep(0.5)
 
-    except Exception as e:
-        print(f"  ❌ {cc} 오류: {e}")
+        except Exception as e:
+            print(f"  ❌ {cc} p{page} 오류: {e}")
+            break
+
+    if not top20:
+        print(f"  ⚠️ {cc} 데이터 없음")
         return None
+
+    print(f"  ✅ {cc}: 총 {real_rank}개 파싱, Crimson Desert {'#' + str(rank) if rank else '순위권 밖'}")
+    return {"rank": rank, "top20": top20}
 HISTORY_FILE = "steam_topseller_history.json"
 
 KST = timezone(timedelta(hours=9))
