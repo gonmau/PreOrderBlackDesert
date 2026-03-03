@@ -1074,6 +1074,35 @@
 
     .steam-chart-inner { position: relative; height: 200px; }
 
+        /* ─── STEAM TOP SELLER SECTION ─── */
+    .steam-ts-section{margin-bottom:32px}
+    .steam-ts-stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+    .steam-ts-stat-box{background:rgba(10,6,8,.42);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center}
+    .steam-ts-stat-label{font-size:.68rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+    .steam-ts-stat-value{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#fff!important;line-height:1;text-shadow:-2px -2px 0 #000,2px 2px 0 #000,0 0 8px rgba(192,57,43,.8)!important}
+    .steam-ts-stat-diff{font-size:.72rem;margin-top:4px;color:var(--muted)}
+    .steam-ts-chart-box{background:rgba(10,6,8,.42);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px}
+    .steam-ts-chart-inner{position:relative;height:220px}
+    .steam-ts-country-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-top:10px}
+    .steam-ts-country-card{background:rgba(10,6,8,.42);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .2s}
+    .steam-ts-country-card:hover{background:rgba(192,57,43,.2)!important}
+    .steam-ts-country-flag{font-size:1.3rem}
+    .steam-ts-country-info{flex:1;min-width:0}
+    .steam-ts-country-name{font-size:.8rem;color:#fff!important;font-weight:700}
+    .steam-ts-country-rank{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#fff!important;line-height:1}
+    .steam-ts-country-diff{font-size:.68rem}
+    .steam-ts-country-diff.up{color:var(--up)!important}
+    .steam-ts-country-diff.down{color:var(--down)!important}
+    .steam-ts-weight-badge{font-size:.6rem;color:var(--muted);background:rgba(255,255,255,.07);border-radius:4px;padding:1px 5px;margin-top:2px;display:inline-block}
+    .steam-ts-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center}
+    .steam-ts-modal-overlay.open{display:flex}
+    .steam-ts-modal{background:#1a0f12;border:1px solid var(--border);border-radius:14px;padding:28px;width:min(480px,92vw);max-height:80vh;overflow-y:auto}
+    .steam-ts-modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .steam-ts-modal-title{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#fff!important}
+    .steam-ts-modal-close{background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer}
+    .steam-ts-modal-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    .steam-ts-modal-chart-inner{position:relative;height:180px;margin-top:14px}
+
     /* ─── FOOTER ─── */
     footer {
       text-align: center;
@@ -1338,6 +1367,45 @@
         </div>
       </div>
       </div><!-- /steam-body -->
+    </div>
+
+    <!-- STEAM TOP SELLER SECTION -->
+    <div class="steam-ts-section fade-in">
+      <div class="steam-header" style="cursor:default">
+        <div class="steam-title-row"><div class="section-title" style="margin-bottom:0">📊 Steam Top Seller 순위</div></div>
+        <a class="steamdb-btn" href="https://store.steampowered.com/charts/topselling/KR" target="_blank">🔗 Steam Charts ↗</a>
+      </div>
+      <div class="steam-ts-stats-row">
+        <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">가중 평균 순위</div><div class="steam-ts-stat-value" id="sts-avg">—</div><div class="steam-ts-stat-diff" id="sts-avg-diff"></div></div>
+        <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">최고 평균 순위</div><div class="steam-ts-stat-value" id="sts-best">—</div><div class="steam-ts-stat-diff" id="sts-best-date"></div></div>
+        <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">추적 국가</div><div class="steam-ts-stat-value" id="sts-countries">—</div><div class="steam-ts-stat-diff">개국</div></div>
+        <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">총 기록 수</div><div class="steam-ts-stat-value" id="sts-count">—</div><div class="steam-ts-stat-diff">개</div></div>
+      </div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-chart-body',this)">📈 가중 평균 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button></div>
+      <div class="collapsible-body collapsed" id="sts-chart-body">
+        <div class="steam-ts-chart-box"><div class="steam-ts-chart-inner"><canvas id="stsChart"></canvas></div></div>
+      </div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-countries-body',this)">🌍 국가별 현황 <button class="collapse-btn">▼ 펼치기</button></div>
+      <div class="collapsible-body collapsed" id="sts-countries-body">
+        <div class="steam-ts-country-grid" id="sts-country-grid"></div>
+      </div>
+    </div>
+
+    <!-- Steam TS 국가 상세 모달 -->
+    <div class="steam-ts-modal-overlay" id="sts-modal" onclick="closeStsModal(event)">
+      <div class="steam-ts-modal">
+        <div class="steam-ts-modal-header">
+          <div class="steam-ts-modal-title" id="sts-modal-title">—</div>
+          <button class="steam-ts-modal-close" onclick="closeStsModalDirect()">✕</button>
+        </div>
+        <div class="steam-ts-modal-stats">
+          <div class="steam-ts-stat-box" style="flex:1;min-width:100px"><div class="steam-ts-stat-label">현재</div><div class="steam-ts-stat-value" id="sts-modal-current">—</div></div>
+          <div class="steam-ts-stat-box" style="flex:1;min-width:100px"><div class="steam-ts-stat-label">최고</div><div class="steam-ts-stat-value" id="sts-modal-best">—</div></div>
+          <div class="steam-ts-stat-box" style="flex:1;min-width:100px"><div class="steam-ts-stat-label">평균</div><div class="steam-ts-stat-value" id="sts-modal-avg">—</div></div>
+        </div>
+        <div class="steam-ts-modal-chart-inner"><canvas id="stsModalChart"></canvas></div>
+        <div style="text-align:center;margin-top:14px"><a id="sts-modal-link" href="#" target="_blank" class="steamdb-btn">🔗 Steam Charts에서 보기 ↗</a></div>
+      </div>
     </div>
 
     <!-- TRENDS SECTION -->
@@ -2608,6 +2676,113 @@ function renderTrends(data) {
   }
 }
 
+// ─── STEAM TOP SELLER 데이터 ───
+const STS_W={"영국":8.5,"독일":6.5,"프랑스":6.0,"스페인":4.0,"이탈리아":3.5,"미국":30.0,"캐나다":4.5,"브라질":2.5,"멕시코":2.0,"일본":8.0,"호주":3.0,"한국":2.8,"중국":0.2,"러시아":1.0};
+const STS_F={"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","호주":"🇦🇺","한국":"🇰🇷","중국":"🇨🇳","러시아":"🇷🇺"};
+const STS_CC={"미국":"us","캐나다":"ca","브라질":"br","멕시코":"mx","영국":"gb","독일":"de","프랑스":"fr","스페인":"es","이탈리아":"it","일본":"jp","호주":"au","한국":"kr","중국":"cn","러시아":"ru"};
+let stsHist=[],stsCI=null,stsMCI=null;
+
+async function loadSteamTopSellerData(){
+  try{
+    const r=await fetch('steam_topseller_history.json?t='+Date.now());
+    if(!r.ok)throw 0;
+    stsHist=await r.json();
+    renderSTS();
+  }catch(e){console.warn('sts load fail',e);}
+}
+
+function stsAvg(h){
+  if(!h||!h.results)return null;
+  let ws=0,wt=0;
+  for(const[n,d]of Object.entries(h.results)){const r=d&&d.rank,w=STS_W[n]||1;if(r){ws+=r*w;wt+=w;}}
+  return wt>0?Math.round(ws/wt*10)/10:null;
+}
+
+function renderSTS(){
+  if(!stsHist.length)return;
+  const v=stsHist.filter(h=>stsAvg(h)!==null);
+  if(!v.length)return;
+  const lat=v[v.length-1],prv=v.length>=2?v[v.length-2]:null;
+  const la=stsAvg(lat),pa=prv?stsAvg(prv):null;
+  document.getElementById('sts-avg').textContent=la?'#'+la.toFixed(1):'—';
+  document.getElementById('sts-count').textContent=stsHist.length;
+  document.getElementById('sts-countries').textContent=Object.keys(lat.results||{}).length;
+  const el=document.getElementById('sts-avg-diff');
+  if(pa!==null&&la!==null){
+    const d=Math.round((pa-la)*10)/10;
+    if(d>0){el.textContent='▲ '+d+' 상승';el.style.color='var(--up)';}
+    else if(d<0){el.textContent='▼ '+Math.abs(d)+' 하락';el.style.color='var(--down)';}
+    else{el.textContent='변동없음';el.style.color='';}
+  }
+  let best=null,be=null;
+  for(const h of v){const a=stsAvg(h);if(a!==null&&(best===null||a<best)){best=a;be=h;}}
+  document.getElementById('sts-best').textContent=best?'#'+best.toFixed(1):'—';
+  if(be)document.getElementById('sts-best-date').textContent=fmtDate(be.timestamp);
+  const lbs=v.map(h=>new Date(h.timestamp)),dv=v.map(h=>stsAvg(h));
+  const ctx=document.getElementById('stsChart').getContext('2d');
+  if(stsCI)stsCI.destroy();
+  stsCI=new Chart(ctx,{
+    type:'line',
+    data:{labels:lbs,datasets:[{label:'가중평균',data:dv,borderColor:'#e74c3c',backgroundColor:'rgba(231,76,60,.12)',borderWidth:2,pointRadius:3,fill:true,tension:.3}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{type:'time',time:{unit:'day'},ticks:{color:'#aaa',maxTicksLimit:8},grid:{color:'rgba(255,255,255,.05)'}},
+        y:{reverse:true,min:1,ticks:{color:'#aaa',stepSize:1,callback:v=>'#'+v},grid:{color:'rgba(255,255,255,.05)'}}
+      },
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'순위 #'+c.parsed.y}}}
+    }
+  });
+  renderStsGrid(lat,prv);
+}
+
+function renderStsGrid(lat,prv){
+  const g=document.getElementById('sts-country-grid');
+  if(!g||!lat.results)return;
+  const s=Object.entries(lat.results).sort((a,b)=>(STS_W[b[0]]||0)-(STS_W[a[0]]||0));
+  g.innerHTML=s.map(([n,d])=>{
+    const r=d&&d.rank,f=STS_F[n]||'🏳',w=STS_W[n]||1,rs=r?'#'+r:'—';
+    let dh='';
+    if(prv&&prv.results&&prv.results[n]){
+      const pr=prv.results[n]&&prv.results[n].rank;
+      if(pr&&r){const dd=pr-r;if(dd>0)dh='<span class="steam-ts-country-diff up">▲'+dd+'</span>';else if(dd<0)dh='<span class="steam-ts-country-diff down">▼'+Math.abs(dd)+'</span>';else dh='<span class="steam-ts-country-diff">-</span>';}
+    }
+    return `<div class="steam-ts-country-card" onclick="openStsModal('${n}')"><div class="steam-ts-country-flag">${f}</div><div class="steam-ts-country-info"><div class="steam-ts-country-name">${n}</div><div class="steam-ts-country-rank">${rs} ${dh}</div><span class="steam-ts-weight-badge">가중치 ${w}</span></div></div>`;
+  }).join('');
+}
+
+function openStsModal(n){
+  const m=document.getElementById('sts-modal');
+  if(!m||!stsHist.length)return;
+  const cc=STS_CC[n]||'us';
+  document.getElementById('sts-modal-title').textContent=(STS_F[n]||'')+' '+n;
+  document.getElementById('sts-modal-link').href='https://store.steampowered.com/charts/topselling/'+cc.toUpperCase();
+  const h=stsHist.filter(x=>x.results&&x.results[n]&&x.results[n].rank).map(x=>({t:new Date(x.timestamp),r:x.results[n].rank}));
+  if(!h.length){
+    ['sts-modal-current','sts-modal-best','sts-modal-avg'].forEach(id=>document.getElementById(id).textContent='—');
+  }else{
+    const cur=h[h.length-1].r,best=Math.min(...h.map(x=>x.r)),avg=Math.round(h.reduce((s,x)=>s+x.r,0)/h.length*10)/10;
+    document.getElementById('sts-modal-current').textContent='#'+cur;
+    document.getElementById('sts-modal-best').textContent='#'+best;
+    document.getElementById('sts-modal-avg').textContent='#'+avg;
+    const c2=document.getElementById('stsModalChart').getContext('2d');
+    if(stsMCI)stsMCI.destroy();
+    stsMCI=new Chart(c2,{
+      type:'line',
+      data:{labels:h.map(x=>x.t),datasets:[{label:'순위',data:h.map(x=>x.r),borderColor:'#e74c3c',backgroundColor:'rgba(231,76,60,.1)',borderWidth:2,pointRadius:3,fill:true,tension:.3}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        scales:{
+          x:{type:'time',time:{unit:'day'},ticks:{color:'#aaa',maxTicksLimit:6},grid:{color:'rgba(255,255,255,.05)'}},
+          y:{reverse:true,min:1,ticks:{color:'#aaa',stepSize:1,callback:v=>'#'+v},grid:{color:'rgba(255,255,255,.05)'}}
+        },
+        plugins:{legend:{display:false}}
+      }
+    });
+  }
+  m.classList.add('open');document.body.style.overflow='hidden';
+}
+function closeStsModal(e){if(e.target===document.getElementById('sts-modal'))closeStsModalDirect();}
+function closeStsModalDirect(){document.getElementById('sts-modal').classList.remove('open');document.body.style.overflow='';}
+
 // ─── STEAM 데이터 ───
 let steamHistory = [];
 let steamChartInstance = null;
@@ -2862,7 +3037,7 @@ function closeModalDirect() {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
 
 // ─── 자동 갱신 (30분) ───
-setInterval(() => { loadData(); loadSteamData(); loadTrendsData(); }, 30 * 60 * 1000);
+setInterval(() => { loadData(); loadSteamData(); loadTrendsData(); loadSteamTopSellerData(); }, 30 * 60 * 1000);
 
 // ─── 초기 실행 ───
 // ─── 출시 카운트다운 ───
@@ -2947,6 +3122,7 @@ initEvPanels();
 loadData().then(() => renderSalesEstimate());
 loadSteamData();
 loadTrendsData();
+loadSteamTopSellerData();
 </script>
 </body>
 </html>
