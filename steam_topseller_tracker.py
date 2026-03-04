@@ -41,16 +41,16 @@ TARGET_COUNTRIES = {
 }
 
 COUNTRY_COLORS = {
-    "미국": "#4A90D9",
-    "영국": "#C0392B",
-    "독일": "#2ECC71",
-    "프랑스": "#9B59B6",
-    "캐나다": "#E67E22",
-    "브라질": "#27AE60",
-    "일본": "#E74C3C",
-    "한국": "#3498DB",
-    "중국": "#F39C12",
-    "러시아": "#1ABC9C",
+    "US": "#4A90D9",
+    "GB": "#C0392B",
+    "DE": "#2ECC71",
+    "FR": "#9B59B6",
+    "CA": "#E67E22",
+    "BR": "#27AE60",
+    "JP": "#E74C3C",
+    "KR": "#3498DB",
+    "CN": "#F39C12",
+    "RU": "#1ABC9C",
 }
 
 RETRY_DELAYS = {
@@ -166,14 +166,16 @@ def save_history(history):
 # 그래프 생성
 # ======================
 def make_graphs(history):
-    country_names = list(TARGET_COUNTRIES.values())
+    # cc(영문) 기준으로 처리 — 한글 폰트 불필요
+    cc_list = list(TARGET_COUNTRIES.keys())           # ["us","gb", ...]
+    name_by_cc = {cc: name for cc, name in TARGET_COUNTRIES.items()}  # 한글명은 JSON 키 조회용
     BG = "#1B2838"
     GRID = "#4A5568"
     TEXT = "#C7D5E0"
 
     # 데이터 파싱 (10개국 완전한 레코드만)
     timestamps = []
-    country_ranks = {c: [] for c in country_names}
+    cc_ranks = {cc: [] for cc in cc_list}
 
     for entry in history:
         try:
@@ -181,11 +183,12 @@ def make_graphs(history):
         except:
             continue
         results = entry.get("results", {})
-        if not all(c in results for c in country_names):
+        # JSON 키는 한글 국가명 — 모두 있는지 확인
+        if not all(name_by_cc[cc] in results for cc in cc_list):
             continue
         timestamps.append(ts)
-        for c in country_names:
-            country_ranks[c].append(results[c].get("rank"))
+        for cc in cc_list:
+            cc_ranks[cc].append(results[name_by_cc[cc]].get("rank"))
 
     plt.rcParams["font.family"] = ["DejaVu Sans", "sans-serif"]
 
@@ -194,15 +197,15 @@ def make_graphs(history):
     fig1.patch.set_facecolor(BG)
     ax1.set_facecolor(BG)
 
-    for country in country_names:
-        ranks = country_ranks[country]
+    for cc in cc_list:
+        ranks = cc_ranks[cc]
         valid_ts = [t for t, r in zip(timestamps, ranks) if r is not None]
         valid_r  = [r for r in ranks if r is not None]
         if not valid_r:
             continue
-        color = COUNTRY_COLORS.get(country, "#FFFFFF")
+        color = COUNTRY_COLORS.get(cc.upper(), "#FFFFFF")
         ax1.plot(valid_ts, valid_r, marker="o", markersize=4,
-                 linewidth=1.8, label=country, color=color)
+                 linewidth=1.8, label=cc.upper(), color=color)
         ax1.annotate(f"#{valid_r[-1]}",
                      xy=(valid_ts[-1], valid_r[-1]),
                      xytext=(5, 0), textcoords="offset points",
@@ -232,18 +235,18 @@ def make_graphs(history):
     latest_ranks = {}
     for entry in reversed(history):
         results = entry.get("results", {})
-        if all(c in results for c in country_names):
-            for c in country_names:
-                r = results[c].get("rank")
+        if all(name_by_cc[cc] in results for cc in cc_list):
+            for cc in cc_list:
+                r = results[name_by_cc[cc]].get("rank")
                 if r is not None:
-                    latest_ranks[c] = r
+                    latest_ranks[cc.upper()] = r
             break
 
     if not latest_ranks:
         return buf1, None
 
     sorted_items = sorted(latest_ranks.items(), key=lambda x: x[1])
-    labels = [c for c, _ in sorted_items]
+    labels = [c for c, _ in sorted_items]   # "US", "GB", ...
     values = [r for _, r in sorted_items]
     colors = [COUNTRY_COLORS.get(c, "#888") for c in labels]
 
@@ -252,7 +255,7 @@ def make_graphs(history):
     ax2.set_facecolor(BG)
 
     bars = ax2.barh(labels, values, color=colors, edgecolor="#2A3F5F", height=0.6)
-    ax2.invert_yaxis()  # 낮은 순위(좋은 순위)가 위
+    ax2.invert_yaxis()
 
     for bar, val in zip(bars, values):
         ax2.text(bar.get_width() + 0.2, bar.get_y() + bar.get_height() / 2,
