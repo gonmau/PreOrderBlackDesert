@@ -1273,7 +1273,7 @@
           <button class="flag-toggle-btn active" id="flag-toggle-btn" onclick="toggleFlag()">🏳 국기 ON</button>
           <div class="flag-opacity-wrap" id="flag-opacity-wrap">
             <span class="flag-opacity-label">투명도</span>
-            <input type="range" class="flag-opacity-slider" id="flag-opacity-slider" min="0" max="100" value="52" oninput="updateFlagOpacity(this.value)">
+            <input type="range" class="flag-opacity-slider" id="flag-opacity-slider" min="0" max="100" value="100" oninput="updateFlagOpacity(this.value)">
           </div>
           <div class="flag-opacity-wrap" id="card-bg-wrap" style="opacity:0.3;pointer-events:none">
             <span class="flag-opacity-label">카드 배경색</span>
@@ -1979,7 +1979,7 @@ function renderChart() {
 
 // ─── 국기 컨트롤 ───
 let flagEnabled = true;
-let flagOpacity = 0.52;
+let flagOpacity = 1.0;
 let cardBgColor = '#1a1318';
 let weightOpacityEnabled = false;
 function updateCardBgColor(val) {
