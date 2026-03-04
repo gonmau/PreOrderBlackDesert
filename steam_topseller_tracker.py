@@ -393,15 +393,31 @@ def main():
         print("❌ 수집 실패")
         return
 
-    # 히스토리 저장
+    # 히스토리 저장 (이전 레코드 먼저 가져오기)
     history = load_history()
+    # 이전 완전한 레코드 (10개국) 추출 — 변동량 계산용
+    prev_results = None
+    for entry in reversed(history):
+        if len(entry.get("results", {})) == len(TARGET_COUNTRIES):
+            prev_results = entry["results"]
+            break
+
     history.append({"timestamp": timestamp, "results": results})
     save_history(history)
     print(f"\n✅ 히스토리 저장 완료 (총 {len(history)}개)")
 
-    # 가중평균 계산
+    # 가중평균 계산 + 변동량
     wavg = calc_weighted_avg(results)
-    wavg_str = f"{wavg:.2f}" if wavg else "N/A"
+    wavg_str = f"{wavg:.1f}" if wavg else "N/A"
+    wavg_diff = ""
+    if wavg and prev_results:
+        prev_wavg = calc_weighted_avg(prev_results)
+        if prev_wavg:
+            diff = prev_wavg - wavg  # 순위 낮아지면(숫자 커지면) 음수
+            if diff > 0:
+                wavg_diff = f" (▲{diff:.1f})"
+            elif diff < 0:
+                wavg_diff = f" (▼{abs(diff):.1f})"
 
     # Discord 텍스트 embed
     cc_by_name = {v: k for k, v in TARGET_COUNTRIES.items()}
@@ -409,15 +425,25 @@ def main():
     for name, data in results.items():
         rank = data.get("rank")
         rank_str = f"**#{rank}**" if rank else "순위권 밖"
+        # 변동량 계산
+        diff_str = ""
+        if rank and prev_results and prev_results.get(name):
+            prev_rank = prev_results[name].get("rank")
+            if prev_rank:
+                diff = prev_rank - rank  # 순위 올라가면(숫자 작아지면) 양수
+                if diff > 0:
+                    diff_str = f" **(▲{diff})**"
+                elif diff < 0:
+                    diff_str = f" **(▼{abs(diff)})**"
         cc = cc_by_name.get(name, "")
         link = STORE_LINKS.get(cc, "")
-        lines.append(f"[**{name}**]({link}): {rank_str}")
+        lines.append(f"[**{name}**]({link}): {rank_str}{diff_str}")
 
     embed = {
         "title": "🎮 Steam Top Seller — Crimson Desert",
         "description": (
             f"📅 {now_kst.strftime('%Y-%m-%d %H:%M KST')}\n"
-            f"⚖️ 평균 순위: **#{wavg_str}**\n\n"
+            f"⚖️ 평균 순위: **#{wavg_str}**{wavg_diff}\n\n"
             + "\n".join(lines)
         ),
         "color": 0x1B2838,
