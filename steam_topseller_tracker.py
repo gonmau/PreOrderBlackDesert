@@ -68,16 +68,9 @@ STEAM_WEIGHTS = {
 }
 
 def calc_weighted_avg(results):
-    """10개국 가중평균 순위 계산 (순위 없으면 해당 국가 제외)"""
-    name_by_cc = {cc: name for cc, name in TARGET_COUNTRIES.items()}
-    total_w, total_wr = 0.0, 0.0
-    for cc, w in STEAM_WEIGHTS.items():
-        name = name_by_cc[cc]
-        rank = results.get(name, {}).get("rank")
-        if rank is not None:
-            total_wr += w * rank
-            total_w  += w
-    return round(total_wr / total_w, 2) if total_w > 0 else None
+    """10개국 단순평균 순위 계산 (순위 없으면 해당 국가 제외)"""
+    ranks = [data.get("rank") for data in results.values() if data.get("rank") is not None]
+    return round(sum(ranks) / len(ranks), 1) if ranks else None
 
 
 RETRY_DELAYS = {
@@ -244,7 +237,7 @@ def make_graphs(history):
     ax0.yaxis.set_major_locator(ticker.MaxNLocator(integer=False, nbins=6))
     ax0.set_xlabel("Date (KST)", color=TEXT, fontsize=10)
     ax0.set_ylabel("Weighted Rank", color=TEXT, fontsize=10)
-    ax0.set_title("Crimson Desert — Weighted Avg Rank (Steam)", color="white", fontsize=13, pad=12)
+    ax0.set_title("Crimson Desert — Avg Rank (Steam)", color="white", fontsize=13, pad=12)
     ax0.tick_params(colors=TEXT)
     ax0.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%m/%d %H:%M"))
     plt.setp(ax0.xaxis.get_majorticklabels(), rotation=30, ha="right", fontsize=8)
@@ -416,7 +409,7 @@ def main():
         "title": "🎮 Steam Top Seller — Crimson Desert",
         "description": (
             f"📅 {now_kst.strftime('%Y-%m-%d %H:%M KST')}\n"
-            f"⚖️ 가중평균 순위: **#{wavg_str}**\n\n"
+            f"⚖️ 평균 순위: **#{wavg_str}**\n\n"
             + "\n".join(lines)
         ),
         "color": 0x1B2838,
