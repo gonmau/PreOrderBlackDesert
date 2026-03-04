@@ -7407,5 +7407,11 @@
     "data": {
       "example_metric": 100
     }
+  },
+  {
+    "timestamp": "2026-03-04T23:49:46.835004+09:00",
+    "data": {
+      "example_metric": 100
+    }
   }
 ]
