@@ -28,14 +28,13 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        pip install selenium webdriver-manager requests matplotlib pytrends pandas
+        pip install selenium webdriver-manager requests matplotlib
 
     - name: Run Trackers
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       run: |
-        python steamdb_store_tracker.py
-        python trends_tracker.py
+        # crimson_tracker.py → rank_history.json (PS Store 순위)
         python crimson_tracker.py
 
     - name: Commit and Push changes
@@ -45,12 +44,9 @@ jobs:
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
 
-        # ── 추적 대상 파일 목록 (한 곳에서 관리) ──────────────────────────
+        # crimson_tracker.py → rank_history.json
         TRACKED_FILES=(
           rank_history.json
-          store_state.json
-          steam_history.json
-          trends_history.json
         )
 
         # 1. 크롤링 결과를 임시 디렉터리에 백업 (push 실패해도 보존)
@@ -85,7 +81,7 @@ jobs:
 
         git diff --cached --quiet && { echo "변경사항 없음, 스킵"; exit 0; }
 
-        git commit -m "Update tracker history [skip ci]"
+        git commit -m "Update PS tracker history [skip ci]"
 
         # 5. push 실패 시 재시도 1회 (race condition 대비)
         git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main || {
