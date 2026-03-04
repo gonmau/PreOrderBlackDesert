@@ -53,6 +53,33 @@ COUNTRY_COLORS = {
     "RU": "#1ABC9C",
 }
 
+# Steam 시장 가중치 (index.html의 STEAM_MARKET_WEIGHTS 기준, 미국=10 베이스)
+STEAM_WEIGHTS = {
+    "us": 10.0,
+    "gb":  1.9,
+    "de":  1.9,
+    "fr":  1.7,
+    "ca":  1.8,
+    "br":  1.4,
+    "jp":  1.2,
+    "kr":  0.9,
+    "cn": 12.3,
+    "ru":  3.2,
+}
+
+def calc_weighted_avg(results):
+    """10개국 가중평균 순위 계산 (순위 없으면 해당 국가 제외)"""
+    name_by_cc = {cc: name for cc, name in TARGET_COUNTRIES.items()}
+    total_w, total_wr = 0.0, 0.0
+    for cc, w in STEAM_WEIGHTS.items():
+        name = name_by_cc[cc]
+        rank = results.get(name, {}).get("rank")
+        if rank is not None:
+            total_wr += w * rank
+            total_w  += w
+    return round(total_wr / total_w, 2) if total_w > 0 else None
+
+
 RETRY_DELAYS = {
     "cn": [10, 30, 60],
     "ru": [10, 30, 60],
@@ -176,6 +203,7 @@ def make_graphs(history):
     # 데이터 파싱 (10개국 완전한 레코드만)
     timestamps = []
     cc_ranks = {cc: [] for cc in cc_list}
+    wavg_list = []
 
     for entry in history:
         try:
@@ -189,8 +217,46 @@ def make_graphs(history):
         timestamps.append(ts)
         for cc in cc_list:
             cc_ranks[cc].append(results[name_by_cc[cc]].get("rank"))
+        wavg_list.append(calc_weighted_avg(results))
 
     plt.rcParams["font.family"] = ["DejaVu Sans", "sans-serif"]
+
+    # ── 0. 가중평균 순위 추이 그래프 ──────────────────────────
+    fig0, ax0 = plt.subplots(figsize=(11, 4))
+    fig0.patch.set_facecolor(BG)
+    ax0.set_facecolor(BG)
+
+    valid_ts0 = [t for t, w in zip(timestamps, wavg_list) if w is not None]
+    valid_w0  = [w for w in wavg_list if w is not None]
+
+    if valid_ts0:
+        ax0.plot(valid_ts0, valid_w0, color="#FFD700", linewidth=2.5,
+                 marker="o", markersize=5, label="Weighted Avg")
+        # 각 포인트에 값 라벨
+        for t, w in zip(valid_ts0, valid_w0):
+            ax0.annotate(f"{w:.1f}",
+                         xy=(t, w), xytext=(0, 8), textcoords="offset points",
+                         fontsize=8, color="#FFD700", ha="center")
+        # 최신값 강조
+        ax0.axhline(y=valid_w0[-1], color="#FFD700", linestyle="--", alpha=0.3, linewidth=1)
+
+    ax0.invert_yaxis()
+    ax0.yaxis.set_major_locator(ticker.MaxNLocator(integer=False, nbins=6))
+    ax0.set_xlabel("Date (KST)", color=TEXT, fontsize=10)
+    ax0.set_ylabel("Weighted Rank", color=TEXT, fontsize=10)
+    ax0.set_title("Crimson Desert — Weighted Avg Rank (Steam)", color="white", fontsize=13, pad=12)
+    ax0.tick_params(colors=TEXT)
+    ax0.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%m/%d %H:%M"))
+    plt.setp(ax0.xaxis.get_majorticklabels(), rotation=30, ha="right", fontsize=8)
+    for spine in ax0.spines.values():
+        spine.set_edgecolor(GRID)
+    ax0.grid(axis="y", color=GRID, linestyle="--", alpha=0.5)
+    fig0.tight_layout()
+
+    buf0 = io.BytesIO()
+    fig0.savefig(buf0, format="png", dpi=130, bbox_inches="tight", facecolor=BG)
+    buf0.seek(0)
+    plt.close(fig0)
 
     # ── 1. 꺾은선 그래프 ─────────────────────────────────────
     fig1, ax1 = plt.subplots(figsize=(13, 6))
@@ -274,7 +340,7 @@ def make_graphs(history):
     buf2.seek(0)
     plt.close(fig2)
 
-    return buf1, buf2
+    return buf0, buf1, buf2
 
 # ======================
 # Discord 전송
@@ -332,6 +398,10 @@ def main():
     save_history(history)
     print(f"\n✅ 히스토리 저장 완료 (총 {len(history)}개)")
 
+    # 가중평균 계산
+    wavg = calc_weighted_avg(results)
+    wavg_str = f"{wavg:.2f}" if wavg else "N/A"
+
     # Discord 텍스트 embed
     cc_by_name = {v: k for k, v in TARGET_COUNTRIES.items()}
     lines = []
@@ -345,7 +415,8 @@ def main():
     embed = {
         "title": "🎮 Steam Top Seller — Crimson Desert",
         "description": (
-            f"📅 {now_kst.strftime('%Y-%m-%d %H:%M KST')}\n\n"
+            f"📅 {now_kst.strftime('%Y-%m-%d %H:%M KST')}\n"
+            f"⚖️ 가중평균 순위: **#{wavg_str}**\n\n"
             + "\n".join(lines)
         ),
         "color": 0x1B2838,
@@ -354,8 +425,11 @@ def main():
 
     # Discord 그래프
     print("\n📊 그래프 생성 중...")
-    buf_line, buf_bar = make_graphs(history)
+    buf_wavg, buf_line, buf_bar = make_graphs(history)
 
+    if buf_wavg:
+        send_discord_image(buf_wavg, "weighted.png", "⚖️ 가중평균 순위 추이")
+        print("  ✅ 가중평균 그래프 전송")
     if buf_line:
         send_discord_image(buf_line, "trend.png", "📈 전체 기간 순위 추이")
         print("  ✅ 꺾은선 그래프 전송")
