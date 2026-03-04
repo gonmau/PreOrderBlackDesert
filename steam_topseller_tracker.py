@@ -280,10 +280,18 @@ def make_graphs(history):
     plt.setp(ax1.xaxis.get_majorticklabels(), rotation=30, ha="right", fontsize=8)
     for spine in ax1.spines.values():
         spine.set_edgecolor(GRID)
-    ax1.legend(loc="upper right", fontsize=8, framealpha=0.3,
-               labelcolor="white", facecolor="#2A3F5F")
     ax1.grid(axis="y", color=GRID, linestyle="--", alpha=0.5)
+
+    # 레전드를 그래프 위(제목 아래)에 가로로 배치
+    handles, labels = ax1.get_legend_handles_labels()
+    fig1.legend(handles, labels,
+                loc="upper center", bbox_to_anchor=(0.5, 0.97),
+                ncol=len(labels), fontsize=8,
+                framealpha=0.25, labelcolor="white", facecolor="#2A3F5F",
+                edgecolor="none", handlelength=1.5, columnspacing=1.0)
+
     fig1.tight_layout()
+    fig1.subplots_adjust(top=0.82)  # 레전드 공간 확보
 
     buf1 = io.BytesIO()
     fig1.savefig(buf1, format="png", dpi=130, bbox_inches="tight", facecolor=BG)
@@ -422,7 +430,7 @@ def main():
 
     if buf_wavg:
         send_discord_image(buf_wavg, "weighted.png", "⚖️ 평균 순위 추이")
-        print("  ✅ 가중평균 그래프 전송")
+        print("  ✅ 평균 순위 그래프 전송")
     if buf_line:
         send_discord_image(buf_line, "trend.png", "📈 전체 기간 순위 추이")
         print("  ✅ 꺾은선 그래프 전송")
