@@ -104,7 +104,8 @@ def get_top_sellers(cc):
     seen = set()
     real_rank = 0
 
-    for page in range(1, 5):  # 4페이지 = 약 40개
+    found = False
+    for page in range(1, 11):  # 최대 10페이지 (~100개)까지 탐색
         data = fetch_page(cc, page, retry_delays)
         if data is None:
             break
@@ -125,6 +126,10 @@ def get_top_sellers(cc):
             all_items.append({"rank": real_rank, "appid": appid, "name": name})
             if appid in STEAM_APP_IDS:
                 rank = real_rank
+                found = True
+
+        if found:
+            break  # 발견하면 추가 페이지 요청 안 함
 
         time.sleep(1.0)  # 페이지 간 딜레이
 
