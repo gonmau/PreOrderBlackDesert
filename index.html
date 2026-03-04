@@ -1510,10 +1510,10 @@
         <!-- 사전예약 보정 슬라이더 -->
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;background:var(--surface);border-radius:8px;padding:10px 14px">
           <span style="font-size:0.75rem;color:var(--muted);white-space:nowrap">📦 사전예약 보정</span>
-          <input type="range" id="preorder-slider" min="5" max="100" step="5" value="100"
+          <input type="range" id="preorder-slider" min="5" max="100" step="5" value="30"
             style="flex:1;min-width:120px;accent-color:var(--gold)"
             oninput="updatePreorderRate(this.value)">
-          <span style="font-size:0.8rem;color:var(--gold);font-weight:bold;min-width:42px;text-align:right" id="preorder-rate-label">100%</span>
+          <span style="font-size:0.8rem;color:var(--gold);font-weight:bold;min-width:42px;text-align:right" id="preorder-rate-label">30%</span>
           <span style="font-size:0.68rem;color:var(--muted)">(사전예약 순위 → 실판매 전환율)</span>
         </div>
         <div class="event-toggle-wrap">
@@ -2247,7 +2247,7 @@ let salesChartInstance = null;
 let salesMode = 'daily';
 let salesDailyData = []; // { dateStr, date, std, dlx, tot, isHistorical }
 let salesScenario = 'normal'; // 현재 선택된 시나리오
-let preorderRate = 1.0; // 사전예약 보정 계수 (1.0 = 보정없음)
+let preorderRate = 0.3; // 사전예약 보정 계수 (1.0 = 보정없음)
 
 // ── 흥행 시나리오별 기준값 ──────────────────────
 const SCENARIOS = {
