@@ -2746,7 +2746,7 @@ function renderStsGrid(lat,prv){
       const pr=prv.results[n]&&prv.results[n].rank;
       if(pr&&r){const dd=pr-r;if(dd>0)dh='<span class="steam-ts-country-diff up">▲'+dd+'</span>';else if(dd<0)dh='<span class="steam-ts-country-diff down">▼'+Math.abs(dd)+'</span>';else dh='<span class="steam-ts-country-diff">-</span>';}
     }
-    return `<div class="steam-ts-country-card" onclick="openStsModal('${n}')"><div class="steam-ts-country-flag">${f}</div><div class="steam-ts-country-info"><div class="steam-ts-country-name">${n}</div><div class="steam-ts-country-rank">${rs} ${dh}</div><span class="steam-ts-weight-badge">가중치 ${w}</span></div></div>`;
+    return `<div class="steam-ts-country-card" onclick="openStsModal('${n}')"><div class="steam-ts-country-flag">${f}</div><div class="steam-ts-country-info"><div class="steam-ts-country-name">${n}</div><div class="steam-ts-country-rank">${rs} ${dh}</div></div></div>`;
   }).join('');
 }
 
