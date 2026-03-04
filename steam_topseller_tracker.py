@@ -9,75 +9,17 @@ Steam 국가별 Top Seller 순위 추적기 (10개국)
 
 import json
 import os
+import re
 import time
 from datetime import datetime, timezone, timedelta
 import requests
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
-STEAM_APP_IDS = {"3321460"}  # Crimson Desert (스탠다드/디럭스 동일 App ID, 1418525는 sub ID라 제거)
+STEAM_APP_IDS = {"3321460"}  # Crimson Desert
 
-# ======================
-# Steam API 호출
-# ======================
-def get_top_sellers(cc):
-    """Steam /search/results/ API로 국가별 top seller 가져오기 (logo URL에서 appid 추출)"""
-    import re
-    url = "https://store.steampowered.com/search/results/"
-    rank = None
-    all_items = []
-    seen = set()
-    real_rank = 0
-
-    for page in range(1, 5):  # 페이지당 ~10개, 4페이지 시도
-        params = {
-            "filter": "topsellers",
-            "cc": cc,
-            "l": "en",
-            "json": 1,
-            "page": page,
-        }
-        try:
-            r = requests.get(url, params=params, headers=HEADERS, timeout=15)
-            if r.status_code != 200:
-                print(f"  ⚠️ {cc} p{page} 응답 실패: {r.status_code}")
-                break
-
-            data = r.json()
-            items = data.get("items", [])
-            if not items:
-                break
-
-            for item in items:
-                logo = item.get("logo", "")
-                name = item.get("name", "")
-                # logo URL에서 appid 추출: /steam/apps/숫자/
-                m = re.search(r'/steam/apps/(\d+)/', logo)
-                appid = m.group(1) if m else ""
-                if not appid or appid in seen:
-                    continue
-                seen.add(appid)
-                real_rank += 1
-                all_items.append({"rank": real_rank, "appid": appid, "name": name})
-                if appid in STEAM_APP_IDS:
-                    rank = real_rank
-
-            time.sleep(0.5)
-
-        except Exception as e:
-            print(f"  ❌ {cc} p{page} 오류: {e}")
-            break
-
-    if not all_items:
-        print(f"  ⚠️ {cc} 데이터 없음")
-        return None
-
-    print(f"  ✅ {cc}: 총 {real_rank}개 파싱, Crimson Desert {'#' + str(rank) if rank else '순위권 밖'}")
-    return {"rank": rank, "top20": all_items}
 HISTORY_FILE = "steam_topseller_history.json"
-
 KST = timezone(timedelta(hours=9))
 
-# 테스트 대상 5개국 (국가코드: 한글명)
 TARGET_COUNTRIES = {
     "us": "미국",
     "gb": "영국",
@@ -91,9 +33,23 @@ TARGET_COUNTRIES = {
     "ru": "러시아",
 }
 
+# 429 발생 시 재시도 전 대기 시간 (국가별)
+RETRY_DELAYS = {
+    "cn": [10, 30, 60],  # 중국: 3회 재시도, 10→30→60초
+    "ru": [10, 30, 60],  # 러시아: 동일
+}
+DEFAULT_RETRY_DELAYS = [5, 15, 30]
+
+# 국가 간 기본 대기 시간
+COUNTRY_SLEEP = {
+    "cn": 5,  # 중국 요청 후 5초 대기
+    "ru": 5,  # 러시아 요청 후 5초 대기
+}
+DEFAULT_COUNTRY_SLEEP = 1.5
+
 STORE_LINKS = {
     cc: f"https://store.steampowered.com/charts/topselling/{cc.upper()}"
-    for cc in ["us","gb","de","fr","ca","br","jp","kr","cn","ru"]
+    for cc in TARGET_COUNTRIES
 }
 
 HEADERS = {
@@ -105,7 +61,79 @@ HEADERS = {
 # ======================
 # Steam API 호출
 # ======================
+def fetch_page(cc, page, retry_delays):
+    """단일 페이지 요청 (429 시 재시도 포함)"""
+    url = "https://store.steampowered.com/search/results/"
+    params = {
+        "filter": "topsellers",
+        "cc": cc,
+        "l": "en",
+        "json": 1,
+        "page": page,
+    }
 
+    for attempt, delay in enumerate([0] + retry_delays):
+        if delay > 0:
+            print(f"  ⏳ {cc} p{page} {delay}초 후 재시도 ({attempt}/{len(retry_delays)})...")
+            time.sleep(delay)
+        try:
+            r = requests.get(url, params=params, headers=HEADERS, timeout=20)
+            if r.status_code == 200:
+                return r.json()
+            elif r.status_code == 429:
+                print(f"  ⚠️ {cc} p{page} 429 Rate Limited")
+                if attempt == len(retry_delays):
+                    print(f"  ❌ {cc} p{page} 재시도 초과, 포기")
+                    return None
+                # 다음 루프에서 delay 후 재시도
+                continue
+            else:
+                print(f"  ⚠️ {cc} p{page} 응답 실패: {r.status_code}")
+                return None
+        except Exception as e:
+            print(f"  ❌ {cc} p{page} 오류: {e}")
+            return None
+
+    return None
+
+def get_top_sellers(cc):
+    """Steam /search/results/ API로 국가별 top seller 가져오기"""
+    retry_delays = RETRY_DELAYS.get(cc, DEFAULT_RETRY_DELAYS)
+    rank = None
+    all_items = []
+    seen = set()
+    real_rank = 0
+
+    for page in range(1, 5):  # 4페이지 = 약 40개
+        data = fetch_page(cc, page, retry_delays)
+        if data is None:
+            break
+
+        items = data.get("items", [])
+        if not items:
+            break
+
+        for item in items:
+            logo = item.get("logo", "")
+            name = item.get("name", "")
+            m = re.search(r'/steam/apps/(\d+)/', logo)
+            appid = m.group(1) if m else ""
+            if not appid or appid in seen:
+                continue
+            seen.add(appid)
+            real_rank += 1
+            all_items.append({"rank": real_rank, "appid": appid, "name": name})
+            if appid in STEAM_APP_IDS:
+                rank = real_rank
+
+        time.sleep(1.0)  # 페이지 간 딜레이
+
+    if not all_items:
+        print(f"  ⚠️ {cc} 데이터 없음")
+        return None
+
+    print(f"  ✅ {cc}: 총 {real_rank}개 파싱, Crimson Desert {'#' + str(rank) if rank else '순위권 밖'}")
+    return {"rank": rank, "top20": all_items}
 
 # ======================
 # 히스토리 관리
@@ -154,7 +182,10 @@ def main():
         result = get_top_sellers(cc)
         if result:
             results[name] = result
-        time.sleep(1)  # API 과부하 방지
+
+        sleep_sec = COUNTRY_SLEEP.get(cc, DEFAULT_COUNTRY_SLEEP)
+        print(f"  💤 다음 국가까지 {sleep_sec}초 대기...")
+        time.sleep(sleep_sec)
 
     if not results:
         print("❌ 수집 실패")
