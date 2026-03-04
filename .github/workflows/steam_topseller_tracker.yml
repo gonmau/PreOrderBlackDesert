@@ -1,16 +1,15 @@
-name: Combined Tracker
+name: Steam Top Seller Tracker
 
 on:
   schedule:
-    - cron: '10 23,1,2,3,4,5,6,7,8,11 * * *'
-    - cron: '40 1,2,3,4,5,6,7,8 * * *'
+    - cron: '0,30 * * * *'   # 매 30분마다
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: rank-history
+  group: steam-topseller
   cancel-in-progress: false
 
 jobs:
@@ -28,15 +27,13 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        pip install selenium webdriver-manager requests matplotlib pytrends pandas
+        pip install requests matplotlib
 
-    - name: Run Trackers
+    - name: Run Steam Top Seller Tracker
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       run: |
-        python steamdb_store_tracker.py
-        python trends_tracker.py
-        python crimson_tracker.py
+        python steam_topseller_tracker.py
 
     - name: Commit and Push changes
       env:
@@ -45,12 +42,8 @@ jobs:
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
 
-        # ── 추적 대상 파일 목록 (한 곳에서 관리) ──────────────────────────
         TRACKED_FILES=(
-          rank_history.json
-          store_state.json
-          steam_history.json
-          trends_history.json
+          steam_topseller_history.json
         )
 
         # 1. 크롤링 결과를 임시 디렉터리에 백업 (push 실패해도 보존)
@@ -58,7 +51,6 @@ jobs:
         for f in "${TRACKED_FILES[@]}"; do
           [ -f "$f" ] && cp "$f" "/tmp/tracker_backup/$f"
         done
-        echo "✅ 백업 완료"
 
         # 2. 서버 최신 상태로 rebase (충돌 방지)
         for f in "${TRACKED_FILES[@]}"; do
@@ -85,7 +77,7 @@ jobs:
 
         git diff --cached --quiet && { echo "변경사항 없음, 스킵"; exit 0; }
 
-        git commit -m "Update tracker history [skip ci]"
+        git commit -m "Update steam topseller history [skip ci]"
 
         # 5. push 실패 시 재시도 1회 (race condition 대비)
         git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main || {
