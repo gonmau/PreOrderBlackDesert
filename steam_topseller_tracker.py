@@ -421,7 +421,7 @@ def main():
     buf_wavg, buf_line, buf_bar = make_graphs(history)
 
     if buf_wavg:
-        send_discord_image(buf_wavg, "weighted.png", "⚖️ 가중평균 순위 추이")
+        send_discord_image(buf_wavg, "weighted.png", "⚖️ 평균 순위 추이")
         print("  ✅ 가중평균 그래프 전송")
     if buf_line:
         send_discord_image(buf_line, "trend.png", "📈 전체 기간 순위 추이")
