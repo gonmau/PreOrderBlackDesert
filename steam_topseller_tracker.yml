@@ -1,0 +1,103 @@
+name: Steam Top Seller Tracker
+
+on:
+  schedule:
+    - cron: '0,30 * * * *'   # 매 30분마다
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: steam-topseller
+  cancel-in-progress: false
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install Dependencies
+      run: |
+        pip install selenium webdriver-manager requests matplotlib pytrends pandas
+
+    - name: Run Trackers
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      run: |
+        python steamdb_store_tracker.py
+        python steam_topseller_tracker.py
+        python trends_tracker.py
+
+    - name: Commit and Push changes
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+
+        # steamdb_store_tracker.py → store_state.json, steam_history.json
+        # steam_topseller_tracker.py → steam_topseller_history.json
+        # trends_tracker.py         → trends_history.json
+        TRACKED_FILES=(
+          store_state.json
+          steam_history.json
+          steam_topseller_history.json
+          trends_history.json
+        )
+
+        # 1. 크롤링 결과를 임시 디렉터리에 백업 (push 실패해도 보존)
+        mkdir -p /tmp/tracker_backup
+        for f in "${TRACKED_FILES[@]}"; do
+          [ -f "$f" ] && cp "$f" "/tmp/tracker_backup/$f"
+        done
+        echo "✅ 백업 완료"
+
+        # 2. 서버 최신 상태로 rebase (충돌 방지)
+        for f in "${TRACKED_FILES[@]}"; do
+          git checkout -- "$f" 2>/dev/null || true
+        done
+        git pull origin main --rebase || {
+          echo "⚠️ rebase 실패, abort 후 일반 pull 시도"
+          git rebase --abort 2>/dev/null || true
+          git pull origin main --no-rebase
+        }
+
+        # 3. 크롤링 결과(백업본)를 최신 repo 위에 덮어쓰기
+        for f in "${TRACKED_FILES[@]}"; do
+          if [ -f "/tmp/tracker_backup/$f" ]; then
+            cp "/tmp/tracker_backup/$f" "$f"
+            echo "  복원: $f"
+          fi
+        done
+
+        # 4. 변경된 파일만 add → commit → push
+        for f in "${TRACKED_FILES[@]}"; do
+          git add "$f" 2>/dev/null || true
+        done
+
+        git diff --cached --quiet && { echo "변경사항 없음, 스킵"; exit 0; }
+
+        git commit -m "Update steam/trends history [skip ci]"
+
+        # 5. push 실패 시 재시도 1회 (race condition 대비)
+        git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main || {
+          echo "⚠️ push 실패, pull 후 재시도"
+          git pull origin main --rebase
+          for f in "${TRACKED_FILES[@]}"; do
+            [ -f "/tmp/tracker_backup/$f" ] && cp "/tmp/tracker_backup/$f" "$f"
+            git add "$f" 2>/dev/null || true
+          done
+          git commit --amend --no-edit 2>/dev/null || true
+          git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main
+        }
+
+        echo "✅ 완료!"
