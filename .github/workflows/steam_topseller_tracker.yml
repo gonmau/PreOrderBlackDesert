@@ -27,7 +27,7 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        pip install selenium webdriver-manager requests matplotlib pytrends pandas
+        pip install selenium webdriver-manager requests matplotlib pandas
 
     - name: Run Trackers
       env:
@@ -35,7 +35,6 @@ jobs:
       run: |
         python steamdb_store_tracker.py
         python steam_topseller_tracker.py
-        python trends_tracker.py
 
     - name: Commit and Push changes
       env:
@@ -46,12 +45,10 @@ jobs:
 
         # steamdb_store_tracker.py → store_state.json, steam_history.json
         # steam_topseller_tracker.py → steam_topseller_history.json
-        # trends_tracker.py         → trends_history.json
         TRACKED_FILES=(
           store_state.json
           steam_history.json
           steam_topseller_history.json
-          trends_history.json
         )
 
         # 1. 크롤링 결과를 임시 디렉터리에 백업 (push 실패해도 보존)
