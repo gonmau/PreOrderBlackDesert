@@ -116748,9 +116748,9 @@
     }
   },
   {
-    "timestamp": "2026-03-06T08:58:37.515834+09:00",
+    "timestamp": "2026-03-06T09:03:59.071080+09:00",
     "averages": {
-      "combined": 2.0685169124024276
+      "combined": 2.039895923677362
     },
     "raw_results": {
       "영국": {
@@ -116802,8 +116802,8 @@
         "deluxe": 2
       },
       "포르투갈": {
-        "standard": 3,
-        "deluxe": 2
+        "standard": 2,
+        "deluxe": 1
       },
       "그리스": {
         "standard": 2,
@@ -116874,12 +116874,12 @@
         "deluxe": 1
       },
       "아이슬란드": {
-        "standard": 4,
-        "deluxe": 2
+        "standard": 3,
+        "deluxe": 1
       },
       "아일랜드": {
-        "standard": 6,
-        "deluxe": 4
+        "standard": 3,
+        "deluxe": 1
       },
       "쿠웨이트": {
         "standard": 4,
