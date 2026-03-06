@@ -174143,5 +174143,1435 @@
         ]
       }
     }
+  },
+  {
+    "timestamp": "2026-03-06T13:24:11.402859+09:00",
+    "results": {
+      "미국": {
+        "rank": 12,
+        "top20": [
+          {
+            "rank": 1,
+            "appid": "2868840",
+            "name": "Slay the Spire 2"
+          },
+          {
+            "rank": 2,
+            "appid": "3065800",
+            "name": "Marathon"
+          },
+          {
+            "rank": 3,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 4,
+            "appid": "730",
+            "name": "Counter-Strike 2"
+          },
+          {
+            "rank": 5,
+            "appid": "3897800",
+            "name": "Poker Night at the Inventory"
+          },
+          {
+            "rank": 6,
+            "appid": "3564740",
+            "name": "Where Winds Meet"
+          },
+          {
+            "rank": 7,
+            "appid": "3717070",
+            "name": "WWE 2K26"
+          },
+          {
+            "rank": 8,
+            "appid": "1973530",
+            "name": "Limbus Company"
+          },
+          {
+            "rank": 9,
+            "appid": "359550",
+            "name": "Tom Clancy's Rainbow Six Siege"
+          },
+          {
+            "rank": 10,
+            "appid": "2767030",
+            "name": "Marvel Rivals"
+          },
+          {
+            "rank": 11,
+            "appid": "252490",
+            "name": "Rust"
+          },
+          {
+            "rank": 12,
+            "appid": "3321460",
+            "name": "Crimson Desert"
+          },
+          {
+            "rank": 13,
+            "appid": "1149460",
+            "name": "ICARUS"
+          },
+          {
+            "rank": 14,
+            "appid": "1808500",
+            "name": "ARC Raiders"
+          },
+          {
+            "rank": 15,
+            "appid": "1648533",
+            "name": "Icarus: Dangerous Horizons Expansion"
+          },
+          {
+            "rank": 16,
+            "appid": "1172470",
+            "name": "Apex Legends™"
+          },
+          {
+            "rank": 17,
+            "appid": "2221490",
+            "name": "Tom Clancy’s The Division® 2"
+          },
+          {
+            "rank": 18,
+            "appid": "2057760",
+            "name": "Esoteric Ebb"
+          },
+          {
+            "rank": 19,
+            "appid": "4069520",
+            "name": "Super Battle Golf"
+          },
+          {
+            "rank": 20,
+            "appid": "553850",
+            "name": "HELLDIVERS™ 2"
+          },
+          {
+            "rank": 21,
+            "appid": "230410",
+            "name": "Warframe"
+          },
+          {
+            "rank": 22,
+            "appid": "2852190",
+            "name": "Monster Hunter Stories 3: Twisted Reflection"
+          },
+          {
+            "rank": 23,
+            "appid": "2183900",
+            "name": "Warhammer 40,000: Space Marine 2"
+          },
+          {
+            "rank": 24,
+            "appid": "686060",
+            "name": "Mewgenics"
+          },
+          {
+            "rank": 25,
+            "appid": "236390",
+            "name": "War Thunder"
+          }
+        ]
+      },
+      "영국": {
+        "rank": 11,
+        "top20": [
+          {
+            "rank": 1,
+            "appid": "1675200",
+            "name": "Steam Deck"
+          },
+          {
+            "rank": 2,
+            "appid": "2868840",
+            "name": "Slay the Spire 2"
+          },
+          {
+            "rank": 3,
+            "appid": "730",
+            "name": "Counter-Strike 2"
+          },
+          {
+            "rank": 4,
+            "appid": "3065800",
+            "name": "Marathon"
+          },
+          {
+            "rank": 5,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 6,
+            "appid": "3897800",
+            "name": "Poker Night at the Inventory"
+          },
+          {
+            "rank": 7,
+            "appid": "1973530",
+            "name": "Limbus Company"
+          },
+          {
+            "rank": 8,
+            "appid": "252490",
+            "name": "Rust"
+          },
+          {
+            "rank": 9,
+            "appid": "3717070",
+            "name": "WWE 2K26"
+          },
+          {
+            "rank": 10,
+            "appid": "359550",
+            "name": "Tom Clancy's Rainbow Six Siege"
+          },
+          {
+            "rank": 11,
+            "appid": "3321460",
+            "name": "Crimson Desert"
+          },
+          {
+            "rank": 12,
+            "appid": "2057760",
+            "name": "Esoteric Ebb"
+          },
+          {
+            "rank": 13,
+            "appid": "2221490",
+            "name": "Tom Clancy’s The Division® 2"
+          },
+          {
+            "rank": 14,
+            "appid": "1172470",
+            "name": "Apex Legends™"
+          },
+          {
+            "rank": 15,
+            "appid": "2767030",
+            "name": "Marvel Rivals"
+          },
+          {
+            "rank": 16,
+            "appid": "3564740",
+            "name": "Where Winds Meet"
+          },
+          {
+            "rank": 17,
+            "appid": "3405690",
+            "name": "EA SPORTS FC™ 26"
+          },
+          {
+            "rank": 18,
+            "appid": "1149460",
+            "name": "ICARUS"
+          },
+          {
+            "rank": 19,
+            "appid": "2183900",
+            "name": "Warhammer 40,000: Space Marine 2"
+          },
+          {
+            "rank": 20,
+            "appid": "230410",
+            "name": "Warframe"
+          },
+          {
+            "rank": 21,
+            "appid": "2487300",
+            "name": "Docked"
+          },
+          {
+            "rank": 22,
+            "appid": "2357570",
+            "name": "Overwatch®"
+          },
+          {
+            "rank": 23,
+            "appid": "1648533",
+            "name": "Icarus: Dangerous Horizons Expansion"
+          },
+          {
+            "rank": 24,
+            "appid": "1808500",
+            "name": "ARC Raiders"
+          },
+          {
+            "rank": 25,
+            "appid": "582660",
+            "name": "Black Desert"
+          }
+        ]
+      },
+      "독일": {
+        "rank": 9,
+        "top20": [
+          {
+            "rank": 1,
+            "appid": "2868840",
+            "name": "Slay the Spire 2"
+          },
+          {
+            "rank": 2,
+            "appid": "730",
+            "name": "Counter-Strike 2"
+          },
+          {
+            "rank": 3,
+            "appid": "3065800",
+            "name": "Marathon"
+          },
+          {
+            "rank": 4,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 5,
+            "appid": "2487300",
+            "name": "Docked"
+          },
+          {
+            "rank": 6,
+            "appid": "582660",
+            "name": "Black Desert"
+          },
+          {
+            "rank": 7,
+            "appid": "252490",
+            "name": "Rust"
+          },
+          {
+            "rank": 8,
+            "appid": "1149460",
+            "name": "ICARUS"
+          },
+          {
+            "rank": 9,
+            "appid": "3321460",
+            "name": "Crimson Desert"
+          },
+          {
+            "rank": 10,
+            "appid": "3564740",
+            "name": "Where Winds Meet"
+          },
+          {
+            "rank": 11,
+            "appid": "1648533",
+            "name": "Icarus: Dangerous Horizons Expansion"
+          },
+          {
+            "rank": 12,
+            "appid": "1449850",
+            "name": "Yu-Gi-Oh! Master Duel"
+          },
+          {
+            "rank": 13,
+            "appid": "236390",
+            "name": "War Thunder"
+          },
+          {
+            "rank": 14,
+            "appid": "359550",
+            "name": "Tom Clancy's Rainbow Six Siege"
+          },
+          {
+            "rank": 15,
+            "appid": "1973530",
+            "name": "Limbus Company"
+          },
+          {
+            "rank": 16,
+            "appid": "3717070",
+            "name": "WWE 2K26"
+          },
+          {
+            "rank": 17,
+            "appid": "2221490",
+            "name": "Tom Clancy’s The Division® 2"
+          },
+          {
+            "rank": 18,
+            "appid": "1808500",
+            "name": "ARC Raiders"
+          },
+          {
+            "rank": 19,
+            "appid": "2183900",
+            "name": "Warhammer 40,000: Space Marine 2"
+          },
+          {
+            "rank": 20,
+            "appid": "3897800",
+            "name": "Poker Night at the Inventory"
+          },
+          {
+            "rank": 21,
+            "appid": "2430390",
+            "name": "DYSPLACED"
+          },
+          {
+            "rank": 22,
+            "appid": "3274580",
+            "name": "Anno 117: Pax Romana"
+          },
+          {
+            "rank": 23,
+            "appid": "1617400",
+            "name": "The Bazaar"
+          },
+          {
+            "rank": 24,
+            "appid": "2697000",
+            "name": "The Legend of Khiimori"
+          },
+          {
+            "rank": 25,
+            "appid": "1407200",
+            "name": "World of Tanks"
+          }
+        ]
+      },
+      "프랑스": {
+        "rank": 5,
+        "top20": [
+          {
+            "rank": 1,
+            "appid": "2868840",
+            "name": "Slay the Spire 2"
+          },
+          {
+            "rank": 2,
+            "appid": "3065800",
+            "name": "Marathon"
+          },
+          {
+            "rank": 3,
+            "appid": "730",
+            "name": "Counter-Strike 2"
+          },
+          {
+            "rank": 4,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 5,
+            "appid": "3321460",
+            "name": "Crimson Desert"
+          },
+          {
+            "rank": 6,
+            "appid": "1973530",
+            "name": "Limbus Company"
+          },
+          {
+            "rank": 7,
+            "appid": "252490",
+            "name": "Rust"
+          },
+          {
+            "rank": 8,
+            "appid": "3564740",
+            "name": "Where Winds Meet"
+          },
+          {
+            "rank": 9,
+            "appid": "582660",
+            "name": "Black Desert"
+          },
+          {
+            "rank": 10,
+            "appid": "4025700",
+            "name": "Heartopia"
+          },
+          {
+            "rank": 11,
+            "appid": "3717070",
+            "name": "WWE 2K26"
+          },
+          {
+            "rank": 12,
+            "appid": "2487300",
+            "name": "Docked"
+          },
+          {
+            "rank": 13,
+            "appid": "1172470",
+            "name": "Apex Legends™"
+          },
+          {
+            "rank": 14,
+            "appid": "1449850",
+            "name": "Yu-Gi-Oh! Master Duel"
+          },
+          {
+            "rank": 15,
+            "appid": "2183900",
+            "name": "Warhammer 40,000: Space Marine 2"
+          },
+          {
+            "rank": 16,
+            "appid": "1149460",
+            "name": "ICARUS"
+          },
+          {
+            "rank": 17,
+            "appid": "230410",
+            "name": "Warframe"
+          },
+          {
+            "rank": 18,
+            "appid": "686060",
+            "name": "Mewgenics"
+          },
+          {
+            "rank": 19,
+            "appid": "2221490",
+            "name": "Tom Clancy’s The Division® 2"
+          },
+          {
+            "rank": 20,
+            "appid": "359550",
+            "name": "Tom Clancy's Rainbow Six Siege"
+          },
+          {
+            "rank": 21,
+            "appid": "236390",
+            "name": "War Thunder"
+          },
+          {
+            "rank": 22,
+            "appid": "2852190",
+            "name": "Monster Hunter Stories 3: Twisted Reflection"
+          },
+          {
+            "rank": 23,
+            "appid": "3405690",
+            "name": "EA SPORTS FC™ 26"
+          },
+          {
+            "rank": 24,
+            "appid": "2357570",
+            "name": "Overwatch®"
+          },
+          {
+            "rank": 25,
+            "appid": "1648533",
+            "name": "Icarus: Dangerous Horizons Expansion"
+          }
+        ]
+      },
+      "캐나다": {
+        "rank": 12,
+        "top20": [
+          {
+            "rank": 1,
+            "appid": "2868840",
+            "name": "Slay the Spire 2"
+          },
+          {
+            "rank": 2,
+            "appid": "3065800",
+            "name": "Marathon"
+          },
+          {
+            "rank": 3,
+            "appid": "730",
+            "name": "Counter-Strike 2"
+          },
+          {
+            "rank": 4,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 5,
+            "appid": "3564740",
+            "name": "Where Winds Meet"
+          },
+          {
+            "rank": 6,
+            "appid": "3897800",
+            "name": "Poker Night at the Inventory"
+          },
+          {
+            "rank": 7,
+            "appid": "1973530",
+            "name": "Limbus Company"
+          },
+          {
+            "rank": 8,
+            "appid": "359550",
+            "name": "Tom Clancy's Rainbow Six Siege"
+          },
+          {
+            "rank": 9,
+            "appid": "1149460",
+            "name": "ICARUS"
+          },
+          {
+            "rank": 10,
+            "appid": "252490",
+            "name": "Rust"
+          },
+          {
+            "rank": 11,
+            "appid": "1648533",
+            "name": "Icarus: Dangerous Horizons Expansion"
+          },
+          {
+            "rank": 12,
+            "appid": "3321460",
+            "name": "Crimson Desert"
+          },
+          {
+            "rank": 13,
+            "appid": "1808500",
+            "name": "ARC Raiders"
+          },
+          {
+            "rank": 14,
+            "appid": "2057760",
+            "name": "Esoteric Ebb"
+          },
+          {
+            "rank": 15,
+            "appid": "2767030",
+            "name": "Marvel Rivals"
+          },
+          {
+            "rank": 16,
+            "appid": "3717070",
+            "name": "WWE 2K26"
+          },
+          {
+            "rank": 17,
+            "appid": "2221490",
+            "name": "Tom Clancy’s The Division® 2"
+          },
+          {
+            "rank": 18,
+            "appid": "1172470",
+            "name": "Apex Legends™"
+          },
+          {
+            "rank": 19,
+            "appid": "2183900",
+            "name": "Warhammer 40,000: Space Marine 2"
+          },
+          {
+            "rank": 20,
+            "appid": "582660",
+            "name": "Black Desert"
+          },
+          {
+            "rank": 21,
+            "appid": "4069520",
+            "name": "Super Battle Golf"
+          },
+          {
+            "rank": 22,
+            "appid": "526870",
+            "name": "Satisfactory"
+          },
+          {
+            "rank": 23,
+            "appid": "553850",
+            "name": "HELLDIVERS™ 2"
+          },
+          {
+            "rank": 24,
+            "appid": "646570",
+            "name": "Slay the Spire"
+          },
+          {
+            "rank": 25,
+            "appid": "686060",
+            "name": "Mewgenics"
+          }
+        ]
+      },
+      "브라질": {
+        "rank": 6,
+        "top20": [
+          {
+            "rank": 1,
+            "appid": "2868840",
+            "name": "Slay the Spire 2"
+          },
+          {
+            "rank": 2,
+            "appid": "730",
+            "name": "Counter-Strike 2"
+          },
+          {
+            "rank": 3,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 4,
+            "appid": "3405690",
+            "name": "EA SPORTS FC™ 26"
+          },
+          {
+            "rank": 5,
+            "appid": "3065800",
+            "name": "Marathon"
+          },
+          {
+            "rank": 6,
+            "appid": "3321460",
+            "name": "Crimson Desert"
+          },
+          {
+            "rank": 7,
+            "appid": "1665460",
+            "name": "eFootball™"
+          },
+          {
+            "rank": 8,
+            "appid": "2698940",
+            "name": "The Crew Motorfest"
+          },
+          {
+            "rank": 9,
+            "appid": "2221490",
+            "name": "Tom Clancy’s The Division® 2"
+          },
+          {
+            "rank": 10,
+            "appid": "582660",
+            "name": "Black Desert"
+          },
+          {
+            "rank": 11,
+            "appid": "1973530",
+            "name": "Limbus Company"
+          },
+          {
+            "rank": 12,
+            "appid": "2183900",
+            "name": "Warhammer 40,000: Space Marine 2"
+          },
+          {
+            "rank": 13,
+            "appid": "3240220",
+            "name": "Grand Theft Auto V Enhanced"
+          },
+          {
+            "rank": 14,
+            "appid": "252490",
+            "name": "Rust"
+          },
+          {
+            "rank": 15,
+            "appid": "381210",
+            "name": "Dead by Daylight"
+          },
+          {
+            "rank": 16,
+            "appid": "1617400",
+            "name": "The Bazaar"
+          },
+          {
+            "rank": 17,
+            "appid": "255710",
+            "name": "Cities: Skylines"
+          },
+          {
+            "rank": 18,
+            "appid": "359550",
+            "name": "Tom Clancy's Rainbow Six Siege"
+          },
+          {
+            "rank": 19,
+            "appid": "3897800",
+            "name": "Poker Night at the Inventory"
+          },
+          {
+            "rank": 20,
+            "appid": "1808500",
+            "name": "ARC Raiders"
+          },
+          {
+            "rank": 21,
+            "appid": "4025700",
+            "name": "Heartopia"
+          },
+          {
+            "rank": 22,
+            "appid": "3241660",
+            "name": "R.E.P.O."
+          },
+          {
+            "rank": 23,
+            "appid": "230410",
+            "name": "Warframe"
+          },
+          {
+            "rank": 24,
+            "appid": "985810",
+            "name": "GrandChase"
+          },
+          {
+            "rank": 25,
+            "appid": "2767030",
+            "name": "Marvel Rivals"
+          }
+        ]
+      },
+      "일본": {
+        "rank": 27,
+        "top20": [
+          {
+            "rank": 1,
+            "appid": "2868840",
+            "name": "Slay the Spire 2"
+          },
+          {
+            "rank": 2,
+            "appid": "730",
+            "name": "Counter-Strike 2"
+          },
+          {
+            "rank": 3,
+            "appid": "3065800",
+            "name": "Marathon"
+          },
+          {
+            "rank": 4,
+            "appid": "1973530",
+            "name": "Limbus Company"
+          },
+          {
+            "rank": 5,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 6,
+            "appid": "2764370",
+            "name": "Starward"
+          },
+          {
+            "rank": 7,
+            "appid": "1172470",
+            "name": "Apex Legends™"
+          },
+          {
+            "rank": 8,
+            "appid": "1449850",
+            "name": "Yu-Gi-Oh! Master Duel"
+          },
+          {
+            "rank": 9,
+            "appid": "1367080",
+            "name": "MOBILE SUIT GUNDAM BATTLE OPERATION 2"
+          },
+          {
+            "rank": 10,
+            "appid": "3061570",
+            "name": "Persona5: The Phantom X"
+          },
+          {
+            "rank": 11,
+            "appid": "3564400",
+            "name": "ウマ娘 プリティーダービー"
+          },
+          {
+            "rank": 12,
+            "appid": "252490",
+            "name": "Rust"
+          },
+          {
+            "rank": 13,
+            "appid": "2852190",
+            "name": "Monster Hunter Stories 3: Twisted Reflection"
+          },
+          {
+            "rank": 14,
+            "appid": "438100",
+            "name": "VRChat"
+          },
+          {
+            "rank": 15,
+            "appid": "2584990",
+            "name": "Shadowverse: Worlds Beyond"
+          },
+          {
+            "rank": 16,
+            "appid": "1665460",
+            "name": "eFootball™"
+          },
+          {
+            "rank": 17,
+            "appid": "1820000",
+            "name": "Homura Hime"
+          },
+          {
+            "rank": 18,
+            "appid": "1049590",
+            "name": "Eternal Return"
+          },
+          {
+            "rank": 19,
+            "appid": "2395770",
+            "name": "Never Grave: The Witch and The Curse"
+          },
+          {
+            "rank": 20,
+            "appid": "2499860",
+            "name": "DRAGON QUEST VII Reimagined"
+          },
+          {
+            "rank": 21,
+            "appid": "1364780",
+            "name": "Street Fighter™ 6"
+          },
+          {
+            "rank": 22,
+            "appid": "2379740",
+            "name": "Wizardry Variants Daphne"
+          },
+          {
+            "rank": 23,
+            "appid": "3280350",
+            "name": "DEATH STRANDING 2: ON THE BEACH"
+          },
+          {
+            "rank": 24,
+            "appid": "4025700",
+            "name": "Heartopia"
+          },
+          {
+            "rank": 25,
+            "appid": "1361350",
+            "name": "DEAD OR ALIVE Xtreme Venus Vacation"
+          },
+          {
+            "rank": 26,
+            "appid": "4158870",
+            "name": "Japanese Rural Life Adventure"
+          },
+          {
+            "rank": 27,
+            "appid": "3321460",
+            "name": "Crimson Desert"
+          },
+          {
+            "rank": 28,
+            "appid": "2244210",
+            "name": "Echoes of Aincrad"
+          },
+          {
+            "rank": 29,
+            "appid": "2357570",
+            "name": "Overwatch®"
+          },
+          {
+            "rank": 30,
+            "appid": "646570",
+            "name": "Slay the Spire"
+          },
+          {
+            "rank": 31,
+            "appid": "3920610",
+            "name": "FATAL FRAME II: Crimson Butterfly REMAKE"
+          },
+          {
+            "rank": 32,
+            "appid": "3564740",
+            "name": "Where Winds Meet"
+          },
+          {
+            "rank": 33,
+            "appid": "1672740",
+            "name": "崩壊3rd"
+          },
+          {
+            "rank": 34,
+            "appid": "359550",
+            "name": "Tom Clancy's Rainbow Six Siege"
+          },
+          {
+            "rank": 35,
+            "appid": "2221490",
+            "name": "Tom Clancy’s The Division® 2"
+          },
+          {
+            "rank": 36,
+            "appid": "1621690",
+            "name": "Core Keeper"
+          },
+          {
+            "rank": 37,
+            "appid": "1149460",
+            "name": "ICARUS"
+          },
+          {
+            "rank": 38,
+            "appid": "255710",
+            "name": "Cities: Skylines"
+          },
+          {
+            "rank": 39,
+            "appid": "3301060",
+            "name": "Desktop Mate"
+          },
+          {
+            "rank": 40,
+            "appid": "2246340",
+            "name": "Monster Hunter Wilds"
+          },
+          {
+            "rank": 41,
+            "appid": "2918150",
+            "name": "ONE PIECE Bounty Rush"
+          },
+          {
+            "rank": 42,
+            "appid": "3513350",
+            "name": "Wuthering Waves"
+          },
+          {
+            "rank": 43,
+            "appid": "3241660",
+            "name": "R.E.P.O."
+          },
+          {
+            "rank": 44,
+            "appid": "1648533",
+            "name": "Icarus: Dangerous Horizons Expansion"
+          },
+          {
+            "rank": 45,
+            "appid": "3240220",
+            "name": "Grand Theft Auto V Enhanced"
+          },
+          {
+            "rank": 46,
+            "appid": "2622380",
+            "name": "ELDEN RING NIGHTREIGN"
+          },
+          {
+            "rank": 47,
+            "appid": "3839710",
+            "name": "Winning Post 10 2026"
+          },
+          {
+            "rank": 48,
+            "appid": "3681010",
+            "name": "Nioh 3"
+          },
+          {
+            "rank": 49,
+            "appid": "2963800",
+            "name": "DrainSim"
+          },
+          {
+            "rank": 50,
+            "appid": "4195470",
+            "name": "Taimanin Squad"
+          }
+        ]
+      },
+      "한국": {
+        "rank": 5,
+        "top20": [
+          {
+            "rank": 1,
+            "appid": "2868840",
+            "name": "Slay the Spire 2"
+          },
+          {
+            "rank": 2,
+            "appid": "1973530",
+            "name": "Limbus Company"
+          },
+          {
+            "rank": 3,
+            "appid": "1049590",
+            "name": "Eternal Return"
+          },
+          {
+            "rank": 4,
+            "appid": "578080",
+            "name": "PUBG: BATTLEGROUNDS"
+          },
+          {
+            "rank": 5,
+            "appid": "3321460",
+            "name": "Crimson Desert"
+          },
+          {
+            "rank": 6,
+            "appid": "3065800",
+            "name": "Marathon"
+          },
+          {
+            "rank": 7,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 8,
+            "appid": "730",
+            "name": "Counter-Strike 2"
+          },
+          {
+            "rank": 9,
+            "appid": "3564740",
+            "name": "Where Winds Meet"
+          },
+          {
+            "rank": 10,
+            "appid": "4025700",
+            "name": "Heartopia"
+          },
+          {
+            "rank": 11,
+            "appid": "2379740",
+            "name": "Wizardry Variants Daphne"
+          },
+          {
+            "rank": 12,
+            "appid": "1449850",
+            "name": "Yu-Gi-Oh! Master Duel"
+          },
+          {
+            "rank": 13,
+            "appid": "1172470",
+            "name": "Apex Legends™"
+          },
+          {
+            "rank": 14,
+            "appid": "2139460",
+            "name": "Once Human"
+          },
+          {
+            "rank": 15,
+            "appid": "2852190",
+            "name": "Monster Hunter Stories 3: Twisted Reflection"
+          },
+          {
+            "rank": 16,
+            "appid": "252490",
+            "name": "Rust"
+          },
+          {
+            "rank": 17,
+            "appid": "985810",
+            "name": "GrandChase"
+          },
+          {
+            "rank": 18,
+            "appid": "1367080",
+            "name": "MOBILE SUIT GUNDAM BATTLE OPERATION 2"
+          },
+          {
+            "rank": 19,
+            "appid": "1825750",
+            "name": "Soulworker : Your Destiny Awaits"
+          },
+          {
+            "rank": 20,
+            "appid": "646570",
+            "name": "Slay the Spire"
+          },
+          {
+            "rank": 21,
+            "appid": "3717070",
+            "name": "WWE 2K26"
+          },
+          {
+            "rank": 22,
+            "appid": "1617400",
+            "name": "The Bazaar"
+          },
+          {
+            "rank": 23,
+            "appid": "294100",
+            "name": "RimWorld"
+          },
+          {
+            "rank": 24,
+            "appid": "1665460",
+            "name": "eFootball™"
+          },
+          {
+            "rank": 25,
+            "appid": "1621690",
+            "name": "Core Keeper"
+          }
+        ]
+      },
+      "중국": {
+        "rank": 14,
+        "top20": [
+          {
+            "rank": 1,
+            "appid": "2868840",
+            "name": "Slay the Spire 2"
+          },
+          {
+            "rank": 2,
+            "appid": "730",
+            "name": "Counter-Strike 2"
+          },
+          {
+            "rank": 3,
+            "appid": "1973530",
+            "name": "Limbus Company"
+          },
+          {
+            "rank": 4,
+            "appid": "3764200",
+            "name": "Resident Evil Requiem"
+          },
+          {
+            "rank": 5,
+            "appid": "1172470",
+            "name": "Apex Legends™"
+          },
+          {
+            "rank": 6,
+            "appid": "3065800",
+            "name": "Marathon"
+          },
+          {
+            "rank": 7,
+            "appid": "578080",
+            "name": "PUBG: BATTLEGROUNDS"
+          },
+          {
+            "rank": 8,
+            "appid": "1617400",
+            "name": "The Bazaar"
+          },
+          {
+            "rank": 9,
+            "appid": "2744880",
+            "name": "Climber Animals: Together"
+          },
+          {
+            "rank": 10,
+            "appid": "4418930",
+            "name": "The Bazaar - Karnok"
+          },
+          {
+            "rank": 11,
+            "appid": "2483190",
+            "name": "Forza Horizon 6"
+          },
+          {
+            "rank": 12,
+            "appid": "255710",
+            "name": "Cities: Skylines"
+          },
+          {
+            "rank": 13,
+            "appid": "2507950",
+            "name": "Delta Force"
+          },
+          {
+            "rank": 14,
+            "appid": "3321460",
+            "name": "Crimson Desert"
+          },
+          {
+            "rank": 15,
+            "appid": "646570",
+            "name": "Slay the Spire"
+          },
+          {
+            "rank": 16,
+            "appid": "2849080",
+            "name": "Kingdom Rush 5: Alliance TD"
+          },
+          {
+            "rank": 17,
+            "appid": "3280350",
+            "name": "DEATH STRANDING 2: ON THE BEACH"
+          },
+          {
+            "rank": 18,
+            "appid": "3241660",
+            "name": "R.E.P.O."
+          },
+          {
+            "rank": 19,
+            "appid": "1449850",
+            "name": "Yu-Gi-Oh! Master Duel"
+          },
+          {
+            "rank": 20,
+            "appid": "3399780",
+            "name": "HexBreaker Ⅱ"
+          },
+          {
+            "rank": 21,
+            "appid": "4260510",
+            "name": "Kingdom Rush 5: Alliance TD - Dragon Wars Campaign"
+          },
+          {
+            "rank": 22,
+            "appid": "431960",
+            "name": "Wallpaper Engine"
+          },
+          {
+            "rank": 23,
+            "appid": "4082620",
+            "name": "The Bazaar - Celebrity Chef Warrior Mom Expansion"
+          },
+          {
+            "rank": 24,
+            "appid": "1329410",
+            "name": "雀魂麻將(MahjongSoul)"
+          },
+          {
+            "rank": 25,
+            "appid": "230410",
+            "name": "Warframe"
+          }
+        ]
+      },
+      "러시아": {
+        "rank": 9,
+        "top20": [
+          {
+            "rank": 1,
+            "appid": "730",
+            "name": "Counter-Strike 2"
+          },
+          {
+            "rank": 2,
+            "appid": "2868840",
+            "name": "Slay the Spire 2"
+          },
+          {
+            "rank": 3,
+            "appid": "570",
+            "name": "Dota 2"
+          },
+          {
+            "rank": 4,
+            "appid": "252490",
+            "name": "Rust"
+          },
+          {
+            "rank": 5,
+            "appid": "578080",
+            "name": "PUBG: BATTLEGROUNDS"
+          },
+          {
+            "rank": 6,
+            "appid": "3897800",
+            "name": "Poker Night at the Inventory"
+          },
+          {
+            "rank": 7,
+            "appid": "2183900",
+            "name": "Warhammer 40,000: Space Marine 2"
+          },
+          {
+            "rank": 8,
+            "appid": "1973530",
+            "name": "Limbus Company"
+          },
+          {
+            "rank": 9,
+            "appid": "3321460",
+            "name": "Crimson Desert"
+          },
+          {
+            "rank": 10,
+            "appid": "686060",
+            "name": "Mewgenics"
+          },
+          {
+            "rank": 11,
+            "appid": "1808500",
+            "name": "ARC Raiders"
+          },
+          {
+            "rank": 12,
+            "appid": "3241660",
+            "name": "R.E.P.O."
+          },
+          {
+            "rank": 13,
+            "appid": "1149460",
+            "name": "ICARUS"
+          },
+          {
+            "rank": 14,
+            "appid": "1648533",
+            "name": "Icarus: Dangerous Horizons Expansion"
+          },
+          {
+            "rank": 15,
+            "appid": "2057760",
+            "name": "Esoteric Ebb"
+          },
+          {
+            "rank": 16,
+            "appid": "582660",
+            "name": "Black Desert"
+          },
+          {
+            "rank": 17,
+            "appid": "431960",
+            "name": "Wallpaper Engine"
+          },
+          {
+            "rank": 18,
+            "appid": "3564740",
+            "name": "Where Winds Meet"
+          },
+          {
+            "rank": 19,
+            "appid": "1721470",
+            "name": "Poppy Playtime"
+          },
+          {
+            "rank": 20,
+            "appid": "427290",
+            "name": "Vampyr"
+          },
+          {
+            "rank": 21,
+            "appid": "1466060",
+            "name": "Tainted Grail: The Fall of Avalon"
+          },
+          {
+            "rank": 22,
+            "appid": "440",
+            "name": "Team Fortress 2"
+          },
+          {
+            "rank": 23,
+            "appid": "1665460",
+            "name": "eFootball™"
+          },
+          {
+            "rank": 24,
+            "appid": "3405340",
+            "name": "Megabonk"
+          },
+          {
+            "rank": 25,
+            "appid": "1190000",
+            "name": "Car Mechanic Simulator 2021"
+          }
+        ]
+      }
+    }
   }
 ]
