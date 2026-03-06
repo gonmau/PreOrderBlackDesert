@@ -3240,8 +3240,22 @@ function closeModalDirect() {
   document.body.style.overflow = '';
 }
 
+function closeStsModal(e) {
+  if (e.target === document.getElementById('sts-modal')) closeStsModalDirect();
+}
+
+function closeStsModalDirect() {
+  document.getElementById('sts-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
 // ESC 키로 닫기
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeModalDirect();
+    closeStsModalDirect();
+  }
+});
 
 // ─── 자동 갱신 (30분) ───
 setInterval(() => { loadData(); loadSteamData(); loadTrendsData(); loadSteamTopSellerData(); }, 30 * 60 * 1000);
