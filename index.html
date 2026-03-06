@@ -1676,6 +1676,7 @@ function calcAvg(rawResults, countries) {
   let sum = 0, w = 0;
   const list = countries || Object.keys(rawResults);
   list.forEach(c => {
+    if (SKIP_COUNTRIES.has(c)) return; // 집계 제외 국가 필터링
     if (!rawResults[c]) return;
     const cr = combinedRank(rawResults[c].standard, rawResults[c].deluxe);
     const wt = MARKET_WEIGHTS[c] || 1;
@@ -2395,6 +2396,7 @@ async function renderSalesEstimate() {
     }
     let std=0, dlx=0;
     for (const [c, r] of Object.entries(best)) {
+      if (SKIP_COUNTRIES.has(c)) continue; // 집계 제외 국가 스킵
       const m = getMultiplier(c);
       if (r.standard) std += rts(r.standard, ds) * m;
       if (r.deluxe)   dlx += rts(r.deluxe,   ds) * m;
@@ -2421,9 +2423,10 @@ async function renderSalesEstimate() {
         if (d.deluxe   && (!best[c].deluxe   || d.deluxe   < best[c].deluxe  )) best[c].deluxe   = d.deluxe;
       }
     }
-    // 그날의 전체 평균 순위 계산 (차트인 국가만)
+    // 그날의 전체 평균 순위 계산 (차트인 국가만, SKIP 제외)
     let dayStdSum = 0, dayDlxSum = 0, dayStdCnt = 0, dayDlxCnt = 0;
     for (const [c, r] of Object.entries(best)) {
+      if (SKIP_COUNTRIES.has(c)) continue; // SKIP 국가 제외
       if (r.standard) { dayStdSum += r.standard; dayStdCnt++; }
       if (r.deluxe)   { dayDlxSum += r.deluxe;   dayDlxCnt++; }
     }
@@ -2434,6 +2437,7 @@ async function renderSalesEstimate() {
     globalStdSum += dayAvgStd; globalDlxSum += (dayAvgDlx || dayAvgStd); globalDayCnt++;
 
     for (const [c, r] of Object.entries(best)) {
+      if (SKIP_COUNTRIES.has(c)) continue; // SKIP 국가 제외
       if (!countryStdSum[c]) { countryStdSum[c] = 0; countryDlxSum[c] = 0; countryDayCnt[c] = 0; }
       if (r.standard) { countryStdSum[c] += r.standard / dayAvgStd; countryDayCnt[c]++; }
       if (r.deluxe && dayAvgDlx) countryDlxSum[c] += r.deluxe / dayAvgDlx;
@@ -2459,6 +2463,7 @@ async function renderSalesEstimate() {
 
     let std = 0, dlx = 0;
     for (const c of countries) {
+      if (SKIP_COUNTRIES.has(c)) continue; // SKIP 국가 제외
       const estStd = Math.max(1, Math.round(avgRank * stdRatio[c]));
       const estDlx = Math.max(1, Math.round(avgRank * dlxRatio[c]));
       const m = getMultiplier(c);
