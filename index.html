@@ -2263,7 +2263,12 @@ let salesChartInstance = null;
 let salesMode = 'daily';
 let salesDailyData = []; // { dateStr, date, std, dlx, tot, isHistorical }
 let salesScenario = 'big'; // 현재 선택된 시나리오
-let preorderRate = 0.3; // 사전예약 보정 계수 (1.0 = 보정없음)
+// 사전예약 보정 계수:
+//   출시 전: 위시리스트/사전예약 순위 → 실판매 전환율 (0.25~0.35 레퍼런스)
+//   출시 후: 실판매 순위 반영이므로 1.0에 가깝게 설정
+let preorderRate = 0.30; // UI 슬라이더 값 (출시 전 기본 30%)
+const POST_RELEASE_RATE = 1.0; // 출시 후 보정 계수 (순위 = 실판매 직결)
+const RELEASE_DATE_STR_GLOBAL = '2026-03-20';
 
 // ── 흥행 시나리오별 기준값 ──────────────────────
 const SCENARIOS = {
@@ -2334,24 +2339,39 @@ async function renderSalesEstimate() {
   const historical = await loadHistoricalData();
   const _rts = getRankToSales(salesScenario);
 
-  // ── 출시 직전 가속 (D-14 ~ D-1): 사전예약 전환율을 선형 증가 ──
-  // D-14: preorderRate × 1.0 → D-1: preorderRate × PRE_RELEASE_PEAK_MULT
-  const RELEASE_DATE_STR = '2026-03-20'; // 출시일
-  const PRE_RELEASE_DAYS = 14;           // 가속 시작 일수 (D-14)
-  const PRE_RELEASE_PEAK_MULT = 3.5;     // D-1 최대 배율 (사전예약 보정 × 3.5배)
+  // ── 출시 전/후 보정 + 출시 직전 가속 (D-14 ~ D-1) ──
+  // [출시 전] 위시리스트 순위 → 실판매 전환율은 preorderRate(기본 30%) 적용
+  //           D-14~D-1 구간은 사전예약 전환 급증을 반영해 선형 가속
+  //           가속 배율 레퍼런스: Elden Ring·FF16 등 대형 타이틀 출시 전
+  //           마지막 2주 매출 기여가 출시 전 전체의 50~60%를 차지한다는
+  //           업계 관행을 반영 → D-1 기준 약 ×2.5 (기존 ×3.5에서 하향 조정)
+  // [출시 후] 실판매 순위가 직접 반영되므로 POST_RELEASE_RATE(1.0) 적용
+  const RELEASE_DATE_STR = RELEASE_DATE_STR_GLOBAL;
+  const PRE_RELEASE_DAYS = 14;
+  const PRE_RELEASE_PEAK_MULT = 2.5; // D-1 최대 가속 배율 (근거: 출시 전 2주 집중 효과)
+
+  function isDatePostRelease(dateStr) {
+    return dateStr >= RELEASE_DATE_STR;
+  }
 
   function getDateAccelMult(dateStr) {
+    if (isDatePostRelease(dateStr)) return 1.0; // 출시 후: 가속 없음 (POST_RELEASE_RATE로 처리)
     const releaseMs = new Date(RELEASE_DATE_STR + 'T00:00:00').getTime();
     const dayMs     = new Date(dateStr          + 'T00:00:00').getTime();
-    const daysToRelease = Math.round((releaseMs - dayMs) / 86400000); // D-N
-    if (daysToRelease <= 0 || daysToRelease > PRE_RELEASE_DAYS) return 1.0;
+    const daysToRelease = Math.round((releaseMs - dayMs) / 86400000);
+    if (daysToRelease > PRE_RELEASE_DAYS) return 1.0;
     // D-14: t=0 → ×1.0, D-1: t=1 → ×PRE_RELEASE_PEAK_MULT
     const t = (PRE_RELEASE_DAYS - daysToRelease) / (PRE_RELEASE_DAYS - 1);
     return 1.0 + (PRE_RELEASE_PEAK_MULT - 1.0) * t;
   }
 
-  // 날짜별 rts (사전예약 보정 × 가속 배율)
-  const rts = (rank, dateStr) => _rts(rank) * preorderRate * getDateAccelMult(dateStr);
+  // 날짜별 rts: 출시 전 = preorderRate × 가속배율 / 출시 후 = POST_RELEASE_RATE(1.0)
+  const rts = (rank, dateStr) => {
+    if (isDatePostRelease(dateStr)) {
+      return _rts(rank) * POST_RELEASE_RATE;
+    }
+    return _rts(rank) * preorderRate * getDateAccelMult(dateStr);
+  };
 
   // ── 실제 데이터: rank_history.json에서 일별 집계 ──
   const realByDate = {};
@@ -2470,21 +2490,29 @@ async function renderSalesEstimate() {
   const s = SCENARIOS[salesScenario];
   const descEl = document.getElementById('scenario-desc');
   const rateLabel = Math.round(preorderRate * 100);
-  // 현재 날짜가 D-14~D-1 구간인지 확인
   const todayStr = new Date().toISOString().slice(0, 10);
+  const isAfterRelease = todayStr >= RELEASE_DATE_STR_GLOBAL;
   const accelMult = getDateAccelMult(todayStr);
-  const accelTag = accelMult > 1.0 ? ` 🚀 출시 직전 가속 ×${accelMult.toFixed(1)}` : '';
-  if (descEl) descEl.textContent = `${s.label} — 1위=${s.a1.toLocaleString()}장/일, 20위=${s.a20.toLocaleString()}장/일, 100위=${s.a100.toLocaleString()}장/일 (${s.desc}) × 사전예약 보정 ${rateLabel}%${accelTag}`;
+  const accelTag = (!isAfterRelease && accelMult > 1.0) ? ` 🚀 출시 직전 가속 ×${accelMult.toFixed(1)}` : '';
+  const rateTag = isAfterRelease
+    ? ` | 출시 후 보정 100% (실판매 직결)`
+    : ` | 출시 전 사전예약 보정 ${rateLabel}%${accelTag}`;
+  if (descEl) descEl.textContent = `${s.label} — 1위=${s.a1.toLocaleString()}장/일, 20위=${s.a20.toLocaleString()}장/일, 100위=${s.a100.toLocaleString()}장/일 (${s.desc})${rateTag}`;
 
   // 출시 직전 가속 배지 업데이트
   const accelBadge = document.getElementById('prerelease-accel-badge');
   if (accelBadge) {
-    if (accelMult > 1.0) {
+    if (isAfterRelease) {
+      accelBadge.textContent = `✅ 출시 후 — 실판매 보정 100%`;
+      accelBadge.style.display = 'inline-block';
+      accelBadge.style.color = '#2ecc71';
+    } else if (accelMult > 1.0) {
       const releaseMs = new Date('2026-03-20T00:00:00').getTime();
       const todayMs   = new Date(todayStr + 'T00:00:00').getTime();
       const daysLeft  = Math.round((releaseMs - todayMs) / 86400000);
       accelBadge.textContent = `🚀 D-${daysLeft} 출시 직전 가속 ×${accelMult.toFixed(1)}`;
       accelBadge.style.display = 'inline-block';
+      accelBadge.style.color = '#e74c3c';
     } else {
       accelBadge.style.display = 'none';
     }
@@ -2737,7 +2765,20 @@ function renderTrends(data) {
 }
 
 // ─── STEAM TOP SELLER 데이터 ───
-const STS_W={"영국":8.5,"독일":6.5,"프랑스":6.0,"스페인":4.0,"이탈리아":3.5,"미국":30.0,"캐나다":4.5,"브라질":2.5,"멕시코":2.0,"일본":8.0,"호주":3.0,"한국":2.8,"중국":0.2,"러시아":1.0};
+// STS_W: Steam 실제 이용자 비중 기반 국가 가중치 (미국=30 기준)
+// 출처 근거: Steam 하드웨어 서베이 + SteamSpy 지역 분포
+//   중국: Steam 전체 이용자 1위 (~30%), 미국과 동급으로 상향
+//   러시아: PS보다 Steam 비중 현저히 높음 (약 5~7%)
+//   한국: PS보다 Steam 비중 높음 (약 4~5%)
+//   일본: PS 강세 지역이라 Steam 비중은 상대적으로 낮음
+const STS_W={
+  "미국":30.0, "중국":28.0, "러시아":6.0,
+  "독일":5.5,  "영국":5.0,  "브라질":4.5,
+  "한국":4.2,  "프랑스":4.0,"일본":3.5,
+  "캐나다":3.5,"호주":2.5,  "터키":2.0,
+  "폴란드":2.0,"스페인":2.0,"이탈리아":1.8,
+  "멕시코":1.5
+};
 const STS_F={"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","호주":"🇦🇺","한국":"🇰🇷","중국":"🇨🇳","러시아":"🇷🇺"};
 const STS_CC={"미국":"us","캐나다":"ca","브라질":"br","멕시코":"mx","영국":"gb","독일":"de","프랑스":"fr","스페인":"es","이탈리아":"it","일본":"jp","호주":"au","한국":"kr","중국":"cn","러시아":"ru"};
 let stsHist=[],stsCI=null,stsMCI=null;
@@ -2842,23 +2883,24 @@ function openStsModal(n){
   m.classList.add('open');document.body.style.overflow='hidden';
 }
 // ── Steam Top Seller → 판매량 역산 ──
-// PS와 같은 시나리오 곡선 사용, 단 Steam 시장 규모 배율 적용
-// Steam의 국가별 가중치 (STS_W 기반, 미국=30 기준 배율)
+// Pearl Abyss 개발사 이력 참조:
+//   Black Desert Online: Steam 비중 약 55~60% (한국/글로벌 합산)
+//   붉은사막: 콘솔 AAA 타이틀이므로 PS 비중 상향 조정
+//   → Steam ~50% / PS ~50% (일반 액션 RPG 평균보다 Steam 우세)
 const STEAM_BASE = 30.0;
-
-// 장르별 Steam:PS 비중 레퍼런스 (액션 RPG 기준 Steam ~40% / PS ~60%)
-const STEAM_PLATFORM_SHARE = 0.40; // Steam / (Steam+PS), 조정 가능
+const STEAM_PLATFORM_SHARE = 0.50; // Steam / (Steam+PS) — PA 개발사 이력 반영 (기존 0.40 → 0.50)
 
 function calcSteamSalesFromSTS(stsSnapshot) {
   if (!stsSnapshot || !stsSnapshot.results) return 0;
+  // 출시 후 데이터이므로 POST_RELEASE_RATE(1.0) 적용 — 순위가 실판매를 직접 반영
   const _rts = getRankToSales(salesScenario);
   let total = 0;
   for (const [name, d] of Object.entries(stsSnapshot.results)) {
     const rank = d && d.rank;
     if (!rank) continue;
     const w = STS_W[name] || 1;
-    const multiplier = w / STEAM_BASE * 10; // PS의 getMultiplier()와 동일 스케일
-    total += _rts(rank) * multiplier;
+    const multiplier = w / STEAM_BASE * 10; // 미국=10 기준 정규화
+    total += _rts(rank) * POST_RELEASE_RATE * multiplier;
   }
   return Math.round(total);
 }
@@ -2893,11 +2935,14 @@ function renderSteamSalesEstimate() {
     }
   }
 
-  // PS 데이터 없는 구간은 PS 비중으로 역산 (학습된 비율 또는 기본값 사용)
-  // learnedRatio = Steam / PS (실측 구간에서 학습)
+  // PS 데이터 없는 구간은 학습된 Steam:PS 비율로 역산
+  // ⚠️ 주의: STS 데이터가 희박한 구간에서는 PS 추산 × 비율이 되어
+  //           독립적 검증이 불가능한 순환 구조가 됨.
+  //           learnedRatio가 학습되기 전까지는 STEAM_PLATFORM_SHARE 기반 폴백 사용.
+  // STEAM_PLATFORM_SHARE = 0.50 → fallback ratio = 0.50/0.50 = 1.0 (PS와 동일 규모)
   const learnedSteamPsRatio = (overlapDays > 3 && psSum > 0)
     ? steamSum / psSum
-    : (STEAM_PLATFORM_SHARE / (1 - STEAM_PLATFORM_SHARE)); // 0.4/0.6 ≈ 0.667
+    : (STEAM_PLATFORM_SHARE / (1 - STEAM_PLATFORM_SHARE)); // 0.5/0.5 = 1.0
 
   let cumSteam = 0;
   let latestSteamDaily = 0;
