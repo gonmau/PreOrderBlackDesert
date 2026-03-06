@@ -1530,6 +1530,7 @@
             oninput="updatePreorderRate(this.value)">
           <span style="font-size:0.8rem;color:var(--gold);font-weight:bold;min-width:42px;text-align:right" id="preorder-rate-label">30%</span>
           <span style="font-size:0.68rem;color:var(--muted)">(사전예약 순위 → 실판매 전환율)</span>
+          <span id="prerelease-accel-badge" style="display:none;font-size:0.72rem;font-weight:bold;color:#e74c3c;background:rgba(231,76,60,0.13);border:1px solid rgba(231,76,60,0.3);border-radius:6px;padding:2px 8px;margin-left:4px"></span>
         </div>
         <div class="event-toggle-wrap">
           <div class="event-toggle-header" onclick="toggleEvPanel('sales')">
@@ -2332,8 +2333,25 @@ async function renderSalesEstimate() {
 
   const historical = await loadHistoricalData();
   const _rts = getRankToSales(salesScenario);
-  // 사전예약 보정 계수 적용 — 현재 전체 기간이 사전예약이므로 전체에 적용
-  const rts = (rank) => _rts(rank) * preorderRate;
+
+  // ── 출시 직전 가속 (D-14 ~ D-1): 사전예약 전환율을 선형 증가 ──
+  // D-14: preorderRate × 1.0 → D-1: preorderRate × PRE_RELEASE_PEAK_MULT
+  const RELEASE_DATE_STR = '2026-03-20'; // 출시일
+  const PRE_RELEASE_DAYS = 14;           // 가속 시작 일수 (D-14)
+  const PRE_RELEASE_PEAK_MULT = 3.5;     // D-1 최대 배율 (사전예약 보정 × 3.5배)
+
+  function getDateAccelMult(dateStr) {
+    const releaseMs = new Date(RELEASE_DATE_STR + 'T00:00:00').getTime();
+    const dayMs     = new Date(dateStr          + 'T00:00:00').getTime();
+    const daysToRelease = Math.round((releaseMs - dayMs) / 86400000); // D-N
+    if (daysToRelease <= 0 || daysToRelease > PRE_RELEASE_DAYS) return 1.0;
+    // D-14: t=0 → ×1.0, D-1: t=1 → ×PRE_RELEASE_PEAK_MULT
+    const t = (PRE_RELEASE_DAYS - daysToRelease) / (PRE_RELEASE_DAYS - 1);
+    return 1.0 + (PRE_RELEASE_PEAK_MULT - 1.0) * t;
+  }
+
+  // 날짜별 rts (사전예약 보정 × 가속 배율)
+  const rts = (rank, dateStr) => _rts(rank) * preorderRate * getDateAccelMult(dateStr);
 
   // ── 실제 데이터: rank_history.json에서 일별 집계 ──
   const realByDate = {};
@@ -2358,8 +2376,8 @@ async function renderSalesEstimate() {
     let std=0, dlx=0;
     for (const [c, r] of Object.entries(best)) {
       const m = getMultiplier(c);
-      if (r.standard) std += rts(r.standard) * m;
-      if (r.deluxe)   dlx += rts(r.deluxe)   * m;
+      if (r.standard) std += rts(r.standard, ds) * m;
+      if (r.deluxe)   dlx += rts(r.deluxe,   ds) * m;
     }
     realDays.push({ dateStr: ds, date: new Date(ds+'T12:00:00'), std: Math.round(std), dlx: Math.round(dlx), tot: Math.round(std+dlx), isHistorical: false });
   }
@@ -2424,8 +2442,8 @@ async function renderSalesEstimate() {
       const estStd = Math.max(1, Math.round(avgRank * stdRatio[c]));
       const estDlx = Math.max(1, Math.round(avgRank * dlxRatio[c]));
       const m = getMultiplier(c);
-      std += rts(estStd) * m;
-      dlx += rts(estDlx) * m;
+      std += rts(estStd, item.date) * m;
+      dlx += rts(estDlx, item.date) * m;
     }
     histDays.push({ dateStr: item.date, date: new Date(item.date+'T12:00:00'), std: Math.round(std), dlx: Math.round(dlx), tot: Math.round(std+dlx), isHistorical: true });
   }
@@ -2452,7 +2470,25 @@ async function renderSalesEstimate() {
   const s = SCENARIOS[salesScenario];
   const descEl = document.getElementById('scenario-desc');
   const rateLabel = Math.round(preorderRate * 100);
-  if (descEl) descEl.textContent = `${s.label} — 1위=${s.a1.toLocaleString()}장/일, 20위=${s.a20.toLocaleString()}장/일, 100위=${s.a100.toLocaleString()}장/일 (${s.desc}) × 사전예약 보정 ${rateLabel}%`;
+  // 현재 날짜가 D-14~D-1 구간인지 확인
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const accelMult = getDateAccelMult(todayStr);
+  const accelTag = accelMult > 1.0 ? ` 🚀 출시 직전 가속 ×${accelMult.toFixed(1)}` : '';
+  if (descEl) descEl.textContent = `${s.label} — 1위=${s.a1.toLocaleString()}장/일, 20위=${s.a20.toLocaleString()}장/일, 100위=${s.a100.toLocaleString()}장/일 (${s.desc}) × 사전예약 보정 ${rateLabel}%${accelTag}`;
+
+  // 출시 직전 가속 배지 업데이트
+  const accelBadge = document.getElementById('prerelease-accel-badge');
+  if (accelBadge) {
+    if (accelMult > 1.0) {
+      const releaseMs = new Date('2026-03-20T00:00:00').getTime();
+      const todayMs   = new Date(todayStr + 'T00:00:00').getTime();
+      const daysLeft  = Math.round((releaseMs - todayMs) / 86400000);
+      accelBadge.textContent = `🚀 D-${daysLeft} 출시 직전 가속 ×${accelMult.toFixed(1)}`;
+      accelBadge.style.display = 'inline-block';
+    } else {
+      accelBadge.style.display = 'none';
+    }
+  }
 
   renderSalesChart();
   renderSteamSalesEstimate(); // 시나리오 변경 시 Steam 추정도 갱신
