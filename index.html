@@ -1381,6 +1381,21 @@
         <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">추적 국가</div><div class="steam-ts-stat-value" id="sts-countries">—</div><div class="steam-ts-stat-diff">개국</div></div>
         <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">총 기록 수</div><div class="steam-ts-stat-value" id="sts-count">—</div><div class="steam-ts-stat-diff">개</div></div>
       </div>
+      <!-- Steam 판매량 역산 패널 -->
+      <div style="background:rgba(10,6,8,0.42);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px">
+        <div style="font-size:0.7rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">🎮 Steam 판매량 역산 추정 <span style="font-size:0.65rem;opacity:0.7">(Top Seller 순위 기반)</span></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:10px">
+          <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">오늘 추정 (일)</div><div class="steam-ts-stat-value" id="sts-est-daily">—</div><div class="steam-ts-stat-diff">장/일</div></div>
+          <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">누적 추정</div><div class="steam-ts-stat-value" id="sts-est-cumul">—</div><div class="steam-ts-stat-diff" id="sts-est-cumul-range"></div></div>
+          <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">PS 대비 Steam 비중</div><div class="steam-ts-stat-value" id="sts-platform-ratio">—</div><div class="steam-ts-stat-diff">Steam / (PS+Steam)</div></div>
+          <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">전체 플랫폼 누적</div><div class="steam-ts-stat-value" id="sts-total-estimate">—</div><div class="steam-ts-stat-diff">PS + Steam 합산</div></div>
+        </div>
+        <div style="font-size:0.65rem;color:var(--muted);line-height:1.6">
+          ※ Steam은 국가별 Top Seller 가중합 → 시나리오별 rank→sales 곡선 적용<br>
+          ※ Steam:PS 비중은 장르·타이틀별로 편차가 크므로 참고용 수치입니다 (기본값 Steam 40% 가정)
+        </div>
+      </div>
+
       <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-chart-body',this)">📈  평균 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button></div>
       <div class="collapsible-body collapsed" id="sts-chart-body">
         <div class="steam-ts-chart-box"><div class="steam-ts-chart-inner"><canvas id="stsChart"></canvas></div></div>
@@ -2257,6 +2272,11 @@ const SCENARIOS = {
   gta:    { label: 'GTA급',           a1:15000, a20:2000, a100: 350, desc: 'GTA / 역대급 기대작' },
 };
 
+// PS Store 1~5위 구간 밀도 보정 계수
+// 실제 PS Store 판매 데이터상 상위권일수록 격차가 지수 곡선보다 더 가파름
+// 1위: ×1.35, 2위: ×1.25, 3위: ×1.15, 4위: ×1.07, 5위: ×1.03
+const TOP5_DENSITY_BOOST = [0, 1.35, 1.25, 1.15, 1.07, 1.03];
+
 function getRankToSales(scenario) {
   const s = SCENARIOS[scenario] || SCENARIOS.normal;
   const k1 = Math.log(s.a1 / s.a20) / (20 - 1);
@@ -2264,9 +2284,12 @@ function getRankToSales(scenario) {
   return function(rank) {
     if (!rank) return 0;
     const r = parseInt(rank);
-    return r <= 20
+    const base = r <= 20
       ? s.a1  * Math.exp(-k1 * (r - 1))
       : s.a20 * Math.exp(-k2 * (r - 20));
+    // 1~5위 밀도 보정 적용
+    const boost = (r >= 1 && r <= 5) ? TOP5_DENSITY_BOOST[r] : 1.0;
+    return base * boost;
   };
 }
 
@@ -2432,6 +2455,7 @@ async function renderSalesEstimate() {
   if (descEl) descEl.textContent = `${s.label} — 1위=${s.a1.toLocaleString()}장/일, 20위=${s.a20.toLocaleString()}장/일, 100위=${s.a100.toLocaleString()}장/일 (${s.desc}) × 사전예약 보정 ${rateLabel}%`;
 
   renderSalesChart();
+  renderSteamSalesEstimate(); // 시나리오 변경 시 Steam 추정도 갱신
 }
 
 function renderSalesChart() {
@@ -2688,6 +2712,7 @@ async function loadSteamTopSellerData(){
     if(!r.ok)throw 0;
     stsHist=await r.json();
     renderSTS();
+    renderSteamSalesEstimate(); // Steam 판매량 역산
   }catch(e){console.warn('sts load fail',e);}
 }
 
@@ -2780,8 +2805,104 @@ function openStsModal(n){
   }
   m.classList.add('open');document.body.style.overflow='hidden';
 }
-function closeStsModal(e){if(e.target===document.getElementById('sts-modal'))closeStsModalDirect();}
-function closeStsModalDirect(){document.getElementById('sts-modal').classList.remove('open');document.body.style.overflow='';}
+// ── Steam Top Seller → 판매량 역산 ──
+// PS와 같은 시나리오 곡선 사용, 단 Steam 시장 규모 배율 적용
+// Steam의 국가별 가중치 (STS_W 기반, 미국=30 기준 배율)
+const STEAM_BASE = 30.0;
+
+// 장르별 Steam:PS 비중 레퍼런스 (액션 RPG 기준 Steam ~40% / PS ~60%)
+const STEAM_PLATFORM_SHARE = 0.40; // Steam / (Steam+PS), 조정 가능
+
+function calcSteamSalesFromSTS(stsSnapshot) {
+  if (!stsSnapshot || !stsSnapshot.results) return 0;
+  const _rts = getRankToSales(salesScenario);
+  let total = 0;
+  for (const [name, d] of Object.entries(stsSnapshot.results)) {
+    const rank = d && d.rank;
+    if (!rank) continue;
+    const w = STS_W[name] || 1;
+    const multiplier = w / STEAM_BASE * 10; // PS의 getMultiplier()와 동일 스케일
+    total += _rts(rank) * multiplier;
+  }
+  return Math.round(total);
+}
+
+function renderSteamSalesEstimate() {
+  if (!stsHist.length || !salesDailyData.length) return;
+
+  // 날짜별 STS → Steam 판매 추정
+  const stsByDate = {};
+  for (const h of stsHist) {
+    const ds = new Date(h.timestamp).toISOString().slice(0, 10);
+    if (!stsByDate[ds] || stsAvg(h) < stsAvg(stsByDate[ds])) {
+      stsByDate[ds] = h; // 하루 중 최고 순위(낮은 숫자) 스냅샷 사용
+    }
+  }
+
+  // PS 판매 데이터가 있는 구간에서 Steam:PS 실측 비율 학습
+  let psSum = 0, steamSum = 0, overlapDays = 0;
+  const steamByDate = {};
+
+  for (const day of salesDailyData) {
+    const ds = day.dateStr;
+    const snap = stsByDate[ds];
+    if (snap) {
+      const est = calcSteamSalesFromSTS(snap);
+      steamByDate[ds] = est;
+      if (!day.isHistorical && day.tot > 0 && est > 0) {
+        psSum += day.tot;
+        steamSum += est;
+        overlapDays++;
+      }
+    }
+  }
+
+  // PS 데이터 없는 구간은 PS 비중으로 역산 (학습된 비율 또는 기본값 사용)
+  // learnedRatio = Steam / PS (실측 구간에서 학습)
+  const learnedSteamPsRatio = (overlapDays > 3 && psSum > 0)
+    ? steamSum / psSum
+    : (STEAM_PLATFORM_SHARE / (1 - STEAM_PLATFORM_SHARE)); // 0.4/0.6 ≈ 0.667
+
+  let cumSteam = 0;
+  let latestSteamDaily = 0;
+  let firstSteamDate = null, lastSteamDate = null;
+
+  for (const day of salesDailyData) {
+    const ds = day.dateStr;
+    let steamEst = 0;
+    if (steamByDate[ds] !== undefined) {
+      steamEst = steamByDate[ds];
+    } else if (day.tot > 0) {
+      // STS 데이터 없는 구간: PS 판매량 × 학습된 비율로 역산
+      steamEst = Math.round(day.tot * learnedSteamPsRatio);
+    }
+    if (steamEst > 0) {
+      cumSteam += steamEst;
+      latestSteamDaily = steamEst;
+      if (!firstSteamDate) firstSteamDate = ds;
+      lastSteamDate = ds;
+    }
+  }
+
+  // PS 누적 (salesDailyData에서)
+  const cumPS = salesDailyData.reduce((s, d) => s + d.tot, 0);
+  const platformRatio = (cumPS + cumSteam) > 0
+    ? Math.round(cumSteam / (cumPS + cumSteam) * 100)
+    : Math.round(STEAM_PLATFORM_SHARE * 100);
+
+  // UI 업데이트
+  const fmtK = v => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v.toLocaleString();
+  document.getElementById('sts-est-daily').textContent = latestSteamDaily > 0 ? fmtK(latestSteamDaily) : '—';
+  document.getElementById('sts-est-cumul').textContent = cumSteam > 0 ? cumSteam.toLocaleString() : '—';
+  if (firstSteamDate && lastSteamDate) {
+    document.getElementById('sts-est-cumul-range').textContent = `${firstSteamDate} ~ ${lastSteamDate}`;
+  }
+  document.getElementById('sts-platform-ratio').textContent = `${platformRatio}%`;
+  const totalEst = cumPS + cumSteam;
+  document.getElementById('sts-total-estimate').textContent = totalEst > 0 ? totalEst.toLocaleString() : '—';
+}
+
+
 
 // ─── STEAM 데이터 ───
 let steamHistory = [];
