@@ -178,9 +178,14 @@
     background: var(--border);
   }
 
-  #trendChart {
-    width: 100%;
+  .chart-wrapper {
+    position: relative;
     height: 220px;
+  }
+
+  #trendChart {
+    width: 100% !important;
+    height: 100% !important;
   }
 
   /* 탭 */
@@ -455,12 +460,6 @@
     </div>
   </div>
 
-  <!-- 트렌드 차트 -->
-  <div class="chart-section">
-    <div class="section-title">전체 가중 평균 순위 추이</div>
-    <canvas id="trendChart"></canvas>
-  </div>
-
   <!-- 탭 -->
   <div class="tabs">
     <button class="tab active" onclick="switchTab('all', this)">전체</button>
@@ -643,9 +642,6 @@ function render() {
 
   // 히스토리 목록
   renderHistory();
-
-  // 차트
-  renderChart();
 }
 
 function extractRank(val) {
@@ -814,6 +810,8 @@ function renderChart() {
       scales: {
         y: {
           reverse: true,
+          min: dataPoints.length === 1 ? Math.max(1, Math.round(dataPoints[0].y) - 10) : undefined,
+          max: dataPoints.length === 1 ? Math.round(dataPoints[0].y) + 10 : undefined,
           ticks: {
             color: '#5a4f46',
             font: { family: 'Rajdhani', size: 12 },
