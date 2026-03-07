@@ -3422,37 +3422,16 @@ function downloadPsCSV() {
   const latest = allHistory[allHistory.length - 1];
   const raw = latest.raw_results;
   const ts = new Date(latest.timestamp).toISOString().slice(0,10);
-
-  // 국가별 히스토리 집계: 최고순위, 평균순위
   const countries = Object.values(REGIONS).flat().filter(c => !SKIP_COUNTRIES.has(c));
 
-  const rows = [['국가', '지역', '현재_스탠다드', '현재_디럭스', '현재_종합',
-                  '최고_스탠다드', '최고_디럭스', '최고_종합',
-                  '평균_스탠다드', '평균_디럭스', '평균_종합', '가중치']];
+  const rows = [['국가', '현재_스탠다드', '현재_디럭스', '현재_종합']];
 
   for (const c of countries) {
-    const region = getRegion(c) || '';
     const d = raw[c] || {};
     const cr = combinedRank(d.standard, d.deluxe);
-
-    // 히스토리에서 최고/평균 계산
-    const stdArr = allHistory.map(h => h.raw_results?.[c]?.standard).filter(v => v != null);
-    const dlxArr = allHistory.map(h => h.raw_results?.[c]?.deluxe).filter(v => v != null);
-    const comArr = allHistory.map(h => combinedRank(h.raw_results?.[c]?.standard, h.raw_results?.[c]?.deluxe)).filter(v => v != null);
-
-    const bestStd = stdArr.length ? Math.min(...stdArr) : '—';
-    const bestDlx = dlxArr.length ? Math.min(...dlxArr) : '—';
-    const bestCom = comArr.length ? Math.min(...comArr) : '—';
-    const avgStd  = stdArr.length ? (stdArr.reduce((a,b)=>a+b,0)/stdArr.length).toFixed(1) : '—';
-    const avgDlx  = dlxArr.length ? (dlxArr.reduce((a,b)=>a+b,0)/dlxArr.length).toFixed(1) : '—';
-    const avgCom  = comArr.length ? (comArr.reduce((a,b)=>a+b,0)/comArr.length).toFixed(1) : '—';
-
-    rows.push([c, region,
-      d.standard ?? '—', d.deluxe ?? '—', cr ?? '—',
-      bestStd, bestDlx, bestCom,
-      avgStd, avgDlx, avgCom,
-      MARKET_WEIGHTS[c] || 0
-    ]);
+    const url = getPsStoreUrl(c);
+    const countryCell = url ? `=HYPERLINK("${url}","${c}")` : c;
+    rows.push([countryCell, d.standard ?? '—', d.deluxe ?? '—', cr ?? '—']);
   }
 
   downloadCSV(rows, `crimson_desert_ps_ranks_${ts}.csv`);
