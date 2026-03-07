@@ -2,15 +2,11 @@ name: Bestseller Tracker
 
 on:
   schedule:
-    - cron: '0 9,21 * * *'   # KST 18:00 / 06:00 (하루 2회)
+    - cron: '0 9,21 * * *'
   workflow_dispatch:
 
 permissions:
   contents: write
-
-concurrency:
-  group: bestseller-history
-  cancel-in-progress: false
 
 jobs:
   track:
@@ -19,6 +15,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # 전체 이력을 가져와야 rebase가 안정적입니다.
 
     - name: Setup Python
       uses: actions/setup-python@v5
@@ -30,10 +28,7 @@ jobs:
         pip install selenium webdriver-manager requests
 
     - name: Run Bestseller Tracker
-      env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-      run: |
-        python bestseller_tracker.py
+      run: python bestseller_tracker.py
 
     - name: Commit and Push changes
       env:
@@ -42,55 +37,22 @@ jobs:
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
 
-        TRACKED_FILES=(
-          bestseller_history.json
-          bestseller_history.json.backup
-        )
-
-        # 1. 크롤링 결과 임시 백업
+        # 1. 새로 생성된(변경된) 데이터 파일 임시 백업
         mkdir -p /tmp/tracker_backup
-        for f in "${TRACKED_FILES[@]}"; do
-          [ -f "$f" ] && cp "$f" "/tmp/tracker_backup/$f"
-        done
-        echo "✅ 백업 완료"
+        [ -f "bestseller_history.json" ] && cp "bestseller_history.json" "/tmp/tracker_backup/"
+        
+        # 2. 작업 디렉토리 강제 초기화 (pull rebase 에러 방지 핵심)
+        # 변경된 파일들을 잠시 되돌려서 git pull이 가능하게 만듭니다.
+        git checkout -- . 
 
-        # 2. 서버 최신 상태로 rebase
-        for f in "${TRACKED_FILES[@]}"; do
-          git checkout -- "$f" 2>/dev/null || true
-        done
-        git pull origin main --rebase || {
-          echo "⚠️ rebase 실패, abort 후 일반 pull 시도"
-          git rebase --abort 2>/dev/null || true
-          git pull origin main --no-rebase
-        }
+        # 3. 서버 최신 데이터 가져오기
+        git pull origin main --rebase
 
-        # 3. 크롤링 결과(백업본)를 최신 repo 위에 덮어쓰기
-        for f in "${TRACKED_FILES[@]}"; do
-          if [ -f "/tmp/tracker_backup/$f" ]; then
-            cp "/tmp/tracker_backup/$f" "$f"
-            echo "  복원: $f"
-          fi
-        done
+        # 4. 백업해둔 최신 데이터 다시 복원
+        if [ -f "/tmp/tracker_backup/bestseller_history.json" ]; then
+          cp "/tmp/tracker_backup/bestseller_history.json" .
+        fi
 
-        # 4. 변경된 파일만 add → commit → push
-        for f in "${TRACKED_FILES[@]}"; do
-          git add "$f" 2>/dev/null || true
-        done
-
-        git diff --cached --quiet && { echo "변경사항 없음, 스킵"; exit 0; }
-
-        git commit -m "Update bestseller history [skip ci]"
-
-        # 5. push 실패 시 재시도 1회
-        git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main || {
-          echo "⚠️ push 실패, pull 후 재시도"
-          git pull origin main --rebase
-          for f in "${TRACKED_FILES[@]}"; do
-            [ -f "/tmp/tracker_backup/$f" ] && cp "/tmp/tracker_backup/$f" "$f"
-            git add "$f" 2>/dev/null || true
-          done
-          git commit --amend --no-edit 2>/dev/null || true
-          git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main
-        }
-
-        echo "✅ 완료!"
+        # 5. 변경사항 커밋 및 푸시
+        git add bestseller_history.json
+        git diff --cached --quiet || (git commit -m "Update history [skip ci]" && git push origin main)
