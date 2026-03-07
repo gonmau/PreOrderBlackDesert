@@ -488,7 +488,9 @@
           <th>시장 가중치</th>
         </tr>
       </thead>
-      <tbody id="rankBody"></tbody>
+      <tbody id="rankBody">
+        <tr><td colspan="5"><div class="no-data"><p>로딩 중...</p></div></td></tr>
+      </tbody>
     </table>
   </div>
 
@@ -579,17 +581,22 @@ function fmtTs(isoStr) {
 // =============================================================================
 async function loadData() {
   try {
-    const res = await fetch('bestseller_history.json?_=' + Date.now());
-    if (!res.ok) throw new Error('파일 없음');
-    history = await res.json();
+    const res = await fetch('./bestseller_history.json?_=' + Date.now());
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    history = data;
     if (history.length > 0) {
       currentIdx = history.length - 1;
       render();
     } else {
-      showNoData('데이터가 없습니다.');
+      showNoData();
     }
   } catch(e) {
-    showNoData();
+    console.error('loadData 실패:', e);
+    // 첫 로드 실패 시 1초 후 재시도 (GitHub Pages 캐시 문제 대응)
+    if (history.length === 0) {
+      setTimeout(loadData, 1000);
+    }
   }
 }
 
@@ -609,6 +616,7 @@ function showNoData(msg) {
 // =============================================================================
 function render() {
   if (history.length === 0) return;
+  try {
 
   const entry = history[currentIdx];
   const prevEntry = currentIdx > 0 ? history[currentIdx - 1] : null;
@@ -657,8 +665,11 @@ function render() {
   // 히스토리 목록
   renderHistory();
 
-  // 차트
-  renderChart();
+  // 차트 - canvas가 실제 크기를 가진 후 그리기
+  requestAnimationFrame(() => renderChart());
+  } catch(e) {
+    console.error('render() 에러:', e);
+  }
 }
 
 function extractRank(val) {
@@ -773,6 +784,7 @@ function renderChart() {
   if (trendChart) { trendChart.destroy(); trendChart = null; }
   if (allPoints.length === 0) return;
 
+  setTimeout(() => {
   // 출시 전 / 출시 후 분리
   const prePoints  = allPoints.filter(p => p.x < RELEASE_DATE);
   const postPoints = allPoints.filter(p => p.x >= RELEASE_DATE);
@@ -864,7 +876,7 @@ function renderChart() {
         },
         x: {
           type: 'time',
-          time: { unit: 'day', displayFormats: { day: 'M/d' } },
+          time: { unit: 'hour', displayFormats: { hour: 'M/d HH시', day: 'M/d' } },
           ticks: { color: '#5a4f46', font: { family: 'Rajdhani', size: 11 }, maxTicksLimit: 10, maxRotation: 45 },
           grid: { display: false }
         }
@@ -889,6 +901,7 @@ function renderChart() {
       }
     }
   });
+  }, 50); // canvas 크기 확보 대기
 }
 
 function renderHistory() {
