@@ -152,12 +152,6 @@
   }
 
   /* 트렌드 차트 영역 */
-  .chart-section {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    padding: 24px;
-    margin-bottom: 32px;
-  }
 
   .section-title {
     font-family: 'Cinzel', serif;
@@ -178,15 +172,7 @@
     background: var(--border);
   }
 
-  .chart-wrapper {
-    position: relative;
-    height: 220px;
-  }
 
-  #trendChart {
-    width: 100% !important;
-    height: 100% !important;
-  }
 
   /* 탭 */
   .tabs {
@@ -492,8 +478,7 @@
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
 <script>
 // =============================================================================
 // 설정 (Python 코드와 동일)
@@ -536,7 +521,7 @@ function getBestselllerUrl(country) {
 let history = [];
 let currentIdx = -1;
 let currentTab = 'all';
-let trendChart = null;
+
 const maxWeight = Math.max(...Object.values(MARKET_WEIGHTS));
 
 // =============================================================================
@@ -767,84 +752,6 @@ function renderHistory() {
       render();
     };
     list.appendChild(div);
-  });
-}
-
-function renderChart() {
-  const ctx = document.getElementById('trendChart').getContext('2d');
-
-  // {x: Date, y: rank} 형태로 변환 (time scale 방식 - index.html과 동일)
-  const dataPoints = history
-    .filter(h => h.averages?.combined != null)
-    .map(h => ({ x: new Date(h.timestamp), y: h.averages.combined }));
-
-  if (trendChart) { trendChart.destroy(); trendChart = null; }
-  if (dataPoints.length === 0) return;
-
-  trendChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      datasets: [{
-        label: '가중 평균 순위',
-        data: dataPoints,
-        borderColor: '#e74c3c',
-        backgroundColor: (ctx2) => {
-          const g = ctx2.chart.ctx.createLinearGradient(0, 0, 0, 220);
-          g.addColorStop(0, 'rgba(192,57,43,0.25)');
-          g.addColorStop(1, 'rgba(192,57,43,0)');
-          return g;
-        },
-        borderWidth: 2,
-        pointBackgroundColor: '#ff6b35',
-        pointRadius: dataPoints.length > 30 ? 0 : 5,
-        pointHoverRadius: 7,
-        tension: 0.4,
-        fill: true,
-        spanGaps: true,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: false,
-      scales: {
-        y: {
-          reverse: true,
-          min: dataPoints.length === 1 ? Math.max(1, Math.round(dataPoints[0].y) - 10) : undefined,
-          max: dataPoints.length === 1 ? Math.round(dataPoints[0].y) + 10 : undefined,
-          ticks: {
-            color: '#5a4f46',
-            font: { family: 'Rajdhani', size: 12 },
-            callback: v => `${v}위`
-          },
-          grid: { color: 'rgba(46,40,36,0.6)' },
-          title: { display: true, text: '순위 (낮을수록 좋음)', color: '#5a4f46', font: { family: 'Rajdhani' } }
-        },
-        x: {
-          type: 'time',
-          time: { unit: 'day', displayFormats: { day: 'M/d' } },
-          ticks: { color: '#5a4f46', font: { family: 'Rajdhani', size: 11 }, maxTicksLimit: 10, maxRotation: 45, source: 'auto' },
-          grid: { display: false }
-        }
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#1a1714',
-          borderColor: '#2e2824',
-          borderWidth: 1,
-          titleColor: '#d4c8bc',
-          bodyColor: '#d4a843',
-          callbacks: {
-            title: items => {
-              const d = new Date(items[0].parsed.x);
-              return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-            },
-            label: ctx2 => `가중 평균: ${ctx2.parsed.y?.toFixed(1) ?? '—'}위`
-          }
-        }
-      }
-    }
   });
 }
 
