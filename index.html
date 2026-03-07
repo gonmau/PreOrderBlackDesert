@@ -1264,6 +1264,28 @@
     .steam-ts-modal-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
     .steam-ts-modal-chart-inner{position:relative;height:180px;margin-top:14px}
 
+    /* ─── DOWNLOAD BUTTON ─── */
+    .dl-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(10,6,8,0.7);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--muted);
+      font-size: 0.7rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: 'Noto Sans KR', sans-serif;
+      transition: all 0.15s;
+      white-space: nowrap;
+      text-shadow: none !important;
+    }
+    .dl-btn:hover { color: #fff; border-color: var(--gold); background: rgba(212,160,23,0.15); }
+    .dl-btn svg { flex-shrink: 0; }
+
     /* ─── FOOTER ─── */
     footer {
       text-align: center;
@@ -1451,8 +1473,12 @@
 
     <!-- TABLE -->
     <div class="fade-in">
-      <div class="section-title collapsible-header" style="display:flex;align-items:center" onclick="toggleSection('table-collapse', this)">
+      <div class="section-title collapsible-header" style="display:flex;align-items:center;gap:10px" onclick="toggleSection('table-collapse', this)">
         📊 국가별 순위
+        <button class="dl-btn" onclick="event.stopPropagation();downloadPsCSV()" title="CSV 다운로드">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8.5L2 4.5h2.5V1h3v3.5H10L6 8.5zM1 10h10v1.5H1V10z"/></svg>
+          PS 순위 CSV
+        </button>
         <button class="collapse-btn">▼ 펼치기</button>
       </div>
       <div class="collapsible-body collapsed" id="table-collapse">
@@ -1533,7 +1559,13 @@
     <!-- STEAM TOP SELLER SECTION -->
     <div class="steam-ts-section fade-in">
       <div class="steam-header" style="cursor:default">
-        <div class="steam-title-row"><div class="section-title" style="margin-bottom:0">📊 Steam Top Seller 순위</div></div>
+        <div class="steam-title-row">
+          <div class="section-title" style="margin-bottom:0">📊 Steam Top Seller 순위</div>
+          <button class="dl-btn" onclick="downloadSteamCSV()" style="margin-left:10px" title="CSV 다운로드">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8.5L2 4.5h2.5V1h3v3.5H10L6 8.5zM1 10h10v1.5H1V10z"/></svg>
+            Steam 순위 CSV
+          </button>
+        </div>
         <a class="steamdb-btn" href="https://store.steampowered.com/charts/topselling/KR" target="_blank">🔗 Steam Charts ↗</a>
       </div>
       <div class="steam-ts-stats-row">
@@ -3322,6 +3354,83 @@ function renderSteam() {
 function fmtDate(iso) {
   const d = new Date(iso);
   return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
+}
+
+// ─── CSV 다운로드 ───
+function downloadCSV(rows, filename) {
+  const bom = '\uFEFF'; // UTF-8 BOM (Excel 한글 깨짐 방지)
+  const csv = bom + rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function downloadPsCSV() {
+  if (!allHistory.length) { alert('데이터가 없습니다.'); return; }
+
+  const latest = allHistory[allHistory.length - 1];
+  const raw = latest.raw_results;
+  const ts = new Date(latest.timestamp).toISOString().slice(0,10);
+
+  // 국가별 히스토리 집계: 최고순위, 평균순위
+  const countries = Object.values(REGIONS).flat().filter(c => !SKIP_COUNTRIES.has(c));
+
+  const rows = [['국가', '지역', '현재_스탠다드', '현재_디럭스', '현재_종합',
+                  '최고_스탠다드', '최고_디럭스', '최고_종합',
+                  '평균_스탠다드', '평균_디럭스', '평균_종합', '가중치']];
+
+  for (const c of countries) {
+    const region = getRegion(c) || '';
+    const d = raw[c] || {};
+    const cr = combinedRank(d.standard, d.deluxe);
+
+    // 히스토리에서 최고/평균 계산
+    const stdArr = allHistory.map(h => h.raw_results?.[c]?.standard).filter(v => v != null);
+    const dlxArr = allHistory.map(h => h.raw_results?.[c]?.deluxe).filter(v => v != null);
+    const comArr = allHistory.map(h => combinedRank(h.raw_results?.[c]?.standard, h.raw_results?.[c]?.deluxe)).filter(v => v != null);
+
+    const bestStd = stdArr.length ? Math.min(...stdArr) : '—';
+    const bestDlx = dlxArr.length ? Math.min(...dlxArr) : '—';
+    const bestCom = comArr.length ? Math.min(...comArr) : '—';
+    const avgStd  = stdArr.length ? (stdArr.reduce((a,b)=>a+b,0)/stdArr.length).toFixed(1) : '—';
+    const avgDlx  = dlxArr.length ? (dlxArr.reduce((a,b)=>a+b,0)/dlxArr.length).toFixed(1) : '—';
+    const avgCom  = comArr.length ? (comArr.reduce((a,b)=>a+b,0)/comArr.length).toFixed(1) : '—';
+
+    rows.push([c, region,
+      d.standard ?? '—', d.deluxe ?? '—', cr ?? '—',
+      bestStd, bestDlx, bestCom,
+      avgStd, avgDlx, avgCom,
+      MARKET_WEIGHTS[c] || 0
+    ]);
+  }
+
+  downloadCSV(rows, `crimson_desert_ps_ranks_${ts}.csv`);
+}
+
+function downloadSteamCSV() {
+  if (!stsHist.length) { alert('Steam 데이터가 없습니다.'); return; }
+
+  const latest = stsHist[stsHist.length - 1];
+  const ts = new Date(latest.timestamp).toISOString().slice(0,10);
+  const allCountries = Object.keys(STS_W);
+
+  const rows = [['국가', '현재_순위', '최고_순위', '평균_순위', '가중치(Steam)']];
+
+  for (const c of allCountries) {
+    const history = stsHist
+      .filter(h => h.results?.[c]?.rank)
+      .map(h => h.results[c].rank);
+
+    const current = latest.results?.[c]?.rank ?? '—';
+    const best    = history.length ? Math.min(...history) : '—';
+    const avg     = history.length ? (history.reduce((a,b)=>a+b,0)/history.length).toFixed(1) : '—';
+
+    rows.push([c, current, best, avg, STS_W[c] || '—']);
+  }
+
+  downloadCSV(rows, `crimson_desert_steam_ranks_${ts}.csv`);
 }
 
 // ─── 국가 모달 ───
