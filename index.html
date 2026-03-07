@@ -1569,7 +1569,12 @@
         <a class="steamdb-btn" href="https://store.steampowered.com/charts/topselling/KR" target="_blank">🔗 Steam Charts ↗</a>
       </div>
       <div class="steam-ts-stats-row">
-        <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">평균 순위</div><div class="steam-ts-stat-value" id="sts-avg">—</div><div class="steam-ts-stat-diff" id="sts-avg-diff"></div></div>
+        <div class="steam-ts-stat-box" id="sts-global-box" style="display:none">
+          <div class="steam-ts-stat-label">🌍 글로벌 순위</div>
+          <div class="steam-ts-stat-value" id="sts-global-rank">—</div>
+          <div class="steam-ts-stat-diff" id="sts-global-diff"></div>
+        </div>
+        <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">추적국 가중 평균</div><div class="steam-ts-stat-value" id="sts-avg">—</div><div class="steam-ts-stat-diff" id="sts-avg-diff"></div></div>
         <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">최고 평균 순위</div><div class="steam-ts-stat-value" id="sts-best">—</div><div class="steam-ts-stat-diff" id="sts-best-date"></div></div>
         <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">추적 국가</div><div class="steam-ts-stat-value" id="sts-countries">—</div><div class="steam-ts-stat-diff">개국</div></div>
         <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">총 기록 수</div><div class="steam-ts-stat-value" id="sts-count">—</div><div class="steam-ts-stat-diff">개</div></div>
@@ -3070,6 +3075,49 @@ function renderSTS(){
   for(const h of v){const a=stsAvg(h);if(a!==null&&(best===null||a<best)){best=a;be=h;}}
   document.getElementById('sts-best').textContent=best?'#'+best.toFixed(1):'—';
   if(be)document.getElementById('sts-best-date').textContent=fmtDate(be.timestamp);
+
+  // 글로벌 순위 표시 (global_rank 필드가 있을 때만)
+  const globalRankLatest = stsHist.slice().reverse().find(h => h.global_rank != null);
+  const globalBox = document.getElementById('sts-global-box');
+  if(globalRankLatest) {
+    globalBox.style.display = '';
+    const gr = globalRankLatest.global_rank;
+    document.getElementById('sts-global-rank').textContent = '#' + gr;
+    // 이전 global_rank 찾아서 변동 표시
+    const prevGlobal = stsHist.slice().reverse().find(h => h.global_rank != null && h !== globalRankLatest);
+    const gdEl = document.getElementById('sts-global-diff');
+    if(prevGlobal) {
+      const gd = prevGlobal.global_rank - gr;
+      if(gd>0){gdEl.textContent='▲ '+gd+' 상승';gdEl.style.color='var(--up)';}
+      else if(gd<0){gdEl.textContent='▼ '+Math.abs(gd)+' 하락';gdEl.style.color='var(--down)';}
+      else{gdEl.textContent='변동없음';gdEl.style.color='';}
+    } else {
+      gdEl.textContent = 'SteamDB 기준';
+      gdEl.style.color = '';
+    }
+  } else {
+    // global_rank 없으면 steamHistory(위시리스트)에서 최신 순위 가져와 참고용으로 표시
+    if(steamHistory && steamHistory.length) {
+      const validSteam = steamHistory.filter(h => h.rank != null);
+      if(validSteam.length) {
+        globalBox.style.display = '';
+        const latestSteam = validSteam[validSteam.length-1];
+        const prevSteam = validSteam.length>=2 ? validSteam[validSteam.length-2] : null;
+        document.getElementById('sts-global-rank').textContent = '#' + latestSteam.rank;
+        const gdEl = document.getElementById('sts-global-diff');
+        if(prevSteam) {
+          const gd = prevSteam.rank - latestSteam.rank;
+          if(gd>0){gdEl.textContent='▲ '+gd+' 상승';gdEl.style.color='var(--up)';}
+          else if(gd<0){gdEl.textContent='▼ '+Math.abs(gd)+' 하락';gdEl.style.color='var(--down)';}
+          else{gdEl.textContent='변동없음';gdEl.style.color='';}
+        } else {
+          gdEl.textContent = '위시리스트 기준';
+        }
+        // 라벨을 위시리스트임을 구분
+        globalBox.querySelector('.steam-ts-stat-label').textContent = '🌍 글로벌 위시리스트';
+      }
+    }
+  }
   const lbs=v.map(h=>new Date(h.timestamp)),dv=v.map(h=>stsAvg(h));
   const ctx=document.getElementById('stsChart').getContext('2d');
   if(stsCI)stsCI.destroy();
@@ -3248,9 +3296,10 @@ async function loadSteamData() {
     if (!res.ok) throw new Error('steam fetch failed');
     steamHistory = await res.json();
     renderSteam();
+    // STS 글로벌 순위 박스도 갱신 (steamHistory 로드 완료 후)
+    if(stsHist.length) renderSTS();
   } catch (e) {
     console.warn('steam_history.json 로드 실패:', e);
-    // Steam 섹션 숨기지 않고 — 표시 유지
   }
 }
 
