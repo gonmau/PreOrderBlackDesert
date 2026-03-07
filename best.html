@@ -172,8 +172,6 @@
     background: var(--border);
   }
 
-
-
   .chart-section {
     background: var(--panel);
     border: 1px solid var(--border);
@@ -436,7 +434,6 @@
     </div>
   </header>
 
-  <!-- 요약 카드 -->
   <div class="summary-grid">
     <div class="stat-card">
       <div class="label">가중 평균 순위</div>
@@ -460,7 +457,6 @@
     </div>
   </div>
 
-  <!-- 트렌드 차트 -->
   <div class="chart-section">
     <div class="section-title">전체 가중 평균 순위 추이</div>
     <div class="chart-wrapper">
@@ -468,7 +464,6 @@
     </div>
   </div>
 
-  <!-- 탭 -->
   <div class="tabs">
     <button class="tab active" onclick="switchTab('all', this)">전체</button>
     <button class="tab" onclick="switchTab('Americas', this)">Americas</button>
@@ -476,7 +471,6 @@
     <button class="tab" onclick="switchTab('Asia & Oceania', this)">Asia & Oceania</button>
   </div>
 
-  <!-- 순위 테이블 -->
   <div class="table-wrapper">
     <table id="rankTable">
       <thead>
@@ -494,7 +488,6 @@
     </table>
   </div>
 
-  <!-- 히스토리 -->
   <div class="history-section">
     <div class="section-title" style="margin-top:32px">기록 히스토리</div>
     <div class="history-list" id="historyList"></div>
@@ -566,8 +559,9 @@ function fmtDiff(curr, prev) {
 }
 
 function fmtTs(isoStr) {
-  // timestamp가 +09:00(KST)로 저장되어 있으므로 로컬 변환 없이 파싱
-  const d = new Date(isoStr);
+  // Safari/iOS 호환성을 위해 파이썬의 6자리 미세초(microseconds) 부분을 제거 후 파싱
+  const safeIso = isoStr.replace(/\.\d+/, '');
+  const d = new Date(safeIso);
   // UTC+9 기준으로 표시
   const utc9 = new Date(d.getTime() + 9 * 60 * 60 * 1000);
   const mm = String(utc9.getUTCMonth() + 1).padStart(2, '0');
@@ -780,9 +774,10 @@ function renderChart() {
     return `${utc9.getUTCMonth()+1}/${utc9.getUTCDate()} ${String(utc9.getUTCHours()).padStart(2,'0')}:${String(utc9.getUTCMinutes()).padStart(2,'0')} KST`;
   }
 
+  // 시간 파싱 에러 수정을 위해 밀리초 뒤의 내용(.911527 등) 제거
   const allPoints = history
     .filter(h => h.averages?.combined != null)
-    .map(h => ({ x: new Date(h.timestamp), y: h.averages.combined }));
+    .map(h => ({ x: new Date(h.timestamp.replace(/\.\d+/, '')), y: h.averages.combined }));
 
   if (trendChart) { trendChart.destroy(); trendChart = null; }
   if (allPoints.length === 0) return;
@@ -888,7 +883,8 @@ function renderChart() {
         },
         x: {
           type: 'time',
-          time: { unit: 'hour', displayFormats: { hour: 'M/d HH시', day: 'M/d' } },
+          // unit: 'hour' 제거 및 displayFormats 추가로 데이터 주기에 유연하게 대응
+          time: { displayFormats: { minute: 'HH:mm', hour: 'M/d HH시', day: 'M/d' } },
           ticks: { color: '#5a4f46', font: { family: 'Rajdhani', size: 11 }, maxTicksLimit: 10, maxRotation: 45 },
           grid: { display: false }
         }
