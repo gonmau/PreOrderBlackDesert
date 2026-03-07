@@ -9,6 +9,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
   <style>
     :root {
       --bg: rgba(10,6,8,0.0);
@@ -522,6 +523,8 @@
     }
 
     .flag { font-size: 1.2rem; }
+    .flag-twemoji { display: inline-flex; align-items: center; flex-shrink: 0; }
+    .flag-twemoji img { width: 24px; height: 24px; object-fit: contain; border-radius: 2px; vertical-align: middle; }
 
     .country-name { font-weight: 700; }
 
@@ -2270,9 +2273,6 @@ function renderHeatmap(raw, prevRaw) {
       const diff = cr && pcr ? pcr - cr : 0;
       const arrowColor = diff > 0 ? '#2ecc71' : diff < 0 ? '#e74c3c' : 'transparent';
       const flagUrl = flagEnabled ? getFlagUrl(c) : null;
-      // 순위 기반 적색 음영 (best.html 방식)
-      const rankRedOpacity = cr ? Math.max(0.08, Math.min(0.7, 1.0 / Math.sqrt(cr) * 1.8)) : 0.05;
-      const rankRedOverlay = `rgba(192,57,43,${rankRedOpacity.toFixed(2)})`;
       // 가중치 기반 투명도 계산
 const allWeights = Object.values(MARKET_WEIGHTS).filter(w => w > 0);
 const maxW = Math.max(...allWeights);
@@ -2295,7 +2295,6 @@ const overlayAlpha = (flagEnabled && weightOpacityEnabled)
   : baseOverlay;
       return `
         <div class="heatmap-card" style="${flagBg}" title="${c}: S${d.standard ?? '-'} / D${d.deluxe ?? '-'}" onclick="openCountryModal('${c}')">
-          <div style="position:absolute;inset:0;background:${rankRedOverlay};border-radius:inherit;pointer-events:none;mix-blend-mode:normal"></div>
           <div style="position:absolute;inset:0;background:rgba(0,0,0,${overlayAlpha});border-radius:inherit;pointer-events:none"></div>
           <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${arrowColor}"></div>
           <div style="position:relative">
@@ -2404,7 +2403,11 @@ function renderTable(tab, raw, prevRaw) {
       <tr class="row-enter" style="animation-delay:${i * 0.02}s">
         <td>
           <div class="country-cell">
-            <span class="flag">${FLAGS[c] || ''}</span>
+            ${(() => {
+              const emoji = FLAGS[c] || '';
+              if (!emoji) return '';
+              return `<span class="flag-twemoji">${emoji}</span>`;
+            })()}
             <span class="country-name">${nameLink}</span>
           </div>
         </td>
@@ -2426,6 +2429,14 @@ function renderTable(tab, raw, prevRaw) {
         <td><span class="weight-badge">${(MARKET_WEIGHTS[c] || 0).toFixed(1)}</span></td>
       </tr>`;
   }).join('');
+
+  // twemoji로 국기 이모지를 이미지로 변환 (PC 크로스플랫폼 지원)
+  if (typeof twemoji !== 'undefined') {
+    twemoji.parse(tbody, { folder: 'svg', ext: '.svg', base: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/' });
+    tbody.querySelectorAll('.flag-twemoji img').forEach(img => {
+      img.style.cssText = 'width:24px;height:24px;object-fit:contain;vertical-align:middle;border-radius:2px;';
+    });
+  }
 }
 
 function switchTab(tab, btn) {
