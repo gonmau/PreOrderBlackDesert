@@ -146,7 +146,6 @@ def fetch_page(cc, page, retry_delays):
 def get_top_sellers(cc):
     retry_delays = RETRY_DELAYS.get(cc, DEFAULT_RETRY_DELAYS)
     rank = None
-    all_items = []
     seen = set()
     real_rank = 0
     found = False
@@ -161,14 +160,12 @@ def get_top_sellers(cc):
 
         for item in items:
             logo = item.get("logo", "")
-            name = item.get("name", "")
             m = re.search(r'/steam/apps/(\d+)/', logo)
             appid = m.group(1) if m else ""
             if not appid or appid in seen:
                 continue
             seen.add(appid)
             real_rank += 1
-            all_items.append({"rank": real_rank, "appid": appid, "name": name})
             if appid in STEAM_APP_IDS:
                 rank = real_rank
                 found = True
@@ -177,12 +174,12 @@ def get_top_sellers(cc):
             break
         time.sleep(1.0)
 
-    if not all_items:
+    if real_rank == 0:
         print(f"  ⚠️ {cc} 데이터 없음")
         return None
 
     print(f"  ✅ {cc}: 총 {real_rank}개 파싱, Crimson Desert {'#' + str(rank) if rank else '순위권 밖'}")
-    return {"rank": rank, "top20": all_items}
+    return {"rank": rank}
 
 # ======================
 # 히스토리 관리
