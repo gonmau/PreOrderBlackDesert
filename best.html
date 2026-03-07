@@ -784,8 +784,19 @@ function renderChart() {
 
   // 유효한 값만 추려서 Y축 범위 계산
   const validData = data.filter(v => v !== null);
-  const yMin = validData.length > 0 ? Math.max(1, Math.round(Math.min(...validData)) - 5) : 1;
-  const yMax = validData.length > 0 ? Math.round(Math.max(...validData)) + 5 : 50;
+  // reverse:true → min=위쪽, max=아래쪽
+  // 데이터 중심으로 위아래 동일한 여백을 줘서 그래프가 중앙에 오도록
+  let yMin, yMax;
+  if (validData.length > 0) {
+    const dataMin = Math.round(Math.min(...validData));
+    const dataMax = Math.round(Math.max(...validData));
+    const pad = Math.max(5, Math.round((dataMax - dataMin) * 0.5) + 3);
+    yMin = Math.max(1, dataMin - pad);
+    yMax = dataMax + pad;
+  } else {
+    yMin = 1;
+    yMax = 50;
+  }
 
   if (trendChart) {
     trendChart.destroy();
