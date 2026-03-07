@@ -777,31 +777,24 @@ function renderChart() {
   const ctx = document.getElementById('trendChart').getContext('2d');
 
   const labels = history.map(h => fmtTs(h.timestamp));
-  const data = history.map(h => {
+  const rawData = history.map(h => {
     const v = h.averages?.combined;
-    return (v != null && typeof v === 'number') ? v : null;
+    return (v != null && typeof v === 'number') ? Math.round(v * 10) / 10 : null;
   });
 
-  // 유효한 값만 추려서 Y축 범위 계산
-  const validData = data.filter(v => v !== null);
-  // reverse:true → min=위쪽, max=아래쪽
-  // 데이터 중심으로 위아래 동일한 여백을 줘서 그래프가 중앙에 오도록
-  let yMin, yMax;
-  if (validData.length > 0) {
-    const dataMin = Math.round(Math.min(...validData));
-    const dataMax = Math.round(Math.max(...validData));
-    const pad = Math.max(5, Math.round((dataMax - dataMin) * 0.5) + 3);
-    yMin = Math.max(1, dataMin - pad);
-    yMax = dataMax + pad;
-  } else {
-    yMin = 1;
-    yMax = 50;
-  }
+  const validData = rawData.filter(v => v !== null);
 
-  if (trendChart) {
-    trendChart.destroy();
-    trendChart = null;
-  }
+  if (trendChart) { trendChart.destroy(); trendChart = null; }
+  if (validData.length === 0) return;
+
+  const dataMin = Math.min(...validData);
+  const dataMax = Math.max(...validData);
+  const pad = Math.max(3, Math.round((dataMax - dataMin + 1) * 0.4));
+  // 순위는 숫자가 작을수록 좋으므로 reverse 없이 Y축 뒤집기:
+  // Chart에 값을 음수로 넘기고 tick label만 양수로 표시
+  const chartData = rawData.map(v => v !== null ? -v : null);
+  const yMin = -(dataMax + pad);
+  const yMax = -(Math.max(1, dataMin - pad));
 
   trendChart = new Chart(ctx, {
     type: 'line',
@@ -809,13 +802,13 @@ function renderChart() {
       labels,
       datasets: [{
         label: '가중 평균 순위',
-        data,
+        data: chartData,
         borderColor: '#e74c3c',
         backgroundColor: 'rgba(192,57,43,0.08)',
         borderWidth: 2,
-        pointBackgroundColor: data.map(v => v !== null ? '#ff6b35' : 'transparent'),
-        pointRadius: data.map(v => v !== null ? 4 : 0),
-        pointHoverRadius: 6,
+        pointBackgroundColor: chartData.map(v => v !== null ? '#ff6b35' : 'transparent'),
+        pointRadius: chartData.map(v => v !== null ? 5 : 0),
+        pointHoverRadius: 7,
         fill: true,
         tension: 0.3,
         spanGaps: false
@@ -827,18 +820,16 @@ function renderChart() {
       animation: false,
       scales: {
         y: {
-          reverse: true,
           min: yMin,
           max: yMax,
           grid: { color: 'rgba(46,40,36,0.6)' },
           ticks: {
             color: '#5a4f46',
             font: { family: 'Rajdhani', size: 12 },
-            precision: 0,
             maxTicksLimit: 8,
-            callback: v => Number.isInteger(v) ? `${v}위` : null
+            callback: v => `${-v}위`
           },
-          title: { display: true, text: '순위 (낮을수록 좋음)', color: '#5a4f46', font: { family: 'Rajdhani' } }
+          title: { display: true, text: '순위 (위로 갈수록 좋음)', color: '#5a4f46', font: { family: 'Rajdhani' } }
         },
         x: {
           grid: { color: 'rgba(46,40,36,0.4)' },
@@ -854,7 +845,7 @@ function renderChart() {
           titleColor: '#d4c8bc',
           bodyColor: '#d4a843',
           callbacks: {
-            label: ctx => ctx.raw ? `${ctx.raw.toFixed(1)}위` : '데이터 없음'
+            label: ctx => ctx.raw != null ? `${-ctx.raw}위` : '데이터 없음'
           }
         }
       }
