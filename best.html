@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crimson Desert — Global Bestseller Tracker</title>
+<title>Crimson Desert — Global Bestseller Heatmap</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
 
@@ -22,380 +22,225 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     background: var(--dark);
     color: var(--text);
     font-family: 'Rajdhani', sans-serif;
-    font-weight: 400;
-    min-height: 100vh;
     overflow-x: hidden;
+    min-height: 100vh;
   }
 
+  /* 배경 효과 */
   body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(192,57,43,0.15) 0%, transparent 70%),
-      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(255,107,53,0.08) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
+    content: ''; position: fixed; inset: 0;
+    background: radial-gradient(circle at 50% -20%, rgba(192,57,43,0.15), transparent 80%);
+    pointer-events: none; z-index: 0;
   }
 
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 24px 60px;
+  .container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+
+  header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .logo h1 { font-family: 'Cinzel', serif; font-size: 32px; letter-spacing: 2px; color: var(--bright); }
+  .logo h1 span { color: var(--blood); }
+  #update-time { font-size: 13px; color: var(--muted); }
+
+  /* Summary Cards */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
+  .card { background: var(--panel); border: 1px solid var(--border); padding: 15px 20px; border-top: 2px solid var(--blood); }
+  .card .lbl { font-size: 11px; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+  .card .val { font-family: 'Cinzel', serif; font-size: 24px; color: var(--gold); }
+
+  /* Table controls */
+  .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; }
+  .tabs { display: flex; gap: 5px; }
+  .tab { 
+    background: var(--surface); border: 1px solid var(--border); color: var(--muted); 
+    padding: 6px 12px; cursor: pointer; font-family: 'Rajdhani'; font-weight: 600; font-size: 13px;
+  }
+  .tab.active { background: var(--blood); color: white; border-color: var(--blood); }
+
+  /* Table & Heatmap */
+  .table-wrapper { background: var(--panel); border: 1px solid var(--border); overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th { 
+    background: rgba(255,255,255,0.03); color: var(--muted); font-size: 12px; 
+    text-transform: uppercase; padding: 12px; text-align: left; cursor: pointer; border-bottom: 1px solid var(--border);
+  }
+  th:hover { color: var(--bright); background: rgba(255,255,255,0.05); }
+  th.sort-active { color: var(--fire); }
+
+  td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  
+  .rank-cell { 
+    font-family: 'Cinzel', serif; font-weight: 700; text-align: center; 
+    width: 80px; transition: all 0.3s;
   }
 
-  header {
-    padding: 40px 0 32px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 32px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 16px;
+  /* History list */
+  .history-list { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .history-btn { 
+    background: var(--panel); border: 1px solid var(--border); padding: 10px; 
+    cursor: pointer; text-align: center; font-size: 12px;
   }
-
-  .logo-area h1 {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(24px, 4vw, 42px);
-    font-weight: 900;
-    color: var(--bright);
-    letter-spacing: 0.05em;
-    line-height: 1;
-  }
-
-  .logo-area h1 span { color: var(--blood); }
-  .logo-area p {
-    margin-top: 6px;
-    font-size: 13px;
-    color: var(--muted);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-  }
-
-  .header-meta { text-align: right; }
-  #last-updated { font-size: 13px; color: var(--muted); letter-spacing: 0.1em; }
-  #last-updated span { color: var(--gold); font-weight: 600; }
-
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 32px;
-  }
-
-  .stat-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-top: 2px solid var(--blood);
-    padding: 20px 24px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .stat-card .label {
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-
-  .stat-card .value {
-    font-family: 'Cinzel', serif;
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--bright);
-    line-height: 1;
-  }
-
-  .stat-card .value.highlight { color: var(--gold); }
-  .stat-card .sub { margin-top: 6px; font-size: 12px; color: var(--muted); }
-
-  .section-title {
-    font-family: 'Cinzel', serif;
-    font-size: 13px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-  .chart-section {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    padding: 24px;
-    margin-bottom: 32px;
-  }
-  .chart-wrapper { position: relative; height: 260px; width: 100%; }
-
-  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
-  .tab {
-    padding: 12px 24px;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    cursor: pointer;
-    border: none;
-    border-bottom: 2px solid transparent;
-    background: none;
-    transition: all 0.2s;
-  }
-  .tab.active { color: var(--fire); border-bottom-color: var(--fire); }
-
-  .table-wrapper { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  thead th {
-    padding: 10px 16px;
-    text-align: left;
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--muted);
-    border-bottom: 1px solid var(--border);
-  }
-  tbody tr { border-bottom: 1px solid rgba(46,40,36,0.6); }
-  tbody td { padding: 12px 16px; vertical-align: middle; }
-
-  .country-cell { display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--bright); }
-  .rank-badge { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: var(--bright); min-width: 40px; }
-  .rank-badge.top3 { color: var(--fire); }
-  .rank-badge.top10 { color: var(--gold); }
-  .diff { font-size: 12px; font-weight: 700; margin-left: 6px; }
-  .diff.up { color: #2ecc71; }
-  .diff.down { color: var(--ember); }
-
-  .history-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
-  .history-item {
-    background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--blood);
-    padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer;
-  }
-  .history-item.active { border-left-color: var(--gold); background: rgba(212,168,67,0.05); }
-
-  @media (max-width: 640px) {
-    .summary-grid { grid-template-columns: repeat(2, 1fr); }
-  }
+  .history-btn:hover { border-color: var(--muted); }
+  .history-btn.active { border-color: var(--gold); background: rgba(212,168,67,0.05); }
 </style>
 </head>
 <body>
+
 <div class="container">
   <header>
-    <div class="logo-area">
-      <h1><span>Crimson</span> Desert</h1>
-      <p>PlayStation Store · Global Bestseller Tracker</p>
-    </div>
-    <div class="header-meta">
-      <div id="last-updated">마지막 업데이트: <span>—</span></div>
-    </div>
+    <div class="logo"><h1><span>CRIMSON</span> DESERT</h1></div>
+    <div id="update-time">Loading...</div>
   </header>
 
-  <div class="summary-grid">
-    <div class="stat-card">
-      <div class="label">가중 평균 순위</div>
-      <div class="value highlight" id="stat-avg">—</div>
-      <div id="stat-avg-diff" class="sub"></div>
-    </div>
-    <div class="stat-card">
-      <div class="label">순위권 발견 국가</div>
-      <div class="value" id="stat-found">—</div>
-      <div id="stat-total" class="sub"></div>
-    </div>
-    <div class="stat-card">
-      <div class="label">최고 순위 (단일 국가)</div>
-      <div class="value highlight" id="stat-best">—</div>
-      <div id="stat-best-country" class="sub"></div>
-    </div>
-    <div class="stat-card">
-      <div class="label">누적 기록 횟수</div>
-      <div class="value" id="stat-records">—</div>
-      <div class="sub">총 스냅샷</div>
-    </div>
+  <div class="stats">
+    <div class="card"><div class="lbl">Global Average</div><div class="val" id="avg-val">—</div></div>
+    <div class="card"><div class="lbl">Best Rank</div><div class="val" id="best-val">—</div></div>
+    <div class="card"><div class="lbl">Tracked Countries</div><div class="val" id="count-val">—</div></div>
   </div>
 
-  <div class="chart-section">
-    <div class="section-title">전체 가중 평균 순위 추이</div>
-    <div class="chart-wrapper">
-      <canvas id="trendChart"></canvas>
+  <div class="controls">
+    <div class="tabs" id="region-tabs">
+      <button class="tab active" onclick="changeRegion('All')">ALL</button>
+      <button class="tab" onclick="changeRegion('Americas')">AMERICAS</button>
+      <button class="tab" onclick="changeRegion('Europe & Middle East')">EUROPE/ME</button>
+      <button class="tab" onclick="changeRegion('Asia & Oceania')">ASIA/OCEANIA</button>
     </div>
-  </div>
-
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('all', this)">전체</button>
-    <button class="tab" onclick="switchTab('Americas', this)">Americas</button>
-    <button class="tab" onclick="switchTab('Europe & Middle East', this)">Europe & ME</button>
-    <button class="tab" onclick="switchTab('Asia & Oceania', this)">Asia & Oceania</button>
   </div>
 
   <div class="table-wrapper">
-    <table id="rankTable">
+    <table>
       <thead>
-        <tr><th>국가</th><th>스탠다드</th><th>디럭스</th><th>Combined</th><th>시장 가중치</th></tr>
+        <tr>
+          <th onclick="setSort('name')">Country</th>
+          <th onclick="setSort('region')">Region</th>
+          <th onclick="setSort('rank')">Rank</th>
+          <th onclick="setSort('weight')">Weight</th>
+        </tr>
       </thead>
-      <tbody id="rankBody"></tbody>
+      <tbody id="table-body"></tbody>
     </table>
   </div>
 
-  <div class="history-section">
-    <div class="section-title" style="margin-top:32px">기록 히스토리</div>
-    <div class="history-list" id="historyList"></div>
-  </div>
+  <div class="history-list" id="history-btns"></div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-
 <script>
-// 데이터 안전 파싱 함수 (핵심 수정 사항)
-function parseSafeDate(isoStr) {
-    if (!isoStr) return new Date();
-    // 소수점 6자리 및 타임존 보정 (Safari 호환성)
-    const cleaned = isoStr.split('.')[0].replace('Z', '').replace(/\+.*/, '');
-    return new Date(cleaned);
-}
-
+// 설정 데이터
 const REGIONS = {
   "Americas": ["미국","캐나다","브라질","멕시코","아르헨티나","칠레","콜롬비아","페루","우루과이","볼리비아","과테말라","온두라스","코스타리카","에콰도르","엘살바도르","니카라과","파나마","파라과이"],
   "Europe & Middle East": ["영국","독일","프랑스","스페인","이탈리아","네덜란드","폴란드","스위스","스웨덴","노르웨이","덴마크","핀란드","포르투갈","그리스","체코","헝가리","루마니아","슬로바키아","슬로베니아","우크라이나","사우디아라비아","아랍에미리트","남아공","터키","벨기에","오스트리아","이스라엘","크로아티아","불가리아","키프로스","아이슬란드","아일랜드","쿠웨이트","레바논","룩셈부르크","몰타","오만","카타르","바레인"],
   "Asia & Oceania": ["일본","한국","중국","호주","인도","태국","싱가포르","말레이시아","인도네시아","필리핀","베트남","홍콩","대만","뉴질랜드"]
 };
-
-const MARKET_WEIGHTS = {"미국":30.0,"캐나다":4.5,"브라질":2.5,"멕시코":2.0,"영국":8.5,"독일":6.5,"프랑스":6.0,"스페인":4.0,"이탈리아":3.5,"일본":8.0,"호주":3.0,"한국":2.8}; // 예시 단축
+const WEIGHTS = {"미국":30.0,"영국":8.5,"일본":8.0,"독일":6.5,"프랑스":6.0,"캐나다":4.5,"스페인":4.0,"이탈리아":3.5,"호주":3.0,"한국":2.8}; 
 const FLAGS = {"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","한국":"🇰🇷","호주":"🇦🇺"};
 
-let history = [];
+let rawData = [];
 let currentIdx = -1;
-let trendChart = null;
-let currentTab = 'all';
+let currentRegion = 'All';
+let sortKey = 'rank';
+let sortAsc = true;
 
-async function loadData() {
-  try {
-    const res = await fetch('./bestseller_history.json?_=' + Date.now());
-    history = await res.json();
-    if (history.length > 0) {
-      currentIdx = history.length - 1;
-      render();
-    }
-  } catch(e) { console.error(e); }
+// 히트맵 농도 조절 함수
+function getHeatColor(rank) {
+  if (!rank || rank > 100) return 'rgba(255,255,255,0.02)';
+  // 1위에 가까울수록 불투명도 0.8, 100위에 가까울수록 0.1
+  const opacity = Math.max(0.1, 0.8 - (rank / 120));
+  return `rgba(192, 57, 43, ${opacity})`;
 }
 
-function fmtTs(isoStr) {
-  const d = parseSafeDate(isoStr);
-  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-}
-
-function extractRank(val) {
-  if (typeof val === 'number') return val;
-  if (val && typeof val === 'object') return val.standard || val.deluxe || null;
-  return null;
+async function fetchData() {
+  const res = await fetch('./bestseller_history.json?t=' + Date.now());
+  rawData = await res.json();
+  currentIdx = rawData.length - 1;
+  render();
+  renderHistoryBtns();
 }
 
 function render() {
-  const entry = history[currentIdx];
-  const results = entry.raw_results || {};
+  const data = rawData[currentIdx];
+  const results = data.raw_results;
   
-  document.getElementById('last-updated').innerHTML = `마지막 업데이트: <span>${fmtTs(entry.timestamp)}</span>`;
-  document.getElementById('stat-avg').textContent = entry.averages?.combined?.toFixed(1) + '위';
-  document.getElementById('stat-records').textContent = history.length;
+  // 헤더 정보
+  document.getElementById('update-time').innerText = `Snapshot: ${data.timestamp.split('.')[0].replace('T', ' ')}`;
+  document.getElementById('avg-val').innerText = data.averages.combined.toFixed(1);
+  
+  const processed = [];
+  let best = 999;
 
-  renderTable(entry);
-  renderHistory();
-  renderChart();
-}
+  for(const [region, countries] of Object.entries(REGIONS)) {
+    countries.forEach(name => {
+      let r = results[name];
+      // 에디션 구분 없이 통합 (객체인 경우 최소값, 숫자인 경우 그대로)
+      let finalRank = (typeof r === 'object' && r !== null) ? Math.min(...Object.values(r).filter(v => v !== null)) : r;
+      if (finalRank && finalRank < best) best = finalRank;
 
-function renderTable(entry) {
-  const tbody = document.getElementById('rankBody');
+      processed.push({
+        name: name,
+        region: region,
+        rank: finalRank || 999,
+        weight: WEIGHTS[name] || 0.1,
+        flag: FLAGS[name] || '🏳️'
+      });
+    });
+  }
+
+  document.getElementById('best-val').innerText = best === 999 ? '—' : best + '위';
+  document.getElementById('count-val').innerText = processed.filter(x => x.rank !== 999).length;
+
+  // 필터링 및 정렬
+  let filtered = processed.filter(x => currentRegion === 'All' || x.region === currentRegion);
+  filtered.sort((a, b) => {
+    let v1 = a[sortKey], v2 = b[sortKey];
+    if (sortAsc) return v1 > v2 ? 1 : -1;
+    return v1 < v2 ? 1 : -1;
+  });
+
+  const tbody = document.getElementById('table-body');
   tbody.innerHTML = '';
-  const countries = currentTab === 'all' ? Object.values(REGIONS).flat() : REGIONS[currentTab];
-  
-  countries.forEach(c => {
-    const r = extractRank(entry.raw_results[c]);
-    if (!r && currentTab !== 'all') return;
+  filtered.forEach(item => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${FLAGS[c]||''} ${c}</td><td>${r||'—'}위</td><td>—</td><td>${r||'—'}위</td><td>${MARKET_WEIGHTS[c]||0}</td>`;
+    const bgColor = getHeatColor(item.rank);
+    const textColor = (item.rank < 50) ? '#fff' : 'var(--text)';
+
+    tr.innerHTML = `
+      <td>${item.flag} ${item.name}</td>
+      <td style="font-size:11px; color:var(--muted)">${item.region}</td>
+      <td class="rank-cell" style="background:${bgColor}; color:${textColor}">
+        ${item.rank === 999 ? '<span style="color:var(--muted)">—</span>' : item.rank + '위'}
+      </td>
+      <td style="color:var(--muted); font-size:12px;">${item.weight}</td>
+    `;
     tbody.appendChild(tr);
   });
 }
 
-function renderChart() {
-  const ctx = document.getElementById('trendChart').getContext('2d');
-  if (trendChart) trendChart.destroy();
-
-  const dataPoints = history
-    .filter(h => h.averages?.combined != null)
-    .map(h => ({ x: parseSafeDate(h.timestamp), y: h.averages.combined }));
-
-  trendChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      datasets: [{
-        label: '가중 평균 순위',
-        data: dataPoints,
-        borderColor: '#e74c3c',
-        backgroundColor: 'rgba(231, 76, 60, 0.1)',
-        borderWidth: 3,
-        pointRadius: 5,
-        pointHoverRadius: 8,
-        fill: true,
-        tension: 0.3
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: { 
-            type: 'time', 
-            time: { unit: 'minute', displayFormats: { minute: 'HH:mm' } },
-            grid: { display: false },
-            ticks: { color: '#5a4f46' }
-        },
-        y: { 
-            reverse: true, 
-            suggestedMin: 1,
-            grid: { color: '#2e2824' },
-            ticks: { color: '#5a4f46' }
-        }
-      },
-      plugins: { legend: { display: false } }
-    }
-  });
-}
-
-function renderHistory() {
-  const list = document.getElementById('historyList');
-  list.innerHTML = '';
-  [...history].reverse().forEach((h, i) => {
-    const div = document.createElement('div');
-    div.className = 'history-item' + (history.length-1-i === currentIdx ? ' active' : '');
-    div.innerHTML = `<span>${fmtTs(h.timestamp)}</span><strong>${h.averages.combined.toFixed(1)}위</strong>`;
-    div.onclick = () => { currentIdx = history.length-1-i; render(); };
-    list.appendChild(div);
-  });
-}
-
-function switchTab(tab, btn) {
-  currentTab = tab;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
+function setSort(key) {
+  if (sortKey === key) sortAsc = !sortAsc;
+  else { sortKey = key; sortAsc = true; }
   render();
 }
 
-loadData();
+function changeRegion(reg) {
+  currentRegion = reg;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.innerText.includes(reg.split(' ')[0].toUpperCase())));
+  render();
+}
+
+function renderHistoryBtns() {
+  const container = document.getElementById('history-btns');
+  container.innerHTML = '';
+  rawData.forEach((h, i) => {
+    const btn = document.createElement('div');
+    btn.className = `history-btn ${i === currentIdx ? 'active' : ''}`;
+    btn.innerText = h.timestamp.split('T')[1].substring(0, 5);
+    btn.onclick = () => { currentIdx = i; render(); renderHistoryBtns(); };
+    container.appendChild(btn);
+  });
+}
+
+fetchData();
 </script>
 </body>
 </html>
