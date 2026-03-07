@@ -422,9 +422,13 @@ def main():
         "skipped": list(skipped),
         "raw_results": results
     }
-    history.append(new_entry)
-    save_history(history)
-    print(f"\n✅  {HISTORY_FILE} 저장 완료 (총 {len(history)}개 레코드)")
+
+    if combined_avg is None:
+        print("\n⚠️  전국 미발견 (combined_avg=None) → 히스토리 저장 스킵")
+    else:
+        history.append(new_entry)
+        save_history(history)
+        print(f"\n✅  {HISTORY_FILE} 저장 완료 (총 {len(history)}개 레코드)")
 
     send_discord(results, combined_avg, skipped, history)
 

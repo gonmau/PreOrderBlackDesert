@@ -174,6 +174,17 @@
 
 
 
+  .chart-section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+  .chart-wrapper {
+    position: relative;
+    height: 220px;
+  }
+
   /* 탭 */
   .tabs {
     display: flex;
@@ -407,6 +418,9 @@
     thead th:nth-child(n+5) { display: none; }
     tbody td:nth-child(n+5) { display: none; }
   }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
 </style>
 </head>
 <body>
@@ -443,6 +457,14 @@
       <div class="label">누적 기록 횟수</div>
       <div class="value" id="stat-records">—</div>
       <div class="sub">총 스냅샷</div>
+    </div>
+  </div>
+
+  <!-- 트렌드 차트 -->
+  <div class="chart-section">
+    <div class="section-title">전체 가중 평균 순위 추이</div>
+    <div class="chart-wrapper">
+      <canvas id="trendChart"></canvas>
     </div>
   </div>
 
@@ -520,6 +542,7 @@ function getBestselllerUrl(country) {
 // =============================================================================
 let history = [];
 let currentIdx = -1;
+let trendChart = null;
 let currentTab = 'all';
 
 const maxWeight = Math.max(...Object.values(MARKET_WEIGHTS));
@@ -541,8 +564,14 @@ function fmtDiff(curr, prev) {
 }
 
 function fmtTs(isoStr) {
+  // timestamp가 +09:00(KST)로 저장되어 있으므로 KST 기준으로 표시
   const d = new Date(isoStr);
-  return d.toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+  const kst = new Date(d.getTime() + (9 * 60 - d.getTimezoneOffset()) * 60000);
+  const mm = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(kst.getUTCDate()).padStart(2, '0');
+  const hh = String(kst.getUTCHours()).padStart(2, '0');
+  const mi = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${mm}/${dd} ${hh}:${mi} KST`;
 }
 
 // =============================================================================
@@ -627,6 +656,9 @@ function render() {
 
   // 히스토리 목록
   renderHistory();
+
+  // 차트
+  renderChart();
 }
 
 function extractRank(val) {
@@ -725,6 +757,144 @@ function renderTable(entry, prevEntry, skipped) {
       tbody.appendChild(tr);
     }
   }
+}
+
+function renderChart() {
+  // 출시일 KST 2026-03-20 00:00
+  const RELEASE_DATE = new Date('2026-03-20T00:00:00+09:00');
+
+  // KST 포맷 헬퍼
+  function toKST(date) {
+    return new Date(date.getTime()); // timestamp 자체가 +09:00이므로 그대로 사용
+  }
+  function fmtKST(date) {
+    const d = new Date(date.getTime() + (9*60 - date.getTimezoneOffset()) * 60000);
+    return `${d.getUTCMonth()+1}/${d.getUTCDate()} ${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')} KST`;
+  }
+
+  const allPoints = history
+    .filter(h => h.averages?.combined != null)
+    .map(h => ({ x: new Date(h.timestamp), y: h.averages.combined }));
+
+  if (trendChart) { trendChart.destroy(); trendChart = null; }
+  if (allPoints.length === 0) return;
+
+  // 출시 전 / 출시 후 분리
+  const prePoints  = allPoints.filter(p => p.x < RELEASE_DATE);
+  const postPoints = allPoints.filter(p => p.x >= RELEASE_DATE);
+
+  // 경계점: 두 데이터셋이 모두 있을 때 선이 끊기지 않도록 마지막 pre 점을 post 앞에 추가
+  if (prePoints.length > 0 && postPoints.length > 0) {
+    postPoints.unshift(prePoints[prePoints.length - 1]);
+  }
+
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  const datasets = [];
+
+  if (prePoints.length > 0) {
+    datasets.push({
+      label: '출시 전',
+      data: prePoints,
+      borderColor: '#d4a843',
+      backgroundColor: 'rgba(212,168,67,0.08)',
+      borderWidth: 2,
+      pointBackgroundColor: '#d4a843',
+      pointRadius: prePoints.length > 30 ? 0 : 4,
+      pointHoverRadius: 6,
+      tension: 0.4,
+      fill: false,
+      spanGaps: true,
+    });
+  }
+
+  if (postPoints.length > 0) {
+    datasets.push({
+      label: '출시 후',
+      data: postPoints,
+      borderColor: '#e74c3c',
+      backgroundColor: (ctx2) => {
+        const g = ctx2.chart.ctx.createLinearGradient(0, 0, 0, 220);
+        g.addColorStop(0, 'rgba(192,57,43,0.25)');
+        g.addColorStop(1, 'rgba(192,57,43,0)');
+        return g;
+      },
+      borderWidth: 2,
+      pointBackgroundColor: '#ff6b35',
+      pointRadius: postPoints.length > 30 ? 0 : 4,
+      pointHoverRadius: 6,
+      tension: 0.4,
+      fill: true,
+      spanGaps: true,
+    });
+  }
+
+  // 출시일 수직선 annotation (두 데이터셋 모두 있을 때만)
+  const annotations = {};
+  if (prePoints.length > 0 && postPoints.length > 0) {
+    annotations.releaseLine = {
+      type: 'line',
+      xMin: RELEASE_DATE,
+      xMax: RELEASE_DATE,
+      borderColor: 'rgba(255,107,53,0.7)',
+      borderWidth: 2,
+      borderDash: [6, 3],
+      label: {
+        display: true,
+        content: '🎮 출시',
+        position: 'start',
+        backgroundColor: 'rgba(255,107,53,0.85)',
+        color: '#fff',
+        font: { family: 'Rajdhani', size: 11, weight: '600' },
+        padding: { x: 6, y: 3 }
+      }
+    };
+  }
+
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      scales: {
+        y: {
+          reverse: true,
+          ticks: {
+            color: '#5a4f46',
+            font: { family: 'Rajdhani', size: 12 },
+            callback: v => `${v}위`
+          },
+          grid: { color: 'rgba(46,40,36,0.6)' },
+          title: { display: true, text: '순위 (낮을수록 좋음)', color: '#5a4f46', font: { family: 'Rajdhani' } }
+        },
+        x: {
+          type: 'time',
+          time: { unit: 'day', displayFormats: { day: 'M/d' } },
+          ticks: { color: '#5a4f46', font: { family: 'Rajdhani', size: 11 }, maxTicksLimit: 10, maxRotation: 45 },
+          grid: { display: false }
+        }
+      },
+      plugins: {
+        legend: {
+          display: datasets.length > 1,
+          labels: { color: '#5a4f46', font: { family: 'Rajdhani', size: 12 }, boxWidth: 16 }
+        },
+        tooltip: {
+          backgroundColor: '#1a1714',
+          borderColor: '#2e2824',
+          borderWidth: 1,
+          titleColor: '#d4c8bc',
+          bodyColor: '#d4a843',
+          callbacks: {
+            title: items => fmtKST(new Date(items[0].parsed.x)),
+            label: ctx2 => `가중 평균: ${ctx2.parsed.y?.toFixed(1) ?? '—'}위`
+          }
+        },
+        annotation: { annotations }
+      }
+    }
+  });
 }
 
 function renderHistory() {
