@@ -45,12 +45,16 @@
   th { background: #1a1a1a; padding: 15px; text-align: left; font-size: 13px; color: var(--gold); border-bottom: 1px solid var(--border); cursor: pointer; }
   td { padding: 12px 15px; border-bottom: 1px solid #222; font-size: 16px; }
 
+  /* 링크 스타일 */
+  .country-link { color: inherit; text-decoration: none; display: flex; align-items: center; }
+  .country-link:hover { color: var(--gold); text-decoration: underline; }
+
   /* Modal (Pop-up Chart) */
   .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
   .modal-content { background: #111; width: 90%; max-width: 800px; padding: 30px; border-radius: 15px; border: 1px solid var(--gold); position: relative; }
   .close-btn { position: absolute; top: 15px; right: 20px; font-size: 30px; color: #fff; cursor: pointer; }
 
-  .rank-box { font-family: 'Cinzel', serif; font-weight: 900; display: inline-block; width: 60px; text-align: center; border-radius: 4px; padding: 4px 0; }
+  .rank-box { font-family: 'Cinzel', serif; font-weight: 900; display: inline-block; width: 60px; text-align: center; border-radius: 4px; padding: 4px 0; cursor: pointer; }
   .flag { font-size: 20px; margin-right: 8px; vertical-align: middle; }
 </style>
 </head>
@@ -63,22 +67,22 @@
   </header>
 
   <div class="stats">
-    <div class="card"><div class="lbl">Weighted Average</div><div class="val" id="stat-avg">—</div></div>
+    <div class="card"><div class="lbl">Global Weighted Avg</div><div class="val" id="stat-avg">—</div></div>
     <div class="card">
-      <div class="lbl">Best Rank</div>
+      <div class="lbl">Best Performance</div>
       <div class="val" id="stat-best-val">—</div>
       <div class="sub" id="stat-best-name">...</div>
     </div>
     <div class="card">
-      <div class="lbl">Worst Rank</div>
+      <div class="lbl">Worst Performance</div>
       <div class="val" id="stat-worst-val">—</div>
       <div class="sub" id="stat-worst-name">...</div>
     </div>
-    <div class="card"><div class="lbl">Tracked Countries</div><div class="val" id="stat-count">—</div></div>
+    <div class="card"><div class="lbl">Active Tracking</div><div class="val" id="stat-count">—</div></div>
   </div>
 
   <div class="top10-section">
-    <div class="top10-title">Market Leaders (Top 10 Weight)</div>
+    <div class="top10-title">Key Markets (Top 10 Weight) - Click for Trend</div>
     <div class="top10-grid" id="top10-grid"></div>
   </div>
 
@@ -88,8 +92,8 @@
     <table>
       <thead>
         <tr>
-          <th onclick="setSort('name')">Country</th>
-          <th onclick="setSort('rank')">Current Rank</th>
+          <th onclick="setSort('name')">Country (Click Name for PS Store)</th>
+          <th onclick="setSort('rank')">Rank (Click for Trend)</th>
           <th onclick="setSort('change')">Trend</th>
           <th onclick="setSort('weight')">Weight</th>
         </tr>
@@ -111,6 +115,10 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 
 <script>
+// 파이썬 코드의 COUNTRY_CODES 기반 URL 생성용 데이터
+const COUNTRY_INFO = {
+  "미국":{c:"us",l:"en"},"캐나다":{c:"ca",l:"en"},"브라질":{c:"br",l:"pt"},"멕시코":{c:"mx",l:"es"},"영국":{c:"gb",l:"en"},"독일":{c:"de",l:"de"},"프랑스":{c:"fr",l:"fr"},"스페인":{c:"es",l:"es"},"이탈리아":{c:"it",l:"it"},"일본":{c:"jp",l:"ja"},"한국":{c:"kr",l:"ko"},"호주":{c:"au",l:"en"},"아르헨티나":{c:"ar",l:"es"},"칠레":{c:"cl",l:"es"},"콜롬비아":{c:"co",l:"es"},"페루":{c:"pe",l:"es"},"네덜란드":{c:"nl",l:"nl"},"폴란드":{c:"pl",l:"pl"},"사우디아라비아":{c:"sa",l:"en"},"대만":{c:"tw",l:"zh-hant"},"홍콩":{c:"hk",l:"en"},"태국":{c:"th",l:"en"}
+};
 const WEIGHTS = {"미국":30.0,"영국":8.5,"일본":8.0,"독일":6.5,"프랑스":6.0,"캐나다":4.5,"스페인":4.0,"이탈리아":3.5,"호주":3.0,"한국":2.8};
 const FLAGS = {"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","한국":"🇰🇷","호주":"🇦🇺","아르헨티나":"🇦🇷","칠레":"🇨🇱","콜롬비아":"🇨🇴","페루":"🇵🇪","네덜란드":"🇳🇱","사우디아라비아":"🇸🇦","아랍에미리트":"🇦🇪","폴란드":"🇵🇱","대만":"🇹🇼","홍콩":"🇭🇰","태국":"🇹🇭","중국":"🇨🇳","노르웨이":"🇳🇴","덴마크":"🇩🇰","스위스":"🇨🇭"};
 
@@ -130,11 +138,18 @@ function getRank(entry, country) {
   return (typeof r === 'object') ? Math.min(...Object.values(r).filter(v => v !== null)) : r;
 }
 
+// 스토어 URL 생성 함수
+function getStoreUrl(name) {
+  const info = COUNTRY_INFO[name];
+  if(!info) return "https://store.playstation.com/";
+  return `https://store.playstation.com/${info.l}-${info.c}/pages/browse/1?conceptId=10002363`;
+}
+
 function render() {
   const curr = historyData[historyData.length - 1];
   const prev = historyData.length > 1 ? historyData[historyData.length - 2] : null;
 
-  document.getElementById('update-time').innerText = `LAST UPDATE: ${curr.timestamp.split('.')[0].replace('T', ' ')}`;
+  document.getElementById('update-time').innerText = `LAST SNAPSHOT: ${curr.timestamp.split('.')[0].replace('T', ' ')}`;
   document.getElementById('stat-avg').innerText = curr.averages.combined.toFixed(1) + '위';
 
   let list = [];
@@ -145,19 +160,17 @@ function render() {
     const p = prev ? getRank(prev, name) : 999;
     if (r !== 999) {
       if (r < best.r) best = { r, n: name };
-      if (r > worst.r) worst = { r, n: name };
+      if (r > worst.r && r < 999) worst = { r, n: name };
     }
     list.push({ name, rank: r, change: (p === 999 || r === 999) ? 0 : p - r, weight: WEIGHTS[name] || 1.0 });
   });
 
-  // Best/Worst Update
   document.getElementById('stat-best-val').innerText = best.r + '위';
   document.getElementById('stat-best-name').innerText = (FLAGS[best.n] || '') + ' ' + best.n;
-  document.getElementById('stat-worst-val').innerText = worst.r + '위';
-  document.getElementById('stat-worst-name').innerText = (FLAGS[worst.n] || '') + ' ' + worst.n;
+  document.getElementById('stat-worst-val').innerText = worst.r === 0 ? '—' : worst.r + '위';
+  document.getElementById('stat-worst-name').innerText = worst.n ? (FLAGS[worst.n] || '') + ' ' + worst.n : '...';
   document.getElementById('stat-count').innerText = list.filter(x => x.rank < 999).length + '개국';
 
-  // Top 10 Grid Update
   const t10Grid = document.getElementById('top10-grid');
   t10Grid.innerHTML = '';
   Object.keys(WEIGHTS).forEach(name => {
@@ -169,18 +182,23 @@ function render() {
     t10Grid.appendChild(div);
   });
 
-  // Table Sort & Render
   list.sort((a, b) => sortAsc ? (a[sortKey] > b[sortKey] ? 1 : -1) : (a[sortKey] < b[sortKey] ? 1 : -1));
   const tbody = document.getElementById('table-body');
   tbody.innerHTML = '';
   list.forEach(d => {
     const tr = document.createElement('tr');
-    tr.style.cursor = 'pointer';
-    tr.onclick = () => showCountryChart(d.name);
-    const opacity = d.rank >= 999 ? 0 : Math.max(0.2, 1 - (d.rank / 100));
+    const opacity = d.rank >= 999 ? 0 : Math.max(0.2, 1 - (d.rank / 120));
     tr.innerHTML = `
-      <td><span class="flag">${FLAGS[d.name] || '🏳️'}</span>${d.name}</td>
-      <td><span class="rank-box" style="background:rgba(255,71,87,${opacity}); color:#fff">${d.rank === 999 ? '—' : d.rank + '위'}</span></td>
+      <td>
+        <a href="${getStoreUrl(d.name)}" target="_blank" class="country-link">
+          <span class="flag">${FLAGS[d.name] || '🏳️'}</span>${d.name} 🔗
+        </a>
+      </td>
+      <td>
+        <span class="rank-box" style="background:rgba(255,71,87,${opacity}); color:#fff" onclick="showCountryChart('${d.name}')">
+          ${d.rank === 999 ? '—' : d.rank + '위'}
+        </span>
+      </td>
       <td class="${d.change > 0 ? 'trend-up' : (d.change < 0 ? 'trend-down' : '')}">${d.change > 0 ? '▲'+d.change : (d.change < 0 ? '▼'+Math.abs(d.change) : '—')}</td>
       <td style="color:var(--gold); font-weight:bold;">${d.weight}</td>
     `;
@@ -197,7 +215,7 @@ function renderMainChart() {
     type: 'line',
     data: {
       datasets: [{
-        label: 'Weighted Avg Rank',
+        label: 'Global Weighted Avg',
         data: historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.averages.combined })),
         borderColor: '#f1c40f', borderWidth: 4, pointRadius: 4, tension: 0.2, fill: false
       }]
@@ -215,30 +233,24 @@ function renderMainChart() {
 
 function showCountryChart(countryName) {
   document.getElementById('chartModal').style.display = 'flex';
-  document.getElementById('modalTitle').innerText = `${FLAGS[countryName] || ''} ${countryName} Rank Trend`;
-  
+  document.getElementById('modalTitle').innerText = `${FLAGS[countryName] || ''} ${countryName} History`;
   const ctx = document.getElementById('countryChart').getContext('2d');
   if (countryChart) countryChart.destroy();
-
-  const countryData = historyData.map(h => ({
-    x: new Date(h.timestamp.split('.')[0]),
-    y: getRank(h, countryName)
-  })).filter(d => d.y !== 999);
-
+  const countryData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName) })).filter(d => d.y !== 999);
   countryChart = new Chart(ctx, {
     type: 'line',
     data: {
       datasets: [{
         label: countryName,
         data: countryData,
-        borderColor: '#ff4757', borderWidth: 4, pointRadius: 5, pointBackgroundColor: '#fff', tension: 0.2, fill: false
+        borderColor: '#ff4757', borderWidth: 4, pointRadius: 5, tension: 0.2, fill: false
       }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       scales: {
         x: { type: 'time', time: { unit: 'hour' }, grid: { color: '#333' }, ticks: { color: '#fff' } },
-        y: { reverse: true, min: 1, grid: { color: '#333' }, ticks: { color: '#fff', stepSize: 1 } }
+        y: { reverse: true, min: 1, grid: { color: '#333' }, ticks: { color: '#fff' } }
       }
     }
   });
