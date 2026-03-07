@@ -38,6 +38,12 @@ TARGET_COUNTRIES = {
     "kr": "한국",
     "cn": "중국",
     "ru": "러시아",
+    "au": "호주",
+    "es": "스페인",
+    "it": "이탈리아",
+    "pl": "폴란드",
+    "tr": "터키",
+    "mx": "멕시코",
 }
 
 COUNTRY_COLORS = {
@@ -51,6 +57,12 @@ COUNTRY_COLORS = {
     "KR": "#3498DB",
     "CN": "#F39C12",
     "RU": "#1ABC9C",
+    "AU": "#F0E68C",
+    "ES": "#FF6B6B",
+    "IT": "#4ECDC4",
+    "PL": "#A8E6CF",
+    "TR": "#FF8B94",
+    "MX": "#88D8B0",
 }
 
 # Steam 시장 가중치 (index.html의 STEAM_MARKET_WEIGHTS 기준, 미국=10 베이스)
@@ -65,6 +77,12 @@ STEAM_WEIGHTS = {
     "kr":  0.9,
     "cn": 12.3,
     "ru":  3.2,
+    "au":  0.9,
+    "es":  0.7,
+    "it":  0.6,
+    "pl":  0.7,
+    "tr":  0.7,
+    "mx":  0.5,
 }
 
 def calc_weighted_avg(results):
@@ -372,7 +390,7 @@ def send_discord_image(buf, filename, caption):
 # ======================
 def main():
     print("=" * 60)
-    print("🎮 Steam Top Seller 순위 추적기 (10개국)")
+    print("🎮 Steam Top Seller 순위 추적기 (16개국)")
     print("=" * 60)
 
     now_kst = datetime.now(KST)
