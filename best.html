@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crimson Desert — Global Heatmap & Tracker</title>
+<title>Crimson Desert — Global Heatmap & Trend</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Noto+Color+Emoji&display=swap');
 
@@ -34,68 +34,58 @@
   .container { max-width: 1300px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 1; }
 
   header {
-    padding-bottom: 24px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
+    padding-bottom: 24px; border-bottom: 1px solid var(--border);
+    margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end;
   }
-
-  .logo h1 { font-family: 'Cinzel', serif; font-size: 32px; letter-spacing: 2px; color: var(--bright); }
+  .logo h1 { font-family: 'Cinzel', serif; font-size: clamp(24px, 5vw, 32px); letter-spacing: 2px; color: var(--bright); }
   .logo h1 span { color: var(--blood); }
   #update-time { font-size: 13px; color: var(--muted); }
 
-  /* Summary */
+  /* Summary Cards */
   .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 30px; }
   .card { background: var(--panel); border: 1px solid var(--border); padding: 20px; border-top: 3px solid var(--blood); }
   .card .lbl { font-size: 11px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; letter-spacing: 1px; }
   .card .val { font-family: 'Cinzel', serif; font-size: 28px; color: var(--gold); }
 
-  /* Controls */
-  .controls { display: flex; justify-content: space-between; margin-bottom: 15px; }
+  /* Chart Section */
+  .chart-section { background: var(--panel); border: 1px solid var(--border); padding: 20px; margin-bottom: 30px; border-radius: 4px; }
+  .chart-wrapper { height: 280px; width: 100%; position: relative; }
+
+  /* Table Controls */
+  .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
   .tabs { display: flex; gap: 4px; }
   .tab { 
     background: var(--surface); border: 1px solid var(--border); color: var(--muted); 
-    padding: 8px 16px; cursor: pointer; font-family: 'Rajdhani'; font-weight: 600;
+    padding: 8px 16px; cursor: pointer; font-family: 'Rajdhani'; font-weight: 600; font-size: 13px;
   }
   .tab.active { background: var(--blood); color: #fff; border-color: var(--blood); }
 
-  /* Table */
+  /* Table & Heatmap */
   .table-wrapper { background: var(--panel); border: 1px solid var(--border); overflow-x: auto; border-radius: 4px; }
   table { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 800px; }
-  
   th { 
     background: rgba(0,0,0,0.3); padding: 14px; text-align: left; 
-    font-size: 12px; text-transform: uppercase; color: var(--muted); 
-    cursor: pointer; border-bottom: 2px solid var(--border);
+    font-size: 12px; text-transform: uppercase; color: var(--muted); cursor: pointer;
   }
   th:hover { color: var(--bright); }
-  
   td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.03); }
 
-  /* Heatmap & Ranks */
   .rank-box { 
-    font-family: 'Cinzel', serif; font-weight: 900; 
-    display: inline-block; width: 60px; text-align: center;
-    border-radius: 3px; padding: 2px 0;
+    font-family: 'Cinzel', serif; font-weight: 900; display: inline-block; 
+    width: 65px; text-align: center; border-radius: 3px; padding: 4px 0;
   }
-  .prev-rank { font-size: 12px; color: var(--muted); margin-left: 8px; font-family: 'Cinzel'; }
-  
-  .trend-icon { font-size: 11px; margin-right: 3px; font-weight: bold; }
-  .trend-up { color: var(--up); }
-  .trend-down { color: var(--down); }
-  .trend-same { color: var(--muted); }
+  .prev-rank { font-size: 12px; color: var(--muted); font-family: 'Cinzel'; }
+  .trend-up { color: var(--up); font-weight: bold; }
+  .trend-down { color: var(--down); font-weight: bold; }
+  .flag { display: inline-block; width: 28px; margin-right: 8px; font-family: 'Noto Color Emoji'; }
 
-  .flag { display: inline-block; width: 24px; margin-right: 8px; font-family: 'Noto Color Emoji'; }
-
-  /* History List */
-  .history-list { margin-top: 30px; display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; }
+  /* History Timeline */
+  .history-list { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; margin-top: 20px; }
   .history-btn { 
     flex: 0 0 auto; background: var(--panel); border: 1px solid var(--border); 
-    padding: 10px 15px; cursor: pointer; text-align: center;
+    padding: 10px 15px; cursor: pointer; text-align: center; font-size: 12px; transition: 0.2s;
   }
-  .history-btn.active { border-color: var(--gold); background: rgba(212,168,67,0.1); }
+  .history-btn.active { border-color: var(--gold); background: rgba(212,168,67,0.1); color: var(--gold); }
 </style>
 </head>
 <body>
@@ -110,6 +100,12 @@
     <div class="card"><div class="lbl">Weighted Average</div><div class="val" id="stat-avg">—</div></div>
     <div class="card"><div class="lbl">Global Best</div><div class="val" id="stat-best">—</div></div>
     <div class="card"><div class="lbl">Tracked Countries</div><div class="val" id="stat-count">—</div></div>
+  </div>
+
+  <div class="chart-section">
+    <div class="chart-wrapper">
+      <canvas id="trendChart"></canvas>
+    </div>
   </div>
 
   <div class="controls">
@@ -129,7 +125,7 @@
           <th onclick="setSort('rank')">Current Rank</th>
           <th onclick="setSort('prev')">Prev Rank</th>
           <th onclick="setSort('change')">Change</th>
-          <th onclick="setSort('weight')">Weight</th>
+          <th onclick="setSort('weight')">Market Weight</th>
         </tr>
       </thead>
       <tbody id="table-body"></tbody>
@@ -139,66 +135,72 @@
   <div class="history-list" id="history-btns"></div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
 <script>
 const REGIONS = {
   "Americas": ["미국","캐나다","브라질","멕시코","아르헨티나","칠레","콜롬비아","페루","우루과이","볼리비아","과테말라","온두라스","코스타리카","에콰도르","엘살바도르","니카라과","파나마","파라과이"],
   "Europe & Middle East": ["영국","독일","프랑스","스페인","이탈리아","네덜란드","폴란드","스위스","스웨덴","노르웨이","덴마크","핀란드","포르투갈","그리스","체코","헝가리","루마니아","슬로바키아","슬로베니아","우크라이나","사우디아라비아","아랍에미리트","남아공","터키","벨기에","오스트리아","이스라엘","크로아티아","불가리아","키프로스","아이슬란드","아일랜드","쿠웨이트","레바논","룩셈부르크","몰타","오만","카타르","바레인"],
   "Asia & Oceania": ["일본","한국","중국","호주","인도","태국","싱가포르","말레이시아","인도네시아","필리핀","베트남","홍콩","대만","뉴질랜드"]
 };
-
 const WEIGHTS = {"미국":30.0,"영국":8.5,"일본":8.0,"독일":6.5,"프랑스":6.0,"캐나다":4.5,"스페인":4.0,"이탈리아":3.5,"호주":3.0,"한국":2.8}; 
-const FLAGS = {"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","한국":"🇰🇷","호주":"🇦🇺","아르헨티나":"🇦🇷","칠레":"🇨🇱","콜롬비아":"🇨🇴","페루":"🇵🇪","네덜란드":"🇳🇱","사우디아라비아":"🇸🇦","아랍에미리트":"🇦🇪","폴란드":"🇵🇱","스웨덴":"🇸🇪","대만":"🇹🇼","홍콩":"🇭🇰","태국":"🇹🇭"};
+const FLAGS = {"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","한국":"🇰🇷","호주":"🇦🇺","아르헨티나":"🇦🇷","칠레":"🇨🇱","콜롬비아":"🇨🇴","페루":"🇵🇪","네덜란드":"🇳🇱","사우디아라비아":"🇸🇦","아랍에미리트":"🇦🇪","폴란드":"🇵🇱","스웨덴":"🇸🇪","대만":"🇹🇼","홍콩":"🇭🇰","태국":"🇹🇭","노르웨이":"🇳🇴","덴마크":"🇩🇰","스위스":"🇨🇭","오스트리아":"🇦🇹","벨기에":"🇧🇪","핀란드":"🇫🇮","그리스":"🇬🇷","포르투갈":"🇵🇹","아일랜드":"🇮🇪","뉴질랜드":"🇳🇿","남아공":"🇿🇦"};
 
-let history = [];
+let historyData = [];
 let currentIdx = -1;
 let currentRegion = 'all';
 let sortKey = 'rank';
 let sortAsc = true;
+let chartInstance = null;
 
-async function load() {
-  const res = await fetch('./bestseller_history.json?t=' + Date.now());
-  history = await res.json();
-  currentIdx = history.length - 1;
-  render();
+// 시간 파싱 유틸리티
+function parseISO(isoStr) {
+  return new Date(isoStr.split('.')[0].replace('T', ' ').replace(/-/g, '/'));
 }
 
-function getRank(entry, country) {
+async function init() {
+  try {
+    const res = await fetch('./bestseller_history.json?t=' + Date.now());
+    historyData = await res.json();
+    currentIdx = historyData.length - 1;
+    renderAll();
+  } catch (e) { console.error("Data Load Error:", e); }
+}
+
+function getRankValue(entry, country) {
   const r = entry.raw_results[country];
-  if (!r) return 999;
-  return (typeof r === 'object') ? Math.min(...Object.values(r).filter(v => v !== null)) : r;
+  if (r === undefined || r === null) return 999;
+  if (typeof r === 'object') {
+    const vals = Object.values(r).filter(v => v !== null);
+    return vals.length > 0 ? Math.min(...vals) : 999;
+  }
+  return r;
 }
 
-function getHeatColor(rank) {
-  if (rank >= 999) return 'transparent';
-  const opacity = Math.max(0.1, 0.9 - (rank / 100));
-  return `rgba(192, 57, 43, ${opacity})`;
-}
+function renderAll() {
+  const curr = historyData[currentIdx];
+  const prev = currentIdx > 0 ? historyData[currentIdx - 1] : null;
 
-function render() {
-  const currEntry = history[currentIdx];
-  const prevEntry = currentIdx > 0 ? history[currentIdx - 1] : null;
-  
-  document.getElementById('update-time').innerText = `Snapshot: ${currEntry.timestamp.split('.')[0].replace('T', ' ')}`;
-  document.getElementById('stat-avg').innerText = currEntry.averages.combined.toFixed(1) + '위';
+  document.getElementById('update-time').innerText = `Last Snapshot: ${curr.timestamp.split('.')[0].replace('T', ' ')}`;
+  document.getElementById('stat-avg').innerText = curr.averages.combined.toFixed(1) + '위';
 
   const list = [];
   let best = 999;
 
   for (const [region, names] of Object.entries(REGIONS)) {
     names.forEach(name => {
-      const rank = getRank(currEntry, name);
-      const prev = prevEntry ? getRank(prevEntry, name) : 999;
-      const change = (prev === 999 || rank === 999) ? 0 : prev - rank; // 숫자가 작아지면 양수(상승)
-      
-      if (rank < best) best = rank;
-      list.push({ name, region, rank, prev, change, weight: WEIGHTS[name] || 0.1 });
+      const r = getRankValue(curr, name);
+      const p = prev ? getRankValue(prev, name) : 999;
+      if (r < best) best = r;
+      list.push({ name, region, rank: r, prev: p, change: (p === 999 || r === 999) ? 0 : p - r, weight: WEIGHTS[name] || 0.1 });
     });
   }
 
   document.getElementById('stat-best').innerText = best === 999 ? '—' : best + '위';
   document.getElementById('stat-count').innerText = list.filter(x => x.rank < 999).length;
 
-  // 필터 및 정렬
+  // 테이블 렌더링
   let display = list.filter(x => currentRegion === 'all' || x.region === currentRegion);
   display.sort((a, b) => {
     let v1 = a[sortKey], v2 = b[sortKey];
@@ -208,36 +210,62 @@ function render() {
   const tbody = document.getElementById('table-body');
   tbody.innerHTML = '';
   display.forEach(d => {
+    const opacity = d.rank >= 999 ? 0 : Math.max(0.1, 0.9 - (d.rank / 120));
     const tr = document.createElement('tr');
-    const color = getHeatColor(d.rank);
-    const textCol = d.rank < 40 ? '#fff' : 'inherit';
-    
-    // 증감 아이콘
-    let trendHtml = '<span class="trend-same">—</span>';
-    if (d.change > 0) trendHtml = `<span class="trend-up"><span class="trend-icon">▲</span>${d.change}</span>`;
-    else if (d.change < 0) trendHtml = `<span class="trend-down"><span class="trend-icon">▼</span>${Math.abs(d.change)}</span>`;
-
     tr.innerHTML = `
       <td><span class="flag">${FLAGS[d.name] || '🏳️'}</span>${d.name}</td>
-      <td><span class="rank-box" style="background:${color}; color:${textCol}">${d.rank === 999 ? '—' : d.rank + '위'}</span></td>
+      <td><span class="rank-box" style="background:rgba(192,57,43,${opacity}); color:${d.rank < 40 ? '#fff' : 'inherit'}">${d.rank === 999 ? '—' : d.rank + '위'}</span></td>
       <td class="prev-rank">${d.prev === 999 ? '—' : d.prev + '위'}</td>
-      <td>${trendHtml}</td>
+      <td class="${d.change > 0 ? 'trend-up' : (d.change < 0 ? 'trend-down' : '')}">${d.change > 0 ? '▲'+d.change : (d.change < 0 ? '▼'+Math.abs(d.change) : '—')}</td>
       <td style="color:var(--muted); font-size:12px;">${d.weight}</td>
     `;
     tbody.appendChild(tr);
   });
 
-  renderHistory();
+  renderChart();
+  renderHistoryBtns();
 }
 
-function renderHistory() {
+function renderChart() {
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  if (chartInstance) chartInstance.destroy();
+
+  const chartData = historyData.map(h => ({ x: parseISO(h.timestamp), y: h.averages.combined }));
+
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [{
+        label: 'Global Weighted Avg',
+        data: chartData,
+        borderColor: '#e74c3c',
+        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+        borderWidth: 3,
+        pointRadius: 4,
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { type: 'time', time: { unit: 'hour' }, grid: { display: false }, ticks: { color: '#5a4f46' } },
+        y: { reverse: true, grid: { color: '#2e2824' }, ticks: { color: '#5a4f46' } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function renderHistoryBtns() {
   const container = document.getElementById('history-btns');
   container.innerHTML = '';
-  history.forEach((h, i) => {
+  historyData.forEach((h, i) => {
     const btn = document.createElement('div');
     btn.className = `history-btn ${i === currentIdx ? 'active' : ''}`;
     btn.innerText = h.timestamp.split('T')[1].substring(0, 5);
-    btn.onclick = () => { currentIdx = i; render(); };
+    btn.onclick = () => { currentIdx = i; renderAll(); };
     container.appendChild(btn);
   });
 }
@@ -245,16 +273,16 @@ function renderHistory() {
 function setRegion(r) {
   currentRegion = r;
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.innerText.toLowerCase().includes(r.toLowerCase().split(' ')[0]) || (r==='all' && t.innerText==='ALL')));
-  render();
+  renderAll();
 }
 
 function setSort(key) {
   if (sortKey === key) sortAsc = !sortAsc;
   else { sortKey = key; sortAsc = true; }
-  render();
+  renderAll();
 }
 
-load();
+init();
 </script>
 </body>
 </html>
