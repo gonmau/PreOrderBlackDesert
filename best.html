@@ -608,9 +608,9 @@ function render() {
   // 통계 카드
   const avg = entry.averages?.combined;
   const prevAvg = prevEntry?.averages?.combined;
-  document.getElementById('stat-avg').textContent = avg ? avg.toFixed(1) + '위' : '—';
+  document.getElementById('stat-avg').textContent = avg != null ? avg.toFixed(1) + '위' : '—';
 
-  if (avg && prevAvg) {
+  if (avg != null && prevAvg != null) {
     const d = prevAvg - avg;
     const sign = d > 0 ? '▲' : d < 0 ? '▼' : '';
     const cls  = d > 0 ? 'up' : d < 0 ? 'down' : 'same';
@@ -647,6 +647,18 @@ function render() {
   renderChart();
 }
 
+function extractRank(val) {
+  // 새 포맷: int or null
+  if (typeof val === 'number') return val;
+  // 구 포맷: {standard: N, deluxe: N}
+  if (val && typeof val === 'object') {
+    const s = val.standard || null;
+    const d = val.deluxe || null;
+    return combined(s, d);
+  }
+  return null;
+}
+
 function renderTable(entry, prevEntry, skipped) {
   const results = entry.raw_results || {};
   const prevResults = prevEntry?.raw_results || {};
@@ -671,17 +683,20 @@ function renderTable(entry, prevEntry, skipped) {
     const sorted = [...countries].sort((a,b) => (MARKET_WEIGHTS[b]||0) - (MARKET_WEIGHTS[a]||0));
 
     for (const c of sorted) {
-      const data = results[c] || {};
-      const prevData = prevResults[c] || {};
       const isSkipped = skipped.has(c);
 
-      const s = data.standard || null;
-      const d = data.deluxe || null;
-      const com = combined(s, d);
+      // 새 포맷(int) / 구 포맷(dict) 모두 처리
+      const com  = extractRank(results[c]);
+      const pcom = extractRank(prevResults[c]);
 
-      const ps = prevData.standard || null;
-      const pd = prevData.deluxe || null;
-      const pcom = combined(ps, pd);
+      // 구 포맷이면 s/d 분리, 새 포맷이면 com만 표시
+      const rawVal = results[c];
+      const s = (rawVal && typeof rawVal === 'object') ? (rawVal.standard || null) : com;
+      const d = (rawVal && typeof rawVal === 'object') ? (rawVal.deluxe  || null) : null;
+
+      const prevRaw = prevResults[c];
+      const ps = (prevRaw && typeof prevRaw === 'object') ? (prevRaw.standard || null) : pcom;
+      const pd = (prevRaw && typeof prevRaw === 'object') ? (prevRaw.deluxe   || null) : null;
 
       const sDiff = fmtDiff(s, ps);
       const dDiff = fmtDiff(d, pd);
@@ -740,7 +755,7 @@ function renderHistory() {
     const results = entry.raw_results || {};
     const skipped = new Set(entry.skipped || []);
     const foundCount = Object.entries(results).filter(([c,v]) =>
-      !skipped.has(c) && v && (v.standard || v.deluxe)
+      !skipped.has(c) && extractRank(v) !== null
     ).length;
 
     const avg = entry.averages?.combined;
@@ -748,7 +763,7 @@ function renderHistory() {
     div.className = 'history-item' + (realIdx === currentIdx ? ' active' : '');
     div.innerHTML = `
       <span class="ts">${fmtTs(entry.timestamp)}</span>
-      <span class="avg">${avg ? avg.toFixed(1) + '위' : '—'}</span>
+      <span class="avg">${avg != null ? avg.toFixed(1) + '위' : '—'}</span>
       <span class="found-count">${foundCount}개국 발견</span>`;
     div.onclick = () => {
       currentIdx = realIdx;
@@ -762,7 +777,10 @@ function renderChart() {
   const ctx = document.getElementById('trendChart').getContext('2d');
 
   const labels = history.map(h => fmtTs(h.timestamp));
-  const data = history.map(h => h.averages?.combined || null);
+  const data = history.map(h => {
+    const v = h.averages?.combined;
+    return (v != null && typeof v === 'number') ? v : null;
+  });
 
   if (trendChart) trendChart.destroy();
 
