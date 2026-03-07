@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crimson Desert — Global Bestseller Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --blood: #c0392b;
+    --ember: #e74c3c;
+    --fire: #ff6b35;
+    --gold: #d4a843;
+    --dark: #0a0806;
+    --surface: #12100e;
+    --panel: #1a1714;
+    --border: #2e2824;
+    --muted: #5a4f46;
+    --text: #d4c8bc;
+    --bright: #f0e8de;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 400;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* 배경 텍스처 */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(192,57,43,0.15) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(255,107,53,0.08) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+  }
+
+  /* 헤더 */
+  header {
+    padding: 40px 0 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo-area h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(24px, 4vw, 42px);
+    font-weight: 900;
+    color: var(--bright);
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+
+  .logo-area h1 span {
+    color: var(--blood);
+  }
+
+  .logo-area p {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .header-meta {
+    text-align: right;
+  }
+
+  #last-updated {
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  #last-updated span {
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  /* 요약 카드 */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--blood);
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 60px; height: 60px;
+    background: radial-gradient(circle at top right, rgba(192,57,43,0.12), transparent 70%);
+  }
+
+  .stat-card .label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .stat-card .value {
+    font-family: 'Cinzel', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--bright);
+    line-height: 1;
+  }
+
+  .stat-card .value.highlight {
+    color: var(--gold);
+  }
+
+  .stat-card .sub {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* 트렌드 차트 영역 */
+  .chart-section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .section-title {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  #trendChart {
+    width: 100%;
+    height: 220px;
+  }
+
+  /* 탭 */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+
+  .tab {
+    padding: 12px 24px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--fire);
+    border-bottom-color: var(--fire);
+  }
+
+  /* 테이블 */
+  .table-wrapper {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  thead th {
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(46,40,36,0.6);
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover {
+    background: rgba(192,57,43,0.06);
+  }
+
+  tbody td {
+    padding: 12px 16px;
+    vertical-align: middle;
+  }
+
+  .country-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: var(--bright);
+    white-space: nowrap;
+  }
+
+  .flag { font-size: 18px; }
+
+  .rank-badge {
+    display: inline-block;
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--bright);
+    min-width: 40px;
+  }
+
+  .rank-badge.top10 { color: var(--gold); }
+  .rank-badge.top3 { color: var(--fire); }
+  .rank-badge.none { color: var(--muted); font-size: 14px; }
+
+  .diff {
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: 6px;
+  }
+  .diff.up   { color: #2ecc71; }
+  .diff.down { color: var(--ember); }
+  .diff.same { color: var(--muted); }
+  .diff.new  { color: var(--gold); }
+
+  .weight-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .weight-track {
+    flex: 1;
+    max-width: 80px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .weight-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blood), var(--fire));
+    border-radius: 2px;
+  }
+
+  .weight-label {
+    font-size: 11px;
+    color: var(--muted);
+    min-width: 30px;
+  }
+
+  /* 지역 헤더 */
+  tr.region-header td {
+    padding: 20px 16px 8px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--blood);
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* 스킵 행 */
+  tr.skipped td {
+    opacity: 0.35;
+    font-style: italic;
+  }
+
+  /* 히스토리 패널 */
+  .history-section {
+    margin-top: 32px;
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .history-list::-webkit-scrollbar { width: 4px; }
+  .history-list::-webkit-scrollbar-track { background: var(--surface); }
+  .history-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .history-item {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blood);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    cursor: pointer;
+    transition: border-left-color 0.2s;
+  }
+
+  .history-item:hover { border-left-color: var(--fire); }
+  .history-item.active { border-left-color: var(--gold); }
+
+  .history-item .ts {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .history-item .avg {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--bright);
+  }
+
+  .history-item .found-count {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* 무효 상태 */
+  .no-data {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .no-data h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .no-data p {
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  .no-data code {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    font-size: 13px;
+    color: var(--fire);
+  }
+
+  /* 반응형 */
+  @media (max-width: 640px) {
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    thead th:nth-child(n+5) { display: none; }
+    tbody td:nth-child(n+5) { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo-area">
+      <h1><span>Crimson</span> Desert</h1>
+      <p>PlayStation Store · Global Bestseller Tracker</p>
+    </div>
+    <div class="header-meta">
+      <div id="last-updated">마지막 업데이트: <span>—</span></div>
+    </div>
+  </header>
+
+  <!-- 요약 카드 -->
+  <div class="summary-grid">
+    <div class="stat-card">
+      <div class="label">가중 평균 순위</div>
+      <div class="value highlight" id="stat-avg">—</div>
+      <div class="sub" id="stat-avg-diff"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">순위권 발견 국가</div>
+      <div class="value" id="stat-found">—</div>
+      <div class="sub" id="stat-total"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">최고 순위 (단일 국가)</div>
+      <div class="value highlight" id="stat-best">—</div>
+      <div class="sub" id="stat-best-country"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">누적 기록 횟수</div>
+      <div class="value" id="stat-records">—</div>
+      <div class="sub">총 스냅샷</div>
+    </div>
+  </div>
+
+  <!-- 트렌드 차트 -->
+  <div class="chart-section">
+    <div class="section-title">전체 가중 평균 순위 추이</div>
+    <canvas id="trendChart"></canvas>
+  </div>
+
+  <!-- 탭 -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('all', this)">전체</button>
+    <button class="tab" onclick="switchTab('Americas', this)">Americas</button>
+    <button class="tab" onclick="switchTab('Europe & Middle East', this)">Europe & ME</button>
+    <button class="tab" onclick="switchTab('Asia & Oceania', this)">Asia & Oceania</button>
+  </div>
+
+  <!-- 순위 테이블 -->
+  <div class="table-wrapper">
+    <table id="rankTable">
+      <thead>
+        <tr>
+          <th>국가</th>
+          <th>스탠다드</th>
+          <th>디럭스</th>
+          <th>Combined</th>
+          <th>시장 가중치</th>
+        </tr>
+      </thead>
+      <tbody id="rankBody"></tbody>
+    </table>
+  </div>
+
+  <!-- 히스토리 -->
+  <div class="history-section">
+    <div class="section-title" style="margin-top:32px">기록 히스토리</div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// =============================================================================
+// 설정 (Python 코드와 동일)
+// =============================================================================
+const REGIONS = {
+  "Americas": ["미국","캐나다","브라질","멕시코","아르헨티나","칠레","콜롬비아","페루","우루과이","볼리비아","과테말라","온두라스","코스타리카","에콰도르","엘살바도르","니카라과","파나마","파라과이"],
+  "Europe & Middle East": ["영국","독일","프랑스","스페인","이탈리아","네덜란드","폴란드","스위스","스웨덴","노르웨이","덴마크","핀란드","포르투갈","그리스","체코","헝가리","루마니아","슬로바키아","슬로베니아","우크라이나","사우디아라비아","아랍에미리트","남아공","터키","벨기에","오스트리아","이스라엘","크로아티아","불가리아","키프로스","아이슬란드","아일랜드","쿠웨이트","레바논","룩셈부르크","몰타","오만","카타르","바레인"],
+  "Asia & Oceania": ["일본","한국","중국","호주","인도","태국","싱가포르","말레이시아","인도네시아","필리핀","베트남","홍콩","대만","뉴질랜드"]
+};
+
+const MARKET_WEIGHTS = {
+  "미국":30.0,"캐나다":4.5,"브라질":2.5,"멕시코":2.0,"아르헨티나":0.9,"칠레":0.8,"콜롬비아":0.7,"페루":0.4,"우루과이":0.3,"볼리비아":0.2,"과테말라":0.2,"온두라스":0.2,"코스타리카":0.2,"에콰도르":0.3,"엘살바도르":0.1,"니카라과":0.1,"파나마":0.2,"파라과이":0.2,
+  "영국":8.5,"독일":6.5,"프랑스":6.0,"스페인":4.0,"이탈리아":3.5,"네덜란드":1.8,"사우디아라비아":1.5,"아랍에미리트":1.2,"폴란드":1.2,"스위스":1.0,"스웨덴":1.0,"덴마크":0.9,"포르투갈":0.8,"핀란드":0.8,"노르웨이":0.8,"남아공":0.8,"체코":0.7,"루마니아":0.6,"그리스":0.5,"헝가리":0.5,"우크라이나":0.5,"슬로바키아":0.3,"슬로베니아":0.3,"터키":0.8,"벨기에":1.2,"오스트리아":1.0,"이스라엘":0.8,"크로아티아":0.2,"불가리아":0.3,"키프로스":0.1,"아이슬란드":0.1,"아일랜드":0.8,"쿠웨이트":0.3,"레바논":0.1,"룩셈부르크":0.1,"몰타":0.1,"오만":0.2,"카타르":0.3,"바레인":0.2,
+  "일본":8.0,"호주":3.0,"한국":2.8,"인도":2.0,"대만":1.0,"싱가포르":0.8,"태국":0.9,"홍콩":0.9,"인도네시아":0.8,"말레이시아":0.7,"베트남":0.7,"필리핀":0.6,"뉴질랜드":0.6,"중국":0.2
+};
+
+const FLAGS = {
+  "미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","아르헨티나":"🇦🇷","칠레":"🇨🇱","콜롬비아":"🇨🇴","페루":"🇵🇪","우루과이":"🇺🇾","볼리비아":"🇧🇴","과테말라":"🇬🇹","온두라스":"🇭🇳","코스타리카":"🇨🇷","에콰도르":"🇪🇨","엘살바도르":"🇸🇻","니카라과":"🇳🇮","파나마":"🇵🇦","파라과이":"🇵🇾",
+  "영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","네덜란드":"🇳🇱","폴란드":"🇵🇱","스위스":"🇨🇭","스웨덴":"🇸🇪","노르웨이":"🇳🇴","덴마크":"🇩🇰","핀란드":"🇫🇮","포르투갈":"🇵🇹","그리스":"🇬🇷","체코":"🇨🇿","헝가리":"🇭🇺","루마니아":"🇷🇴","슬로바키아":"🇸🇰","슬로베니아":"🇸🇮","우크라이나":"🇺🇦","사우디아라비아":"🇸🇦","아랍에미리트":"🇦🇪","남아공":"🇿🇦","터키":"🇹🇷","벨기에":"🇧🇪","오스트리아":"🇦🇹","이스라엘":"🇮🇱","크로아티아":"🇭🇷","불가리아":"🇧🇬","키프로스":"🇨🇾","아이슬란드":"🇮🇸","아일랜드":"🇮🇪","쿠웨이트":"🇰🇼","레바논":"🇱🇧","룩셈부르크":"🇱🇺","몰타":"🇲🇹","오만":"🇴🇲","카타르":"🇶🇦","바레인":"🇧🇭",
+  "일본":"🇯🇵","한국":"🇰🇷","중국":"🇨🇳","호주":"🇦🇺","인도":"🇮🇳","태국":"🇹🇭","싱가포르":"🇸🇬","말레이시아":"🇲🇾","인도네시아":"🇮🇩","필리핀":"🇵🇭","베트남":"🇻🇳","홍콩":"🇭🇰","대만":"🇹🇼","뉴질랜드":"🇳🇿"
+};
+
+const LOCALE_MAP = {
+  "미국":"en-us","캐나다":"en-ca","브라질":"pt-br","멕시코":"es-mx","아르헨티나":"es-ar","칠레":"es-cl","콜롬비아":"es-co","페루":"es-pe","우루과이":"es-uy","볼리비아":"es-bo","과테말라":"es-gt","온두라스":"es-hn","코스타리카":"es-cr","에콰도르":"es-ec","엘살바도르":"es-sv","니카라과":"es-ni","파나마":"es-pa","파라과이":"es-py",
+  "영국":"en-gb","독일":"de-de","프랑스":"fr-fr","스페인":"es-es","이탈리아":"it-it","네덜란드":"nl-nl","폴란드":"pl-pl","스위스":"de-ch","스웨덴":"sv-se","노르웨이":"no-no","덴마크":"da-dk","핀란드":"fi-fi","포르투갈":"pt-pt","그리스":"en-gr","체코":"en-cz","헝가리":"en-hu","루마니아":"en-ro","슬로바키아":"en-sk","슬로베니아":"en-si","우크라이나":"uk-ua","사우디아라비아":"en-sa","아랍에미리트":"en-ae","남아공":"en-za","터키":"en-tr","벨기에":"nl-be","오스트리아":"de-at","이스라엘":"en-il","크로아티아":"en-hr","불가리아":"en-bg","키프로스":"en-cy","아이슬란드":"en-is","아일랜드":"en-ie","쿠웨이트":"en-kw","레바논":"en-lb","룩셈부르크":"fr-lu","몰타":"en-mt","오만":"en-om","카타르":"en-qa","바레인":"en-bh",
+  "일본":"ja-jp","한국":"ko-kr","중국":"zh-cn","호주":"en-au","인도":"en-in","태국":"en-th","싱가포르":"en-sg","말레이시아":"en-my","인도네시아":"en-id","필리핀":"en-ph","베트남":"en-vn","홍콩":"zh-hant-hk","대만":"zh-hant-tw","뉴질랜드":"en-nz"
+};
+
+const BESTSELLER_CAT = "e1699f77-77e1-43ca-a296-26d08abacb0f";
+
+function getBestselllerUrl(country) {
+  const locale = LOCALE_MAP[country];
+  if (!locale) return null;
+  return `https://store.playstation.com/${locale}/category/${BESTSELLER_CAT}/1`;
+}
+
+// =============================================================================
+// 상태
+// =============================================================================
+let history = [];
+let currentIdx = -1;
+let currentTab = 'all';
+let trendChart = null;
+const maxWeight = Math.max(...Object.values(MARKET_WEIGHTS));
+
+// =============================================================================
+// 유틸
+// =============================================================================
+function combined(s, d) {
+  if (s && d) return Math.min(s, d);
+  return s || d || null;
+}
+
+function fmtDiff(curr, prev) {
+  if (prev == null || curr == null) return null;
+  const d = prev - curr;
+  if (d > 0) return { text: `▲${d}`, cls: 'up' };
+  if (d < 0) return { text: `▼${Math.abs(d)}`, cls: 'down' };
+  return { text: '–', cls: 'same' };
+}
+
+function fmtTs(isoStr) {
+  const d = new Date(isoStr);
+  return d.toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+}
+
+// =============================================================================
+// 데이터 로드
+// =============================================================================
+async function loadData() {
+  try {
+    const res = await fetch('bestseller_history.json?_=' + Date.now());
+    if (!res.ok) throw new Error('파일 없음');
+    history = await res.json();
+    if (history.length > 0) {
+      currentIdx = history.length - 1;
+      render();
+    } else {
+      showNoData('데이터가 없습니다.');
+    }
+  } catch(e) {
+    showNoData();
+  }
+}
+
+function showNoData(msg) {
+  document.getElementById('rankBody').innerHTML = `
+    <tr><td colspan="5">
+      <div class="no-data">
+        <h3>데이터 없음</h3>
+        <p>아직 <code>bestseller_history.json</code> 파일이 없습니다.<br>
+        <code>python bestseller_tracker.py</code> 를 먼저 실행해 주세요.</p>
+      </div>
+    </td></tr>`;
+}
+
+// =============================================================================
+// 렌더링
+// =============================================================================
+function render() {
+  if (history.length === 0) return;
+
+  const entry = history[currentIdx];
+  const prevEntry = currentIdx > 0 ? history[currentIdx - 1] : null;
+  const results = entry.raw_results || {};
+  const skipped = new Set(entry.skipped || []);
+
+  // 마지막 업데이트
+  document.getElementById('last-updated').innerHTML =
+    `마지막 업데이트: <span>${fmtTs(entry.timestamp)}</span>`;
+
+  // 통계 카드
+  const avg = entry.averages?.combined;
+  const prevAvg = prevEntry?.averages?.combined;
+  document.getElementById('stat-avg').textContent = avg ? avg.toFixed(1) + '위' : '—';
+
+  if (avg && prevAvg) {
+    const d = prevAvg - avg;
+    const sign = d > 0 ? '▲' : d < 0 ? '▼' : '';
+    const cls  = d > 0 ? 'up' : d < 0 ? 'down' : 'same';
+    document.getElementById('stat-avg-diff').innerHTML =
+      `<span class="diff ${cls}">${sign}${Math.abs(d).toFixed(1)}</span> 이전 대비`;
+  }
+
+  let foundCount = 0, totalCount = 0;
+  let bestRank = null, bestCountry = '';
+
+  for (const [c, data] of Object.entries(results)) {
+    if (skipped.has(c)) continue;
+    totalCount++;
+    const r = combined(data?.standard, data?.deluxe);
+    if (r) {
+      foundCount++;
+      if (bestRank === null || r < bestRank) { bestRank = r; bestCountry = c; }
+    }
+  }
+
+  document.getElementById('stat-found').textContent = foundCount;
+  document.getElementById('stat-total').textContent = `/ ${totalCount}개국 추적`;
+  document.getElementById('stat-best').textContent = bestRank ? bestRank + '위' : '—';
+  document.getElementById('stat-best-country').textContent = bestCountry ? `${FLAGS[bestCountry]||''} ${bestCountry}` : '';
+  document.getElementById('stat-records').textContent = history.length;
+
+  // 테이블
+  renderTable(entry, prevEntry, skipped);
+
+  // 히스토리 목록
+  renderHistory();
+
+  // 차트
+  renderChart();
+}
+
+function renderTable(entry, prevEntry, skipped) {
+  const results = entry.raw_results || {};
+  const prevResults = prevEntry?.raw_results || {};
+  const tbody = document.getElementById('rankBody');
+  tbody.innerHTML = '';
+
+  const regionOrder = currentTab === 'all'
+    ? Object.keys(REGIONS)
+    : [currentTab];
+
+  for (const region of regionOrder) {
+    const countries = REGIONS[region];
+    if (!countries) continue;
+
+    // 지역 헤더
+    const regionTr = document.createElement('tr');
+    regionTr.className = 'region-header';
+    regionTr.innerHTML = `<td colspan="5">${region}</td>`;
+    tbody.appendChild(regionTr);
+
+    // 가중치 순 정렬
+    const sorted = [...countries].sort((a,b) => (MARKET_WEIGHTS[b]||0) - (MARKET_WEIGHTS[a]||0));
+
+    for (const c of sorted) {
+      const data = results[c] || {};
+      const prevData = prevResults[c] || {};
+      const isSkipped = skipped.has(c);
+
+      const s = data.standard || null;
+      const d = data.deluxe || null;
+      const com = combined(s, d);
+
+      const ps = prevData.standard || null;
+      const pd = prevData.deluxe || null;
+      const pcom = combined(ps, pd);
+
+      const sDiff = fmtDiff(s, ps);
+      const dDiff = fmtDiff(d, pd);
+      const cDiff = fmtDiff(com, pcom);
+
+      const w = MARKET_WEIGHTS[c] || 0;
+      const wPct = (w / maxWeight * 100).toFixed(0);
+
+      const storeUrl = getBestselllerUrl(c);
+
+      function rankCell(rank, diff, isNew) {
+        if (!rank) return `<span class="rank-badge none">—</span>`;
+        const cls = rank <= 3 ? 'top3' : rank <= 10 ? 'top10' : '';
+        let diffHtml = '';
+        if (isNew && !diff) {
+          diffHtml = `<span class="diff new">NEW</span>`;
+        } else if (diff) {
+          diffHtml = `<span class="diff ${diff.cls}">${diff.text}</span>`;
+        }
+        return `<span class="rank-badge ${cls}">${rank}위</span>${diffHtml}`;
+      }
+
+      const tr = document.createElement('tr');
+      if (isSkipped) tr.className = 'skipped';
+
+      tr.innerHTML = `
+        <td>
+          <div class="country-cell">
+            <span class="flag">${FLAGS[c]||''}</span>
+            ${storeUrl && !isSkipped
+              ? `<a href="${storeUrl}" target="_blank" style="color:inherit;text-decoration:none">${c}</a>`
+              : c}
+          </div>
+        </td>
+        <td>${isSkipped ? '<span style="color:var(--muted)">스킵</span>' : rankCell(s, sDiff, !ps && s)}</td>
+        <td>${isSkipped ? '' : rankCell(d, dDiff, !pd && d)}</td>
+        <td>${isSkipped ? '' : rankCell(com, cDiff, !pcom && com)}</td>
+        <td>
+          <div class="weight-bar">
+            <div class="weight-track"><div class="weight-fill" style="width:${wPct}%"></div></div>
+            <span class="weight-label">${w}</span>
+          </div>
+        </td>`;
+      tbody.appendChild(tr);
+    }
+  }
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  list.innerHTML = '';
+
+  const reversed = [...history].reverse();
+  reversed.forEach((entry, i) => {
+    const realIdx = history.length - 1 - i;
+    const results = entry.raw_results || {};
+    const skipped = new Set(entry.skipped || []);
+    const foundCount = Object.entries(results).filter(([c,v]) =>
+      !skipped.has(c) && v && (v.standard || v.deluxe)
+    ).length;
+
+    const avg = entry.averages?.combined;
+    const div = document.createElement('div');
+    div.className = 'history-item' + (realIdx === currentIdx ? ' active' : '');
+    div.innerHTML = `
+      <span class="ts">${fmtTs(entry.timestamp)}</span>
+      <span class="avg">${avg ? avg.toFixed(1) + '위' : '—'}</span>
+      <span class="found-count">${foundCount}개국 발견</span>`;
+    div.onclick = () => {
+      currentIdx = realIdx;
+      render();
+    };
+    list.appendChild(div);
+  });
+}
+
+function renderChart() {
+  const ctx = document.getElementById('trendChart').getContext('2d');
+
+  const labels = history.map(h => fmtTs(h.timestamp));
+  const data = history.map(h => h.averages?.combined || null);
+
+  if (trendChart) trendChart.destroy();
+
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: '가중 평균 순위',
+        data,
+        borderColor: '#e74c3c',
+        backgroundColor: 'rgba(192,57,43,0.08)',
+        borderWidth: 2,
+        pointBackgroundColor: '#ff6b35',
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        fill: true,
+        tension: 0.3,
+        spanGaps: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          reverse: true,
+          grid: { color: 'rgba(46,40,36,0.6)' },
+          ticks: { color: '#5a4f46', font: { family: 'Rajdhani', size: 12 } },
+          title: { display: true, text: '순위 (낮을수록 좋음)', color: '#5a4f46', font: { family: 'Rajdhani' } }
+        },
+        x: {
+          grid: { color: 'rgba(46,40,36,0.4)' },
+          ticks: { color: '#5a4f46', font: { family: 'Rajdhani', size: 11 }, maxTicksLimit: 10 }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1714',
+          borderColor: '#2e2824',
+          borderWidth: 1,
+          titleColor: '#d4c8bc',
+          bodyColor: '#d4a843',
+          callbacks: {
+            label: ctx => ctx.raw ? `${ctx.raw.toFixed(1)}위` : '데이터 없음'
+          }
+        }
+      }
+    }
+  });
+}
+
+// =============================================================================
+// 탭 전환
+// =============================================================================
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  if (history.length > 0) render();
+}
+
+// =============================================================================
+// 초기화 및 자동 새로고침
+// =============================================================================
+loadData();
+setInterval(loadData, 5 * 60 * 1000); // 5분마다 자동 새로고침
+</script>
+</body>
+</html>
