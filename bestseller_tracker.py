@@ -269,6 +269,8 @@ def send_discord(results, combined_avg, skipped_countries, history):
 
     prev_run = history[-2] if len(history) >= 2 else None
     prev_avg = prev_run['averages'].get('combined') if prev_run else None
+    if isinstance(prev_avg, dict):
+        prev_avg = None  # 구버전 데이터 방어
     avg_diff = format_diff(combined_avg, prev_avg)
 
     tracked = sum(1 for c in results if c not in skipped_countries)
@@ -299,6 +301,16 @@ def send_discord(results, combined_avg, skipped_countries, history):
 
     prev_results = prev_run.get("raw_results", {}) if prev_run else {}
 
+    def extract_rank(val):
+        """이전 형식(dict) 또는 현재 형식(int/None) 모두 처리"""
+        if isinstance(val, dict):
+            # 구버전: {"standard": N, "deluxe": N} → 더 좋은 순위 반환
+            s = val.get("standard")
+            d = val.get("deluxe")
+            if s and d: return min(s, d)
+            return s or d or None
+        return val  # int or None
+
     for region_name, region_countries in REGIONS.items():
         lines = []
         sorted_countries = sorted(
@@ -308,7 +320,7 @@ def send_discord(results, combined_avg, skipped_countries, history):
 
         for c in sorted_countries:
             curr = results.get(c)
-            prev = prev_results.get(c)
+            prev = extract_rank(prev_results.get(c))
             diff = format_diff(curr, prev)
             emoji = get_emoji(diff)
             rank_str = f"{curr}위 {diff}".strip() if curr else "미발견"
