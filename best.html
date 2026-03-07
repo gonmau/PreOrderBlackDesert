@@ -1,162 +1,266 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Crimson Desert — PS Store Global Tracker</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-  <style>
-    :root {
-      --bg: rgba(10,6,8,0.0);
-      --surface: rgba(10,6,8,0.7);
-      --surface2: rgba(20,10,14,0.5);
-      --border: rgba(80,50,55,0.7);
-      --red: #c0392b;
-      --red-glow: #e74c3c;
-      --text: #eee;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crimson Desert — Global Heatmap & Trend</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@500;600;700&family=Noto+Color+Emoji&display=swap');
 
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; padding: 0;
-      background: #000;
-      color: var(--text);
-      font-family: 'Noto Sans KR', sans-serif;
-      overflow-x: hidden; /* 가로 스크롤 방지 */
-    }
+  :root {
+    --blood: #ff4757; --gold: #f1c40f; --dark: #000000; --panel: #111111;
+    --border: #333333; --text-main: #ffffff; --text-sub: #aaaaaa;
+    --up: #2ecc71; --down: #ff4757;
+  }
 
-    #bg-image-layer {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: url('https://image.api.playstation.com/vulcan/ap/rnd/202412/0310/240578873752e5052968366914df5a975734be8b64e52f5a.jpg') no-repeat center center / cover;
-      opacity: 0.4; z-index: -1;
-    }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--dark); color: var(--text-main); font-family: 'Rajdhani', 'Noto Color Emoji', sans-serif; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 20px;
-    }
+  header { border-bottom: 2px solid var(--blood); padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .logo h1 { font-family: 'Cinzel', serif; font-size: 32px; color: #fff; }
+  .logo h1 span { color: var(--blood); }
+  #update-time { font-size: 14px; color: var(--gold); font-weight: 700; }
 
-    header { text-align: center; margin-bottom: 30px; }
-    h1 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(2rem, 8vw, 4rem); /* 화면 크기에 맞게 제목 크기 자동 조절 */
-      margin: 0; color: #fff;
-      text-shadow: 0 0 15px var(--red);
-    }
-    .subtitle { font-weight: 300; opacity: 0.8; letter-spacing: 2px; font-size: 0.9rem; }
+  /* Summary Grid */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+  .card { background: var(--panel); border: 1px solid var(--border); padding: 20px; border-radius: 10px; border-left: 4px solid var(--blood); }
+  .card .lbl { font-size: 12px; color: var(--text-sub); margin-bottom: 8px; font-weight: 800; }
+  .card .val { font-family: 'Cinzel', serif; font-size: 28px; color: var(--gold); }
+  .card .sub { font-size: 14px; margin-top: 5px; color: #fff; }
 
-    .section {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      padding: 20px; border-radius: 8px; margin-bottom: 25px;
-      backdrop-filter: blur(8px);
-    }
+  /* Top 10 Highlight Area */
+  .top10-section { background: #0a0a0a; border: 1px solid var(--border); padding: 20px; border-radius: 10px; margin-bottom: 25px; }
+  .top10-title { font-size: 16px; color: var(--gold); font-weight: 800; margin-bottom: 15px; text-transform: uppercase; }
+  .top10-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+  .top10-item { background: #1a1a1a; padding: 10px; border-radius: 5px; text-align: center; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
+  .top10-item:hover { border-color: var(--gold); background: #222; }
+  .top10-item .n { font-size: 13px; color: var(--text-sub); display: block; }
+  .top10-item .r { font-size: 18px; font-weight: 700; color: #fff; }
 
-    /* 차트 영역 반응형 */
-    .chart-container {
-      position: relative;
-      height: 450px; /* 기본 높이 */
-      width: 100%;
-    }
+  /* Chart & Table */
+  .chart-section { background: #080808; border: 1px solid var(--border); padding: 20px; margin-bottom: 25px; border-radius: 10px; height: 350px; }
+  .table-wrapper { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 800px; }
+  th { background: #1a1a1a; padding: 15px; text-align: left; font-size: 13px; color: var(--gold); border-bottom: 1px solid var(--border); cursor: pointer; }
+  td { padding: 12px 15px; border-bottom: 1px solid #222; font-size: 16px; }
 
-    /* ⭐ 표 가로 잘림 방지: 스크롤 기능 추가 */
-    .table-responsive {
-      width: 100%;
-      overflow-x: auto; /* 가로로 넘치면 스크롤 바 생성 */
-      -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
-      border-radius: 4px;
-      border: 1px solid var(--border);
-    }
+  /* 링크 스타일 */
+  .country-link { color: inherit; text-decoration: none; display: flex; align-items: center; }
+  .country-link:hover { color: var(--gold); text-decoration: underline; }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 600px; /* 모바일에서 표가 너무 찌그러지지 않게 최소 너비 고정 */
-    }
+  /* Modal (Pop-up Chart) */
+  .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
+  .modal-content { background: #111; width: 90%; max-width: 800px; padding: 30px; border-radius: 15px; border: 1px solid var(--gold); position: relative; }
+  .close-btn { position: absolute; top: 15px; right: 20px; font-size: 30px; color: #fff; cursor: pointer; }
 
-    th, td {
-      padding: 12px; text-align: center;
-      border-bottom: 1px solid var(--border);
-    }
-    th { background: var(--surface2); font-weight: 700; font-size: 0.85rem; }
-    td { font-size: 0.9rem; }
-
-    /* 국가별 플래그/이름 정렬 */
-    .country-cell { display: flex; align-items: center; justify-content: center; gap: 8px; }
-
-    /* 출시 카운트다운 디자인 */
-    .countdown-box {
-      margin-top: 20px;
-      padding: 15px;
-      background: rgba(192, 57, 43, 0.15);
-      border: 1px solid var(--red);
-      border-radius: 10px;
-    }
-    .cd-flex { display: flex; justify-content: center; align-items: baseline; gap: 8px; }
-    .cd-val { font-size: 1.8rem; font-weight: 700; color: #fff; }
-    .cd-unit { font-size: 0.8rem; opacity: 0.8; margin-right: 5px; }
-
-    /* 모바일 전용 스타일 */
-    @media (max-width: 768px) {
-      .container { padding: 10px; }
-      .section { padding: 15px; }
-      .chart-container { height: 350px; } /* 모바일에서 차트 높이 줄임 */
-      .cd-val { font-size: 1.4rem; }
-    }
-  </style>
+  .rank-box { font-family: 'Cinzel', serif; font-weight: 900; display: inline-block; width: 60px; text-align: center; border-radius: 4px; padding: 4px 0; cursor: pointer; }
+  .flag { font-size: 20px; margin-right: 8px; vertical-align: middle; }
+</style>
 </head>
 <body>
 
-<div id="bg-image-layer"></div>
-
 <div class="container">
   <header>
-    <h1>CRIMSON DESERT</h1>
-    <div class="subtitle" id="page-subtitle">GLOBAL BESTSELLER TRACKER</div>
-    
-    <div id="countdown-area" class="countdown-box">
-      </div>
+    <div class="logo"><h1><span>CRIMSON</span> DESERT</h1></div>
+    <div id="update-time">—</div>
   </header>
 
-  <div class="section">
-    <h2 style="font-size:1.1rem; margin-top:0;">Global Popularity Trend</h2>
-    <div class="chart-container">
-      <canvas id="mainChart"></canvas>
+  <div class="stats">
+    <div class="card"><div class="lbl">Weighted Average</div><div class="val" id="stat-avg">—</div></div>
+    <div class="card">
+      <div class="lbl">Best Rank</div>
+      <div class="val" id="stat-best-val">—</div>
+      <div class="sub" id="stat-best-name">...</div>
     </div>
+    <div class="card">
+      <div class="lbl">Worst Rank</div>
+      <div class="val" id="stat-worst-val">—</div>
+      <div class="sub" id="stat-worst-name">...</div>
+    </div>
+    <div class="card"><div class="lbl">Active Countries</div><div class="val" id="stat-count">—</div></div>
   </div>
 
-  <div class="section">
-    <h2 style="font-size:1.1rem; margin-top:0;">Live Regional Rankings</h2>
-    <div class="table-responsive">
-      <table>
-        <thead>
-          <tr>
-            <th>Region</th>
-            <th>Country</th>
-            <th>Current Rank</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="rank-data-body">
-          </tbody>
-      </table>
-    </div>
+  <div class="top10-section">
+    <div class="top10-title">Market Leaders (Top 10 Weight) - Click for History</div>
+    <div class="top10-grid" id="top10-grid"></div>
+  </div>
+
+  <div class="chart-section"><canvas id="mainChart"></canvas></div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="setSort('name')">Country (PS Store Link)</th>
+          <th onclick="setSort('rank')">Current Rank</th>
+          <th onclick="setSort('change')">Trend</th>
+          <th onclick="setSort('weight')">Weight ↓</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
   </div>
 </div>
 
-<script>
-  // 차트 및 데이터 로드 스크립트
-  // Chart.js 옵션에 반드시 아래 두 줄을 포함하세요.
-  // responsive: true, 
-  // maintainAspectRatio: false
-  
-  // (여기에 기존에 사용하시던 Chart.js 및 fetch 관련 자바스크립트 코드를 넣어주세요)
-</script>
+<div id="chartModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal()">&times;</span>
+    <h2 id="modalTitle" style="margin-bottom:20px; font-family:'Cinzel'; color:var(--gold);">Country Trend</h2>
+    <div style="height:400px;"><canvas id="countryChart"></canvas></div>
+  </div>
+</div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+<script>
+/** 파이썬 코드 기반 URL 및 가중치 동기화 **/
+const COUNTRY_INFO = {
+  "미국":{c:"us",l:"en"},"캐나다":{c:"ca",l:"en"},"브라질":{c:"br",l:"pt"},"멕시코":{c:"mx",l:"es"},"영국":{c:"gb",l:"en"},"독일":{c:"de",l:"de"},"프랑스":{c:"fr",l:"fr"},"스페인":{c:"es",l:"es"},"이탈리아":{c:"it",l:"it"},"일본":{c:"jp",l:"ja"},"한국":{c:"kr",l:"ko"},"호주":{c:"au",l:"en"},"아르헨티나":{c:"ar",l:"es"},"칠레":{c:"cl",l:"es"},"콜롬비아":{c:"co",l:"es"},"페루":{c:"pe",l:"es"},"네덜란드":{c:"nl",l:"nl"},"폴란드":{c:"pl",l:"pl"},"사우디아라비아":{c:"sa",l:"en"},"대만":{c:"tw",l:"zh-hant"},"홍콩":{c:"hk",l:"en"},"태국":{c:"th",l:"en"}
+};
+const WEIGHTS = {"미국":30.0,"영국":8.5,"일본":8.0,"독일":6.5,"프랑스":6.0,"캐나다":4.5,"스페인":4.0,"이탈리아":3.5,"호주":3.0,"한국":2.8};
+const FLAGS = {"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","한국":"🇰🇷","호주":"🇦🇺","아르헨티나":"🇦🇷","칠레":"🇨🇱","콜롬비아":"🇨🇴","페루":"🇵🇪","네덜란드":"🇳🇱","사우디아라비아":"🇸🇦","아랍에미리트":"🇦🇪","폴란드":"🇵🇱","대만":"🇹🇼","홍콩":"🇭🇰","태국":"🇹🇭","중국":"🇨🇳","노르웨이":"🇳🇴","덴마크":"🇩🇰","스위스":"🇨🇭"};
+
+let historyData = [];
+// 기본 정렬을 가중치(weight) 기준으로, 내림차순(false) 설정
+let sortKey = 'weight'; let sortAsc = false; 
+let mainChart = null; let countryChart = null;
+
+async function init() {
+  const res = await fetch('./bestseller_history.json?t=' + Date.now());
+  historyData = await res.json();
+  render();
+}
+
+function getRank(entry, country) {
+  const r = entry.raw_results[country];
+  if (r === undefined || r === null) return 999;
+  return (typeof r === 'object') ? Math.min(...Object.values(r).filter(v => v !== null)) : r;
+}
+
+function getStoreUrl(name) {
+  const info = COUNTRY_INFO[name];
+  if(!info) return "https://store.playstation.com/";
+  return `https://store.playstation.com/${info.l}-${info.c}/pages/browse/1?conceptId=10002363`;
+}
+
+function render() {
+  const curr = historyData[historyData.length - 1];
+  const prev = historyData.length > 1 ? historyData[historyData.length - 2] : null;
+
+  document.getElementById('update-time').innerText = `LAST SNAPSHOT: ${curr.timestamp.split('.')[0].replace('T', ' ')}`;
+  document.getElementById('stat-avg').innerText = curr.averages.combined.toFixed(1) + '위';
+
+  let list = [];
+  let best = { r: 999, n: '' }; let worst = { r: 0, n: '' };
+
+  Object.keys(curr.raw_results).forEach(name => {
+    const r = getRank(curr, name);
+    const p = prev ? getRank(prev, name) : 999;
+    if (r !== 999) {
+      if (r < best.r) best = { r, n: name };
+      if (r > worst.r && r < 999) worst = { r, n: name };
+    }
+    list.push({ name, rank: r, change: (p === 999 || r === 999) ? 0 : p - r, weight: WEIGHTS[name] || 1.0 });
+  });
+
+  document.getElementById('stat-best-val').innerText = best.r + '위';
+  document.getElementById('stat-best-name').innerText = (FLAGS[best.n] || '') + ' ' + best.n;
+  document.getElementById('stat-worst-val').innerText = worst.r === 0 ? '—' : worst.r + '위';
+  document.getElementById('stat-worst-name').innerText = worst.n ? (FLAGS[worst.n] || '') + ' ' + worst.n : '...';
+  document.getElementById('stat-count').innerText = list.filter(x => x.rank < 999).length + '개국';
+
+  const t10Grid = document.getElementById('top10-grid');
+  t10Grid.innerHTML = '';
+  Object.keys(WEIGHTS).forEach(name => {
+    const r = getRank(curr, name);
+    const div = document.createElement('div');
+    div.className = 'top10-item';
+    div.onclick = () => showCountryChart(name);
+    div.innerHTML = `<span class="n">${FLAGS[name] || ''} ${name}</span><span class="r">${r === 999 ? '—' : r + '위'}</span>`;
+    t10Grid.appendChild(div);
+  });
+
+  // 정렬 로직
+  list.sort((a, b) => sortAsc ? (a[sortKey] > b[sortKey] ? 1 : -1) : (a[sortKey] < b[sortKey] ? 1 : -1));
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = '';
+  list.forEach(d => {
+    const tr = document.createElement('tr');
+    const opacity = d.rank >= 999 ? 0 : Math.max(0.2, 1 - (d.rank / 120));
+    tr.innerHTML = `
+      <td>
+        <a href="${getStoreUrl(d.name)}" target="_blank" class="country-link">
+          <span class="flag">${FLAGS[d.name] || '🏳️'}</span>${d.name} 🔗
+        </a>
+      </td>
+      <td>
+        <span class="rank-box" style="background:rgba(255,71,87,${opacity}); color:#fff" onclick="showCountryChart('${d.name}')">
+          ${d.rank === 999 ? '—' : d.rank + '위'}
+        </span>
+      </td>
+      <td class="${d.change > 0 ? 'trend-up' : (d.change < 0 ? 'trend-down' : '')}">${d.change > 0 ? '▲'+d.change : (d.change < 0 ? '▼'+Math.abs(d.change) : '—')}</td>
+      <td style="color:var(--gold); font-weight:bold;">${d.weight}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  renderMainChart();
+}
+
+function renderMainChart() {
+  const ctx = document.getElementById('mainChart').getContext('2d');
+  if (mainChart) mainChart.destroy();
+  mainChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [{
+        label: 'Global Weighted Avg',
+        data: historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.averages.combined })),
+        borderColor: '#f1c40f', borderWidth: 4, pointRadius: 4, tension: 0.2, fill: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { type: 'time', grid: { color: '#222' }, ticks: { color: '#fff' } },
+        y: { reverse: true, grid: { color: '#222' }, ticks: { color: '#fff' } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function showCountryChart(countryName) {
+  document.getElementById('chartModal').style.display = 'flex';
+  document.getElementById('modalTitle').innerText = `${FLAGS[countryName] || ''} ${countryName} History`;
+  const ctx = document.getElementById('countryChart').getContext('2d');
+  if (countryChart) countryChart.destroy();
+  const countryData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName) })).filter(d => d.y !== 999);
+  countryChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [{
+        label: countryName,
+        data: countryData,
+        borderColor: '#ff4757', borderWidth: 4, pointRadius: 5, tension: 0.2, fill: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { type: 'time', time: { unit: 'hour' }, grid: { color: '#333' }, ticks: { color: '#fff' } },
+        y: { reverse: true, min: 1, grid: { color: '#333' }, ticks: { color: '#fff' } }
+      }
+    }
+  });
+}
+
+function closeModal() { document.getElementById('chartModal').style.display = 'none'; }
+function setSort(key) { if (sortKey === key) sortAsc = !sortAsc; else { sortKey = key; sortAsc = (key === 'weight' ? false : true); } render(); }
+
+init();
+</script>
 </body>
 </html>
