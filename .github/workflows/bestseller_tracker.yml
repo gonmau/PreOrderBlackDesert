@@ -2,7 +2,7 @@ name: Bestseller Tracker
 
 on:
   schedule:
-    - cron: '0 9,21 * * *'   # KST 18:00 / 06:00 (하루 2회)
+    - cron: '0 9,21 * * *'   # KST 18:00 / 06:00
   workflow_dispatch:
 
 permissions:
@@ -25,6 +25,15 @@ jobs:
       with:
         python-version: '3.11'
 
+    # 셀레니움/드라이버 캐싱으로 속도 향상
+    - name: Cache WebDriver
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/selenium
+        key: ${{ runner.os }}-selenium-${{ hashFiles('**/bestseller_tracker.py') }}
+        restore-keys: |
+          ${{ runner.os }}-selenium-
+
     - name: Install Dependencies
       run: |
         pip install selenium webdriver-manager requests
@@ -44,7 +53,6 @@ jobs:
 
         TRACKED_FILES=(
           bestseller_history.json
-          bestseller_history.json.backup
         )
 
         # 1. 크롤링 결과 임시 백업
@@ -52,45 +60,19 @@ jobs:
         for f in "${TRACKED_FILES[@]}"; do
           [ -f "$f" ] && cp "$f" "/tmp/tracker_backup/$f"
         done
-        echo "✅ 백업 완료"
 
-        # 2. 서버 최신 상태로 rebase
-        for f in "${TRACKED_FILES[@]}"; do
-          git checkout -- "$f" 2>/dev/null || true
-        done
-        git pull origin main --rebase || {
-          echo "⚠️ rebase 실패, abort 후 일반 pull 시도"
-          git rebase --abort 2>/dev/null || true
-          git pull origin main --no-rebase
-        }
+        # 2. 서버 최신 상태로 rebase (데이터 유실 방지)
+        git fetch origin main
+        git checkout main
+        git pull origin main --rebase
 
-        # 3. 크롤링 결과(백업본)를 최신 repo 위에 덮어쓰기
+        # 3. 결과 복원
         for f in "${TRACKED_FILES[@]}"; do
           if [ -f "/tmp/tracker_backup/$f" ]; then
             cp "/tmp/tracker_backup/$f" "$f"
-            echo "  복원: $f"
           fi
         done
 
-        # 4. 변경된 파일만 add → commit → push
-        for f in "${TRACKED_FILES[@]}"; do
-          git add "$f" 2>/dev/null || true
-        done
-
-        git diff --cached --quiet && { echo "변경사항 없음, 스킵"; exit 0; }
-
-        git commit -m "Update bestseller history [skip ci]"
-
-        # 5. push 실패 시 재시도 1회
-        git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main || {
-          echo "⚠️ push 실패, pull 후 재시도"
-          git pull origin main --rebase
-          for f in "${TRACKED_FILES[@]}"; do
-            [ -f "/tmp/tracker_backup/$f" ] && cp "/tmp/tracker_backup/$f" "$f"
-            git add "$f" 2>/dev/null || true
-          done
-          git commit --amend --no-edit 2>/dev/null || true
-          git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main
-        }
-
-        echo "✅ 완료!"
+        # 4. 변경사항 커밋
+        git add bestseller_history.json
+        git diff --cached --quiet || (git commit -m "Update history [skip ci]" && git push origin main)
