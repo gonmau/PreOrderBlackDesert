@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crimson Desert — Global Bestseller Heatmap</title>
+<title>Crimson Desert — Global Heatmap & Tracker</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Noto+Color+Emoji&display=swap');
 
   :root {
     --blood: #c0392b;
@@ -19,71 +19,83 @@
     --muted: #5a4f46;
     --text: #d4c8bc;
     --bright: #f0e8de;
+    --up: #2ecc71;
+    --down: #e74c3c;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     background: var(--dark);
     color: var(--text);
-    font-family: 'Rajdhani', sans-serif;
-    overflow-x: hidden;
+    font-family: 'Rajdhani', 'Noto Color Emoji', sans-serif;
     min-height: 100vh;
   }
 
-  /* 배경 효과 */
-  body::before {
-    content: ''; position: fixed; inset: 0;
-    background: radial-gradient(circle at 50% -20%, rgba(192,57,43,0.15), transparent 80%);
-    pointer-events: none; z-index: 0;
+  .container { max-width: 1300px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 1; }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
   }
 
-  .container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
-
-  header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
   .logo h1 { font-family: 'Cinzel', serif; font-size: 32px; letter-spacing: 2px; color: var(--bright); }
   .logo h1 span { color: var(--blood); }
   #update-time { font-size: 13px; color: var(--muted); }
 
-  /* Summary Cards */
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
-  .card { background: var(--panel); border: 1px solid var(--border); padding: 15px 20px; border-top: 2px solid var(--blood); }
-  .card .lbl { font-size: 11px; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
-  .card .val { font-family: 'Cinzel', serif; font-size: 24px; color: var(--gold); }
+  /* Summary */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 30px; }
+  .card { background: var(--panel); border: 1px solid var(--border); padding: 20px; border-top: 3px solid var(--blood); }
+  .card .lbl { font-size: 11px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; letter-spacing: 1px; }
+  .card .val { font-family: 'Cinzel', serif; font-size: 28px; color: var(--gold); }
 
-  /* Table controls */
-  .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; }
-  .tabs { display: flex; gap: 5px; }
+  /* Controls */
+  .controls { display: flex; justify-content: space-between; margin-bottom: 15px; }
+  .tabs { display: flex; gap: 4px; }
   .tab { 
     background: var(--surface); border: 1px solid var(--border); color: var(--muted); 
-    padding: 6px 12px; cursor: pointer; font-family: 'Rajdhani'; font-weight: 600; font-size: 13px;
+    padding: 8px 16px; cursor: pointer; font-family: 'Rajdhani'; font-weight: 600;
   }
-  .tab.active { background: var(--blood); color: white; border-color: var(--blood); }
+  .tab.active { background: var(--blood); color: #fff; border-color: var(--blood); }
 
-  /* Table & Heatmap */
-  .table-wrapper { background: var(--panel); border: 1px solid var(--border); overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 15px; }
-  th { 
-    background: rgba(255,255,255,0.03); color: var(--muted); font-size: 12px; 
-    text-transform: uppercase; padding: 12px; text-align: left; cursor: pointer; border-bottom: 1px solid var(--border);
-  }
-  th:hover { color: var(--bright); background: rgba(255,255,255,0.05); }
-  th.sort-active { color: var(--fire); }
-
-  td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  /* Table */
+  .table-wrapper { background: var(--panel); border: 1px solid var(--border); overflow-x: auto; border-radius: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 800px; }
   
-  .rank-cell { 
-    font-family: 'Cinzel', serif; font-weight: 700; text-align: center; 
-    width: 80px; transition: all 0.3s;
+  th { 
+    background: rgba(0,0,0,0.3); padding: 14px; text-align: left; 
+    font-size: 12px; text-transform: uppercase; color: var(--muted); 
+    cursor: pointer; border-bottom: 2px solid var(--border);
   }
+  th:hover { color: var(--bright); }
+  
+  td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.03); }
 
-  /* History list */
-  .history-list { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-  .history-btn { 
-    background: var(--panel); border: 1px solid var(--border); padding: 10px; 
-    cursor: pointer; text-align: center; font-size: 12px;
+  /* Heatmap & Ranks */
+  .rank-box { 
+    font-family: 'Cinzel', serif; font-weight: 900; 
+    display: inline-block; width: 60px; text-align: center;
+    border-radius: 3px; padding: 2px 0;
   }
-  .history-btn:hover { border-color: var(--muted); }
-  .history-btn.active { border-color: var(--gold); background: rgba(212,168,67,0.05); }
+  .prev-rank { font-size: 12px; color: var(--muted); margin-left: 8px; font-family: 'Cinzel'; }
+  
+  .trend-icon { font-size: 11px; margin-right: 3px; font-weight: bold; }
+  .trend-up { color: var(--up); }
+  .trend-down { color: var(--down); }
+  .trend-same { color: var(--muted); }
+
+  .flag { display: inline-block; width: 24px; margin-right: 8px; font-family: 'Noto Color Emoji'; }
+
+  /* History List */
+  .history-list { margin-top: 30px; display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; }
+  .history-btn { 
+    flex: 0 0 auto; background: var(--panel); border: 1px solid var(--border); 
+    padding: 10px 15px; cursor: pointer; text-align: center;
+  }
+  .history-btn.active { border-color: var(--gold); background: rgba(212,168,67,0.1); }
 </style>
 </head>
 <body>
@@ -91,21 +103,21 @@
 <div class="container">
   <header>
     <div class="logo"><h1><span>CRIMSON</span> DESERT</h1></div>
-    <div id="update-time">Loading...</div>
+    <div id="update-time">데이터 로드 중...</div>
   </header>
 
   <div class="stats">
-    <div class="card"><div class="lbl">Global Average</div><div class="val" id="avg-val">—</div></div>
-    <div class="card"><div class="lbl">Best Rank</div><div class="val" id="best-val">—</div></div>
-    <div class="card"><div class="lbl">Tracked Countries</div><div class="val" id="count-val">—</div></div>
+    <div class="card"><div class="lbl">Weighted Average</div><div class="val" id="stat-avg">—</div></div>
+    <div class="card"><div class="lbl">Global Best</div><div class="val" id="stat-best">—</div></div>
+    <div class="card"><div class="lbl">Tracked Countries</div><div class="val" id="stat-count">—</div></div>
   </div>
 
   <div class="controls">
-    <div class="tabs" id="region-tabs">
-      <button class="tab active" onclick="changeRegion('All')">ALL</button>
-      <button class="tab" onclick="changeRegion('Americas')">AMERICAS</button>
-      <button class="tab" onclick="changeRegion('Europe & Middle East')">EUROPE/ME</button>
-      <button class="tab" onclick="changeRegion('Asia & Oceania')">ASIA/OCEANIA</button>
+    <div class="tabs">
+      <button class="tab active" onclick="setRegion('all')">ALL</button>
+      <button class="tab" onclick="setRegion('Americas')">AMERICAS</button>
+      <button class="tab" onclick="setRegion('Europe & Middle East')">EUROPE/ME</button>
+      <button class="tab" onclick="setRegion('Asia & Oceania')">ASIA/OCEANIA</button>
     </div>
   </div>
 
@@ -114,8 +126,9 @@
       <thead>
         <tr>
           <th onclick="setSort('name')">Country</th>
-          <th onclick="setSort('region')">Region</th>
-          <th onclick="setSort('rank')">Rank</th>
+          <th onclick="setSort('rank')">Current Rank</th>
+          <th onclick="setSort('prev')">Prev Rank</th>
+          <th onclick="setSort('change')">Change</th>
           <th onclick="setSort('weight')">Weight</th>
         </tr>
       </thead>
@@ -127,93 +140,112 @@
 </div>
 
 <script>
-// 설정 데이터
 const REGIONS = {
   "Americas": ["미국","캐나다","브라질","멕시코","아르헨티나","칠레","콜롬비아","페루","우루과이","볼리비아","과테말라","온두라스","코스타리카","에콰도르","엘살바도르","니카라과","파나마","파라과이"],
   "Europe & Middle East": ["영국","독일","프랑스","스페인","이탈리아","네덜란드","폴란드","스위스","스웨덴","노르웨이","덴마크","핀란드","포르투갈","그리스","체코","헝가리","루마니아","슬로바키아","슬로베니아","우크라이나","사우디아라비아","아랍에미리트","남아공","터키","벨기에","오스트리아","이스라엘","크로아티아","불가리아","키프로스","아이슬란드","아일랜드","쿠웨이트","레바논","룩셈부르크","몰타","오만","카타르","바레인"],
   "Asia & Oceania": ["일본","한국","중국","호주","인도","태국","싱가포르","말레이시아","인도네시아","필리핀","베트남","홍콩","대만","뉴질랜드"]
 };
-const WEIGHTS = {"미국":30.0,"영국":8.5,"일본":8.0,"독일":6.5,"프랑스":6.0,"캐나다":4.5,"스페인":4.0,"이탈리아":3.5,"호주":3.0,"한국":2.8}; 
-const FLAGS = {"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","한국":"🇰🇷","호주":"🇦🇺"};
 
-let rawData = [];
+const WEIGHTS = {"미국":30.0,"영국":8.5,"일본":8.0,"독일":6.5,"프랑스":6.0,"캐나다":4.5,"스페인":4.0,"이탈리아":3.5,"호주":3.0,"한국":2.8}; 
+const FLAGS = {"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","한국":"🇰🇷","호주":"🇦🇺","아르헨티나":"🇦🇷","칠레":"🇨🇱","콜롬비아":"🇨🇴","페루":"🇵🇪","네덜란드":"🇳🇱","사우디아라비아":"🇸🇦","아랍에미리트":"🇦🇪","폴란드":"🇵🇱","스웨덴":"🇸🇪","대만":"🇹🇼","홍콩":"🇭🇰","태국":"🇹🇭"};
+
+let history = [];
 let currentIdx = -1;
-let currentRegion = 'All';
+let currentRegion = 'all';
 let sortKey = 'rank';
 let sortAsc = true;
 
-// 히트맵 농도 조절 함수
+async function load() {
+  const res = await fetch('./bestseller_history.json?t=' + Date.now());
+  history = await res.json();
+  currentIdx = history.length - 1;
+  render();
+}
+
+function getRank(entry, country) {
+  const r = entry.raw_results[country];
+  if (!r) return 999;
+  return (typeof r === 'object') ? Math.min(...Object.values(r).filter(v => v !== null)) : r;
+}
+
 function getHeatColor(rank) {
-  if (!rank || rank > 100) return 'rgba(255,255,255,0.02)';
-  // 1위에 가까울수록 불투명도 0.8, 100위에 가까울수록 0.1
-  const opacity = Math.max(0.1, 0.8 - (rank / 120));
+  if (rank >= 999) return 'transparent';
+  const opacity = Math.max(0.1, 0.9 - (rank / 100));
   return `rgba(192, 57, 43, ${opacity})`;
 }
 
-async function fetchData() {
-  const res = await fetch('./bestseller_history.json?t=' + Date.now());
-  rawData = await res.json();
-  currentIdx = rawData.length - 1;
-  render();
-  renderHistoryBtns();
-}
-
 function render() {
-  const data = rawData[currentIdx];
-  const results = data.raw_results;
+  const currEntry = history[currentIdx];
+  const prevEntry = currentIdx > 0 ? history[currentIdx - 1] : null;
   
-  // 헤더 정보
-  document.getElementById('update-time').innerText = `Snapshot: ${data.timestamp.split('.')[0].replace('T', ' ')}`;
-  document.getElementById('avg-val').innerText = data.averages.combined.toFixed(1);
-  
-  const processed = [];
+  document.getElementById('update-time').innerText = `Snapshot: ${currEntry.timestamp.split('.')[0].replace('T', ' ')}`;
+  document.getElementById('stat-avg').innerText = currEntry.averages.combined.toFixed(1) + '위';
+
+  const list = [];
   let best = 999;
 
-  for(const [region, countries] of Object.entries(REGIONS)) {
-    countries.forEach(name => {
-      let r = results[name];
-      // 에디션 구분 없이 통합 (객체인 경우 최소값, 숫자인 경우 그대로)
-      let finalRank = (typeof r === 'object' && r !== null) ? Math.min(...Object.values(r).filter(v => v !== null)) : r;
-      if (finalRank && finalRank < best) best = finalRank;
-
-      processed.push({
-        name: name,
-        region: region,
-        rank: finalRank || 999,
-        weight: WEIGHTS[name] || 0.1,
-        flag: FLAGS[name] || '🏳️'
-      });
+  for (const [region, names] of Object.entries(REGIONS)) {
+    names.forEach(name => {
+      const rank = getRank(currEntry, name);
+      const prev = prevEntry ? getRank(prevEntry, name) : 999;
+      const change = (prev === 999 || rank === 999) ? 0 : prev - rank; // 숫자가 작아지면 양수(상승)
+      
+      if (rank < best) best = rank;
+      list.push({ name, region, rank, prev, change, weight: WEIGHTS[name] || 0.1 });
     });
   }
 
-  document.getElementById('best-val').innerText = best === 999 ? '—' : best + '위';
-  document.getElementById('count-val').innerText = processed.filter(x => x.rank !== 999).length;
+  document.getElementById('stat-best').innerText = best === 999 ? '—' : best + '위';
+  document.getElementById('stat-count').innerText = list.filter(x => x.rank < 999).length;
 
-  // 필터링 및 정렬
-  let filtered = processed.filter(x => currentRegion === 'All' || x.region === currentRegion);
-  filtered.sort((a, b) => {
+  // 필터 및 정렬
+  let display = list.filter(x => currentRegion === 'all' || x.region === currentRegion);
+  display.sort((a, b) => {
     let v1 = a[sortKey], v2 = b[sortKey];
-    if (sortAsc) return v1 > v2 ? 1 : -1;
-    return v1 < v2 ? 1 : -1;
+    return sortAsc ? (v1 > v2 ? 1 : -1) : (v1 < v2 ? 1 : -1);
   });
 
   const tbody = document.getElementById('table-body');
   tbody.innerHTML = '';
-  filtered.forEach(item => {
+  display.forEach(d => {
     const tr = document.createElement('tr');
-    const bgColor = getHeatColor(item.rank);
-    const textColor = (item.rank < 50) ? '#fff' : 'var(--text)';
+    const color = getHeatColor(d.rank);
+    const textCol = d.rank < 40 ? '#fff' : 'inherit';
+    
+    // 증감 아이콘
+    let trendHtml = '<span class="trend-same">—</span>';
+    if (d.change > 0) trendHtml = `<span class="trend-up"><span class="trend-icon">▲</span>${d.change}</span>`;
+    else if (d.change < 0) trendHtml = `<span class="trend-down"><span class="trend-icon">▼</span>${Math.abs(d.change)}</span>`;
 
     tr.innerHTML = `
-      <td>${item.flag} ${item.name}</td>
-      <td style="font-size:11px; color:var(--muted)">${item.region}</td>
-      <td class="rank-cell" style="background:${bgColor}; color:${textColor}">
-        ${item.rank === 999 ? '<span style="color:var(--muted)">—</span>' : item.rank + '위'}
-      </td>
-      <td style="color:var(--muted); font-size:12px;">${item.weight}</td>
+      <td><span class="flag">${FLAGS[d.name] || '🏳️'}</span>${d.name}</td>
+      <td><span class="rank-box" style="background:${color}; color:${textCol}">${d.rank === 999 ? '—' : d.rank + '위'}</span></td>
+      <td class="prev-rank">${d.prev === 999 ? '—' : d.prev + '위'}</td>
+      <td>${trendHtml}</td>
+      <td style="color:var(--muted); font-size:12px;">${d.weight}</td>
     `;
     tbody.appendChild(tr);
   });
+
+  renderHistory();
+}
+
+function renderHistory() {
+  const container = document.getElementById('history-btns');
+  container.innerHTML = '';
+  history.forEach((h, i) => {
+    const btn = document.createElement('div');
+    btn.className = `history-btn ${i === currentIdx ? 'active' : ''}`;
+    btn.innerText = h.timestamp.split('T')[1].substring(0, 5);
+    btn.onclick = () => { currentIdx = i; render(); };
+    container.appendChild(btn);
+  });
+}
+
+function setRegion(r) {
+  currentRegion = r;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.innerText.toLowerCase().includes(r.toLowerCase().split(' ')[0]) || (r==='all' && t.innerText==='ALL')));
+  render();
 }
 
 function setSort(key) {
@@ -222,25 +254,7 @@ function setSort(key) {
   render();
 }
 
-function changeRegion(reg) {
-  currentRegion = reg;
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.innerText.includes(reg.split(' ')[0].toUpperCase())));
-  render();
-}
-
-function renderHistoryBtns() {
-  const container = document.getElementById('history-btns');
-  container.innerHTML = '';
-  rawData.forEach((h, i) => {
-    const btn = document.createElement('div');
-    btn.className = `history-btn ${i === currentIdx ? 'active' : ''}`;
-    btn.innerText = h.timestamp.split('T')[1].substring(0, 5);
-    btn.onclick = () => { currentIdx = i; render(); renderHistoryBtns(); };
-    container.appendChild(btn);
-  });
-}
-
-fetchData();
+load();
 </script>
 </body>
 </html>
