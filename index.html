@@ -3058,13 +3058,15 @@ function renderStsGrid(lat,prv){
   if(!g||!lat.results)return;
   const s=Object.entries(lat.results).sort((a,b)=>(STS_W[b[0]]||0)-(STS_W[a[0]]||0));
   g.innerHTML=s.map(([n,d])=>{
-    const r=d&&d.rank,f=STS_F[n]||'🏳',w=STS_W[n]||1,rs=r?'#'+r:'—';
+    const r=d&&d.rank,w=STS_W[n]||1,rs=r?'#'+r:'—';
+    const cc=STS_CC[n]||'us';
+    const flagImg=`<img src="https://flagcdn.com/w40/${cc}.png" alt="${n}" style="width:28px;height:20px;object-fit:cover;border-radius:2px;display:block;flex-shrink:0">`;
     let dh='';
     if(prv&&prv.results&&prv.results[n]){
       const pr=prv.results[n]&&prv.results[n].rank;
       if(pr&&r){const dd=pr-r;if(dd>0)dh='<span class="steam-ts-country-diff up">▲'+dd+'</span>';else if(dd<0)dh='<span class="steam-ts-country-diff down">▼'+Math.abs(dd)+'</span>';else dh='<span class="steam-ts-country-diff">-</span>';}
     }
-    return `<div class="steam-ts-country-card" onclick="openStsModal('${n}')"><div class="steam-ts-country-flag">${f}</div><div class="steam-ts-country-info"><div class="steam-ts-country-name">${n}</div><div class="steam-ts-country-rank">${rs} ${dh}</div></div></div>`;
+    return `<div class="steam-ts-country-card" onclick="openStsModal('${n}')">${flagImg}<div class="steam-ts-country-info"><div class="steam-ts-country-name">${n}</div><div class="steam-ts-country-rank">${rs} ${dh}</div></div></div>`;
   }).join('');
 }
 
