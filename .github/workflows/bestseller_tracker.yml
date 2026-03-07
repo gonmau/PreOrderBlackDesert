@@ -8,41 +8,26 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: bestseller-history
-  cancel-in-progress: false
-
 jobs:
   track:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # 전체 히스토리 가져오기
 
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
-    # 캐시 경로 수정
-    - name: Cache WebDriver
-      uses: actions/cache@v4
-      with:
-        path: ~/.wdm
-        key: ${{ runner.os }}-wdm-${{ hashFiles('**/bestseller_tracker.py') }}
-        restore-keys: |
-          ${{ runner.os }}-wdm-
-
     - name: Install Dependencies
       run: |
         pip install selenium webdriver-manager requests
 
     - name: Run Bestseller Tracker
-      env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-      run: |
-        python bestseller_tracker.py
+      run: python bestseller_tracker.py
 
     - name: Commit and Push changes
       env:
@@ -50,25 +35,9 @@ jobs:
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-
-        TRACKED_FILES=(
-          bestseller_history.json
-        )
-
-        mkdir -p /tmp/tracker_backup
-        for f in "${TRACKED_FILES[@]}"; do
-          [ -f "$f" ] && cp "$f" "/tmp/tracker_backup/$f"
-        done
-
-        git fetch origin main
-        git checkout main
+        
+        # 최신 데이터 유지를 위한 pull
         git pull origin main --rebase
-
-        for f in "${TRACKED_FILES[@]}"; do
-          if [ -f "/tmp/tracker_backup/$f" ]; then
-            cp "/tmp/tracker_backup/$f" "$f"
-          fi
-        done
-
+        
         git add bestseller_history.json
         git diff --cached --quiet || (git commit -m "Update history [skip ci]" && git push origin main)
