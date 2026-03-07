@@ -537,6 +537,145 @@
 
     .rank-val.no-data { color: var(--muted); font-size: 0.8rem; }
 
+    /* 클릭 가능한 순위 배지 */
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+      background: var(--red);
+      border-radius: 4px;
+      padding: 3px 9px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      text-shadow: none;
+      letter-spacing: 1px;
+      border: none;
+      outline: none;
+    }
+    .rank-badge:hover { background: var(--red-glow); transform: scale(1.06); }
+    .rank-badge.no-data {
+      background: rgba(80,60,65,0.5);
+      color: var(--muted);
+      cursor: default;
+      font-size: 0.85rem;
+      letter-spacing: 0;
+    }
+    .rank-badge.no-data:hover { background: rgba(80,60,65,0.5); transform: none; }
+
+    /* 에디션 히스토리 모달 */
+    .edition-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .edition-modal-backdrop.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .edition-modal {
+      background: #1a0f12;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      width: 100%;
+      max-width: 620px;
+      max-height: 85vh;
+      overflow-y: auto;
+      transform: translateY(16px);
+      transition: transform 0.2s;
+      position: relative;
+    }
+    .edition-modal-backdrop.open .edition-modal {
+      transform: translateY(0);
+    }
+    .edition-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .edition-modal-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .edition-modal-flag { font-size: 1.8rem; }
+    .edition-modal-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: 2px;
+      color: #fff;
+    }
+    .edition-modal-badge {
+      font-size: 0.68rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #fff;
+      background: var(--red);
+      border-radius: 3px;
+      padding: 2px 8px;
+      margin-left: 6px;
+    }
+    .edition-modal-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 3px;
+      transition: color 0.15s;
+    }
+    .edition-modal-close:hover { color: #fff; }
+    .edition-modal-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .edition-modal-stat {
+      background: rgba(20,10,14,0.8);
+      padding: 12px 14px;
+      text-align: center;
+    }
+    .edition-modal-stat-label {
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .edition-modal-stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      line-height: 1;
+      color: var(--red-glow);
+    }
+    .edition-modal-chart-wrap {
+      padding: 18px 22px 16px;
+    }
+    .edition-modal-chart-title {
+      font-size: 0.62rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .edition-modal-chart-inner { position: relative; height: 210px; }
+
     .diff-badge {
       display: inline-flex;
       align-items: center;
@@ -1588,6 +1727,40 @@
     </div>
   </div>
 
+  <!-- EDITION HISTORY MODAL -->
+  <div class="edition-modal-backdrop" id="edition-modal" onclick="closeEditionModal(event)">
+    <div class="edition-modal">
+      <div class="edition-modal-header">
+        <div class="edition-modal-title">
+          <span class="edition-modal-flag" id="em-flag"></span>
+          <span class="edition-modal-name" id="em-name"></span>
+          <span class="edition-modal-badge" id="em-edition-badge"></span>
+        </div>
+        <button class="edition-modal-close" onclick="closeEditionModalDirect()">✕</button>
+      </div>
+      <div class="edition-modal-stats">
+        <div class="edition-modal-stat">
+          <div class="edition-modal-stat-label">현재 순위</div>
+          <div class="edition-modal-stat-value" id="em-current">—</div>
+        </div>
+        <div class="edition-modal-stat">
+          <div class="edition-modal-stat-label">최고 순위</div>
+          <div class="edition-modal-stat-value" id="em-best">—</div>
+        </div>
+        <div class="edition-modal-stat">
+          <div class="edition-modal-stat-label">평균 순위</div>
+          <div class="edition-modal-stat-value" id="em-avg">—</div>
+        </div>
+      </div>
+      <div class="edition-modal-chart-wrap">
+        <div class="edition-modal-chart-title" id="em-chart-title">순위 히스토리</div>
+        <div class="edition-modal-chart-inner">
+          <canvas id="editionChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <footer>
     DATA UPDATES VIA GITHUB ACTIONS
   </footer>
@@ -2236,16 +2409,19 @@ function renderTable(tab, raw, prevRaw) {
           </div>
         </td>
         <td>
-          <span class="rank-val ${d.standard ? '' : 'no-data'}" style="color:${rankTextColor(d.standard)}">${d.standard ? `${d.standard}위` : '—'}</span>
-          ${diffBadge(d.standard, pd.standard)}
+          ${d.standard
+            ? `<button class="rank-badge" onclick="openEditionModal('${c}','standard')" title="${c} 스탠다드 히스토리">${d.standard}위</button>${diffBadge(d.standard, pd.standard)}`
+            : `<button class="rank-badge no-data">—</button>`}
         </td>
         <td>
-          <span class="rank-val ${d.deluxe ? '' : 'no-data'}" style="color:${rankTextColor(d.deluxe)}">${d.deluxe ? `${d.deluxe}위` : '—'}</span>
-          ${diffBadge(d.deluxe, pd.deluxe)}
+          ${d.deluxe
+            ? `<button class="rank-badge" onclick="openEditionModal('${c}','deluxe')" title="${c} 디럭스 히스토리">${d.deluxe}위</button>${diffBadge(d.deluxe, pd.deluxe)}`
+            : `<button class="rank-badge no-data">—</button>`}
         </td>
         <td class="combined-cell">
-          <span class="rank-val ${cr ? '' : 'no-data'}" style="color:${rankTextColor(cr)}">${cr ? `${cr}위` : '—'}</span>
-          ${diffBadge(cr, prevCr)}
+          ${cr
+            ? `<button class="rank-badge" onclick="openEditionModal('${c}','combined')" title="${c} 종합 히스토리">${cr}위</button>${diffBadge(cr, prevCr)}`
+            : `<button class="rank-badge no-data">—</button>`}
         </td>
         <td><span class="weight-badge">${(MARKET_WEIGHTS[c] || 0).toFixed(1)}</span></td>
       </tr>`;
@@ -3235,6 +3411,111 @@ function setModalStat(valId, diffId, curr, prev) {
   }
 }
 
+// ─── 에디션 히스토리 모달 ───
+let editionChartInstance = null;
+
+function openEditionModal(country, edition) {
+  if (!allHistory.length) return;
+
+  const editionLabel = edition === 'standard' ? '스탠다드' : edition === 'deluxe' ? '디럭스' : '종합 (Best)';
+
+  // 헤더 세팅
+  document.getElementById('em-flag').textContent = FLAGS[country] || '🏳️';
+  document.getElementById('em-name').textContent = country;
+  document.getElementById('em-edition-badge').textContent = editionLabel;
+  document.getElementById('em-chart-title').textContent = `${country} · ${editionLabel} 순위 히스토리`;
+
+  // 데이터 추출
+  const dataPoints = allHistory.map(h => {
+    const dt = new Date(h.timestamp);
+    const d = h.raw_results?.[country] || {};
+    let val;
+    if (edition === 'standard') val = d.standard ?? null;
+    else if (edition === 'deluxe') val = d.deluxe ?? null;
+    else val = combinedRank(d.standard, d.deluxe);
+    return { x: dt, y: val, label: `${dt.getMonth()+1}/${dt.getDate()}` };
+  });
+
+  const validVals = dataPoints.map(p => p.y).filter(v => v != null);
+  const current = validVals[validVals.length - 1] ?? null;
+  const best = validVals.length ? Math.min(...validVals) : null;
+  const avg = validVals.length ? Math.round(validVals.reduce((a, b) => a + b, 0) / validVals.length * 10) / 10 : null;
+
+  document.getElementById('em-current').textContent = current != null ? `${current}위` : '—';
+  document.getElementById('em-best').textContent    = best    != null ? `${best}위`    : '—';
+  document.getElementById('em-avg').textContent     = avg     != null ? `${avg}위`     : '—';
+
+  // 차트
+  const ctx = document.getElementById('editionChart').getContext('2d');
+  if (editionChartInstance) editionChartInstance.destroy();
+
+  editionChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [{
+        label: editionLabel,
+        data: dataPoints.map(p => ({ x: p.x, y: p.y })),
+        borderColor: '#e74c3c',
+        backgroundColor: 'rgba(231,76,60,0.12)',
+        borderWidth: 2,
+        pointRadius: dataPoints.length > 30 ? 0 : 4,
+        pointHoverRadius: 6,
+        tension: 0.4,
+        fill: true,
+        spanGaps: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          reverse: true,
+          ticks: { color: '#ffffff', font: { size: 11 }, stepSize: 1 },
+          grid:  { color: 'rgba(80,60,65,0.6)' },
+          border: { color: '#444' }
+        },
+        x: {
+          type: 'time',
+          time: { unit: 'day', displayFormats: { day: 'M/d' } },
+          ticks: { color: '#ffffff', font: { size: 10 }, maxTicksLimit: 14, maxRotation: 45 },
+          grid:  { color: 'rgba(80,60,65,0.3)' },
+          border: { color: '#444' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a0f12',
+          borderColor: '#444',
+          borderWidth: 1,
+          titleColor: '#ffffff',
+          bodyColor: '#e74c3c',
+          callbacks: {
+            title: items => {
+              const d = new Date(items[0].parsed.x);
+              return `${d.getMonth()+1}/${d.getDate()}`;
+            },
+            label: ctx2 => ctx2.parsed.y != null ? `${editionLabel}: ${ctx2.parsed.y}위` : '데이터 없음'
+          }
+        }
+      }
+    }
+  });
+
+  document.getElementById('edition-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEditionModal(e) {
+  if (e.target === document.getElementById('edition-modal')) closeEditionModalDirect();
+}
+
+function closeEditionModalDirect() {
+  document.getElementById('edition-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
 function closeModal(e) {
   if (e.target === document.getElementById('country-modal')) closeModalDirect();
 }
@@ -3258,6 +3539,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     closeModalDirect();
     closeStsModalDirect();
+    closeEditionModalDirect();
   }
 });
 
