@@ -784,8 +784,8 @@ function renderChart() {
 
   // 유효한 값만 추려서 Y축 범위 계산
   const validData = data.filter(v => v !== null);
-  const yMin = validData.length > 0 ? Math.max(1, Math.floor(Math.min(...validData)) - 3) : 1;
-  const yMax = validData.length > 0 ? Math.ceil(Math.max(...validData)) + 3 : 50;
+  const yMin = validData.length > 0 ? Math.max(1, Math.round(Math.min(...validData)) - 5) : 1;
+  const yMax = validData.length > 0 ? Math.round(Math.max(...validData)) + 5 : 50;
 
   if (trendChart) {
     trendChart.destroy();
@@ -823,8 +823,9 @@ function renderChart() {
           ticks: {
             color: '#5a4f46',
             font: { family: 'Rajdhani', size: 12 },
-            stepSize: Math.max(1, Math.round((yMax - yMin) / 8)),
-            callback: v => `${Math.round(v)}위`
+            precision: 0,
+            maxTicksLimit: 8,
+            callback: v => Number.isInteger(v) ? `${v}위` : null
           },
           title: { display: true, text: '순위 (낮을수록 좋음)', color: '#5a4f46', font: { family: 'Rajdhani' } }
         },
