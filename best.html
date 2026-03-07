@@ -494,6 +494,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script>
 // =============================================================================
 // 설정 (Python 코드와 동일)
@@ -776,42 +777,34 @@ function renderHistory() {
 function renderChart() {
   const ctx = document.getElementById('trendChart').getContext('2d');
 
-  const labels = history.map(h => fmtTs(h.timestamp));
-  const rawData = history.map(h => {
-    const v = h.averages?.combined;
-    return (v != null && typeof v === 'number') ? Math.round(v * 10) / 10 : null;
-  });
-
-  const validData = rawData.filter(v => v !== null);
+  // {x: Date, y: rank} 형태로 변환 (time scale 방식 - index.html과 동일)
+  const dataPoints = history
+    .filter(h => h.averages?.combined != null)
+    .map(h => ({ x: new Date(h.timestamp), y: h.averages.combined }));
 
   if (trendChart) { trendChart.destroy(); trendChart = null; }
-  if (validData.length === 0) return;
-
-  const dataMin = Math.min(...validData);
-  const dataMax = Math.max(...validData);
-  const pad = Math.max(3, Math.round((dataMax - dataMin + 1) * 0.4));
-  // 순위는 숫자가 작을수록 좋으므로 reverse 없이 Y축 뒤집기:
-  // Chart에 값을 음수로 넘기고 tick label만 양수로 표시
-  const chartData = rawData.map(v => v !== null ? -v : null);
-  const yMin = -(dataMax + pad);
-  const yMax = -(Math.max(1, dataMin - pad));
+  if (dataPoints.length === 0) return;
 
   trendChart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels,
       datasets: [{
         label: '가중 평균 순위',
-        data: chartData,
+        data: dataPoints,
         borderColor: '#e74c3c',
-        backgroundColor: 'rgba(192,57,43,0.08)',
+        backgroundColor: (ctx2) => {
+          const g = ctx2.chart.ctx.createLinearGradient(0, 0, 0, 220);
+          g.addColorStop(0, 'rgba(192,57,43,0.25)');
+          g.addColorStop(1, 'rgba(192,57,43,0)');
+          return g;
+        },
         borderWidth: 2,
-        pointBackgroundColor: chartData.map(v => v !== null ? '#ff6b35' : 'transparent'),
-        pointRadius: chartData.map(v => v !== null ? 5 : 0),
+        pointBackgroundColor: '#ff6b35',
+        pointRadius: dataPoints.length > 30 ? 0 : 5,
         pointHoverRadius: 7,
+        tension: 0.4,
         fill: true,
-        tension: 0.3,
-        spanGaps: false
+        spanGaps: true,
       }]
     },
     options: {
@@ -820,20 +813,20 @@ function renderChart() {
       animation: false,
       scales: {
         y: {
-          min: yMin,
-          max: yMax,
-          grid: { color: 'rgba(46,40,36,0.6)' },
+          reverse: true,
           ticks: {
             color: '#5a4f46',
             font: { family: 'Rajdhani', size: 12 },
-            maxTicksLimit: 8,
-            callback: v => `${-v}위`
+            callback: v => `${v}위`
           },
-          title: { display: true, text: '순위 (위로 갈수록 좋음)', color: '#5a4f46', font: { family: 'Rajdhani' } }
+          grid: { color: 'rgba(46,40,36,0.6)' },
+          title: { display: true, text: '순위 (낮을수록 좋음)', color: '#5a4f46', font: { family: 'Rajdhani' } }
         },
         x: {
-          grid: { color: 'rgba(46,40,36,0.4)' },
-          ticks: { color: '#5a4f46', font: { family: 'Rajdhani', size: 11 }, maxTicksLimit: 10 }
+          type: 'time',
+          time: { unit: 'day', displayFormats: { day: 'M/d' } },
+          ticks: { color: '#5a4f46', font: { family: 'Rajdhani', size: 11 }, maxTicksLimit: 10, maxRotation: 45, source: 'auto' },
+          grid: { display: false }
         }
       },
       plugins: {
@@ -845,7 +838,11 @@ function renderChart() {
           titleColor: '#d4c8bc',
           bodyColor: '#d4a843',
           callbacks: {
-            label: ctx => ctx.raw != null ? `${-ctx.raw}위` : '데이터 없음'
+            title: items => {
+              const d = new Date(items[0].parsed.x);
+              return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+            },
+            label: ctx2 => `가중 평균: ${ctx2.parsed.y?.toFixed(1) ?? '—'}위`
           }
         }
       }
