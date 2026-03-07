@@ -1958,26 +1958,26 @@ function renderChart() {
       scales: {
         y: {
           reverse: true,
-          ticks: { color: '#7a6a65', font: { size: 11 } },
-          grid: { color: 'rgba(42,31,34,0.8)' },
-          border: { color: '#2a1f22' }
+          ticks: { color: '#ffffff', font: { size: 11 } },
+          grid: { color: 'rgba(80,60,65,0.6)' },
+          border: { color: '#444' }
         },
         x: {
           type: 'time',
           time: { unit: 'day', displayFormats: { day: 'M/d' } },
-          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 20, maxRotation: 45, source: 'auto' },
-          grid: { display: false },
-          border: { color: '#2a1f22' }
+          ticks: { color: '#ffffff', font: { size: 10 }, maxTicksLimit: 20, maxRotation: 45, source: 'auto' },
+          grid: { color: 'rgba(80,60,65,0.3)' },
+          border: { color: '#444' }
         }
       },
       plugins: {
         legend: { display: false },
         tooltip: {
           backgroundColor: '#1a1318',
-          borderColor: '#2a1f22',
+          borderColor: '#444',
           borderWidth: 1,
-          titleColor: '#e8ddd5',
-          bodyColor: '#c0392b',
+          titleColor: '#ffffff',
+          bodyColor: '#e74c3c',
           callbacks: {
             title: items => {
               const d = new Date(items[0].parsed.x);
@@ -2097,6 +2097,9 @@ function renderHeatmap(raw, prevRaw) {
       const diff = cr && pcr ? pcr - cr : 0;
       const arrowColor = diff > 0 ? '#2ecc71' : diff < 0 ? '#e74c3c' : 'transparent';
       const flagUrl = flagEnabled ? getFlagUrl(c) : null;
+      // 순위 기반 적색 음영 (best.html 방식)
+      const rankRedOpacity = cr ? Math.max(0.08, Math.min(0.7, 1.0 / Math.sqrt(cr) * 1.8)) : 0.05;
+      const rankRedOverlay = `rgba(192,57,43,${rankRedOpacity.toFixed(2)})`;
       // 가중치 기반 투명도 계산
 const allWeights = Object.values(MARKET_WEIGHTS).filter(w => w > 0);
 const maxW = Math.max(...allWeights);
@@ -2119,6 +2122,7 @@ const overlayAlpha = (flagEnabled && weightOpacityEnabled)
   : baseOverlay;
       return `
         <div class="heatmap-card" style="${flagBg}" title="${c}: S${d.standard ?? '-'} / D${d.deluxe ?? '-'}" onclick="openCountryModal('${c}')">
+          <div style="position:absolute;inset:0;background:${rankRedOverlay};border-radius:inherit;pointer-events:none;mix-blend-mode:normal"></div>
           <div style="position:absolute;inset:0;background:rgba(0,0,0,${overlayAlpha});border-radius:inherit;pointer-events:none"></div>
           <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${arrowColor}"></div>
           <div style="position:relative">
@@ -2588,23 +2592,23 @@ function renderSalesChart() {
       interaction: { mode: 'index', intersect: false },
       scales: {
         y: {
-          ticks: { color:'#7a6a65', font:{size:11}, callback: v => v>=1000 ? (v/1000).toFixed(1)+'k' : v },
-          grid:  { color:'rgba(42,31,34,0.8)' },
-          border: { color:'#2a1f22' }
+          ticks: { color:'#ffffff', font:{size:11}, callback: v => v>=1000 ? (v/1000).toFixed(1)+'k' : v },
+          grid:  { color:'rgba(80,60,65,0.6)' },
+          border: { color:'#444' }
         },
         x: {
           type: 'time',
           time: { unit: 'day', displayFormats: { day: 'M/d' } },
-          ticks: { color:'#7a6a65', font:{size:10}, maxTicksLimit:20, maxRotation:45 },
-          grid:  { display:false },
-          border: { color:'#2a1f22' }
+          ticks: { color:'#ffffff', font:{size:10}, maxTicksLimit:20, maxRotation:45 },
+          grid:  { color:'rgba(80,60,65,0.3)' },
+          border: { color:'#444' }
         }
       },
       plugins: {
-        legend: { display:true, labels:{ color:'#e8ddd5', font:{size:10}, boxWidth:10, padding:12 } },
+        legend: { display:true, labels:{ color:'#ffffff', font:{size:10}, boxWidth:10, padding:12 } },
         tooltip: {
-          backgroundColor:'#1a1318', borderColor:'#2a1f22', borderWidth:1,
-          titleColor:'#e8ddd5', bodyColor:'#e8ddd5',
+          backgroundColor:'#1a1318', borderColor:'#444', borderWidth:1,
+          titleColor:'#ffffff', bodyColor:'#ffffff',
           callbacks: { label: ctx2 => ctx2.parsed.y != null ? `${ctx2.dataset.label}: ${Math.round(ctx2.parsed.y).toLocaleString()} units` : null }
         },
         annotation: { annotations: buildEventAnnotations() }
@@ -2719,23 +2723,23 @@ function renderTrends(data) {
       scales: {
         y: {
           min: 0, max: 105,
-          ticks: { color: '#7a6a65', font: { size: 11 } },
-          grid:  { color: 'rgba(42,31,34,0.8)' },
-          border: { color: '#2a1f22' }
+          ticks: { color: '#ffffff', font: { size: 11 } },
+          grid:  { color: 'rgba(80,60,65,0.6)' },
+          border: { color: '#444' }
         },
         x: {
           type: 'time',
           time: { unit: 'day', displayFormats: { day: 'M/d' } },
-          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 20, maxRotation: 45 },
-          grid:  { display: false },
-          border: { color: '#2a1f22' }
+          ticks: { color: '#ffffff', font: { size: 10 }, maxTicksLimit: 20, maxRotation: 45 },
+          grid:  { color: 'rgba(80,60,65,0.3)' },
+          border: { color: '#444' }
         }
       },
       plugins: {
-        legend: { display: true, labels: { color: '#e8ddd5', font: { size: 11 }, boxWidth: 10, padding: 14 } },
+        legend: { display: true, labels: { color: '#ffffff', font: { size: 11 }, boxWidth: 10, padding: 14 } },
         tooltip: {
-          backgroundColor: '#1a1318', borderColor: '#2a1f22', borderWidth: 1,
-          titleColor: '#e8ddd5', bodyColor: '#e8ddd5',
+          backgroundColor: '#1a1318', borderColor: '#444', borderWidth: 1,
+          titleColor: '#ffffff', bodyColor: '#ffffff',
           callbacks: { label: ctx2 => ctx2.parsed.y != null ? `${ctx2.dataset.label}: ${ctx2.parsed.y}/100` : null }
         },
         annotation: { annotations: buildEventAnnotations() }
@@ -2833,8 +2837,8 @@ function renderSTS(){
     data:{labels:lbs,datasets:[{label:'평균',data:dv,borderColor:'#e74c3c',backgroundColor:'rgba(231,76,60,.12)',borderWidth:2,pointRadius:3,fill:true,tension:.3}]},
     options:{responsive:true,maintainAspectRatio:false,
       scales:{
-        x:{type:'time',time:{unit:'day'},ticks:{color:'#aaa',maxTicksLimit:8},grid:{color:'rgba(255,255,255,.05)'}},
-        y:{reverse:true,min:1,ticks:{color:'#aaa',stepSize:1,callback:v=>'#'+v},grid:{color:'rgba(255,255,255,.05)'}}
+        x:{type:'time',time:{unit:'day'},ticks:{color:'#ffffff',maxTicksLimit:8},grid:{color:'rgba(80,60,65,0.4)'}},
+        y:{reverse:true,min:1,ticks:{color:'#ffffff',stepSize:1,callback:v=>'#'+v},grid:{color:'rgba(80,60,65,0.4)'}}
       },
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'순위 #'+c.parsed.y}}}
     }
@@ -2878,8 +2882,8 @@ function openStsModal(n){
       data:{labels:h.map(x=>x.t),datasets:[{label:'순위',data:h.map(x=>x.r),borderColor:'#e74c3c',backgroundColor:'rgba(231,76,60,.1)',borderWidth:2,pointRadius:3,fill:true,tension:.3}]},
       options:{responsive:true,maintainAspectRatio:false,
         scales:{
-          x:{type:'time',time:{unit:'day'},ticks:{color:'#aaa',maxTicksLimit:6},grid:{color:'rgba(255,255,255,.05)'}},
-          y:{reverse:true,min:1,ticks:{color:'#aaa',stepSize:1,callback:v=>'#'+v},grid:{color:'rgba(255,255,255,.05)'}}
+          x:{type:'time',time:{unit:'day'},ticks:{color:'#ffffff',maxTicksLimit:6},grid:{color:'rgba(80,60,65,0.4)'}},
+          y:{reverse:true,min:1,ticks:{color:'#ffffff',stepSize:1,callback:v=>'#'+v},grid:{color:'rgba(80,60,65,0.4)'}}
         },
         plugins:{legend:{display:false}}
       }
@@ -3073,25 +3077,25 @@ function renderSteam() {
       scales: {
         y: {
           reverse: true,
-          ticks: { color: '#7a6a65', font: { size: 11 }, stepSize: 1 },
-          grid:  { color: 'rgba(42,31,34,0.8)' },
-          border: { color: '#2a1f22' }
+          ticks: { color: '#ffffff', font: { size: 11 }, stepSize: 1 },
+          grid:  { color: 'rgba(80,60,65,0.6)' },
+          border: { color: '#444' }
         },
         x: {
           type: 'time',
           time: { unit: 'day', displayFormats: { day: 'M/d' } },
-          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 20, maxRotation: 45 },
-          grid: { display: false },
-          border: { color: '#2a1f22' }
+          ticks: { color: '#ffffff', font: { size: 10 }, maxTicksLimit: 20, maxRotation: 45 },
+          grid: { color: 'rgba(80,60,65,0.3)' },
+          border: { color: '#444' }
         }
       },
       plugins: {
         legend: { display: false },
         tooltip: {
           backgroundColor: '#1a1318',
-          borderColor: '#2a1f22',
+          borderColor: '#444',
           borderWidth: 1,
-          titleColor: '#e8ddd5',
+          titleColor: '#ffffff',
           bodyColor: '#4fc3f7',
           callbacks: {
             label: ctx2 => ctx2.parsed.y != null ? `위시리스트 순위: #${ctx2.parsed.y}` : '데이터 없음'
@@ -3181,27 +3185,27 @@ function openCountryModal(country) {
       scales: {
         y: {
           reverse: true,
-          ticks: { color: '#7a6a65', font: { size: 11 }, stepSize: 1 },
-          grid:  { color: 'rgba(42,31,34,0.8)' },
-          border: { color: '#2a1f22' }
+          ticks: { color: '#ffffff', font: { size: 11 }, stepSize: 1 },
+          grid:  { color: 'rgba(80,60,65,0.6)' },
+          border: { color: '#444' }
         },
         x: {
-          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 10, maxRotation: 0 },
-          grid:  { display: false },
-          border: { color: '#2a1f22' }
+          ticks: { color: '#ffffff', font: { size: 10 }, maxTicksLimit: 10, maxRotation: 0 },
+          grid:  { color: 'rgba(80,60,65,0.3)' },
+          border: { color: '#444' }
         }
       },
       plugins: {
         legend: {
           display: true,
-          labels: { color: '#e8ddd5', font: { size: 11 }, boxWidth: 12, padding: 16 }
+          labels: { color: '#ffffff', font: { size: 11 }, boxWidth: 12, padding: 16 }
         },
         tooltip: {
           backgroundColor: '#1a1318',
-          borderColor: '#2a1f22',
+          borderColor: '#444',
           borderWidth: 1,
-          titleColor: '#e8ddd5',
-          bodyColor: '#e8ddd5',
+          titleColor: '#ffffff',
+          bodyColor: '#ffffff',
           callbacks: {
             label: ctx2 => `${ctx2.dataset.label}: ${ctx2.raw != null ? ctx2.raw + '위' : '—'}`
           }
