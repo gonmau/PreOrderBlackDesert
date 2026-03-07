@@ -7,7 +7,6 @@ import json
 from datetime import datetime, timezone, timedelta
 from concurrent.futures import ThreadPoolExecutor
 
-# 셀레니움 라이브러리
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -21,11 +20,12 @@ KST = timezone(timedelta(hours=9))
 # =============================================================================
 # 설정
 # =============================================================================
-
 CONCEPT_ID = "10002363"
 HISTORY_FILE = "bestseller_history.json"
-# 깃허브 액션(2-Core CPU) 최적화 병렬 수
 MAX_WORKERS = 4 
+
+# 전역 변수로 드라이버 경로 저장 (충돌 방지)
+CHROME_DRIVER_PATH = None
 
 REGIONS = {
     "Americas": ["미국", "캐나다", "브라질", "멕시코", "아르헨티나", "칠레", "콜롬비아", "페루", "우루과이", "볼리비아", "과테말라", "온두라스", "코스타리카", "에콰도르", "엘살바도르", "니카라과", "파나마", "파라과이"],
@@ -52,21 +52,21 @@ def get_driver():
     options.add_argument("--log-level=3")
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
     
-    # 이미지 로딩 비활성화 (속도 향상 핵심)
     prefs = {"profile.managed_default_content_settings.images": 2}
     options.add_experimental_option("prefs", prefs)
     
-    service = Service(ChromeDriverManager().install())
+    # 미리 설치된 CHROME_DRIVER_PATH 사용
+    service = Service(CHROME_DRIVER_PATH)
     return webdriver.Chrome(service=service, options=options)
 
 def check_country_rank(country):
     if country not in COUNTRY_CODES: return country, None
     lang, code = COUNTRY_CODES[country]
-    driver = get_driver()
+    driver = None
     found_rank = None
     
     try:
-        # 현실적인 데이터 수집을 위해 3페이지(약 72위)까지만 탐색
+        driver = get_driver()
         for page in range(1, 4):
             url = f"https://store.playstation.com/{lang}-{code}/pages/browse/{page}"
             driver.get(url)
@@ -86,7 +86,7 @@ def check_country_rank(country):
     except Exception as e:
         print(f"Error in {country}: {e}")
     finally:
-        driver.quit()
+        if driver: driver.quit()
     return country, found_rank
 
 def calculate_avg(results):
@@ -112,6 +112,10 @@ def load_history_safe():
 # =============================================================================
 
 if __name__ == "__main__":
+    # 1. 드라이버 미리 1회 설치 (병렬 충돌 방지 핵심)
+    print("🔧 크롬 드라이버 설치 중...")
+    CHROME_DRIVER_PATH = ChromeDriverManager().install()
+    
     start_time = time.time()
     all_countries = [c for r in REGIONS.values() for c in r]
     results = {}
@@ -121,9 +125,12 @@ if __name__ == "__main__":
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = {executor.submit(check_country_rank, c): c for c in all_countries}
         for future in futures:
-            country, rank = future.result()
-            results[country] = rank
-            print(f"  - [{country}] {'Rank: '+str(rank) if rank else 'Not Found'}")
+            try:
+                country, rank = future.result()
+                results[country] = rank
+                print(f"  - [{country}] {'Rank: '+str(rank) if rank else 'Not Found'}")
+            except Exception as e:
+                print(f"Critical error in thread: {e}")
 
     combined_avg = calculate_avg(results)
     history, _ = load_history_safe()
