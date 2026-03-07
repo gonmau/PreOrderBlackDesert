@@ -222,12 +222,14 @@ def make_graphs(history):
         except:
             continue
         results = entry.get("results", {})
-        # JSON 키는 한글 국가명 — 모두 있는지 확인
-        if not all(name_by_cc[cc] in results for cc in cc_list):
+        # 최소 1개국 이상 있으면 포함 (국가 수 변경에도 기존 데이터 보존)
+        if not results:
             continue
         timestamps.append(ts)
         for cc in cc_list:
-            cc_ranks[cc].append(results[name_by_cc[cc]].get("rank"))
+            name = name_by_cc[cc]
+            rank = results.get(name, {}).get("rank") if name in results else None
+            cc_ranks[cc].append(rank)
         wavg_list.append(calc_weighted_avg(results))
 
     plt.rcParams["font.family"] = ["DejaVu Sans", "sans-serif"]
@@ -320,12 +322,13 @@ def make_graphs(history):
     latest_ranks = {}
     for entry in reversed(history):
         results = entry.get("results", {})
-        if all(name_by_cc[cc] in results for cc in cc_list):
+        if results:  # 있는 국가만 사용, 전체 완전 체크 제거
             for cc in cc_list:
-                r = results[name_by_cc[cc]].get("rank")
-                if r is not None:
-                    latest_ranks[cc.upper()] = r
-            break
+                name = name_by_cc[cc]
+                if name in results and results[name].get("rank") is not None:
+                    latest_ranks[cc.upper()] = results[name]["rank"]
+            if latest_ranks:
+                break
 
     if not latest_ranks:
         return buf1, None
@@ -413,10 +416,10 @@ def main():
 
     # 히스토리 저장 (이전 레코드 먼저 가져오기)
     history = load_history()
-    # 이전 완전한 레코드 (10개국) 추출 — 변동량 계산용
+    # 이전 레코드 추출 — 국가 수 무관하게 가장 최근 유효 레코드 사용
     prev_results = None
     for entry in reversed(history):
-        if len(entry.get("results", {})) == len(TARGET_COUNTRIES):
+        if entry.get("results"):
             prev_results = entry["results"]
             break
 
