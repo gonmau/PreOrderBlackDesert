@@ -629,7 +629,8 @@
       align-items: center;
       gap: 10px;
     }
-    .edition-modal-flag { font-size: 1.8rem; }
+    .edition-modal-flag { display: inline-flex; align-items: center; }
+    .edition-modal-flag img { width: 36px; height: 25px; object-fit: cover; border-radius: 3px; }
     .edition-modal-name {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 1.5rem;
@@ -869,7 +870,8 @@
       align-items: center;
       gap: 10px;
     }
-    .modal-flag { font-size: 2rem; }
+    .modal-flag { display: inline-flex; align-items: center; }
+    .modal-flag img { width: 40px; height: 28px; object-fit: cover; border-radius: 3px; }
     .modal-country-name {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 1.6rem;
@@ -1569,7 +1571,7 @@
     <div class="steam-ts-modal-overlay" id="sts-modal" onclick="closeStsModal(event)">
       <div class="steam-ts-modal">
         <div class="steam-ts-modal-header">
-          <div class="steam-ts-modal-title" id="sts-modal-title">—</div>
+          <div class="steam-ts-modal-title" id="sts-modal-title" style="display:flex;align-items:center;gap:10px">—</div>
           <button class="steam-ts-modal-close" onclick="closeStsModalDirect()">✕</button>
         </div>
         <div class="steam-ts-modal-stats">
@@ -3074,7 +3076,8 @@ function openStsModal(n){
   const m=document.getElementById('sts-modal');
   if(!m||!stsHist.length)return;
   const cc=STS_CC[n]||'us';
-  document.getElementById('sts-modal-title').textContent=(STS_F[n]||'')+' '+n;
+  const flagImg=`<img src="https://flagcdn.com/w40/${cc}.png" style="width:32px;height:22px;object-fit:cover;border-radius:2px;display:inline-block;vertical-align:middle">`;
+  document.getElementById('sts-modal-title').innerHTML=flagImg+' '+n;
   document.getElementById('sts-modal-link').href='https://store.steampowered.com/charts/topselling/'+cc.toUpperCase();
   const h=stsHist.filter(x=>x.results&&x.results[n]&&x.results[n].rank).map(x=>({t:new Date(x.timestamp),r:x.results[n].rank}));
   if(!h.length){
@@ -3338,7 +3341,12 @@ function openCountryModal(country) {
   const pcr = combinedRank(pd.standard, pd.deluxe);
 
   // 헤더
-  document.getElementById('modal-flag').textContent  = FLAGS[country] || '🏳️';
+  const locale = LOCALE_MAP[country];
+  const flagCode = locale ? locale.split('-').pop().toLowerCase() : null;
+  const flagImgHtml = flagCode
+    ? `<img src="https://flagcdn.com/w40/${flagCode}.png" style="width:32px;height:22px;object-fit:cover;border-radius:2px;display:inline-block;vertical-align:middle">`
+    : '🏳️';
+  document.getElementById('modal-flag').innerHTML  = flagImgHtml;
   document.getElementById('modal-name').textContent  = country;
 
   // 스탯
@@ -3453,7 +3461,12 @@ function openEditionModal(country, edition) {
   const editionLabel = edition === 'standard' ? '스탠다드' : edition === 'deluxe' ? '디럭스' : '종합 (Best)';
 
   // 헤더 세팅
-  document.getElementById('em-flag').textContent = FLAGS[country] || '🏳️';
+  const emLocale = LOCALE_MAP[country];
+  const emFlagCode = emLocale ? emLocale.split('-').pop().toLowerCase() : null;
+  const emFlagHtml = emFlagCode
+    ? `<img src="https://flagcdn.com/w40/${emFlagCode}.png" style="width:32px;height:22px;object-fit:cover;border-radius:2px;display:inline-block;vertical-align:middle">`
+    : '🏳️';
+  document.getElementById('em-flag').innerHTML = emFlagHtml;
   document.getElementById('em-name').textContent = country;
   document.getElementById('em-edition-badge').textContent = editionLabel;
   document.getElementById('em-chart-title').textContent = `${country} · ${editionLabel} 순위 히스토리`;
