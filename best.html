@@ -67,22 +67,22 @@
   </header>
 
   <div class="stats">
-    <div class="card"><div class="lbl">Global Weighted Avg</div><div class="val" id="stat-avg">—</div></div>
+    <div class="card"><div class="lbl">Weighted Average</div><div class="val" id="stat-avg">—</div></div>
     <div class="card">
-      <div class="lbl">Best Performance</div>
+      <div class="lbl">Best Rank</div>
       <div class="val" id="stat-best-val">—</div>
       <div class="sub" id="stat-best-name">...</div>
     </div>
     <div class="card">
-      <div class="lbl">Worst Performance</div>
+      <div class="lbl">Worst Rank</div>
       <div class="val" id="stat-worst-val">—</div>
       <div class="sub" id="stat-worst-name">...</div>
     </div>
-    <div class="card"><div class="lbl">Active Tracking</div><div class="val" id="stat-count">—</div></div>
+    <div class="card"><div class="lbl">Active Countries</div><div class="val" id="stat-count">—</div></div>
   </div>
 
   <div class="top10-section">
-    <div class="top10-title">Key Markets (Top 10 Weight) - Click for Trend</div>
+    <div class="top10-title">Market Leaders (Top 10 Weight) - Click for History</div>
     <div class="top10-grid" id="top10-grid"></div>
   </div>
 
@@ -92,10 +92,10 @@
     <table>
       <thead>
         <tr>
-          <th onclick="setSort('name')">Country (Click Name for PS Store)</th>
-          <th onclick="setSort('rank')">Rank (Click for Trend)</th>
+          <th onclick="setSort('name')">Country (PS Store Link)</th>
+          <th onclick="setSort('rank')">Current Rank</th>
           <th onclick="setSort('change')">Trend</th>
-          <th onclick="setSort('weight')">Weight</th>
+          <th onclick="setSort('weight')">Weight ↓</th>
         </tr>
       </thead>
       <tbody id="table-body"></tbody>
@@ -115,7 +115,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 
 <script>
-// 파이썬 코드의 COUNTRY_CODES 기반 URL 생성용 데이터
+/** 파이썬 코드 기반 URL 및 가중치 동기화 **/
 const COUNTRY_INFO = {
   "미국":{c:"us",l:"en"},"캐나다":{c:"ca",l:"en"},"브라질":{c:"br",l:"pt"},"멕시코":{c:"mx",l:"es"},"영국":{c:"gb",l:"en"},"독일":{c:"de",l:"de"},"프랑스":{c:"fr",l:"fr"},"스페인":{c:"es",l:"es"},"이탈리아":{c:"it",l:"it"},"일본":{c:"jp",l:"ja"},"한국":{c:"kr",l:"ko"},"호주":{c:"au",l:"en"},"아르헨티나":{c:"ar",l:"es"},"칠레":{c:"cl",l:"es"},"콜롬비아":{c:"co",l:"es"},"페루":{c:"pe",l:"es"},"네덜란드":{c:"nl",l:"nl"},"폴란드":{c:"pl",l:"pl"},"사우디아라비아":{c:"sa",l:"en"},"대만":{c:"tw",l:"zh-hant"},"홍콩":{c:"hk",l:"en"},"태국":{c:"th",l:"en"}
 };
@@ -123,7 +123,8 @@ const WEIGHTS = {"미국":30.0,"영국":8.5,"일본":8.0,"독일":6.5,"프랑스
 const FLAGS = {"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","한국":"🇰🇷","호주":"🇦🇺","아르헨티나":"🇦🇷","칠레":"🇨🇱","콜롬비아":"🇨🇴","페루":"🇵🇪","네덜란드":"🇳🇱","사우디아라비아":"🇸🇦","아랍에미리트":"🇦🇪","폴란드":"🇵🇱","대만":"🇹🇼","홍콩":"🇭🇰","태국":"🇹🇭","중국":"🇨🇳","노르웨이":"🇳🇴","덴마크":"🇩🇰","스위스":"🇨🇭"};
 
 let historyData = [];
-let sortKey = 'rank'; let sortAsc = true;
+// 기본 정렬을 가중치(weight) 기준으로, 내림차순(false) 설정
+let sortKey = 'weight'; let sortAsc = false; 
 let mainChart = null; let countryChart = null;
 
 async function init() {
@@ -138,7 +139,6 @@ function getRank(entry, country) {
   return (typeof r === 'object') ? Math.min(...Object.values(r).filter(v => v !== null)) : r;
 }
 
-// 스토어 URL 생성 함수
 function getStoreUrl(name) {
   const info = COUNTRY_INFO[name];
   if(!info) return "https://store.playstation.com/";
@@ -182,6 +182,7 @@ function render() {
     t10Grid.appendChild(div);
   });
 
+  // 정렬 로직
   list.sort((a, b) => sortAsc ? (a[sortKey] > b[sortKey] ? 1 : -1) : (a[sortKey] < b[sortKey] ? 1 : -1));
   const tbody = document.getElementById('table-body');
   tbody.innerHTML = '';
@@ -257,7 +258,7 @@ function showCountryChart(countryName) {
 }
 
 function closeModal() { document.getElementById('chartModal').style.display = 'none'; }
-function setSort(key) { if (sortKey === key) sortAsc = !sortAsc; else { sortKey = key; sortAsc = true; } render(); }
+function setSort(key) { if (sortKey === key) sortAsc = !sortAsc; else { sortKey = key; sortAsc = (key === 'weight' ? false : true); } render(); }
 
 init();
 </script>
