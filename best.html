@@ -808,8 +808,15 @@ function renderChart() {
       scales: {
         y: {
           reverse: true,
+          min: Math.max(1, Math.min(...data.filter(v => v !== null)) - 2),
+          max: Math.max(...data.filter(v => v !== null)) + 2,
           grid: { color: 'rgba(46,40,36,0.6)' },
-          ticks: { color: '#5a4f46', font: { family: 'Rajdhani', size: 12 } },
+          ticks: {
+            color: '#5a4f46',
+            font: { family: 'Rajdhani', size: 12 },
+            stepSize: 1,
+            callback: v => `${v}위`
+          },
           title: { display: true, text: '순위 (낮을수록 좋음)', color: '#5a4f46', font: { family: 'Rajdhani' } }
         },
         x: {
