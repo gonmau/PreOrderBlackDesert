@@ -3121,16 +3121,71 @@ function renderSTS(){
   const lbs=v.map(h=>new Date(h.timestamp)),dv=v.map(h=>stsAvg(h));
   const ctx=document.getElementById('stsChart').getContext('2d');
   if(stsCI)stsCI.destroy();
+
+  // ── 4개 특수 포인트 인덱스 ──
+  const idxFirst  = 0;
+  const idxLast   = dv.length - 1;
+  const idxBest   = dv.reduce((bi,val,i,a) => val!==null && (a[bi]===null || val<a[bi]) ? i : bi, 0);
+  const idxWorst  = dv.reduce((wi,val,i,a) => val!==null && (a[wi]===null || val>a[wi]) ? i : wi, 0);
+  const specialIdx = new Set([idxFirst, idxLast, idxBest, idxWorst]);
+
+  const pointRadii  = dv.map((_,i) => specialIdx.has(i) ? 5 : 0);
+  const pointColors = dv.map((_,i) => {
+    if (i === idxBest)  return '#2ecc71';
+    if (i === idxWorst) return '#e74c3c';
+    if (i === idxLast)  return '#f1c40f';
+    return '#ffffff';
+  });
+
+  const stsLabelPlugin = {
+    id: 'stsLabelPlugin',
+    afterDatasetsDraw(chart) {
+      const { ctx: c, scales: { x, y } } = chart;
+      const ds = chart.data.datasets[0].data;
+      const specList = [
+        { idx: idxFirst,  label: '시작', color: '#ffffff' },
+        { idx: idxLast,   label: '현재', color: '#f1c40f' },
+        { idx: idxBest,   label: '최고', color: '#2ecc71' },
+        { idx: idxWorst,  label: '최저', color: '#e74c3c' },
+      ];
+      specList.forEach(({ idx, label, color }) => {
+        const val = ds[idx];
+        if (val == null) return;
+        const px = x.getPixelForValue(lbs[idx]);
+        const py = y.getPixelForValue(val);
+        const text = `${label}: #${val.toFixed(1)}`;
+        const offsetY = (label === '최저') ? 18 : -14;
+        c.save();
+        c.font = 'bold 10px sans-serif';
+        c.textAlign = 'center';
+        c.textBaseline = 'middle';
+        c.strokeStyle = 'rgba(0,0,0,0.9)';
+        c.lineWidth = 3;
+        c.strokeText(text, px, py + offsetY);
+        c.fillStyle = color;
+        c.fillText(text, px, py + offsetY);
+        c.restore();
+      });
+    }
+  };
+
   stsCI=new Chart(ctx,{
     type:'line',
-    data:{labels:lbs,datasets:[{label:'평균',data:dv,borderColor:'#e74c3c',backgroundColor:'rgba(231,76,60,.12)',borderWidth:2,pointRadius:3,fill:true,tension:.3}]},
+    data:{labels:lbs,datasets:[{
+      label:'평균',data:dv,
+      borderColor:'#e74c3c',backgroundColor:'rgba(231,76,60,.12)',
+      borderWidth:2,pointRadius:pointRadii,
+      pointBackgroundColor:pointColors,pointBorderColor:pointColors,
+      fill:true,tension:.3
+    }]},
     options:{responsive:true,maintainAspectRatio:false,
       scales:{
         x:{type:'time',time:{unit:'day'},ticks:{color:'#ffffff',maxTicksLimit:8},grid:{color:'rgba(80,60,65,0.4)'}},
         y:{reverse:true,min:1,ticks:{color:'#ffffff',stepSize:1,callback:v=>'#'+v},grid:{color:'rgba(80,60,65,0.4)'}}
       },
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'순위 #'+c.parsed.y}}}
-    }
+    },
+    plugins:[stsLabelPlugin]
   });
   renderStsGrid(lat,prv);
 }
