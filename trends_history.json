@@ -8713,5 +8713,14 @@
         "geo_code": "US"
       }
     }
+  },
+  {
+    "timestamp": "2026-03-09T11:51:40.610181",
+    "google": {
+      "score": 70,
+      "avg_7d": 21,
+      "top_regions": {}
+    },
+    "console_markets": {}
   }
 ]
