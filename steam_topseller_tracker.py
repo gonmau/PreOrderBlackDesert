@@ -242,12 +242,19 @@ def make_graphs(history):
     if valid_ts0:
         ax0.plot(valid_ts0, valid_w0, color="#FFD700", linewidth=2.5,
                  marker="o", markersize=5, label="Weighted Avg")
-        # 각 포인트에 값 라벨
-        for t, w in zip(valid_ts0, valid_w0):
+
+        # 시작 / 최고(순위 숫자 가장 작음) / 최저(순위 숫자 가장 큼) / 최신 4개 포인트만 라벨
+        best_idx  = valid_w0.index(min(valid_w0))   # 숫자 작을수록 높은 순위
+        worst_idx = valid_w0.index(max(valid_w0))
+        special = {0, best_idx, worst_idx, len(valid_w0) - 1}
+
+        for idx in sorted(special):
+            t, w = valid_ts0[idx], valid_w0[idx]
             ax0.annotate(f"{w:.1f}",
-                         xy=(t, w), xytext=(0, 8), textcoords="offset points",
-                         fontsize=8, color="#FFD700", ha="center")
-        # 최신값 강조
+                         xy=(t, w), xytext=(0, 10), textcoords="offset points",
+                         fontsize=9, color="#FFD700", ha="center", fontweight="bold")
+
+        # 최신값 강조 가로선
         ax0.axhline(y=valid_w0[-1], color="#FFD700", linestyle="--", alpha=0.3, linewidth=1)
 
     ax0.invert_yaxis()
