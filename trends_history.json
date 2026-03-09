@@ -8689,5 +8689,14 @@
         "geo_code": "FR"
       }
     }
+  },
+  {
+    "timestamp": "2026-03-09T07:21:18.413588",
+    "google": {
+      "score": 69,
+      "avg_7d": 21,
+      "top_regions": {}
+    },
+    "console_markets": {}
   }
 ]
