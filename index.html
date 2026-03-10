@@ -508,13 +508,20 @@
       border: 1px solid var(--border);
       border-radius: 0 0 4px 4px;
       overflow-x: auto;
-      overflow-y: visible;
       margin-bottom: 32px;
       -webkit-overflow-scrolling: touch;
-      position: relative;
     }
 
-    table { width: max-content; min-width: 100%; border-collapse: collapse; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    table col.col-country { width: 120px; }
+    table col.col-rank    { width: 90px; }
+    table col.col-weight  { width: 70px; }
+    @media (max-width: 480px) {
+      table col.col-country { width: 90px; }
+      table col.col-rank    { width: 72px; }
+      table col.col-weight  { width: 60px; }
+      .hide-mobile { display: none; }
+    }
 
     thead tr {
       background: var(--surface2);
@@ -1559,13 +1566,20 @@
       </div>
       <div class="table-wrap">
         <table>
+          <colgroup>
+            <col class="col-country">
+            <col class="col-rank">
+            <col class="col-rank">
+            <col class="col-rank">
+            <col class="col-weight">
+          </colgroup>
           <thead>
             <tr>
               <th class="sortable" onclick="setSort('name')">국가 <span class="sort-icon" id="sort-icon-name">⇅</span></th>
               <th class="sortable" onclick="setSort('standard')">스탠다드 <span class="sort-icon" id="sort-icon-standard">⇅</span></th>
               <th class="sortable" onclick="setSort('deluxe')">디럭스 <span class="sort-icon" id="sort-icon-deluxe">⇅</span></th>
               <th class="sortable" onclick="setSort('combined')">종합 (Best) <span class="sort-icon" id="sort-icon-combined">⇅</span></th>
-              <th class="sortable" onclick="setSort('weight')">가중치 <span class="sort-icon" id="sort-icon-weight">⇅</span></th>
+              <th class="sortable hide-mobile" onclick="setSort('weight')">가중치 <span class="sort-icon" id="sort-icon-weight">⇅</span></th>
             </tr>
           </thead>
           <tbody id="rank-table"></tbody>
@@ -2563,7 +2577,7 @@ function renderTable(tab, raw, prevRaw) {
             ? `<button class="rank-badge" onclick="openEditionModal('${c}','combined')" title="${c} 종합 히스토리">${cr}위</button>${diffBadge(cr, prevCr)}`
             : `<button class="rank-badge no-data">—</button>`}
         </td>
-        <td><span class="weight-badge">${(MARKET_WEIGHTS[c] || 0).toFixed(1)}</span></td>
+        <td class="hide-mobile"><span class="weight-badge">${(MARKET_WEIGHTS[c] || 0).toFixed(1)}</span></td>
       </tr>`;
   }).join('');
 
