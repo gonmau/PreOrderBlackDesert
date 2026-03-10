@@ -360,6 +360,17 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .section-title > span:first-child,
+    .section-title > .section-title-text {
+      white-space: nowrap;
+      min-width: 0;
+    }
+
+    @media (max-width: 480px) {
+      .section-title { font-size: 1rem; letter-spacing: 2px; gap: 6px; }
     }
 
     .section-title::after {
@@ -542,14 +553,16 @@
     .country-cell {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      min-width: 80px;
+      white-space: nowrap;
     }
 
-    .flag { font-size: 1.2rem; }
+    .flag { font-size: 1.2rem; flex-shrink: 0; }
     .flag-twemoji { display: inline-flex; align-items: center; flex-shrink: 0; }
     .flag-twemoji img { width: 24px; height: 24px; object-fit: contain; border-radius: 2px; vertical-align: middle; }
 
-    .country-name { font-weight: 700; }
+    .country-name { font-weight: 700; white-space: nowrap; }
 
     .weight-badge {
       font-size: 0.65rem;
@@ -1584,7 +1597,7 @@
           <div class="steam-stat-diff">개 데이터포인트</div>
         </div>
       </div>
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('steam-body', this)">📈 위시리스트 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'steam-section','Steam_위시리스트')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button></div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('steam-body', this)"><span style="white-space:nowrap">📈 위시리스트 순위 히스토리</span> <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'steam-section','Steam_위시리스트')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button></div>
       <div class="collapsible-body collapsed" id="steam-body">
       <div class="steam-chart-box">
         <div class="event-toggle-wrap">
@@ -1639,11 +1652,11 @@
         </div>
       </div>
 
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-chart-body',this)">📈  평균 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'steam-ts-section','Steam_TopSeller')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button></div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-chart-body',this)"><span style="white-space:nowrap">📈  평균 순위 히스토리</span> <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'steam-ts-section','Steam_TopSeller')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button></div>
       <div class="collapsible-body collapsed" id="sts-chart-body">
         <div class="steam-ts-chart-box"><div class="steam-ts-chart-inner"><canvas id="stsChart"></canvas></div></div>
       </div>
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-countries-body',this)">🌍 국가별 현황 <button class="collapse-btn">▼ 펼치기</button><button id="capture-countries-btn" class="capture-btn" onclick="captureAllCountryCharts(event)" disabled style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1);color:#555;cursor:not-allowed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">데이터 로딩 중…</span></button></div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-countries-body',this)"><span style="white-space:nowrap">🌍 국가별 현황</span> <button class="collapse-btn">▼ 펼치기</button><button id="capture-countries-btn" class="capture-btn" onclick="captureAllCountryCharts(event)" disabled style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1);color:#555;cursor:not-allowed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">데이터 로딩 중…</span></button></div>
       <div class="collapsible-body collapsed" id="sts-countries-body">
         <div class="steam-ts-country-grid" id="sts-country-grid"></div>
       </div>
@@ -1698,7 +1711,7 @@
       </div>
 
       <!-- 글로벌 히스토리 차트 (접기/펼치기) -->
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('trends-body', this)">📈 검색 관심도 히스토리 <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'trends-section','Google_트렌드')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button></div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('trends-body', this)"><span style="white-space:nowrap">📈 검색 관심도 히스토리</span> <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'trends-section','Google_트렌드')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button></div>
       <div class="collapsible-body collapsed" id="trends-body">
       <div class="trends-chart-box">
         <div class="event-toggle-wrap">
@@ -1752,7 +1765,7 @@
       </div>
 
       <!-- 차트 (접기/펼치기) -->
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sales-body', this)">📈 일별 / 누적 판매량 추산 <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'sales-section','예상_판매량')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button></div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sales-body', this)"><span style="white-space:nowrap">📈 일별 / 누적 판매량 추산</span> <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'sales-section','예상_판매량')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button></div>
       <div class="collapsible-body collapsed" id="sales-body">
       <div class="sales-chart-box">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
