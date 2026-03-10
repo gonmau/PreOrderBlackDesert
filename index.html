@@ -1358,7 +1358,31 @@
       .heatmap-card .hm-edition { font-size: 0.58rem; }
       .heatmap-rank-label { font-size: 1rem; width: 36px; padding-right: 6px; }
     }
+  /* ── 캡처 버튼 ── */
+  .capture-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    color: #ccc; cursor: pointer; transition: all 0.2s;
+    margin-left: 10px; vertical-align: middle; white-space: nowrap;
+  }
+  .capture-btn:hover { background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.3); }
+  .capture-btn.loading { opacity: 0.5; pointer-events: none; }
+  .capture-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+  /* 전체 캡처 플로팅 버튼 */
+  #capture-all-btn {
+    position: fixed; bottom: 24px; right: 24px; z-index: 999;
+    display: flex; align-items: center; gap: 7px;
+    padding: 10px 18px; border-radius: 30px; font-size: 13px; font-weight: 700;
+    background: linear-gradient(135deg, #c0392b, #922b21);
+    border: 1px solid rgba(255,255,255,0.2); color: #fff;
+    cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    transition: all 0.2s;
+  }
+  #capture-all-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.6); }
+  #capture-all-btn.loading { opacity: 0.6; pointer-events: none; }
   </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -1432,8 +1456,8 @@
     </div>
 
     <!-- CHART -->
-    <div class="chart-section fade-in">
-      <div class="section-title collapsible-header" onclick="toggleSection('rank-chart-body', this)">순위 히스토리 (가중 평균) <button class="collapse-btn">▼ 펼치기</button></div>
+    <div class="chart-section fade-in" id="chart-section-ps">
+      <div class="section-title collapsible-header" onclick="toggleSection('rank-chart-body', this)">순위 히스토리 (가중 평균) <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'chart-section-ps','PS_순위히스토리')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처</button></div>
       <div class="collapsible-body collapsed" id="rank-chart-body">
       <div class="event-toggle-wrap" id="ev-toggle-rank">
         <div class="event-toggle-header" onclick="toggleEvPanel('rank')">
@@ -1449,7 +1473,7 @@
     </div>
 
     <!-- HEATMAP -->
-    <div class="heatmap-section fade-in">
+    <div class="heatmap-section fade-in" id="heatmap-section">
       <div class="section-title heatmap-title collapsible-header" style="display:flex;align-items:center" onclick="toggleSection('heatmap-body', this)">
         🌍 전세계 현황 한눈에
         <div class="flag-controls" onclick="event.stopPropagation()">
@@ -1474,6 +1498,7 @@
     <!-- TABLE -->
     <div class="fade-in">
       <div class="section-title collapsible-header" style="display:flex;align-items:center;gap:10px" onclick="toggleSection('table-collapse', this)">
+        <span style="flex:1">🌍 국가별 현황</span><button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'heatmap-section','PS_국가별현황')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처</button>
         📊 국가별 순위
         <button class="dl-btn" onclick="event.stopPropagation();downloadPsCSV()" title="CSV 다운로드">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8.5L2 4.5h2.5V1h3v3.5H10L6 8.5zM1 10h10v1.5H1V10z"/></svg>
@@ -1506,7 +1531,7 @@
     </div>
 
     <!-- STEAM SECTION -->
-    <div class="steam-section fade-in">
+    <div class="steam-section fade-in" id="steam-section">
       <div class="steam-header" style="cursor:default">
         <div class="steam-title-row">
           <div class="section-title" style="margin-bottom:0">🎮 Steam 위시리스트 순위</div>
@@ -1539,7 +1564,7 @@
           <div class="steam-stat-diff">개 데이터포인트</div>
         </div>
       </div>
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('steam-body', this)">📈 위시리스트 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button></div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('steam-body', this)">📈 위시리스트 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'steam-section','Steam_위시리스트')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처</button></div>
       <div class="collapsible-body collapsed" id="steam-body">
       <div class="steam-chart-box">
         <div class="event-toggle-wrap">
@@ -1557,7 +1582,7 @@
     </div>
 
     <!-- STEAM TOP SELLER SECTION -->
-    <div class="steam-ts-section fade-in">
+    <div class="steam-ts-section fade-in" id="steam-ts-section">
       <div class="steam-header" style="cursor:default">
         <div class="steam-title-row">
           <div class="section-title" style="margin-bottom:0">📊 Steam Top Seller 순위</div>
@@ -1594,7 +1619,7 @@
         </div>
       </div>
 
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-chart-body',this)">📈  평균 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button></div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-chart-body',this)">📈  평균 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'steam-ts-section','Steam_TopSeller')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처</button></div>
       <div class="collapsible-body collapsed" id="sts-chart-body">
         <div class="steam-ts-chart-box"><div class="steam-ts-chart-inner"><canvas id="stsChart"></canvas></div></div>
       </div>
@@ -1622,7 +1647,7 @@
     </div>
 
     <!-- TRENDS SECTION -->
-    <div class="trends-section fade-in">
+    <div class="trends-section fade-in" id="trends-section">
       <div class="steam-header" style="cursor:default">
         <div class="section-title" style="margin-bottom:0">🔍 Google 검색 트렌드</div>
         <div style="display:flex;align-items:center;gap:12px">
@@ -1650,7 +1675,7 @@
       </div>
 
       <!-- 글로벌 히스토리 차트 (접기/펼치기) -->
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('trends-body', this)">📈 검색 관심도 히스토리 <button class="collapse-btn">▼ 펼치기</button></div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('trends-body', this)">📈 검색 관심도 히스토리 <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'trends-section','Google_트렌드')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처</button></div>
       <div class="collapsible-body collapsed" id="trends-body">
       <div class="trends-chart-box">
         <div class="event-toggle-wrap">
@@ -1671,7 +1696,7 @@
     </div>
 
     <!-- SALES ESTIMATE SECTION -->
-    <div class="sales-section fade-in">
+    <div class="sales-section fade-in" id="sales-section">
       <div class="steam-header" style="cursor:default">
         <div class="section-title" style="margin-bottom:0">💰 예상 판매량 추산</div>
         <div style="display:flex;align-items:center;gap:12px">
@@ -1704,7 +1729,7 @@
       </div>
 
       <!-- 차트 (접기/펼치기) -->
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sales-body', this)">📈 일별 / 누적 판매량 추산 <button class="collapse-btn">▼ 펼치기</button></div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sales-body', this)">📈 일별 / 누적 판매량 추산 <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'sales-section','예상_판매량')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처</button></div>
       <div class="collapsible-body collapsed" id="sales-body">
       <div class="sales-chart-box">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
@@ -3884,6 +3909,89 @@ loadData().then(() => renderSalesEstimate());
 loadSteamData();
 loadTrendsData();
 loadSteamTopSellerData();
+
+// ── 섹션 ID 자동 부여 ──
+document.addEventListener('DOMContentLoaded', () => {
+  const map = {
+    'chart-section':    'chart-section-ps',
+    'heatmap-section':  'heatmap-section',
+    'steam-section':    'steam-section',
+    'steam-ts-section': 'steam-ts-section',
+    'trends-section':   'trends-section',
+    'sales-section':    'sales-section',
+  };
+  Object.entries(map).forEach(([cls, id]) => {
+    const el = document.querySelector('.' + cls);
+    if (el && !el.id) el.id = id;
+  });
+});
+
+// ── 캡처 함수 ──
+async function captureSection(e, sectionId, filename) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  const btn = e?.currentTarget;
+  const el = document.getElementById(sectionId) || document.querySelector('.' + sectionId);
+  if (!el) { alert('섹션을 찾을 수 없습니다: ' + sectionId); return; }
+
+  if (btn) btn.classList.add('loading');
+  try {
+    // 접힌 섹션 임시 펼치기
+    const collapsed = el.querySelectorAll('.collapsible-body.collapsed');
+    collapsed.forEach(c => c.classList.remove('collapsed'));
+
+    await new Promise(r => setTimeout(r, 300)); // 차트 렌더 대기
+
+    const canvas = await html2canvas(el, {
+      backgroundColor: '#0d0608',
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+    });
+
+    // 다시 접기
+    collapsed.forEach(c => c.classList.add('collapsed'));
+
+    const now = new Date();
+    const ts = `${now.getMonth()+1}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = `크림슨데저트_${filename}_${ts}.png`;
+    a.click();
+  } catch(err) {
+    console.error(err);
+    alert('캡처 실패: ' + err.message);
+  } finally {
+    if (btn) btn.classList.remove('loading');
+  }
+}
+
+async function captureAll() {
+  const btn = document.getElementById('capture-all-btn');
+  if (btn) btn.classList.add('loading');
+
+  const sections = [
+    { id: 'chart-section-ps',  name: 'PS_순위히스토리' },
+    { id: 'heatmap-section',   name: 'PS_국가별현황' },
+    { id: 'steam-section',     name: 'Steam_위시리스트' },
+    { id: 'steam-ts-section',  name: 'Steam_TopSeller' },
+    { id: 'trends-section',    name: 'Google_트렌드' },
+    { id: 'sales-section',     name: '예상_판매량' },
+  ];
+
+  for (const s of sections) {
+    await captureSection(null, s.id, s.name);
+    await new Promise(r => setTimeout(r, 500));
+  }
+
+  if (btn) btn.classList.remove('loading');
+}
 </script>
+
+<!-- 전체 캡처 플로팅 버튼 -->
+<button id="capture-all-btn" onclick="captureAll()">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+  전체 캡처
+</button>
 </body>
 </html>
