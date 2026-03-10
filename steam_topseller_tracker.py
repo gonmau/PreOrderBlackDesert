@@ -322,11 +322,32 @@ def make_graphs(history):
     buf1.seek(0)
     plt.close(fig1)
 
+    # 국기 색상 표현 (국가별 대표 2색: [배경, 텍스트색])
+    FLAG_COLORS = {
+        "US": ("#3C3B6E", "#FFFFFF"),   # 남색
+        "GB": ("#C8102E", "#FFFFFF"),   # 빨강
+        "DE": ("#000000", "#FFD700"),   # 검정/금
+        "FR": ("#0055A4", "#FFFFFF"),   # 파랑
+        "CA": ("#FF0000", "#FFFFFF"),   # 빨강
+        "BR": ("#009C3B", "#FFD700"),   # 초록/노랑
+        "JP": ("#BC002D", "#FFFFFF"),   # 빨강
+        "KR": ("#003478", "#FFFFFF"),   # 남색
+        "CN": ("#DE2910", "#FFD700"),   # 빨강/노랑
+        "RU": ("#0039A6", "#FFFFFF"),   # 파랑
+        "AU": ("#00008B", "#FFFFFF"),   # 남색
+        "ES": ("#AA151B", "#F1BF00"),   # 빨강/노랑
+        "IT": ("#009246", "#FFFFFF"),   # 초록
+        "PL": ("#DC143C", "#FFFFFF"),   # 빨강
+        "TR": ("#E30A17", "#FFFFFF"),   # 빨강
+        "MX": ("#006847", "#FFFFFF"),   # 초록
+    }
+
     # ── 2. 막대 그래프 (최신 스냅샷) ─────────────────────────
     latest_ranks = {}
+    prev_ranks_bar = {}
     for entry in reversed(history):
         results = entry.get("results", {})
-        if results:  # 있는 국가만 사용, 전체 완전 체크 제거
+        if results:
             for cc in cc_list:
                 name = name_by_cc[cc]
                 if name in results and results[name].get("rank") is not None:
@@ -334,28 +355,98 @@ def make_graphs(history):
             if latest_ranks:
                 break
 
+    # 이전 스냅샷 순위
+    found_latest = False
+    for entry in reversed(history):
+        results_e = entry.get("results", {})
+        if not results_e:
+            continue
+        if not found_latest:
+            found_latest = True
+            continue
+        for cc in cc_list:
+            name = name_by_cc[cc]
+            if name in results_e and results_e[name].get("rank") is not None:
+                prev_ranks_bar[cc.upper()] = results_e[name]["rank"]
+        break
+
+    # 전체 히스토리에서 국가별 최고/최저/평균
+    all_ranks_by_cc = {cc.upper(): [] for cc in cc_list}
+    for entry in history:
+        results_e = entry.get("results", {})
+        for cc in cc_list:
+            name = name_by_cc[cc]
+            r = results_e.get(name, {}).get("rank") if name in results_e else None
+            if r is not None:
+                all_ranks_by_cc[cc.upper()].append(r)
+
     if not latest_ranks:
         return buf1, None
 
     sorted_items = sorted(latest_ranks.items(), key=lambda x: x[1])
-    labels = [c for c, _ in sorted_items]   # "US", "GB", ...
-    values = [r for _, r in sorted_items]
-    colors = [COUNTRY_COLORS.get(c, "#888") for c in labels]
+    bar_ccs = [c for c, _ in sorted_items]
+    values  = [r for _, r in sorted_items]
+    colors  = [COUNTRY_COLORS.get(c, "#888") for c in bar_ccs]
 
-    fig2, ax2 = plt.subplots(figsize=(10, 5))
+    fig2, ax2 = plt.subplots(figsize=(13, max(6, len(bar_ccs) * 0.6 + 1.5)))
     fig2.patch.set_facecolor(BG)
     ax2.set_facecolor(BG)
 
-    bars = ax2.barh(labels, values, color=colors, edgecolor="#2A3F5F", height=0.6)
+    bars = ax2.barh(range(len(bar_ccs)), values, color=colors,
+                    edgecolor="#2A3F5F", height=0.6)
     ax2.invert_yaxis()
+    ax2.set_yticks(range(len(bar_ccs)))
+    ax2.set_yticklabels([""] * len(bar_ccs))  # 텍스트 라벨 숨기고 직접 그림
 
-    for bar, val in zip(bars, values):
-        ax2.text(bar.get_width() + 0.2, bar.get_y() + bar.get_height() / 2,
-                 f"#{val}", va="center", ha="left", color="white", fontsize=10, fontweight="bold")
+    max_val = max(values) if values else 10
+    ax2.set_xlim(0, max_val * 1.75)
+
+    for i, (bar, val, cc) in enumerate(zip(bars, values, bar_ccs)):
+        y_mid = bar.get_y() + bar.get_height() / 2
+
+        # ── 국가 컬러 박스 (y축 왼쪽) ──
+        fc, tc = FLAG_COLORS.get(cc, ("#555", "#FFF"))
+        ax2.text(-max_val * 0.02, y_mid, f" {cc} ",
+                 va="center", ha="right", fontsize=8, fontweight="bold",
+                 color=tc,
+                 bbox=dict(boxstyle="round,pad=0.25", facecolor=fc,
+                           edgecolor="white", linewidth=0.8))
+
+        x_cur = bar.get_width() + max_val * 0.03
+
+        # ── 현재 순위 ──
+        ax2.text(x_cur, y_mid, f"#{val}",
+                 va="center", ha="left", color="white",
+                 fontsize=11, fontweight="bold")
+
+        # ── 변동 화살표 ──
+        prev_r = prev_ranks_bar.get(cc)
+        if prev_r is not None and prev_r != val:
+            diff = prev_r - val
+            arrow = f"▲{diff}" if diff > 0 else f"▼{abs(diff)}"
+            diff_col = "#2ECC71" if diff > 0 else "#E74C3C"
+            ax2.text(x_cur + max_val * 0.07, y_mid, arrow,
+                     va="center", ha="left", color=diff_col,
+                     fontsize=9, fontweight="bold")
+
+        # ── 괄호 통계 (prev / best / worst / avg) ──
+        ranks_hist = all_ranks_by_cc.get(cc, [])
+        parts = []
+        if prev_r is not None:
+            parts.append(f"prev:#{prev_r}")
+        if ranks_hist:
+            parts.append(f"best:#{min(ranks_hist)}")
+            parts.append(f"worst:#{max(ranks_hist)}")
+            parts.append(f"avg:#{round(sum(ranks_hist)/len(ranks_hist),1)}")
+        if parts:
+            ax2.text(x_cur + max_val * 0.16, y_mid,
+                     f"({' | '.join(parts)})",
+                     va="center", ha="left", color="#A0AEC0", fontsize=8)
 
     ax2.set_xlabel("Rank", color=TEXT, fontsize=10)
     ax2.set_title("Crimson Desert — Latest Snapshot", color="white", fontsize=13, pad=12)
     ax2.tick_params(colors=TEXT)
+    ax2.set_xlim(left=-max_val * 0.15)   # 왼쪽 CC박스 공간
     for spine in ax2.spines.values():
         spine.set_edgecolor(GRID)
     ax2.grid(axis="x", color=GRID, linestyle="--", alpha=0.5)
