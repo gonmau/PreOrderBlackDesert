@@ -412,6 +412,9 @@
       max-height: 0;
       opacity: 0;
     }
+    .collapsible-body:not(.collapsed) {
+      overflow: visible;
+    }
 
     .chart-wrapper { position: relative; height: 220px; }
 
@@ -504,10 +507,11 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 0 0 4px 4px;
-      overflow-x: auto;
-      overflow-y: hidden;
+      overflow-x: scroll;
+      overflow-y: visible;
       margin-bottom: 32px;
       -webkit-overflow-scrolling: touch;
+      position: relative;
     }
 
     table { width: 100%; border-collapse: collapse; min-width: 420px; }
