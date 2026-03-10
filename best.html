@@ -57,6 +57,9 @@
 
   .rank-box { font-family: 'Cinzel', serif; font-weight: 900; display: inline-block; width: 60px; text-align: center; border-radius: 4px; padding: 4px 0; cursor: pointer; }
   .flag { font-size: 20px; margin-right: 8px; vertical-align: middle; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif; }
+  /* Twemoji img 태그 크기 통일 */
+  img.emoji { height: 1.3em; width: 1.3em; vertical-align: -0.2em; margin-right: 6px; display: inline-block; }
+  .top10-item img.emoji { height: 1.1em; width: 1.1em; margin-right: 3px; }
   .trend-up   { color: #2ecc71; font-weight: 700; letter-spacing: 2px; }
   .trend-down { color: #ff4757; font-weight: 700; letter-spacing: 2px; }
   .trend-arrow { margin-right: 4px; }
@@ -117,6 +120,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@twemoji/api@15.1.0/dist/twemoji.min.js" crossorigin="anonymous"></script>
 
 <script>
 /** 파이썬 코드 기반 URL 및 가중치 동기화 **/
@@ -233,6 +237,9 @@ function render() {
   });
 
   renderMainChart();
+
+  // 모든 이모지를 Twemoji 이미지로 변환 (PC/모바일 크로스 플랫폼)
+  twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
 }
 
 function renderMainChart() {
@@ -261,6 +268,7 @@ function renderMainChart() {
 function showCountryChart(countryName) {
   document.getElementById('chartModal').style.display = 'flex';
   document.getElementById('modalTitle').innerText = `${FLAGS[countryName] || ''} ${countryName} History`;
+  twemoji.parse(document.getElementById('modalTitle'), { folder: 'svg', ext: '.svg' });
   const ctx = document.getElementById('countryChart').getContext('2d');
   if (countryChart) countryChart.destroy();
   const countryData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName) })).filter(d => d.y !== 999);
