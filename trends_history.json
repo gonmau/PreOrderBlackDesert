@@ -8927,5 +8927,20 @@
         "geo_code": "DE"
       }
     }
+  },
+  {
+    "timestamp": "2026-03-10T09:06:06.760390",
+    "google": {
+      "score": 63,
+      "avg_7d": 22,
+      "top_regions": {}
+    },
+    "console_markets": {
+      "United States": {
+        "score": 73,
+        "avg_1m": 53,
+        "geo_code": "US"
+      }
+    }
   }
 ]
