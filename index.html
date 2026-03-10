@@ -33,7 +33,6 @@
       background: transparent;
       color: var(--text);
       min-height: 100vh;
-      overflow-x: clip;
     }
 
     /* 전체 텍스트 검정 테두리 */
@@ -409,11 +408,15 @@
       opacity: 1;
     }
     .collapsible-body.collapsed {
-      max-height: 0;
+      max-height: 0 !important;
       opacity: 0;
+      overflow: hidden !important;
     }
-    .collapsible-body:not(.collapsed) {
-      overflow: visible;
+    /* 테이블 포함 섹션은 가로 스크롤 허용 */
+    #table-collapse:not(.collapsed) {
+      overflow-x: auto;
+      overflow-y: visible;
+      -webkit-overflow-scrolling: touch;
     }
 
     .chart-wrapper { position: relative; height: 220px; }
@@ -508,6 +511,7 @@
       border: 1px solid var(--border);
       border-radius: 0 0 4px 4px;
       overflow-x: auto;
+      overflow-y: hidden;
       margin-bottom: 32px;
       -webkit-overflow-scrolling: touch;
     }
