@@ -512,6 +512,11 @@
       color: var(--muted);
       text-align: left;
       font-weight: 400;
+      white-space: nowrap;
+    }
+    @media (max-width: 480px) {
+      th { padding: 8px 8px; font-size: 0.6rem; letter-spacing: 1px; }
+      td { padding: 10px 8px; font-size: 0.8rem; }
     }
 
     th:not(:first-child) { text-align: center; }
@@ -1505,16 +1510,18 @@
     </div>
 
     <!-- TABLE -->
-    <div class="fade-in">
-      <div class="section-title collapsible-header" style="display:flex;align-items:center;gap:10px" onclick="toggleSection('table-collapse', this)">
-        <span style="flex:1">🌍 국가별 현황</span><button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'heatmap-section','PS_국가별현황')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button>
-        📊 국가별 순위
-        <button class="dl-btn" onclick="event.stopPropagation();downloadPsCSV()" title="CSV 다운로드">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8.5L2 4.5h2.5V1h3v3.5H10L6 8.5zM1 10h10v1.5H1V10z"/></svg>
-          PS 순위 CSV
-        </button>
-        <button class="capture-btn" onclick="capturePsAllCountries(event)" style="background:rgba(192,57,43,0.25);border-color:rgba(192,57,43,0.5);color:#ff8080"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">PS 국가 일괄캡처</span></button>
-        <button class="collapse-btn">▼ 펼치기</button>
+    <div class="fade-in" id="heatmap-section">
+      <div class="section-title collapsible-header" onclick="toggleSection('table-collapse', this)" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="flex:1;min-width:120px;white-space:nowrap">🌍 국가별 현황</span>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0" onclick="event.stopPropagation()">
+          <button class="dl-btn" onclick="downloadPsCSV()" title="CSV 다운로드">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8.5L2 4.5h2.5V1h3v3.5H10L6 8.5zM1 10h10v1.5H1V10z"/></svg>
+            <span class="btn-text">PS CSV</span>
+          </button>
+          <button class="capture-btn" onclick="captureSection(event,'heatmap-section','PS_국가별현황')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button>
+          <button class="capture-btn" onclick="capturePsAllCountries(event)" style="background:rgba(192,57,43,0.25);border-color:rgba(192,57,43,0.5);color:#ff8080"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">일괄캡처</span></button>
+        </div>
+        <button class="collapse-btn" style="flex-shrink:0">▼ 펼치기</button>
       </div>
       <div class="collapsible-body collapsed" id="table-collapse">
       <div class="tabs">
