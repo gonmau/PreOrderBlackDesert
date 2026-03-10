@@ -396,28 +396,28 @@ def make_graphs(history):
                     edgecolor="#2A3F5F", height=0.6)
     ax2.invert_yaxis()
     ax2.set_yticks(range(len(bar_ccs)))
-    ax2.set_yticklabels([""] * len(bar_ccs))  # 텍스트 라벨 숨기고 직접 그림
+    ax2.set_yticklabels([""] * len(bar_ccs))
 
     max_val = max(values) if values else 10
-    ax2.set_xlim(0, max_val * 1.75)
+    ax2.set_xlim(0, max_val * 1.6)
 
     for i, (bar, val, cc) in enumerate(zip(bars, values, bar_ccs)):
         y_mid = bar.get_y() + bar.get_height() / 2
 
-        # ── 국가 컬러 박스 (y축 왼쪽) ──
+        # ── 국가 컬러 박스 ──
         fc, tc = FLAG_COLORS.get(cc, ("#555", "#FFF"))
         ax2.text(-max_val * 0.02, y_mid, f" {cc} ",
-                 va="center", ha="right", fontsize=8, fontweight="bold",
+                 va="center", ha="right", fontsize=11, fontweight="bold",
                  color=tc,
-                 bbox=dict(boxstyle="round,pad=0.25", facecolor=fc,
+                 bbox=dict(boxstyle="round,pad=0.3", facecolor=fc,
                            edgecolor="white", linewidth=0.8))
 
-        x_cur = bar.get_width() + max_val * 0.03
+        x_cur = bar.get_width() + max_val * 0.02
 
         # ── 현재 순위 ──
         ax2.text(x_cur, y_mid, f"#{val}",
                  va="center", ha="left", color="white",
-                 fontsize=11, fontweight="bold")
+                 fontsize=13, fontweight="bold")
 
         # ── 변동 화살표 ──
         prev_r = prev_ranks_bar.get(cc)
@@ -425,17 +425,17 @@ def make_graphs(history):
             diff = prev_r - val
             arrow = f"▲{diff}" if diff > 0 else f"▼{abs(diff)}"
             diff_col = "#2ECC71" if diff > 0 else "#E74C3C"
-            ax2.text(x_cur + max_val * 0.09, y_mid, arrow,
+            ax2.text(x_cur + max_val * 0.07, y_mid, arrow,
                      va="center", ha="left", color=diff_col,
-                     fontsize=11, fontweight="bold")
+                     fontsize=12, fontweight="bold")
 
-        # ── 최고 순위만 표시 ──
+        # ── 최고 순위 ──
         ranks_hist = all_ranks_by_cc.get(cc, [])
         if ranks_hist:
             best_r = min(ranks_hist)
-            ax2.text(x_cur + max_val * 0.20, y_mid,
+            ax2.text(x_cur + max_val * 0.15, y_mid,
                      f"(best:#{best_r})",
-                     va="center", ha="left", color="#A0AEC0", fontsize=10)
+                     va="center", ha="left", color="#A0AEC0", fontsize=12)
 
     ax2.set_xlabel("Rank", color=TEXT, fontsize=10)
     ax2.set_title("Crimson Desert — Latest Snapshot", color="white", fontsize=13, pad=12)
