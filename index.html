@@ -408,15 +408,8 @@
       opacity: 1;
     }
     .collapsible-body.collapsed {
-      max-height: 0 !important;
+      max-height: 0;
       opacity: 0;
-      overflow: hidden !important;
-    }
-    /* 테이블 포함 섹션은 가로 스크롤 허용 */
-    #table-collapse:not(.collapsed) {
-      overflow-x: auto;
-      overflow-y: visible;
-      -webkit-overflow-scrolling: touch;
     }
 
     .chart-wrapper { position: relative; height: 220px; }
@@ -1568,6 +1561,8 @@
         <button class="tab-btn" onclick="switchTab('europe', this)">Europe & ME</button>
         <button class="tab-btn" onclick="switchTab('asia', this)">Asia & Oceania</button>
       </div>
+      </div><!-- /table-collapse -->
+      <div id="table-wrap-outer" style="display:none">
       <div class="table-wrap">
         <table>
           <colgroup>
@@ -1589,7 +1584,7 @@
           <tbody id="rank-table"></tbody>
         </table>
       </div>
-      </div><!-- /table-collapse -->
+      </div><!-- /table-wrap-outer -->
     </div>
 
     <!-- STEAM SECTION -->
@@ -2503,6 +2498,11 @@ function toggleSection(bodyId, headerEl) {
   if (!body) return;
   const isCollapsed = body.classList.contains('collapsed');
   body.classList.toggle('collapsed', !isCollapsed);
+  // 테이블 래퍼 별도 처리 (overflow 문제로 밖에 꺼냄)
+  if (bodyId === 'table-collapse') {
+    const outer = document.getElementById('table-wrap-outer');
+    if (outer) outer.style.display = isCollapsed ? 'block' : 'none';
+  }
   // 헤더 내 버튼 텍스트 업데이트
   const btn = headerEl ? headerEl.querySelector('.collapse-btn') : null;
   if (btn) btn.textContent = isCollapsed ? '▲ 접기' : '▼ 펼치기';
