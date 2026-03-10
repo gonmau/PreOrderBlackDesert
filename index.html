@@ -1504,6 +1504,9 @@
           <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8.5L2 4.5h2.5V1h3v3.5H10L6 8.5zM1 10h10v1.5H1V10z"/></svg>
           PS 순위 CSV
         </button>
+        <button class="capture-btn" onclick="capturePsAllCountries(event)" style="background:rgba(192,57,43,0.25);border-color:rgba(192,57,43,0.5);color:#ff8080">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>PS 국가 일괄캡처
+        </button>
         <button class="collapse-btn">▼ 펼치기</button>
       </div>
       <div class="collapsible-body collapsed" id="table-collapse">
@@ -1634,7 +1637,12 @@
       <div class="steam-ts-modal">
         <div class="steam-ts-modal-header">
           <div class="steam-ts-modal-title" id="sts-modal-title" style="display:flex;align-items:center;gap:10px">—</div>
-          <button class="steam-ts-modal-close" onclick="closeStsModalDirect()">✕</button>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button class="capture-btn" onclick="captureSteamCountryModal()" title="이 국가 캡처">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처
+            </button>
+            <button class="steam-ts-modal-close" onclick="closeStsModalDirect()">✕</button>
+          </div>
         </div>
         <div class="steam-ts-modal-stats">
           <div class="steam-ts-stat-box" style="flex:1;min-width:100px"><div class="steam-ts-stat-label">현재</div><div class="steam-ts-stat-value" id="sts-modal-current">—</div></div>
@@ -1783,7 +1791,12 @@
           <span class="modal-flag" id="modal-flag"></span>
           <span class="modal-country-name" id="modal-name"></span>
         </div>
-        <button class="modal-close" onclick="closeModalDirect()">✕</button>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="capture-btn" onclick="capturePsCountryModal()" title="이 국가 캡처">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처
+          </button>
+          <button class="modal-close" onclick="closeModalDirect()">✕</button>
+        </div>
       </div>
       <div class="modal-stats-row">
         <div class="modal-stat">
@@ -1820,7 +1833,12 @@
           <span class="edition-modal-name" id="em-name"></span>
           <span class="edition-modal-badge" id="em-edition-badge"></span>
         </div>
-        <button class="edition-modal-close" onclick="closeEditionModalDirect()">✕</button>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="capture-btn" onclick="captureEditionModal()" title="이 에디션 캡처">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처
+          </button>
+          <button class="edition-modal-close" onclick="closeEditionModalDirect()">✕</button>
+        </div>
       </div>
       <div class="edition-modal-stats">
         <div class="edition-modal-stat">
@@ -3974,7 +3992,112 @@ async function captureSection(e, sectionId, filename) {
   }
 }
 
+// ── 현재 열린 모달 캡처 (개별) ──
+async function capturePsCountryModal() {
+  const name = document.getElementById('modal-name')?.textContent || '국가';
+  const el = document.querySelector('#country-modal .modal');
+  if (!el) return;
+  const canvas = await html2canvas(el, { backgroundColor:'#1a0f12', scale:2, useCORS:true, allowTaint:true, logging:false });
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = `크림슨데저트_PS_${name}.png`;
+  a.click();
+}
+
+async function captureEditionModal() {
+  const name = document.getElementById('em-name')?.textContent || '국가';
+  const badge = document.getElementById('em-edition-badge')?.textContent || '';
+  const el = document.querySelector('#edition-modal .edition-modal');
+  if (!el) return;
+  const canvas = await html2canvas(el, { backgroundColor:'#1a0f12', scale:2, useCORS:true, allowTaint:true, logging:false });
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = `크림슨데저트_PS_${name}_${badge}.png`;
+  a.click();
+}
+
+async function captureSteamCountryModal() {
+  const title = document.getElementById('sts-modal-title')?.textContent?.trim() || 'Steam국가';
+  const el = document.querySelector('#sts-modal .steam-ts-modal');
+  if (!el) return;
+  const canvas = await html2canvas(el, { backgroundColor:'#1a0f12', scale:2, useCORS:true, allowTaint:true, logging:false });
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = `크림슨데저트_Steam_${title}.png`;
+  a.click();
+}
+
+// ── PS 전체 국가 일괄 캡처 ──
+async function capturePsAllCountries(e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  const btn = e?.currentTarget;
+  if (btn) { btn.classList.add('loading'); btn.textContent = '캡처 중…'; }
+
+  if (!allHistory.length) { alert('PS 데이터가 없습니다.'); return; }
+  const countries = Object.keys(allHistory[allHistory.length-1]?.raw_results || {});
+
+  let done = 0;
+  for (const country of countries) {
+    openCountryModal(country);
+    await new Promise(r => setTimeout(r, 700));
+    try {
+      const el = document.querySelector('#country-modal .modal');
+      if (el) {
+        const canvas = await html2canvas(el, { backgroundColor:'#1a0f12', scale:2, useCORS:true, allowTaint:true, logging:false });
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = `크림슨데저트_PS_${country}.png`;
+        a.click();
+        done++;
+      }
+    } catch(err) { console.error(country, err); }
+    await new Promise(r => setTimeout(r, 400));
+  }
+  closeModalDirect();
+  if (btn) {
+    btn.classList.remove('loading');
+    btn.textContent = `✅ ${done}개 완료`;
+    setTimeout(() => { btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>PS 국가 일괄캡처`; }, 3000);
+  }
+}
+
+// ── Steam Top Seller 전체 국가 일괄 캡처 ──
 async function captureAllCountryCharts(e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  const btn = e?.currentTarget;
+  if (btn) { btn.classList.add('loading'); btn.textContent = '캡처 중…'; }
+
+  const countries = Object.keys(STS_CC).filter(n =>
+    stsHist.some(x => x.results && x.results[n] && x.results[n].rank)
+  );
+  const body = document.getElementById('sts-countries-body');
+  if (body) body.classList.remove('collapsed');
+
+  let done = 0;
+  for (const name of countries) {
+    openStsModal(name);
+    await new Promise(r => setTimeout(r, 700));
+    try {
+      const el = document.querySelector('#sts-modal .steam-ts-modal');
+      if (el) {
+        const canvas = await html2canvas(el, { backgroundColor:'#1a0f12', scale:2, useCORS:true, allowTaint:true, logging:false });
+        const cc = STS_CC[name] || name;
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = `크림슨데저트_Steam_${name}(${cc.toUpperCase()}).png`;
+        a.click();
+        done++;
+      }
+    } catch(err) { console.error(name, err); }
+    await new Promise(r => setTimeout(r, 400));
+  }
+  closeStsModalDirect();
+  if (btn) {
+    btn.classList.remove('loading');
+    btn.textContent = `✅ ${done}개 완료`;
+    setTimeout(() => { btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>국가별 전체 캡처`; }, 3000);
+  }
+}
   if (e) { e.stopPropagation(); e.preventDefault(); }
   const btn = e?.currentTarget;
   if (btn) { btn.classList.add('loading'); btn.textContent = '캡처 중...'; }
