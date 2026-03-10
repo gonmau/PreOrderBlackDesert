@@ -3952,6 +3952,27 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+
+// ── iOS 감지 및 이미지 저장 헬퍼 ──
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+function saveCanvasImage(canvas, filename) {
+  const dataUrl = canvas.toDataURL('image/png');
+  if (isIOS) {
+    // iOS: 새 탭에 이미지 열기 → 길게 눌러서 저장
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>${filename}</title><style>body{margin:0;background:#000;display:flex;flex-direction:column;align-items:center;padding:10px;gap:10px;font-family:sans-serif}p{color:#aaa;font-size:13px;text-align:center}img{max-width:100%;border-radius:8px}</style></head><body><p>📥 이미지를 <b>길게 눌러</b> 저장하세요</p><img src="${dataUrl}" alt="${filename}"></body></html>`);
+      win.document.close();
+    }
+  } else {
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = filename;
+    a.click();
+  }
+}
+
 // ── 캡처 함수 ──
 async function captureSection(e, sectionId, filename) {
   if (e) { e.stopPropagation(); e.preventDefault(); }
@@ -3980,10 +4001,7 @@ async function captureSection(e, sectionId, filename) {
 
     const now = new Date();
     const ts = `${now.getMonth()+1}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-    const a = document.createElement('a');
-    a.href = canvas.toDataURL('image/png');
-    a.download = `크림슨데저트_${filename}_${ts}.png`;
-    a.click();
+    saveCanvasImage(canvas, `크림슨데저트_${filename}_${ts}.png`);
   } catch(err) {
     console.error(err);
     alert('캡처 실패: ' + err.message);
@@ -3998,10 +4016,7 @@ async function capturePsCountryModal() {
   const el = document.querySelector('#country-modal .modal');
   if (!el) return;
   const canvas = await html2canvas(el, { backgroundColor:'#1a0f12', scale:2, useCORS:true, allowTaint:true, logging:false });
-  const a = document.createElement('a');
-  a.href = canvas.toDataURL('image/png');
-  a.download = `크림슨데저트_PS_${name}.png`;
-  a.click();
+  saveCanvasImage(canvas, `크림슨데저트_PS_${name}.png`);
 }
 
 async function captureEditionModal() {
@@ -4010,10 +4025,7 @@ async function captureEditionModal() {
   const el = document.querySelector('#edition-modal .edition-modal');
   if (!el) return;
   const canvas = await html2canvas(el, { backgroundColor:'#1a0f12', scale:2, useCORS:true, allowTaint:true, logging:false });
-  const a = document.createElement('a');
-  a.href = canvas.toDataURL('image/png');
-  a.download = `크림슨데저트_PS_${name}_${badge}.png`;
-  a.click();
+  saveCanvasImage(canvas, `크림슨데저트_PS_${name}_${badge}.png`);
 }
 
 async function captureSteamCountryModal() {
@@ -4021,10 +4033,7 @@ async function captureSteamCountryModal() {
   const el = document.querySelector('#sts-modal .steam-ts-modal');
   if (!el) return;
   const canvas = await html2canvas(el, { backgroundColor:'#1a0f12', scale:2, useCORS:true, allowTaint:true, logging:false });
-  const a = document.createElement('a');
-  a.href = canvas.toDataURL('image/png');
-  a.download = `크림슨데저트_Steam_${title}.png`;
-  a.click();
+  saveCanvasImage(canvas, `크림슨데저트_Steam_${title}.png`);
 }
 
 // ── PS 전체 국가 일괄 캡처 ──
@@ -4044,10 +4053,7 @@ async function capturePsAllCountries(e) {
       const el = document.querySelector('#country-modal .modal');
       if (el) {
         const canvas = await html2canvas(el, { backgroundColor:'#1a0f12', scale:2, useCORS:true, allowTaint:true, logging:false });
-        const a = document.createElement('a');
-        a.href = canvas.toDataURL('image/png');
-        a.download = `크림슨데저트_PS_${country}.png`;
-        a.click();
+        saveCanvasImage(canvas, `크림슨데저트_PS_${country}.png`);
         done++;
       }
     } catch(err) { console.error(country, err); }
@@ -4082,10 +4088,7 @@ async function captureAllCountryCharts(e) {
       if (el) {
         const canvas = await html2canvas(el, { backgroundColor:'#1a0f12', scale:2, useCORS:true, allowTaint:true, logging:false });
         const cc = STS_CC[name] || name;
-        const a = document.createElement('a');
-        a.href = canvas.toDataURL('image/png');
-        a.download = `크림슨데저트_Steam_${name}(${cc.toUpperCase()}).png`;
-        a.click();
+        saveCanvasImage(canvas, `크림슨데저트_Steam_${name}(${cc.toUpperCase()}).png`);
         done++;
       }
     } catch(err) { console.error(name, err); }
