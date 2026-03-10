@@ -124,29 +124,41 @@
 
 <script>
 /** 파이썬 코드 기반 URL 및 가중치 동기화 **/
-const COUNTRY_INFO = {
-  "미국":    {c:"US", l:"en"},
-  "캐나다":  {c:"CA", l:"en"},
-  "브라질":  {c:"BR", l:"pt"},
-  "멕시코":  {c:"MX", l:"es"},
-  "영국":    {c:"GB", l:"en"},
-  "독일":    {c:"DE", l:"de"},
-  "프랑스":  {c:"FR", l:"fr"},
-  "스페인":  {c:"ES", l:"es"},
-  "이탈리아":{c:"IT", l:"it"},
-  "일본":    {c:"JP", l:"ja"},
-  "한국":    {c:"KR", l:"ko"},
-  "호주":    {c:"AU", l:"en"},
-  "아르헨티나":{c:"AR", l:"es"},
-  "칠레":    {c:"CL", l:"es"},
-  "콜롬비아":{c:"CO", l:"es"},
-  "페루":    {c:"PE", l:"es"},
-  "네덜란드":{c:"NL", l:"nl"},
-  "폴란드":  {c:"PL", l:"pl"},
-  "사우디아라비아":{c:"SA", l:"en"},
-  "대만":    {c:"TW", l:"zh-Hant"},
-  "홍콩":    {c:"HK", l:"en"},
-  "태국":    {c:"TH", l:"en"}
+// PS Store 실제 URL 로케일 코드 (psdevwiki.com/ps4/Regioning 기준)
+const COUNTRY_LOCALE = {
+  "미국":         "en-us",
+  "캐나다":       "en-ca",
+  "브라질":       "pt-br",
+  "멕시코":       "es-mx",
+  "영국":         "en-gb",
+  "독일":         "de-de",
+  "프랑스":       "fr-fr",
+  "스페인":       "es-es",
+  "이탈리아":     "it-it",
+  "일본":         "ja-jp",
+  "한국":         "ko-kr",
+  "호주":         "en-au",
+  "뉴질랜드":     "en-nz",
+  "아르헨티나":   "es-ar",
+  "칠레":         "es-cl",
+  "콜롬비아":     "es-co",
+  "페루":         "es-pe",
+  "네덜란드":     "nl-nl",
+  "폴란드":       "en-pl",
+  "사우디아라비아":"en-sa",
+  "아랍에미리트": "en-ae",
+  "대만":         "zh-tw",
+  "홍콩":         "en-hk",
+  "태국":         "en-th",
+  "인도":         "en-in",
+  "남아프리카":   "en-za",
+  "노르웨이":     "en-no",
+  "덴마크":       "en-dk",
+  "스웨덴":       "en-se",
+  "핀란드":       "en-fi",
+  "스위스":       "de-ch",
+  "오스트리아":   "de-at",
+  "터키":         "en-tr",
 };
 const WEIGHTS = {"미국":30.0,"영국":8.5,"일본":8.0,"독일":6.5,"프랑스":6.0,"캐나다":4.5,"스페인":4.0,"이탈리아":3.5,"호주":3.0,"한국":2.8};
 const FLAGS = {"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","한국":"🇰🇷","호주":"🇦🇺","아르헨티나":"🇦🇷","칠레":"🇨🇱","콜롬비아":"🇨🇴","페루":"🇵🇪","네덜란드":"🇳🇱","사우디아라비아":"🇸🇦","아랍에미리트":"🇦🇪","폴란드":"🇵🇱","대만":"🇹🇼","홍콩":"🇭🇰","태국":"🇹🇭","중국":"🇨🇳","노르웨이":"🇳🇴","덴마크":"🇩🇰","스위스":"🇨🇭"};
@@ -169,10 +181,9 @@ function getRank(entry, country) {
 }
 
 function getStoreUrl(name) {
-  const info = COUNTRY_INFO[name];
-  if (!info) return "https://store.playstation.com/";
-  // PS Store URL format: /ko-KR, /en-US, /ja-JP, /de-DE, etc.
-  return `https://store.playstation.com/${info.l}-${info.c}/pages/browse/1?conceptId=10002363`;
+  const locale = COUNTRY_LOCALE[name];
+  if (!locale) return "https://store.playstation.com/";
+  return `https://store.playstation.com/${locale}/pages/browse/1?conceptId=10002363`;
 }
 
 function render() {
