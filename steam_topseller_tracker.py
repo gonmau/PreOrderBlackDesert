@@ -425,23 +425,17 @@ def make_graphs(history):
             diff = prev_r - val
             arrow = f"▲{diff}" if diff > 0 else f"▼{abs(diff)}"
             diff_col = "#2ECC71" if diff > 0 else "#E74C3C"
-            ax2.text(x_cur + max_val * 0.07, y_mid, arrow,
+            ax2.text(x_cur + max_val * 0.09, y_mid, arrow,
                      va="center", ha="left", color=diff_col,
-                     fontsize=9, fontweight="bold")
+                     fontsize=11, fontweight="bold")
 
-        # ── 괄호 통계 (prev / best / worst / avg) ──
+        # ── 최고 순위만 표시 ──
         ranks_hist = all_ranks_by_cc.get(cc, [])
-        parts = []
-        if prev_r is not None:
-            parts.append(f"prev:#{prev_r}")
         if ranks_hist:
-            parts.append(f"best:#{min(ranks_hist)}")
-            parts.append(f"worst:#{max(ranks_hist)}")
-            parts.append(f"avg:#{round(sum(ranks_hist)/len(ranks_hist),1)}")
-        if parts:
-            ax2.text(x_cur + max_val * 0.16, y_mid,
-                     f"({' | '.join(parts)})",
-                     va="center", ha="left", color="#A0AEC0", fontsize=8)
+            best_r = min(ranks_hist)
+            ax2.text(x_cur + max_val * 0.20, y_mid,
+                     f"(best:#{best_r})",
+                     va="center", ha="left", color="#A0AEC0", fontsize=10)
 
     ax2.set_xlabel("Rank", color=TEXT, fontsize=10)
     ax2.set_title("Crimson Desert — Latest Snapshot", color="white", fontsize=13, pad=12)
