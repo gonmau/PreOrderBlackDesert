@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Crimson Desert — Global Heatmap & Trend</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@500;600;700&family=Noto+Color+Emoji&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@500;600;700&display=swap');
 
   :root {
     --blood: #ff4757; --gold: #f1c40f; --dark: #000000; --panel: #111111;
@@ -14,7 +14,8 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--dark); color: var(--text-main); font-family: 'Rajdhani', 'Noto Color Emoji', sans-serif; }
+  body { background: var(--dark); color: var(--text-main); font-family: 'Rajdhani', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Twemoji Mozilla', sans-serif; }
+  .flag, .top10-item .n, .country-link .flag { font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Twemoji Mozilla', sans-serif; font-style: normal; }
   .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
 
   header { border-bottom: 2px solid var(--blood); padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end; }
@@ -55,7 +56,10 @@
   .close-btn { position: absolute; top: 15px; right: 20px; font-size: 30px; color: #fff; cursor: pointer; }
 
   .rank-box { font-family: 'Cinzel', serif; font-weight: 900; display: inline-block; width: 60px; text-align: center; border-radius: 4px; padding: 4px 0; cursor: pointer; }
-  .flag { font-size: 20px; margin-right: 8px; vertical-align: middle; }
+  .flag { font-size: 20px; margin-right: 8px; vertical-align: middle; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif; }
+  .trend-up   { color: #2ecc71; font-weight: 700; letter-spacing: 2px; }
+  .trend-down { color: #ff4757; font-weight: 700; letter-spacing: 2px; }
+  .trend-arrow { margin-right: 4px; }
 </style>
 </head>
 <body>
@@ -117,7 +121,28 @@
 <script>
 /** 파이썬 코드 기반 URL 및 가중치 동기화 **/
 const COUNTRY_INFO = {
-  "미국":{c:"us",l:"en"},"캐나다":{c:"ca",l:"en"},"브라질":{c:"br",l:"pt"},"멕시코":{c:"mx",l:"es"},"영국":{c:"gb",l:"en"},"독일":{c:"de",l:"de"},"프랑스":{c:"fr",l:"fr"},"스페인":{c:"es",l:"es"},"이탈리아":{c:"it",l:"it"},"일본":{c:"jp",l:"ja"},"한국":{c:"kr",l:"ko"},"호주":{c:"au",l:"en"},"아르헨티나":{c:"ar",l:"es"},"칠레":{c:"cl",l:"es"},"콜롬비아":{c:"co",l:"es"},"페루":{c:"pe",l:"es"},"네덜란드":{c:"nl",l:"nl"},"폴란드":{c:"pl",l:"pl"},"사우디아라비아":{c:"sa",l:"en"},"대만":{c:"tw",l:"zh-hant"},"홍콩":{c:"hk",l:"en"},"태국":{c:"th",l:"en"}
+  "미국":    {c:"US", l:"en"},
+  "캐나다":  {c:"CA", l:"en"},
+  "브라질":  {c:"BR", l:"pt"},
+  "멕시코":  {c:"MX", l:"es"},
+  "영국":    {c:"GB", l:"en"},
+  "독일":    {c:"DE", l:"de"},
+  "프랑스":  {c:"FR", l:"fr"},
+  "스페인":  {c:"ES", l:"es"},
+  "이탈리아":{c:"IT", l:"it"},
+  "일본":    {c:"JP", l:"ja"},
+  "한국":    {c:"KR", l:"ko"},
+  "호주":    {c:"AU", l:"en"},
+  "아르헨티나":{c:"AR", l:"es"},
+  "칠레":    {c:"CL", l:"es"},
+  "콜롬비아":{c:"CO", l:"es"},
+  "페루":    {c:"PE", l:"es"},
+  "네덜란드":{c:"NL", l:"nl"},
+  "폴란드":  {c:"PL", l:"pl"},
+  "사우디아라비아":{c:"SA", l:"en"},
+  "대만":    {c:"TW", l:"zh-Hant"},
+  "홍콩":    {c:"HK", l:"en"},
+  "태국":    {c:"TH", l:"en"}
 };
 const WEIGHTS = {"미국":30.0,"영국":8.5,"일본":8.0,"독일":6.5,"프랑스":6.0,"캐나다":4.5,"스페인":4.0,"이탈리아":3.5,"호주":3.0,"한국":2.8};
 const FLAGS = {"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","한국":"🇰🇷","호주":"🇦🇺","아르헨티나":"🇦🇷","칠레":"🇨🇱","콜롬비아":"🇨🇴","페루":"🇵🇪","네덜란드":"🇳🇱","사우디아라비아":"🇸🇦","아랍에미리트":"🇦🇪","폴란드":"🇵🇱","대만":"🇹🇼","홍콩":"🇭🇰","태국":"🇹🇭","중국":"🇨🇳","노르웨이":"🇳🇴","덴마크":"🇩🇰","스위스":"🇨🇭"};
@@ -141,7 +166,8 @@ function getRank(entry, country) {
 
 function getStoreUrl(name) {
   const info = COUNTRY_INFO[name];
-  if(!info) return "https://store.playstation.com/";
+  if (!info) return "https://store.playstation.com/";
+  // PS Store URL format: /ko-KR, /en-US, /ja-JP, /de-DE, etc.
   return `https://store.playstation.com/${info.l}-${info.c}/pages/browse/1?conceptId=10002363`;
 }
 
@@ -200,7 +226,7 @@ function render() {
           ${d.rank === 999 ? '—' : d.rank + '위'}
         </span>
       </td>
-      <td class="${d.change > 0 ? 'trend-up' : (d.change < 0 ? 'trend-down' : '')}">${d.change > 0 ? '▲'+d.change : (d.change < 0 ? '▼'+Math.abs(d.change) : '—')}</td>
+      <td class="${d.change > 0 ? 'trend-up' : (d.change < 0 ? 'trend-down' : '')}">${d.change > 0 ? '<span class="trend-arrow">▲</span>' + d.change : (d.change < 0 ? '<span class="trend-arrow">▼</span>' + Math.abs(d.change) : '—')}</td>
       <td style="color:var(--gold); font-weight:bold;">${d.weight}</td>
     `;
     tbody.appendChild(tr);
