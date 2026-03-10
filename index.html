@@ -1360,15 +1360,21 @@
     }
   /* ── 캡처 버튼 ── */
   .capture-btn {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;
     background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
     color: #ccc; cursor: pointer; transition: all 0.2s;
-    margin-left: 10px; vertical-align: middle; white-space: nowrap;
+    margin-left: 6px; vertical-align: middle; white-space: nowrap; flex-shrink: 0;
   }
   .capture-btn:hover { background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.3); }
   .capture-btn.loading { opacity: 0.5; pointer-events: none; }
-  .capture-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+  .capture-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
+  .capture-btn .btn-text { display: inline; }
+  @media (max-width: 480px) {
+    .capture-btn .btn-text { display: none; }
+    .capture-btn { padding: 4px 6px; margin-left: 4px; }
+    .capture-btn svg { width: 14px; height: 14px; }
+  }
   /* 전체 캡처 플로팅 버튼 */
   #capture-all-btn {
     position: fixed; bottom: 24px; right: 24px; z-index: 999;
@@ -1381,6 +1387,9 @@
   }
   #capture-all-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.6); }
   #capture-all-btn.loading { opacity: 0.6; pointer-events: none; }
+  @media (max-width: 480px) {
+    #capture-all-btn { bottom: 16px; right: 16px; padding: 8px 12px; font-size: 12px; }
+  }
   </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -1457,7 +1466,7 @@
 
     <!-- CHART -->
     <div class="chart-section fade-in" id="chart-section-ps">
-      <div class="section-title collapsible-header" onclick="toggleSection('rank-chart-body', this)">순위 히스토리 (가중 평균) <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'chart-section-ps','PS_순위히스토리')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처</button></div>
+      <div class="section-title collapsible-header" onclick="toggleSection('rank-chart-body', this)">순위 히스토리 (가중 평균) <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'chart-section-ps','PS_순위히스토리')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button></div>
       <div class="collapsible-body collapsed" id="rank-chart-body">
       <div class="event-toggle-wrap" id="ev-toggle-rank">
         <div class="event-toggle-header" onclick="toggleEvPanel('rank')">
@@ -1498,15 +1507,13 @@
     <!-- TABLE -->
     <div class="fade-in">
       <div class="section-title collapsible-header" style="display:flex;align-items:center;gap:10px" onclick="toggleSection('table-collapse', this)">
-        <span style="flex:1">🌍 국가별 현황</span><button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'heatmap-section','PS_국가별현황')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처</button>
+        <span style="flex:1">🌍 국가별 현황</span><button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'heatmap-section','PS_국가별현황')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button>
         📊 국가별 순위
         <button class="dl-btn" onclick="event.stopPropagation();downloadPsCSV()" title="CSV 다운로드">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 8.5L2 4.5h2.5V1h3v3.5H10L6 8.5zM1 10h10v1.5H1V10z"/></svg>
           PS 순위 CSV
         </button>
-        <button class="capture-btn" onclick="capturePsAllCountries(event)" style="background:rgba(192,57,43,0.25);border-color:rgba(192,57,43,0.5);color:#ff8080">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>PS 국가 일괄캡처
-        </button>
+        <button class="capture-btn" onclick="capturePsAllCountries(event)" style="background:rgba(192,57,43,0.25);border-color:rgba(192,57,43,0.5);color:#ff8080"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">PS 국가 일괄캡처</span></button>
         <button class="collapse-btn">▼ 펼치기</button>
       </div>
       <div class="collapsible-body collapsed" id="table-collapse">
@@ -1567,7 +1574,7 @@
           <div class="steam-stat-diff">개 데이터포인트</div>
         </div>
       </div>
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('steam-body', this)">📈 위시리스트 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'steam-section','Steam_위시리스트')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처</button></div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('steam-body', this)">📈 위시리스트 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'steam-section','Steam_위시리스트')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button></div>
       <div class="collapsible-body collapsed" id="steam-body">
       <div class="steam-chart-box">
         <div class="event-toggle-wrap">
@@ -1622,11 +1629,11 @@
         </div>
       </div>
 
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-chart-body',this)">📈  평균 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'steam-ts-section','Steam_TopSeller')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처</button></div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-chart-body',this)">📈  평균 순위 히스토리 <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'steam-ts-section','Steam_TopSeller')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button></div>
       <div class="collapsible-body collapsed" id="sts-chart-body">
         <div class="steam-ts-chart-box"><div class="steam-ts-chart-inner"><canvas id="stsChart"></canvas></div></div>
       </div>
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-countries-body',this)">🌍 국가별 현황 <button class="collapse-btn">▼ 펼치기</button><button id="capture-countries-btn" class="capture-btn" onclick="captureAllCountryCharts(event)" disabled style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1);color:#555;cursor:not-allowed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>데이터 로딩 중…</button></div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-countries-body',this)">🌍 국가별 현황 <button class="collapse-btn">▼ 펼치기</button><button id="capture-countries-btn" class="capture-btn" onclick="captureAllCountryCharts(event)" disabled style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1);color:#555;cursor:not-allowed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">데이터 로딩 중…</span></button></div>
       <div class="collapsible-body collapsed" id="sts-countries-body">
         <div class="steam-ts-country-grid" id="sts-country-grid"></div>
       </div>
@@ -1638,9 +1645,7 @@
         <div class="steam-ts-modal-header">
           <div class="steam-ts-modal-title" id="sts-modal-title" style="display:flex;align-items:center;gap:10px">—</div>
           <div style="display:flex;align-items:center;gap:8px">
-            <button class="capture-btn" onclick="captureSteamCountryModal()" title="이 국가 캡처">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처
-            </button>
+            <button class="capture-btn" onclick="captureSteamCountryModal()" title="이 국가 캡처"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button>
             <button class="steam-ts-modal-close" onclick="closeStsModalDirect()">✕</button>
           </div>
         </div>
@@ -1683,7 +1688,7 @@
       </div>
 
       <!-- 글로벌 히스토리 차트 (접기/펼치기) -->
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('trends-body', this)">📈 검색 관심도 히스토리 <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'trends-section','Google_트렌드')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처</button></div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('trends-body', this)">📈 검색 관심도 히스토리 <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'trends-section','Google_트렌드')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button></div>
       <div class="collapsible-body collapsed" id="trends-body">
       <div class="trends-chart-box">
         <div class="event-toggle-wrap">
@@ -1737,7 +1742,7 @@
       </div>
 
       <!-- 차트 (접기/펼치기) -->
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sales-body', this)">📈 일별 / 누적 판매량 추산 <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'sales-section','예상_판매량')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처</button></div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sales-body', this)">📈 일별 / 누적 판매량 추산 <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'sales-section','예상_판매량')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button></div>
       <div class="collapsible-body collapsed" id="sales-body">
       <div class="sales-chart-box">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
@@ -1792,9 +1797,7 @@
           <span class="modal-country-name" id="modal-name"></span>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
-          <button class="capture-btn" onclick="capturePsCountryModal()" title="이 국가 캡처">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처
-          </button>
+          <button class="capture-btn" onclick="capturePsCountryModal()" title="이 국가 캡처"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button>
           <button class="modal-close" onclick="closeModalDirect()">✕</button>
         </div>
       </div>
@@ -1834,9 +1837,7 @@
           <span class="edition-modal-badge" id="em-edition-badge"></span>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
-          <button class="capture-btn" onclick="captureEditionModal()" title="이 에디션 캡처">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>캡처
-          </button>
+          <button class="capture-btn" onclick="captureEditionModal()" title="이 에디션 캡처"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button>
           <button class="edition-modal-close" onclick="closeEditionModalDirect()">✕</button>
         </div>
       </div>
@@ -3962,7 +3963,7 @@ function saveCanvasImage(canvas, filename) {
     // iOS: 새 탭에 이미지 열기 → 길게 눌러서 저장
     const win = window.open('', '_blank');
     if (win) {
-      win.document.write(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>${filename}</title><style>body{margin:0;background:#000;display:flex;flex-direction:column;align-items:center;padding:10px;gap:10px;font-family:sans-serif}p{color:#aaa;font-size:13px;text-align:center}img{max-width:100%;border-radius:8px}</style></head><body><p>📥 이미지를 <b>길게 눌러</b> 저장하세요</p><img src="${dataUrl}" alt="${filename}"></body></html>`);
+      win.document.write(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>${filename}</title><style>body{margin:0;background:#111;display:flex;flex-direction:column;align-items:center;padding:16px;gap:12px;font-family:sans-serif}p{color:#aaa;font-size:14px;text-align:center;margin:0}.close-btn{background:#c0392b;color:#fff;border:none;border-radius:20px;padding:10px 24px;font-size:15px;font-weight:bold;cursor:pointer;width:100%;max-width:320px}.filename{color:#666;font-size:11px}img{max-width:100%;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5)}</style></head><body><button class="close-btn" onclick="window.close()">✕ 탭 닫기</button><p>📥 이미지를 <b>길게 눌러서</b> 저장하세요</p><div class="filename">${filename}</div><img src="${dataUrl}" alt="${filename}"></body></html>`);
       win.document.close();
     }
   } else {
