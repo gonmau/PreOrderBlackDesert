@@ -1623,7 +1623,7 @@
       <div class="collapsible-body collapsed" id="sts-chart-body">
         <div class="steam-ts-chart-box"><div class="steam-ts-chart-inner"><canvas id="stsChart"></canvas></div></div>
       </div>
-      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-countries-body',this)">🌍 국가별 현황 <button class="collapse-btn">▼ 펼치기</button></div>
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-countries-body',this)">🌍 국가별 현황 <button class="collapse-btn">▼ 펼치기</button><button id="capture-countries-btn" class="capture-btn" onclick="captureAllCountryCharts(event)" disabled style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1);color:#555;cursor:not-allowed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>데이터 로딩 중…</button></div>
       <div class="collapsible-body collapsed" id="sts-countries-body">
         <div class="steam-ts-country-grid" id="sts-country-grid"></div>
       </div>
@@ -3213,6 +3213,14 @@ function renderSTS(){
     plugins:[stsLabelPlugin]
   });
   renderStsGrid(lat,prv);
+
+  // 데이터 로딩 완료 → 캡처 버튼 활성화
+  const capBtn = document.getElementById('capture-countries-btn');
+  if (capBtn) {
+    capBtn.disabled = false;
+    capBtn.style.cssText = 'background:rgba(192,57,43,0.25);border-color:rgba(192,57,43,0.5);color:#ff8080;cursor:pointer';
+    capBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>국가별 전체 캡처`;
+  }
 }
 
 function renderStsGrid(lat,prv){
@@ -3966,7 +3974,64 @@ async function captureSection(e, sectionId, filename) {
   }
 }
 
-async function captureAll() {
+async function captureAllCountryCharts(e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  const btn = e?.currentTarget;
+  if (btn) { btn.classList.add('loading'); btn.textContent = '캡처 중...'; }
+
+  const countries = Object.keys(STS_CC);
+  // 데이터 있는 나라만 필터
+  const validCountries = countries.filter(n =>
+    stsHist.some(x => x.results && x.results[n] && x.results[n].rank)
+  );
+
+  const modal = document.getElementById('sts-modal');
+  const modalContent = modal?.querySelector('.steam-ts-modal');
+
+  // 국가별 현황 섹션 펼치기
+  const body = document.getElementById('sts-countries-body');
+  if (body) body.classList.remove('collapsed');
+
+  let captured = 0;
+  for (const name of validCountries) {
+    // 모달 열기
+    openStsModal(name);
+    // 차트 렌더링 대기
+    await new Promise(r => setTimeout(r, 700));
+
+    try {
+      const canvas = await html2canvas(modalContent, {
+        backgroundColor: '#1a0f12',
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+      });
+      const cc = STS_CC[name] || name;
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = `크림슨데저트_Steam_${name}(${cc.toUpperCase()}).png`;
+      a.click();
+      captured++;
+    } catch(err) {
+      console.error(name, err);
+    }
+
+    // 다운로드 간격
+    await new Promise(r => setTimeout(r, 400));
+  }
+
+  // 모달 닫기
+  closeStsModalDirect();
+
+  if (btn) {
+    btn.classList.remove('loading');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>국가별 전체 캡처 (${captured}개 완료)`;
+    setTimeout(() => {
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>국가별 전체 캡처`;
+    }, 3000);
+  }
+}
   const btn = document.getElementById('capture-all-btn');
   if (btn) btn.classList.add('loading');
 
