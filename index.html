@@ -493,11 +493,13 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 0 0 4px 4px;
-      overflow: hidden;
+      overflow-x: auto;
+      overflow-y: hidden;
       margin-bottom: 32px;
+      -webkit-overflow-scrolling: touch;
     }
 
-    table { width: 100%; border-collapse: collapse; }
+    table { width: 100%; border-collapse: collapse; min-width: 380px; }
 
     thead tr {
       background: var(--surface2);
@@ -517,6 +519,7 @@
     @media (max-width: 480px) {
       th { padding: 8px 8px; font-size: 0.6rem; letter-spacing: 1px; }
       td { padding: 10px 8px; font-size: 0.8rem; }
+      td:first-child { min-width: 64px; white-space: nowrap; }
     }
 
     th:not(:first-child) { text-align: center; }
