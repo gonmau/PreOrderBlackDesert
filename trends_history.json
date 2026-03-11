@@ -9102,5 +9102,14 @@
     "timestamp": "2026-03-11T07:17:02.701310",
     "google": null,
     "console_markets": {}
+  },
+  {
+    "timestamp": "2026-03-11T07:59:59.698026",
+    "google": {
+      "score": 91,
+      "avg_7d": 24,
+      "top_regions": {}
+    },
+    "console_markets": {}
   }
 ]
