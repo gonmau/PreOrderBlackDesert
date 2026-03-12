@@ -26,39 +26,17 @@ DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 
 # Crimson Desert 공식 영상 ID들
 VIDEO_IDS = {
-    # Preview #3
-    "Preview #3 - PS": "vRhK2HLrgzE",
-    "Preview #3 - Crimson Desert": "BOy81crUgtw",
-    "Preview #3 - IGN": "xUWSscgiNts",
-    
-    # Preview #2
-    "Preview #2 - PS": "pG_lpBoGK1c",
-    "Preview #2 - Crimson Desert": "srQ-NtGNBpY",
-    "Preview #2 - IGN": "cNT1NrYvwPE",
-    
-    # Preview #1
-    "Preview #1 - PS": "Li9Cxhxw8WA",
-    "Preview #1 - Crimson Desert": "MfZCV8EySac",
-    "Preview #1 - IGN": "RbGbqVIXbMI",
+    # Trailer
+    "Trailer - PS": "YHhwdyWkwTQ",
+    "Trailer - Crimson Desert": "VWIw_f8e9Pg",
+    "Trailer - IGN": "M8GCqJMulr8",
 }
 
 # 그래프에 표시할 영상 그룹
-PREVIEW_3_VIDEOS = [
-    "Preview #3 - PS",
-    "Preview #3 - Crimson Desert",
-    "Preview #3 - IGN",
-]
-
-PREVIEW_2_VIDEOS = [
-    "Preview #2 - PS",
-    "Preview #2 - Crimson Desert", 
-    "Preview #2 - IGN",
-]
-
-PREVIEW_1_VIDEOS = [
-    "Preview #1 - PS",
-    "Preview #1 - Crimson Desert",
-    "Preview #1 - IGN",
+TRAILER_VIDEOS = [
+    "Trailer - PS",
+    "Trailer - Crimson Desert",
+    "Trailer - IGN",
 ]
 
 # =============================================================================
@@ -131,7 +109,7 @@ def save_history(stats_all):
     print("✅ youtube_history.json 저장 완료")
 
 def create_views_graph():
-    """조회수 변화 그래프 생성 (Preview #1, #2, #3 각각)"""
+    """조회수 변화 그래프 생성 (Trailer)"""
     if not HAS_MATPLOTLIB:
         print("⚠️  matplotlib 없음 - 그래프 생략")
         return None
@@ -161,191 +139,59 @@ def create_views_graph():
             "linewidth": 2.5,
             "markersize": 7
         },
-        "Epic Games": {
-            "color": "#313131",  # Epic Games 다크그레이
-            "marker": "D",
-            "linewidth": 2.5,
-            "markersize": 6
-        }
     }
     
-    # 데이터 파싱 - Preview #3
-    timestamps_p3 = []
-    views_data_p3 = {name: [] for name in PREVIEW_3_VIDEOS}
-    
-    # 데이터 파싱 - Preview #2
-    timestamps_p2 = []
-    views_data_p2 = {name: [] for name in PREVIEW_2_VIDEOS}
-    
-    # 데이터 파싱 - Preview #1
-    timestamps_p1 = []
-    views_data_p1 = {name: [] for name in PREVIEW_1_VIDEOS}
+    # 데이터 파싱 - Trailer
+    timestamps = []
+    views_data = {name: [] for name in TRAILER_VIDEOS}
     
     for entry in history:
         try:
             dt = datetime.fromisoformat(entry['timestamp'])
             
-            # Preview #3 데이터 수집
-            has_p3_data = False
-            for name in PREVIEW_3_VIDEOS:
-                video_data = entry['videos'].get(name, {})
-                if video_data:
-                    has_p3_data = True
-                    break
-            
-            if has_p3_data:
-                timestamps_p3.append(dt)
-                for name in PREVIEW_3_VIDEOS:
+            has_data = any(entry['videos'].get(name) for name in TRAILER_VIDEOS)
+            if has_data:
+                timestamps.append(dt)
+                for name in TRAILER_VIDEOS:
                     video_data = entry['videos'].get(name, {})
                     views = video_data.get('views', 0) if video_data else 0
-                    views_data_p3[name].append(views)
-            
-            # Preview #2 데이터 수집
-            has_p2_data = False
-            for name in PREVIEW_2_VIDEOS:
-                video_data = entry['videos'].get(name, {})
-                if video_data:
-                    has_p2_data = True
-                    break
-            
-            if has_p2_data:
-                timestamps_p2.append(dt)
-                for name in PREVIEW_2_VIDEOS:
-                    video_data = entry['videos'].get(name, {})
-                    views = video_data.get('views', 0) if video_data else 0
-                    views_data_p2[name].append(views)
-            
-            # Preview #1 데이터 수집
-            has_p1_data = False
-            for name in PREVIEW_1_VIDEOS:
-                video_data = entry['videos'].get(name, {})
-                if video_data:
-                    has_p1_data = True
-                    break
-            
-            if has_p1_data:
-                timestamps_p1.append(dt)
-                for name in PREVIEW_1_VIDEOS:
-                    video_data = entry['videos'].get(name, {})
-                    views = video_data.get('views', 0) if video_data else 0
-                    views_data_p1[name].append(views)
+                    views_data[name].append(views)
         except:
             continue
     
-    if not timestamps_p3 and not timestamps_p2 and not timestamps_p1:
+    if not timestamps:
         return None
     
-    # 그래프 생성 (3개 서브플롯)
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(14, 14))
+    # 그래프 생성 (1개 플롯)
+    fig, ax = plt.subplots(1, 1, figsize=(14, 6))
     plt.style.use('seaborn-v0_8-darkgrid')
     
-    # Preview #3 그래프
-    if timestamps_p3:
-        for name, views in views_data_p3.items():
-            if any(v > 0 for v in views):
-                channel = name.replace("Preview #3 - ", "")
-                style = CHANNEL_STYLES.get(channel, {
-                    "color": "#666666",
-                    "marker": "o",
-                    "linewidth": 2,
-                    "markersize": 6
-                })
-                
-                ax1.plot(timestamps_p3, views, 
-                        marker=style["marker"], 
-                        linewidth=style["linewidth"], 
-                        markersize=style["markersize"], 
-                        label=channel, 
-                        color=style["color"],
-                        markeredgewidth=1.5,
-                        markeredgecolor='white')
-        
-        ax1.set_xlabel('Date', fontsize=11, fontweight='bold')
-        ax1.set_ylabel('Views', fontsize=11, fontweight='bold')
-        ax1.set_title('Preview #3 - YouTube Views Trend', 
-                     fontsize=13, fontweight='bold', pad=15)
-        ax1.set_ylim(0, 1500000)
-        ax1.legend(loc='upper left', fontsize=10, framealpha=0.9)
-        ax1.grid(True, alpha=0.3)
-        ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-    else:
-        ax1.text(0.5, 0.5, 'No Preview #3 data yet', 
-                ha='center', va='center', fontsize=14, color='gray')
-        ax1.set_xticks([])
-        ax1.set_yticks([])
+    for name, views in views_data.items():
+        if any(v > 0 for v in views):
+            channel = name.replace("Trailer - ", "")
+            style = CHANNEL_STYLES.get(channel, {
+                "color": "#666666",
+                "marker": "o",
+                "linewidth": 2,
+                "markersize": 6
+            })
+            
+            ax.plot(timestamps, views, 
+                    marker=style["marker"], 
+                    linewidth=style["linewidth"], 
+                    markersize=style["markersize"], 
+                    label=channel, 
+                    color=style["color"],
+                    markeredgewidth=1.5,
+                    markeredgecolor='white')
     
-    # Preview #2 그래프
-    if timestamps_p2:
-        for name, views in views_data_p2.items():
-            if any(v > 0 for v in views):
-                channel = name.replace("Preview #2 - ", "")
-                style = CHANNEL_STYLES.get(channel, {
-                    "color": "#666666",
-                    "marker": "o",
-                    "linewidth": 2,
-                    "markersize": 6
-                })
-                
-                ax2.plot(timestamps_p2, views, 
-                        marker=style["marker"], 
-                        linewidth=style["linewidth"], 
-                        markersize=style["markersize"], 
-                        label=channel, 
-                        color=style["color"],
-                        markeredgewidth=1.5,
-                        markeredgecolor='white')
-        
-        ax2.set_xlabel('Date', fontsize=11, fontweight='bold')
-        ax2.set_ylabel('Views', fontsize=11, fontweight='bold')
-        ax2.set_title('Preview #2 - YouTube Views Trend', 
-                     fontsize=13, fontweight='bold', pad=15)
-        ax2.set_ylim(0, 1500000)
-        ax2.legend(loc='upper left', fontsize=10, framealpha=0.9)
-        ax2.grid(True, alpha=0.3)
-        ax2.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
-        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-    else:
-        ax2.text(0.5, 0.5, 'No Preview #2 data yet', 
-                ha='center', va='center', fontsize=14, color='gray')
-        ax2.set_xticks([])
-        ax2.set_yticks([])
-    
-    # Preview #1 그래프
-    if timestamps_p1:
-        for name, views in views_data_p1.items():
-            if any(v > 0 for v in views):
-                channel = name.replace("Preview #1 - ", "")
-                style = CHANNEL_STYLES.get(channel, {
-                    "color": "#666666",
-                    "marker": "o",
-                    "linewidth": 2,
-                    "markersize": 6
-                })
-                
-                ax3.plot(timestamps_p1, views, 
-                        marker=style["marker"], 
-                        linewidth=style["linewidth"], 
-                        markersize=style["markersize"], 
-                        label=channel, 
-                        color=style["color"],
-                        markeredgewidth=1.5,
-                        markeredgecolor='white')
-        
-        ax3.set_xlabel('Date', fontsize=11, fontweight='bold')
-        ax3.set_ylabel('Views', fontsize=11, fontweight='bold')
-        ax3.set_title('Preview #1 - YouTube Views Trend', 
-                     fontsize=13, fontweight='bold', pad=15)
-        ax3.set_ylim(0, 1500000)
-        ax3.legend(loc='upper left', fontsize=10, framealpha=0.9)
-        ax3.grid(True, alpha=0.3)
-        ax3.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
-        ax3.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-    else:
-        ax3.text(0.5, 0.5, 'No Preview #1 data yet', 
-                ha='center', va='center', fontsize=14, color='gray')
-        ax3.set_xticks([])
-        ax3.set_yticks([])
+    ax.set_xlabel('Date', fontsize=11, fontweight='bold')
+    ax.set_ylabel('Views', fontsize=11, fontweight='bold')
+    ax.set_title('Trailer - YouTube Views Trend', fontsize=13, fontweight='bold', pad=15)
+    ax.legend(loc='upper left', fontsize=10, framealpha=0.9)
+    ax.grid(True, alpha=0.3)
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
     
     fig.autofmt_xdate()
     plt.tight_layout()
@@ -356,7 +202,7 @@ def create_views_graph():
     buf.seek(0)
     plt.close()
     
-    print("✅ 그래프 생성 완료 (Preview #1, #2, #3)")
+    print("✅ 그래프 생성 완료 (Trailer)")
     return buf
 
 def format_number(num):
@@ -392,22 +238,22 @@ def send_discord(stats_all):
     # 영상별 통계 라인 생성
     lines = []
     
-    # Preview #3 섹션
-    lines.append("**🎬 Preview #3**")
-    p3_total_views = 0
-    p3_total_likes = 0
+    # Trailer 섹션
+    lines.append("**🎬 Trailer**")
+    total_views = 0
+    total_likes = 0
     
-    for name in PREVIEW_3_VIDEOS:
+    for name in TRAILER_VIDEOS:
         stats = stats_all.get(name)
         if not stats:
-            channel = name.replace("Preview #3 - ", "")
+            channel = name.replace("Trailer - ", "")
             lines.append(f"  • {channel}: ⚠️ 데이터 없음")
             continue
         
         views = stats['views']
         likes = stats['likes']
-        p3_total_views += views
-        p3_total_likes += likes
+        total_views += views
+        total_likes += likes
         
         # 이전 데이터와 비교
         prev_stats = prev_data.get(name, {})
@@ -425,96 +271,9 @@ def send_discord(stats_all):
         if likes_diff:
             likes_display += f" ({likes_diff})"
         
-        channel = name.replace("Preview #3 - ", "")
+        channel = name.replace("Trailer - ", "")
         lines.append(f"  • **{channel}**")
         lines.append(f"    👁️ {views_display} | 👍 {likes_display}")
-    
-    if p3_total_views > 0:
-        lines.append(f"  📊 소계: 조회수 `{format_number(p3_total_views)}` | 좋아요 `{format_number(p3_total_likes)}`")
-    
-    # Preview #2 섹션
-    lines.append("\n**🎬 Preview #2**")
-    p2_total_views = 0
-    p2_total_likes = 0
-    
-    for name in PREVIEW_2_VIDEOS:
-        stats = stats_all.get(name)
-        if not stats:
-            channel = name.replace("Preview #2 - ", "")
-            lines.append(f"  • {channel}: ⚠️ 데이터 없음")
-            continue
-        
-        views = stats['views']
-        likes = stats['likes']
-        p2_total_views += views
-        p2_total_likes += likes
-        
-        # 이전 데이터와 비교
-        prev_stats = prev_data.get(name, {})
-        prev_views = prev_stats.get('views')
-        prev_likes = prev_stats.get('likes')
-        
-        views_diff = format_diff(views, prev_views)
-        likes_diff = format_diff(likes, prev_likes)
-        
-        views_display = f"`{format_number(views)}`"
-        if views_diff:
-            views_display += f" ({views_diff})"
-        
-        likes_display = f"`{format_number(likes)}`"
-        if likes_diff:
-            likes_display += f" ({likes_diff})"
-        
-        channel = name.replace("Preview #2 - ", "")
-        lines.append(f"  • **{channel}**")
-        lines.append(f"    👁️ {views_display} | 👍 {likes_display}")
-    
-    if p2_total_views > 0:
-        lines.append(f"  📊 소계: 조회수 `{format_number(p2_total_views)}` | 좋아요 `{format_number(p2_total_likes)}`")
-    
-    # Preview #1 섹션
-    lines.append("\n**🎬 Preview #1**")
-    p1_total_views = 0
-    p1_total_likes = 0
-    
-    for name in PREVIEW_1_VIDEOS:
-        stats = stats_all.get(name)
-        if not stats:
-            channel = name.replace("Preview #1 - ", "")
-            lines.append(f"  • {channel}: ⚠️ 데이터 없음")
-            continue
-        
-        views = stats['views']
-        likes = stats['likes']
-        p1_total_views += views
-        p1_total_likes += likes
-        
-        # 이전 데이터와 비교
-        prev_stats = prev_data.get(name, {})
-        prev_views = prev_stats.get('views')
-        prev_likes = prev_stats.get('likes')
-        
-        views_diff = format_diff(views, prev_views)
-        likes_diff = format_diff(likes, prev_likes)
-        
-        views_display = f"`{format_number(views)}`"
-        if views_diff:
-            views_display += f" ({views_diff})"
-        
-        likes_display = f"`{format_number(likes)}`"
-        if likes_diff:
-            likes_display += f" ({likes_diff})"
-        
-        channel = name.replace("Preview #1 - ", "")
-        lines.append(f"  • **{channel}**")
-        lines.append(f"    👁️ {views_display} | 👍 {likes_display}")
-    
-    if p1_total_views > 0:
-        lines.append(f"  📊 소계: 조회수 `{format_number(p1_total_views)}` | 좋아요 `{format_number(p1_total_likes)}`")
-    
-    # 전체 합계
-    total_views = p3_total_views + p2_total_views + p1_total_views
-    total_likes = p3_total_likes + p2_total_likes + p1_total_likes
     
     if total_views > 0:
         lines.append(f"\n**📊 전체 합계**")
@@ -579,41 +338,15 @@ def main():
     print("📊 결과 요약")
     print("=" * 60)
     
-    # Preview #3 합계
-    p3_views = sum(s['views'] for name, s in stats_all.items() 
-                   if s and name.startswith("Preview #3"))
-    p3_likes = sum(s['likes'] for name, s in stats_all.items() 
-                   if s and name.startswith("Preview #3"))
+    # Trailer 합계
+    trailer_views = sum(s['views'] for name, s in stats_all.items() 
+                        if s and name.startswith("Trailer"))
+    trailer_likes = sum(s['likes'] for name, s in stats_all.items() 
+                        if s and name.startswith("Trailer"))
     
-    if p3_views > 0:
-        print(f"\nPreview #3:")
-        print(f"  조회수: {p3_views:,}")
-        print(f"  좋아요: {p3_likes:,}")
-    
-    # Preview #2 합계
-    p2_views = sum(s['views'] for name, s in stats_all.items() 
-                   if s and name.startswith("Preview #2"))
-    p2_likes = sum(s['likes'] for name, s in stats_all.items() 
-                   if s and name.startswith("Preview #2"))
-    
-    print(f"\nPreview #2:")
-    print(f"  조회수: {p2_views:,}")
-    print(f"  좋아요: {p2_likes:,}")
-    
-    # Preview #1 합계
-    p1_views = sum(s['views'] for name, s in stats_all.items() 
-                   if s and name.startswith("Preview #1"))
-    p1_likes = sum(s['likes'] for name, s in stats_all.items() 
-                   if s and name.startswith("Preview #1"))
-    
-    print(f"\nPreview #1:")
-    print(f"  조회수: {p1_views:,}")
-    print(f"  좋아요: {p1_likes:,}")
-    
-    # 전체 합계
-    print(f"\n전체:")
-    print(f"  조회수: {p3_views + p2_views + p1_views:,}")
-    print(f"  좋아요: {p3_likes + p2_likes + p1_likes:,}")
+    print(f"\nTrailer:")
+    print(f"  조회수: {trailer_views:,}")
+    print(f"  좋아요: {trailer_likes:,}")
     
     # 히스토리 저장
     save_history(stats_all)
