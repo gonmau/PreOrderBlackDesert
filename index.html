@@ -412,7 +412,7 @@
       opacity: 0;
     }
 
-    .chart-wrapper { position: relative; height: 220px; }
+    .chart-wrapper { position: relative; height: 260px; }
 
     /* ─── EVENT TOGGLE ─── */
     .event-toggle-wrap {
@@ -2244,11 +2244,36 @@ function updateAllAnnotations() {
 }
 
 
+function calcEditionAvg(rawResults, edition) {
+  let sum = 0, w = 0;
+  Object.keys(rawResults).forEach(c => {
+    if (SKIP_COUNTRIES.has(c)) return;
+    const val = rawResults[c]?.[edition];
+    const wt = MARKET_WEIGHTS[c] || 1;
+    if (val) { sum += val * wt; w += wt; }
+  });
+  return w > 0 ? sum / w : null;
+}
+
 function renderChart() {
-  // {x: Date, y: rank} 형태로 변환 (time scale용)
-  const dataPoints = allHistory
+  const noPt = allHistory.length > 30;
+
+  // 통합
+  const combinedPts = allHistory
     .filter(h => h.averages?.combined != null)
     .map(h => ({ x: new Date(h.timestamp), y: h.averages.combined }));
+
+  // Standard 평균
+  const stdPts = allHistory
+    .filter(h => h.raw_results)
+    .map(h => ({ x: new Date(h.timestamp), y: calcEditionAvg(h.raw_results, 'standard') }))
+    .filter(p => p.y != null);
+
+  // Deluxe 평균
+  const dlxPts = allHistory
+    .filter(h => h.raw_results)
+    .map(h => ({ x: new Date(h.timestamp), y: calcEditionAvg(h.raw_results, 'deluxe') }))
+    .filter(p => p.y != null);
 
   const ctx = document.getElementById('rankChart').getContext('2d');
   if (chartInstance) chartInstance.destroy();
@@ -2256,28 +2281,62 @@ function renderChart() {
   chartInstance = new Chart(ctx, {
     type: 'line',
     data: {
-      datasets: [{
-        label: '가중 평균 순위',
-        data: dataPoints,
-        borderColor: '#c0392b',
-        backgroundColor: (ctx2) => {
-          const g = ctx2.chart.ctx.createLinearGradient(0, 0, 0, 220);
-          g.addColorStop(0, 'rgba(192,57,43,0.25)');
-          g.addColorStop(1, 'rgba(192,57,43,0)');
-          return g;
+      datasets: [
+        {
+          label: '통합',
+          data: combinedPts,
+          borderColor: '#c0392b',
+          backgroundColor: (ctx2) => {
+            const g = ctx2.chart.ctx.createLinearGradient(0, 0, 0, 220);
+            g.addColorStop(0, 'rgba(192,57,43,0.18)');
+            g.addColorStop(1, 'rgba(192,57,43,0)');
+            return g;
+          },
+          borderWidth: 2.5,
+          pointBackgroundColor: '#e74c3c',
+          pointRadius: noPt ? 0 : 4,
+          pointHoverRadius: 6,
+          tension: 0.4,
+          fill: true,
+          spanGaps: true,
+          order: 3,
         },
-        borderWidth: 2,
-        pointBackgroundColor: '#e74c3c',
-        pointRadius: dataPoints.length > 30 ? 0 : 4,
-        pointHoverRadius: 6,
-        tension: 0.4,
-        fill: true,
-        spanGaps: true,
-      }]
+        {
+          label: 'Standard',
+          data: stdPts,
+          borderColor: '#8ab4d4',
+          backgroundColor: 'transparent',
+          borderWidth: 1.6,
+          borderDash: [4, 3],
+          pointBackgroundColor: '#8ab4d4',
+          pointRadius: noPt ? 0 : 3,
+          pointHoverRadius: 5,
+          tension: 0.4,
+          fill: false,
+          spanGaps: true,
+          order: 1,
+        },
+        {
+          label: 'Deluxe',
+          data: dlxPts,
+          borderColor: '#d4a017',
+          backgroundColor: 'transparent',
+          borderWidth: 1.6,
+          borderDash: [4, 3],
+          pointBackgroundColor: '#d4a017',
+          pointRadius: noPt ? 0 : 3,
+          pointHoverRadius: 5,
+          tension: 0.4,
+          fill: false,
+          spanGaps: true,
+          order: 2,
+        },
+      ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
       scales: {
         y: {
           reverse: true,
@@ -2294,19 +2353,31 @@ function renderChart() {
         }
       },
       plugins: {
-        legend: { display: false },
+        legend: {
+          display: true,
+          labels: {
+            color: '#ffffff',
+            font: { size: 11 },
+            usePointStyle: true,
+            pointStyleWidth: 16,
+            padding: 16,
+          }
+        },
         tooltip: {
           backgroundColor: '#1a1318',
           borderColor: '#444',
           borderWidth: 1,
           titleColor: '#ffffff',
-          bodyColor: '#e74c3c',
+          bodyColor: '#e8ddd5',
           callbacks: {
             title: items => {
               const d = new Date(items[0].parsed.x);
               return `${d.getMonth()+1}/${d.getDate()}`;
             },
-            label: ctx2 => `가중 평균: ${ctx2.parsed.y?.toFixed(1) ?? '—'}위`
+            label: ctx2 => {
+              const v = ctx2.parsed.y;
+              return v != null ? `${ctx2.dataset.label}: ${v.toFixed(1)}위` : null;
+            }
           }
         },
         annotation: {
