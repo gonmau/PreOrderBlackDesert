@@ -191,9 +191,19 @@ def create_views_graph():
     ax.legend(loc='upper left', fontsize=10, framealpha=0.9)
     ax.grid(True, alpha=0.3)
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+    # X축 범위: 데이터 전후 여유, 데이터가 1개면 +-3일
+    from datetime import timedelta
+    if len(timestamps) == 1:
+        ax.set_xlim(timestamps[0] - timedelta(days=3), timestamps[0] + timedelta(days=3))
+    else:
+        margin = timedelta(days=1)
+        ax.set_xlim(min(timestamps) - margin, max(timestamps) + margin)
     
-    fig.autofmt_xdate()
+    # 날짜 포맷: 연도 포함
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y/%m/%d'))
+    ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+    
+    fig.autofmt_xdate(rotation=30, ha='right')
     plt.tight_layout()
     
     # BytesIO로 저장
