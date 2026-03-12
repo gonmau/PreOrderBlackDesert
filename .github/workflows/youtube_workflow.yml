@@ -2,7 +2,7 @@ name: YouTube Tracker
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:      # 수동 실행 가능
 
 permissions:
