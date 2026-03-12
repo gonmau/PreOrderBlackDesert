@@ -9245,5 +9245,14 @@
         "geo_code": "JP"
       }
     }
+  },
+  {
+    "timestamp": "2026-03-12T09:03:51.171359",
+    "google": {
+      "score": 84,
+      "avg_7d": 25,
+      "top_regions": {}
+    },
+    "console_markets": {}
   }
 ]
