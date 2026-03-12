@@ -9254,5 +9254,20 @@
       "top_regions": {}
     },
     "console_markets": {}
+  },
+  {
+    "timestamp": "2026-03-12T11:48:55.085848",
+    "google": {
+      "score": 95,
+      "avg_7d": 25,
+      "top_regions": {}
+    },
+    "console_markets": {
+      "United States": {
+        "score": 99,
+        "avg_1m": 56,
+        "geo_code": "US"
+      }
+    }
   }
 ]
