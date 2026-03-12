@@ -2,7 +2,7 @@ name: YouTube Tracker
 
 on:
   schedule:
-    - cron: '0 23,11 * * *'
+    - cron: '*/30 * * * *'
   workflow_dispatch:      # 수동 실행 가능
 
 permissions:
@@ -14,10 +14,10 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@v4
     
     - name: Setup Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     
