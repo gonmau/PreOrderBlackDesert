@@ -9225,5 +9225,25 @@
         "geo_code": "FR"
       }
     }
+  },
+  {
+    "timestamp": "2026-03-12T07:18:08.845849",
+    "google": {
+      "score": 85,
+      "avg_7d": 25,
+      "top_regions": {}
+    },
+    "console_markets": {
+      "United States": {
+        "score": 85,
+        "avg_1m": 57,
+        "geo_code": "US"
+      },
+      "Japan": {
+        "score": 83,
+        "avg_1m": 28,
+        "geo_code": "JP"
+      }
+    }
   }
 ]
