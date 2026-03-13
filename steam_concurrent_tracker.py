@@ -33,28 +33,10 @@ GAMES = [
     },
     # ── 붉은사막 출시 전까지만 추적 (비교군) ──────────────────────────
     {
-        "name":           "몬스터헌터 와일즈",
-        "app_id":         2246340,
-        "emoji":          "🦕",
-        "history_file":   "steam_history_mhwilds.json",
-        "track_after":    None,                      # 즉시 추적 시작
-        "track_until":    CRIMSON_DESERT_RELEASE,    # 붉은사막 출시 시 종료
-        "milestones":     [50_000, 100_000, 200_000, 500_000],
-    },
-    {
         "name":           "슬레이 더 스파이어 2",
         "app_id":         2868840,
         "emoji":          "🃏",
         "history_file":   "steam_history_sts2.json",
-        "track_after":    None,
-        "track_until":    CRIMSON_DESERT_RELEASE,
-        "milestones":     [50_000, 100_000, 200_000, 500_000],
-    },
-    {
-        "name":           "ARC Raiders",
-        "app_id":         1808500,
-        "emoji":          "🤖",
-        "history_file":   "steam_history_arcraiders.json",
         "track_after":    None,
         "track_until":    CRIMSON_DESERT_RELEASE,
         "milestones":     [50_000, 100_000, 200_000, 500_000],
