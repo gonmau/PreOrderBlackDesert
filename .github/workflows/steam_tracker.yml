@@ -1,0 +1,47 @@
+name: Steam 동접 추적기
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'   # 5분마다 실행 (UTC 기준)
+  workflow_dispatch:         # 수동 실행 버튼
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: 의존성 설치
+        run: pip install requests
+
+      - name: 히스토리 캐시 복원
+        uses: actions/cache@v4
+        with:
+          path: |
+            steam_history_mhwilds.json
+            steam_history_crimsondesert.json
+          key: steam-history-${{ github.run_id }}
+          restore-keys: |
+            steam-history-
+
+      - name: 동접 추적 실행
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: python steam_concurrent_tracker.py
+
+      - name: 히스토리 캐시 저장
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: |
+            steam_history_mhwilds.json
+            steam_history_crimsondesert.json
+          key: steam-history-${{ github.run_id }}
