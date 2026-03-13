@@ -26,8 +26,11 @@ jobs:
         uses: actions/cache@v5
         with:
           path: |
-            steam_history_mhwilds.json
             steam_history_crimsondesert.json
+            steam_history_mhwilds.json
+            steam_history_sts2.json
+            steam_history_arcraiders.json
+            steam_history_re_requiem.json
           key: steam-history-${{ github.run_id }}
           restore-keys: |
             steam-history-
@@ -42,6 +45,9 @@ jobs:
         if: always()
         with:
           path: |
-            steam_history_mhwilds.json
             steam_history_crimsondesert.json
+            steam_history_mhwilds.json
+            steam_history_sts2.json
+            steam_history_arcraiders.json
+            steam_history_re_requiem.json
           key: steam-history-${{ github.run_id }}
