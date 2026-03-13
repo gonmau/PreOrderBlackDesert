@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 Steam 동접 추적기 — 멀티 게임
-- 붉은사막 (AppID 3321460): 한국 출시(2026-03-20 07:00 KST) 이후에만 추적 시작
-- 몬헌 와일즈 (AppID 2246340): 항상 추적 (테스트용)
-- Discord 웹훅으로 알림 전송
+- 붉은사막 출시(2026-03-20 07:00 KST) 전: 카운트다운 전송 + 비교군 게임 추적
+- 붉은사막 출시 후: 붉은사막만 추적 (비교군 게임 자동 종료)
 - cron 5분 주기 권장: */5 * * * * python3 /path/to/steam_concurrent_tracker.py
 """
 
@@ -19,22 +18,55 @@ from datetime import datetime, timezone, timedelta
 
 KST = timezone(timedelta(hours=9))
 
+CRIMSON_DESERT_RELEASE = datetime(2026, 3, 20, 7, 0, 0, tzinfo=KST)
+
 GAMES = [
+    # ── 붉은사막 출시 후 추적 ──────────────────────────────────────────
     {
-        "name":         "몬스터헌터 와일즈",
-        "app_id":       2246340,
-        "emoji":        "🦕",
-        "history_file": "steam_history_mhwilds.json",
-        "active_after": None,                                        # 항상 추적
-        "milestones":   [50_000, 100_000, 200_000, 500_000],
+        "name":           "붉은사막",
+        "app_id":         3321460,
+        "emoji":          "🏜️",
+        "history_file":   "steam_history_crimsondesert.json",
+        "track_after":    CRIMSON_DESERT_RELEASE,   # 출시 후 추적 시작
+        "track_until":    None,                      # 종료 없음
+        "milestones":     [10_000, 50_000, 100_000, 200_000, 500_000],
+    },
+    # ── 붉은사막 출시 전까지만 추적 (비교군) ──────────────────────────
+    {
+        "name":           "몬스터헌터 와일즈",
+        "app_id":         2246340,
+        "emoji":          "🦕",
+        "history_file":   "steam_history_mhwilds.json",
+        "track_after":    None,                      # 즉시 추적 시작
+        "track_until":    CRIMSON_DESERT_RELEASE,    # 붉은사막 출시 시 종료
+        "milestones":     [50_000, 100_000, 200_000, 500_000],
     },
     {
-        "name":         "붉은사막",
-        "app_id":       3321460,
-        "emoji":        "🏜️",
-        "history_file": "steam_history_crimsondesert.json",
-        "active_after": datetime(2026, 3, 20, 7, 0, 0, tzinfo=KST), # 한국 출시 기준
-        "milestones":   [10_000, 50_000, 100_000, 200_000, 500_000],
+        "name":           "슬레이 더 스파이어 2",
+        "app_id":         2868840,
+        "emoji":          "🃏",
+        "history_file":   "steam_history_sts2.json",
+        "track_after":    None,
+        "track_until":    CRIMSON_DESERT_RELEASE,
+        "milestones":     [50_000, 100_000, 200_000, 500_000],
+    },
+    {
+        "name":           "ARC Raiders",
+        "app_id":         1808500,
+        "emoji":          "🤖",
+        "history_file":   "steam_history_arcraiders.json",
+        "track_after":    None,
+        "track_until":    CRIMSON_DESERT_RELEASE,
+        "milestones":     [50_000, 100_000, 200_000, 500_000],
+    },
+    {
+        "name":           "바이오하자드 레퀴엠",
+        "app_id":         3764200,
+        "emoji":          "🧟",
+        "history_file":   "steam_history_re_requiem.json",
+        "track_after":    None,
+        "track_until":    CRIMSON_DESERT_RELEASE,
+        "milestones":     [50_000, 100_000, 200_000, 500_000],
     },
 ]
 
@@ -47,24 +79,26 @@ DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 def now_kst() -> datetime:
     return datetime.now(KST)
 
-def is_game_active(game: dict, now: datetime) -> bool:
-    if game["active_after"] is None:
-        return True
-    return now >= game["active_after"]
+def is_active(game: dict, now: datetime) -> bool:
+    """현재 추적해야 하는 게임인지 확인"""
+    if game["track_after"] and now < game["track_after"]:
+        return False   # 아직 추적 시작 전
+    if game["track_until"] and now >= game["track_until"]:
+        return False   # 추적 종료
+    return True
 
-def format_countdown(release_dt: datetime, now: datetime) -> str:
-    """출시까지 남은 시간을 D-7 06:23:45 형식으로 반환"""
-    delta = release_dt - now
+def is_pre_release(now: datetime) -> bool:
+    return now < CRIMSON_DESERT_RELEASE
+
+def format_countdown(now: datetime) -> str:
+    delta = CRIMSON_DESERT_RELEASE - now
     if delta.total_seconds() <= 0:
         return "출시됨 ✅"
-    total_sec = int(delta.total_seconds())
-    days    = total_sec // 86400
-    hours   = (total_sec % 86400) // 3600
-    minutes = (total_sec % 3600) // 60
-    seconds = total_sec % 60
-    if days > 0:
-        return f"D-{days}  {hours:02d}:{minutes:02d}:{seconds:02d}"
-    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    s = int(delta.total_seconds())
+    d, s = divmod(s, 86400)
+    h, s = divmod(s, 3600)
+    m, s = divmod(s, 60)
+    return f"D-{d}  {h:02d}:{m:02d}:{s:02d}" if d > 0 else f"{h:02d}:{m:02d}:{s:02d}"
 
 # =============================================================================
 # Steam API
@@ -142,15 +176,14 @@ def format_diff(current: int, prev: int | None) -> str:
     if d < 0:  return f"  ▼{abs(d):,}"
     return "  ━"
 
-def send_discord_active(game: dict, current: int, prev: int | None,
-                        p_all: int, p_24h: int, milestone: int | None,
-                        now: datetime):
+def send_active(game: dict, current: int, prev: int | None,
+                p_all: int, p_24h: int, milestone: int | None, now: datetime):
     if not DISCORD_WEBHOOK:
         return
 
-    diff    = format_diff(current, prev)
-    t_emoji = trend_emoji(current, prev)
-    pct     = f"{current / p_all * 100:.1f}%" if p_all > 0 else "-"
+    diff     = format_diff(current, prev)
+    t_emoji  = trend_emoji(current, prev)
+    pct      = f"{current / p_all * 100:.1f}%" if p_all > 0 else "-"
 
     lines = [
         f"**현재 동접**: `{current:,}명`{diff}",
@@ -179,21 +212,22 @@ def send_discord_active(game: dict, current: int, prev: int | None,
         print(f"  ❌ Discord 전송 실패: {e}")
 
 
-def send_discord_countdown(game: dict, countdown_str: str, now: datetime):
-    """출시 전: D-day 카운트다운 알림"""
+def send_countdown(countdown_str: str, now: datetime):
+    """붉은사막 출시 전 카운트다운 + 비교군 게임 현황 요약"""
     if not DISCORD_WEBHOOK:
         return
 
     payload = {
         "embeds": [{
-            "title":       f"⏳ {game['emoji']} {game['name']} — 출시 카운트다운",
+            "title":       "⏳ 🏜️ 붉은사막 — 출시 카운트다운",
             "description": (
                 f"**출시까지**: `{countdown_str}`\n"
                 f"**출시 일시**: `2026-03-20 07:00 KST` (글로벌 3/19)\n\n"
-                f"_Steam 동접 추적은 출시 후 자동으로 시작됩니다._"
+                f"_Steam 동접 추적은 출시 후 자동으로 시작됩니다._\n"
+                f"_비교군 게임(몬헌·STS2·ARC·레퀴엠)은 출시 시 자동 종료됩니다._"
             ),
             "color":     0xC0392B,
-            "footer":    {"text": f"appid: {game['app_id']}"},
+            "footer":    {"text": "appid: 3321460"},
             "timestamp": now.isoformat(),
         }]
     }
@@ -211,39 +245,34 @@ def process_game(game: dict, now: datetime):
     print(f"\n{'─' * 40}")
     print(f"{game['emoji']}  {game['name']}  (appid: {game['app_id']})")
 
-    # 출시 전 → 카운트다운만
-    if not is_game_active(game, now):
-        countdown = format_countdown(game["active_after"], now)
-        print(f"  ⏳ 출시 전 — {countdown}")
-        send_discord_countdown(game, countdown, now)
+    if not is_active(game, now):
+        if game["track_until"] and now >= game["track_until"]:
+            print("  ⏹️  추적 종료 (붉은사막 출시)")
+        else:
+            print("  ⏳ 추적 대기 중 (출시 전)")
         return
 
-    # 동접 수집
     current = fetch_current_players(game["app_id"])
     if current is None:
         print("  ❌ 동접 수집 실패, 스킵")
         return
 
-    # 히스토리 로드 & 통계
     history   = load_history(game["history_file"])
     prev      = history[-1]["players"] if history else None
     p_all     = max(peak_all_time(history), current)
     p_24      = max(peak_24h(history, now), current)
     milestone = check_milestone(current, history, game["milestones"])
 
-    # 히스토리 저장
     history.append({"timestamp": now.isoformat(), "players": current})
     save_history(game["history_file"], history)
 
-    # 콘솔 출력
     diff_str = format_diff(current, prev).strip()
     print(f"  현재: {current:,}명  {diff_str}")
     print(f"  피크: {p_all:,}명  /  24h: {p_24:,}명")
     if milestone:
         print(f"  🏆 {milestone:,}명 마일스톤 돌파!")
 
-    # Discord 전송
-    send_discord_active(game, current, prev, p_all, p_24, milestone, now)
+    send_active(game, current, prev, p_all, p_24, milestone, now)
 
 # =============================================================================
 # 메인
@@ -254,8 +283,17 @@ def main():
     print(f"{'=' * 40}")
     print(f"🎮 Steam 동접 추적기")
     print(f"   {now.strftime('%Y-%m-%d %H:%M:%S KST')}")
+    if is_pre_release(now):
+        print(f"   ⏳ 붉은사막 출시까지: {format_countdown(now)}")
+    else:
+        print(f"   🚀 붉은사막 출시 후 모드")
     print(f"{'=' * 40}")
 
+    # 붉은사막 출시 전이면 카운트다운 별도 전송
+    if is_pre_release(now):
+        send_countdown(format_countdown(now), now)
+
+    # 각 게임 처리
     for game in GAMES:
         process_game(game, now)
 
