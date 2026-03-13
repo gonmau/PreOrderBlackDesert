@@ -2479,17 +2479,23 @@ function renderHeatmap(raw, prevRaw) {
       const pcr = combinedRank(pd.standard, pd.deluxe);
       const cDiffHtml = fmtDiff(cr, pcr);
       const countryHtml = cDiffHtml ? `${c}&nbsp;<span class="hm-cdiff">(${cDiffHtml})</span>` : c;
+      const S_COLOR = '#7ec8e3'; // 스탠다드: 하늘색
+      const D_COLOR = '#f4a261'; // 디럭스: 주황색
       let editionLine = '';
       if (d.standard && d.deluxe) {
         if (cr === d.standard) {
-          editionLine = fmtDiff(d.deluxe, pd.deluxe) ? `${d.deluxe}위 (D, ${fmtDiff(d.deluxe, pd.deluxe)}위)` : `${d.deluxe}위 (D)`;
+          editionLine = fmtDiff(d.deluxe, pd.deluxe)
+            ? `<span style="color:${D_COLOR}">${d.deluxe}위 (D, ${fmtDiff(d.deluxe, pd.deluxe)}위)</span>`
+            : `<span style="color:${D_COLOR}">${d.deluxe}위 (D)</span>`;
         } else {
-          editionLine = fmtDiff(d.standard, pd.standard) ? `${d.standard}위 (S, ${fmtDiff(d.standard, pd.standard)}위)` : `${d.standard}위 (S)`;
+          editionLine = fmtDiff(d.standard, pd.standard)
+            ? `<span style="color:${S_COLOR}">${d.standard}위 (S, ${fmtDiff(d.standard, pd.standard)}위)</span>`
+            : `<span style="color:${S_COLOR}">${d.standard}위 (S)</span>`;
         }
       } else if (d.standard && !d.deluxe) {
-        editionLine = `(S only)`;
+        editionLine = `<span style="color:${S_COLOR}">(S only)</span>`;
       } else if (!d.standard && d.deluxe) {
-        editionLine = `(D only)`;
+        editionLine = `<span style="color:${D_COLOR}">(D only)</span>`;
       }
       const diff = cr && pcr ? pcr - cr : 0;
       const arrowColor = diff > 0 ? '#2ecc71' : diff < 0 ? '#e74c3c' : 'transparent';
