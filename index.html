@@ -2107,14 +2107,17 @@ function render() {
     setHeroStat(`stat-${regionKey}`, `stat-${regionKey}-diff`, avg, prevAvg, '위');
   }
 
-  // 최고 순위 국가
+  // 최고 순위 국가 (동점 시 가중치 높은 국가 우선)
   let bestCountry = null, bestRank = Infinity;
   let worstCountry = null, worstRank = -Infinity;
   Object.entries(raw).forEach(([c, d]) => {
     if (SKIP_COUNTRIES.has(c)) return;
     const cr = combinedRank(d.standard, d.deluxe);
-    if (cr && cr < bestRank) { bestRank = cr; bestCountry = c; }
-    if (cr && cr > worstRank) { worstRank = cr; worstCountry = c; }
+    const wt = MARKET_WEIGHTS[c] || 1;
+    const bestWt = MARKET_WEIGHTS[bestCountry] || 1;
+    const worstWt = MARKET_WEIGHTS[worstCountry] || 1;
+    if (cr && (cr < bestRank || (cr === bestRank && wt > bestWt))) { bestRank = cr; bestCountry = c; }
+    if (cr && (cr > worstRank || (cr === worstRank && wt > worstWt))) { worstRank = cr; worstCountry = c; }
   });
   if (bestCountry) {
     document.getElementById('stat-best-flag').textContent = FLAGS[bestCountry] || '?';
