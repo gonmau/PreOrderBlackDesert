@@ -173,6 +173,9 @@ def send_active(game: dict, current: int, prev: int | None,
         f"**24h 피크**:  `{p_24h:,}명`",
     ]
 
+    steamdb_url = f"https://steamdb.info/app/{game['app_id']}/charts/"
+    lines.append(f"\n📊 [SteamDB 동접 차트]({steamdb_url})")
+
     color = 0x00B0F4
     if milestone:
         lines.insert(0, f"🏆 **{milestone:,}명 돌파!**\n")
@@ -194,6 +197,8 @@ def send_active(game: dict, current: int, prev: int | None,
         print(f"  ❌ Discord 전송 실패: {e}")
 
 
+CRIMSON_DESERT_STEAMDB = "https://steamdb.info/app/3321460/charts/"
+
 def send_countdown(countdown_str: str, now: datetime):
     """붉은사막 출시 전 카운트다운 + 비교군 게임 현황 요약"""
     if not DISCORD_WEBHOOK:
@@ -205,8 +210,9 @@ def send_countdown(countdown_str: str, now: datetime):
             "description": (
                 f"**출시까지**: `{countdown_str}`\n"
                 f"**출시 일시**: `2026-03-20 07:00 KST` (글로벌 3/19)\n\n"
+                f"📊 [SteamDB 동접 차트]({CRIMSON_DESERT_STEAMDB})\n\n"
                 f"_Steam 동접 추적은 출시 후 자동으로 시작됩니다._\n"
-                f"_비교군 게임(몬헌·STS2·ARC·레퀴엠)은 출시 시 자동 종료됩니다._"
+                f"_비교군 게임(STS2·레퀴엠)은 출시 시 자동 종료됩니다._"
             ),
             "color":     0xC0392B,
             "footer":    {"text": "appid: 3321460"},
