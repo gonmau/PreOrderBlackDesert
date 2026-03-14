@@ -21,34 +21,14 @@ KST = timezone(timedelta(hours=9))
 CRIMSON_DESERT_RELEASE = datetime(2026, 3, 20, 7, 0, 0, tzinfo=KST)
 
 GAMES = [
-    # ── 붉은사막 출시 후 추적 ──────────────────────────────────────────
     {
         "name":           "붉은사막",
         "app_id":         3321460,
         "emoji":          "🏜️",
         "history_file":   "steam_history_crimsondesert.json",
-        "track_after":    CRIMSON_DESERT_RELEASE,   # 출시 후 추적 시작
-        "track_until":    None,                      # 종료 없음
-        "milestones":     [10_000, 50_000, 100_000, 200_000, 500_000],
-    },
-    # ── 붉은사막 출시 전까지만 추적 (비교군) ──────────────────────────
-    {
-        "name":           "슬레이 더 스파이어 2",
-        "app_id":         2868840,
-        "emoji":          "🃏",
-        "history_file":   "steam_history_sts2.json",
-        "track_after":    None,
-        "track_until":    CRIMSON_DESERT_RELEASE,
-        "milestones":     [50_000, 100_000, 200_000, 500_000],
-    },
-    {
-        "name":           "바이오하자드 레퀴엠",
-        "app_id":         3764200,
-        "emoji":          "🧟",
-        "history_file":   "steam_history_re_requiem.json",
-        "track_after":    None,
-        "track_until":    CRIMSON_DESERT_RELEASE,
-        "milestones":     [50_000, 100_000, 200_000, 500_000],
+        "track_after":    CRIMSON_DESERT_RELEASE,
+        "track_until":    None,
+        "milestones":     [5_000, 10_000, 30_000, 50_000, 70_000, 100_000, 150_000, 200_000],
     },
 ]
 
@@ -211,8 +191,7 @@ def send_countdown(countdown_str: str, now: datetime):
                 f"**출시까지**: `{countdown_str}`\n"
                 f"**출시 일시**: `2026-03-20 07:00 KST` (글로벌 3/19)\n\n"
                 f"📊 [SteamDB 동접 차트]({CRIMSON_DESERT_STEAMDB})\n\n"
-                f"_Steam 동접 추적은 출시 후 자동으로 시작됩니다._\n"
-                f"_비교군 게임(STS2·레퀴엠)은 출시 시 자동 종료됩니다._"
+                f"_Steam 동접 추적은 출시 후 자동으로 시작됩니다._"
             ),
             "color":     0xC0392B,
             "footer":    {"text": "appid: 3321460"},
@@ -277,9 +256,17 @@ def main():
         print(f"   🚀 붉은사막 출시 후 모드")
     print(f"{'=' * 40}")
 
-    # 붉은사막 출시 전이면 카운트다운 별도 전송
+    # 붉은사막 출시 전 카운트다운 전송
     if is_pre_release(now):
-        send_countdown(format_countdown(now), now)
+        release_day_start = CRIMSON_DESERT_RELEASE.replace(hour=6, minute=55, second=0, microsecond=0)
+        if now >= release_day_start:
+            # 출시 당일 06:55 KST 이후 → 5분마다 카운트다운
+            send_countdown(format_countdown(now), now)
+        elif now.hour == 9 and now.minute < 5:
+            # 평소 매일 09:00~09:04 KST → 하루 1회 카운트다운
+            send_countdown(format_countdown(now), now)
+        else:
+            print(f"  ⏳ 카운트다운 전송 시간 아님 → 스킵")
 
     # 각 게임 처리
     for game in GAMES:
