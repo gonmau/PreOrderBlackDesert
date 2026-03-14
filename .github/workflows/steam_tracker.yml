@@ -2,8 +2,8 @@ name: Steam 동접 추적기
 
 on:
   schedule:
-    - cron: '*/5 * * * *'   # 5분마다 실행 (UTC 기준)
-  workflow_dispatch:         # 수동 실행 버튼
+    - cron: '*/5 * * * *'   # 5분마다 실행 (출시 전 카운트다운 + 출시 후 동접 추적)
+  workflow_dispatch:
 
 jobs:
   track:
@@ -27,8 +27,6 @@ jobs:
         with:
           path: |
             steam_history_crimsondesert.json
-            steam_history_sts2.json
-            steam_history_re_requiem.json
           key: steam-history-${{ github.run_id }}
           restore-keys: |
             steam-history-
@@ -44,6 +42,4 @@ jobs:
         with:
           path: |
             steam_history_crimsondesert.json
-            steam_history_sts2.json
-            steam_history_re_requiem.json
           key: steam-history-${{ github.run_id }}
