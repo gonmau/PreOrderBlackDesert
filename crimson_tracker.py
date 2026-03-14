@@ -441,156 +441,171 @@ def send_discord(results, combined_avg):
     if was_recovered:
         print(f"✅  backup에서 복구된 데이터에 새 항목을 추가해 저장했습니다.")
 
-    # 그래프 생성
-    img_buf = None
-    if HAS_MATPLOTLIB and len(history) >= 2:
-        plt.figure(figsize=(10, 5))
-        dates = [datetime.fromisoformat(h['timestamp']) for h in history]
-        combined_ranks = [h['averages'].get('combined') for h in history]
-        
-        # None 값 필터링
-        filtered_dates = [d for d, r in zip(dates, combined_ranks) if r is not None]
-        filtered_ranks = [r for r in combined_ranks if r is not None]
-        
-        if filtered_dates:
-            plt.plot(filtered_dates, filtered_ranks, label='Combined Rank', 
-                    color='#00B0F4', marker='o', linewidth=2, markersize=8)
-            plt.gca().invert_yaxis()
-            plt.title("Crimson Desert - PlayStation Store Ranking", fontsize=14, fontweight='bold')
-            plt.xlabel('Date', fontsize=12)
-            plt.ylabel('Rank (weighted avg)', fontsize=12)
-            plt.legend()
-            plt.grid(True, alpha=0.2)
-            plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-            plt.gcf().autofmt_xdate()
-            plt.tight_layout()
-            
-            img_buf = BytesIO()
-            plt.savefig(img_buf, format='png', dpi=150)
-            img_buf.seek(0)
-            plt.close()
+    # ── 전체 평균 변동 여부 확인 (1위 이상 변동 시에만 요약+그래프 전송) ──
+    avg_changed = (
+        prev_combined_avg is not None
+        and combined_avg is not None
+        and abs(combined_avg - prev_combined_avg) >= 1.0
+    )
 
-    # 요약 메시지 (그래프 포함)
-    mode_label = "🚀 베스트셀러 차트" if is_post_release() else "⏳ 사전예약 차트"
-    summary_desc = f"📊 **전체 가중 평균**: `{combined_avg:.1f}위` {'(' + combined_diff_text + ')' if combined_diff_text else ''}\n"
-    summary_desc += f"🌐 **추적 중인 국가**: {len(results)}개국 | {mode_label}\n\n"
-    
-    # 지역별 평균 계산
-    for region_name in ["Americas", "Europe & Middle East", "Asia & Oceania"]:
-        region_countries = REGIONS[region_name]
-        region_results = {c: results[c] for c in region_countries if c in results}
-        region_avg = calculate_avg(region_results)
-        if region_avg:
-            summary_desc += f"**{region_name}**: `{region_avg:.1f}위`\n"
-    
-    summary_payload = {
-        "embeds": [{
-            "title": "🎮 Crimson Desert PS Store 순위 리포트",
-            "description": summary_desc,
-            "color": 0x00B0F4,
-            "image": {"url": "attachment://graph.png"} if img_buf else None,
-            "timestamp": datetime.now(KST).isoformat()
-        }]
-    }
-    
-    # 그래프와 함께 요약 전송
-    if img_buf:
-        files = {"file": ("graph.png", img_buf, "image/png")}
-        payload = {"payload_json": json.dumps(summary_payload)}
-        requests.post(DISCORD_WEBHOOK, data=payload, files=files)
-    else:
-        requests.post(DISCORD_WEBHOOK, json=summary_payload)
-    
-    time.sleep(1)  # Discord API rate limit 방지
-    
-    # 각 지역별로 별도 메시지 전송
+    # ── 지역별: 순위 변화 있는 나라만 수집 ──
+    region_changed_lines = {}  # {region_name: [line, ...]}
+
     for region_name, region_countries in REGIONS.items():
         lines = []
-        
+
         # 가중치 순으로 정렬
         sorted_countries = sorted(
             [c for c in region_countries if c in results],
             key=lambda x: MARKET_WEIGHTS.get(x, 0),
             reverse=True
         )
-        
+
         for c in sorted_countries:
             curr_s = (results[c] or {}).get('standard')
             curr_d = (results[c] or {}).get('deluxe')
             curr_combined = calculate_combined_rank(curr_s, curr_d)
-            
+
             # 이전 개별 국가 순위
             prev_s, prev_d = None, None
             if prev_run and "raw_results" in prev_run:
                 prev_country_data = prev_run["raw_results"].get(c, {})
                 prev_s = prev_country_data.get("standard")
                 prev_d = prev_country_data.get("deluxe")
-            
+
             prev_combined = calculate_combined_rank(prev_s, prev_d)
+
+            # combined 순위 변화 없으면 스킵
+            if prev_combined == curr_combined:
+                continue
+            # 이전 데이터 없으면 스킵 (첫 실행)
+            if prev_run is None:
+                continue
 
             s_diff = format_diff(curr_s, prev_s)
             d_diff = format_diff(curr_d, prev_d)
             c_diff = format_diff(curr_combined, prev_combined)
-            
-            # 이모지 추가
+
             s_emoji = get_emoji(s_diff)
             d_emoji = get_emoji(d_diff)
             c_emoji = get_emoji(c_diff)
-            
+
             s_part = f"{curr_s or '-'} {s_diff}" if s_diff else f"{curr_s or '-'}"
             d_part = f"{curr_d or '-'} {d_diff}" if d_diff else f"{curr_d or '-'}"
             c_part = f"{curr_combined or '-'} {c_diff}" if c_diff else f"{curr_combined or '-'}"
-            
+
             store_url = get_active_url(c)
             flag = FLAGS.get(c, "")
             country_label = f"{flag} [{c}]({store_url})" if store_url else f"{flag} {c}"
 
             if is_post_release():
-                lines.append(
-                    f"**{country_label}**: {c_emoji}`{c_part}`"
-                )
+                lines.append(f"**{country_label}**: {c_emoji}`{c_part}`")
             else:
                 lines.append(
                     f"**{country_label}**: {s_emoji}S `{s_part}` / {d_emoji}D `{d_part}` → {c_emoji}`{c_part}`"
                 )
-        
+
         if lines:
-            # Discord embed description 최대 4096자 제한 → 초과 시 분할 전송
-            CHUNK_LIMIT = 3800
-            chunks = []
-            current_chunk = []
-            current_len = 0
-            for line in lines:
-                if current_len + len(line) + 1 > CHUNK_LIMIT and current_chunk:
-                    chunks.append(current_chunk)
-                    current_chunk = [line]
-                    current_len = len(line)
-                else:
-                    current_chunk.append(line)
-                    current_len += len(line) + 1
-            if current_chunk:
+            region_changed_lines[region_name] = lines
+
+    any_country_changed = bool(region_changed_lines)
+
+    # 아무 변화도 없으면 조용히 종료
+    if not avg_changed and not any_country_changed:
+        print("ℹ️  순위 변화 없음 → 디스코드 알림 생략")
+        return
+
+    # ── 전체 평균이 1위 이상 변동했을 때만 요약+그래프 전송 ──
+    if avg_changed:
+        # 그래프 생성
+        img_buf = None
+        if HAS_MATPLOTLIB and len(history) >= 2:
+            plt.figure(figsize=(10, 5))
+            dates = [datetime.fromisoformat(h['timestamp']) for h in history]
+            combined_ranks = [h['averages'].get('combined') for h in history]
+
+            filtered_dates = [d for d, r in zip(dates, combined_ranks) if r is not None]
+            filtered_ranks = [r for r in combined_ranks if r is not None]
+
+            if filtered_dates:
+                plt.plot(filtered_dates, filtered_ranks, label='Combined Rank',
+                        color='#00B0F4', marker='o', linewidth=2, markersize=8)
+                plt.gca().invert_yaxis()
+                plt.title("Crimson Desert - PlayStation Store Ranking", fontsize=14, fontweight='bold')
+                plt.xlabel('Date', fontsize=12)
+                plt.ylabel('Rank (weighted avg)', fontsize=12)
+                plt.legend()
+                plt.grid(True, alpha=0.2)
+                plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+                plt.gcf().autofmt_xdate()
+                plt.tight_layout()
+
+                img_buf = BytesIO()
+                plt.savefig(img_buf, format='png', dpi=150)
+                img_buf.seek(0)
+                plt.close()
+
+        mode_label = "🚀 베스트셀러 차트" if is_post_release() else "⏳ 사전예약 차트"
+        summary_desc = f"📊 **전체 가중 평균**: `{combined_avg:.1f}위` {'(' + combined_diff_text + ')' if combined_diff_text else ''}\n"
+        summary_desc += f"🌐 **추적 중인 국가**: {len(results)}개국 | {mode_label}\n\n"
+
+        for rn in ["Americas", "Europe & Middle East", "Asia & Oceania"]:
+            region_countries = REGIONS[rn]
+            region_results = {c: results[c] for c in region_countries if c in results}
+            region_avg = calculate_avg(region_results)
+            if region_avg:
+                summary_desc += f"**{rn}**: `{region_avg:.1f}위`\n"
+
+        summary_payload = {
+            "embeds": [{
+                "title": "🎮 Crimson Desert PS Store 순위 리포트",
+                "description": summary_desc,
+                "color": 0x00B0F4,
+                "image": {"url": "attachment://graph.png"} if img_buf else None,
+                "timestamp": datetime.now(KST).isoformat()
+            }]
+        }
+
+        if img_buf:
+            files = {"file": ("graph.png", img_buf, "image/png")}
+            payload = {"payload_json": json.dumps(summary_payload)}
+            requests.post(DISCORD_WEBHOOK, data=payload, files=files)
+        else:
+            requests.post(DISCORD_WEBHOOK, json=summary_payload)
+
+        time.sleep(1)
+
+    # ── 순위 변화 있는 나라만 지역별 메시지 전송 ──
+    for region_name, lines in region_changed_lines.items():
+        CHUNK_LIMIT = 3800
+        chunks = []
+        current_chunk = []
+        current_len = 0
+        for line in lines:
+            if current_len + len(line) + 1 > CHUNK_LIMIT and current_chunk:
                 chunks.append(current_chunk)
+                current_chunk = [line]
+                current_len = len(line)
+            else:
+                current_chunk.append(line)
+                current_len += len(line) + 1
+        if current_chunk:
+            chunks.append(current_chunk)
 
-            for i, chunk in enumerate(chunks):
-                part_label = f" ({i+1}/{len(chunks)})" if len(chunks) > 1 else ""
-                region_payload = {
-                    "embeds": [{
-                        "title": f"🌐 {region_name}{part_label}",
-                        "description": "\n".join(chunk),
-                        "color": 0x00B0F4,
-                        "timestamp": datetime.now(KST).isoformat()
-                    }]
-                }
-                requests.post(DISCORD_WEBHOOK, json=region_payload)
-                time.sleep(1)  # Discord API rate limit 방지
+        for i, chunk in enumerate(chunks):
+            part_label = f" ({i+1}/{len(chunks)})" if len(chunks) > 1 else ""
+            region_payload = {
+                "embeds": [{
+                    "title": f"🌐 {region_name}{part_label}",
+                    "description": "\n".join(chunk),
+                    "color": 0x00B0F4,
+                    "timestamp": datetime.now(KST).isoformat()
+                }]
+            }
+            requests.post(DISCORD_WEBHOOK, json=region_payload)
+            time.sleep(1)  # Discord API rate limit 방지
 
-    # CSV 파일 생성 후 디스코드로 전송
-    csv_buf = generate_csv_buffer(results)
-    if csv_buf:
-        timestamp_label = datetime.now(KST).strftime('%Y-%m-%d %H:%M')
-        files = {"file": (f"ranking_{datetime.now(KST).strftime('%Y%m%d_%H%M')}.csv", csv_buf, "text/csv")}
-        payload = {"payload_json": json.dumps({"content": f"📎 **순위 데이터** ({timestamp_label} KST)"})}
-        requests.post(DISCORD_WEBHOOK, data=payload, files=files)
+
 
 def main():
     print("=" * 60)
