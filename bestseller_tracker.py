@@ -122,6 +122,7 @@ SKIP_COUNTRIES = {"중국", "베트남", "슬로베니아", "필리핀"}
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 HISTORY_FILE = "bestseller_history.json"
 BACKUP_FILE  = HISTORY_FILE + ".backup"
+BASELINE_FILE = "discord_baseline.json"  # 마지막 알림 발송 시점 기준값
 
 # 게임 미발견 시 최대 탐색 페이지
 MAX_PAGES = 30
@@ -258,6 +259,21 @@ def save_history(history):
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=2, ensure_ascii=False)
 
+def load_baseline():
+    """마지막 Discord 알림 발송 시점의 combined_avg 로드"""
+    if not os.path.exists(BASELINE_FILE):
+        return None
+    try:
+        with open(BASELINE_FILE, "r", encoding="utf-8") as f:
+            return json.load(f).get("combined_avg")
+    except:
+        return None
+
+def save_baseline(combined_avg):
+    """Discord 알림 발송 시점의 combined_avg 저장"""
+    with open(BASELINE_FILE, "w", encoding="utf-8") as f:
+        json.dump({"combined_avg": combined_avg, "timestamp": datetime.now(KST).isoformat()}, f)
+
 # =============================================================================
 # Discord 알림
 # =============================================================================
@@ -272,6 +288,15 @@ def send_discord(results, combined_avg, skipped_countries, history):
     if isinstance(prev_avg, dict):
         prev_avg = None  # 구버전 데이터 방어
     avg_diff = format_diff(combined_avg, prev_avg)
+
+    # 마지막 알림 발송 기준점과 비교해서 ±1.0 이상 변화 시에만 알림 발송
+    baseline_avg = load_baseline()
+    if combined_avg is not None and baseline_avg is not None:
+        diff = abs(combined_avg - baseline_avg)
+        if diff < 1.0:
+            print(f"ℹ️  기준점 대비 변화 미미 (기준: {baseline_avg:.1f} → 현재: {combined_avg:.1f}, 차이: {diff:.2f}) - 알림 스킵")
+            return
+        print(f"🔔 기준점 대비 변화 감지 (기준: {baseline_avg:.1f} → 현재: {combined_avg:.1f}, 차이: {diff:.2f}) - 알림 발송")
 
     tracked = sum(1 for c in results if c not in skipped_countries)
     found   = sum(1 for c, r in results.items() if c not in skipped_countries and r is not None)
@@ -355,6 +380,11 @@ def send_discord(results, combined_avg, skipped_countries, history):
                 "timestamp": datetime.now(KST).isoformat()
             }]})
             time.sleep(1)
+
+    # 알림 발송 완료 → 현재 avg를 기준점으로 저장
+    if combined_avg is not None:
+        save_baseline(combined_avg)
+        print(f"✅ baseline 갱신: {combined_avg:.1f}")
 
 # =============================================================================
 # 메인
