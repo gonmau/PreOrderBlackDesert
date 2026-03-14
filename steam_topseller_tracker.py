@@ -520,6 +520,7 @@ def main():
     wavg = calc_weighted_avg(results)
     wavg_str = f"{wavg:.1f}" if wavg else "N/A"
     wavg_diff = ""
+    prev_wavg = None
     if wavg and prev_results:
         prev_wavg = calc_weighted_avg(prev_results)
         if prev_wavg:
@@ -528,6 +529,18 @@ def main():
                 wavg_diff = f" (▲{diff:.1f})"
             elif diff < 0:
                 wavg_diff = f" (▼{abs(diff):.1f})"
+
+    # 평균 순위 변동량 계산 (1위 이상 변동 시에만 전송)
+    avg_changed = (
+        wavg is not None
+        and prev_wavg is not None
+        and abs(wavg - prev_wavg) >= 1.0
+    )
+
+    if not avg_changed:
+        print(f"ℹ️  평균 순위 변동 없음 ({wavg_str}위, 이전 {f'{prev_wavg:.1f}' if prev_wavg else 'N/A'}위) → 디스코드 알림 생략")
+        print("✅ 완료!")
+        return
 
     # Discord 텍스트 embed
     cc_by_name = {v: k for k, v in TARGET_COUNTRIES.items()}
