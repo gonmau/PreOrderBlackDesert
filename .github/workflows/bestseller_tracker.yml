@@ -28,6 +28,8 @@ jobs:
         pip install selenium webdriver-manager requests
 
     - name: Run Bestseller Tracker
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       run: python bestseller_tracker.py
 
     - name: Commit and Push changes
