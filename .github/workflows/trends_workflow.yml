@@ -1,4 +1,4 @@
-name: Trends Tracker
+name: 구글 Trends Tracker
 
 on:
   schedule:
