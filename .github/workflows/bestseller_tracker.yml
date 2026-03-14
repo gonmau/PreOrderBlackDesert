@@ -28,8 +28,6 @@ jobs:
         pip install selenium webdriver-manager requests
 
     - name: Run Bestseller Tracker
-      env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       run: python bestseller_tracker.py
 
     - name: Commit and Push changes
@@ -56,5 +54,5 @@ jobs:
         fi
 
         # 5. 변경사항 커밋 및 푸시
-        git add bestseller_history.json
+        git add bestseller_history.json discord_baseline.json
         git diff --cached --quiet || (git commit -m "Update history [skip ci]" && git push origin main)
