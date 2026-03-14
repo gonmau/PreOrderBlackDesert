@@ -54,5 +54,6 @@ jobs:
         fi
 
         # 5. 변경사항 커밋 및 푸시
-        git add --ignore-missing bestseller_history.json discord_baseline.json
+        [ -f "bestseller_history.json" ] && git add bestseller_history.json || true
+        [ -f "discord_baseline.json" ] && git add discord_baseline.json || true
         git diff --cached --quiet || (git commit -m "Update history [skip ci]" && git push origin main)
