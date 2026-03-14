@@ -536,6 +536,10 @@ def send_discord(results, combined_avg):
         print("ℹ️  순위 변화 없음 → 디스코드 알림 생략")
         return
 
+    # avg_changed=False면 요약+그래프는 전송하지 않고 국가 변화만 전송
+    if not avg_changed:
+        print("ℹ️  평균 변화 없음 → 요약+그래프 스킵, 국가 순위 변화만 전송")
+
     # ── 전체 평균이 1위 이상 변동했을 때만 요약+그래프 전송 ──
     if avg_changed:
         # 그래프 생성
