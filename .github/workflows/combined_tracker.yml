@@ -47,6 +47,7 @@ jobs:
         # crimson_tracker.py → rank_history.json
         TRACKED_FILES=(
           rank_history.json
+          crimson_discord_baseline.json
         )
 
         # 1. 크롤링 결과를 임시 디렉터리에 백업 (push 실패해도 보존)
