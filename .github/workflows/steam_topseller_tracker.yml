@@ -49,6 +49,7 @@ jobs:
           store_state.json
           steam_history.json
           steam_topseller_history.json
+          steam_topseller_baseline.json
         )
 
         # 1. 크롤링 결과를 임시 디렉터리에 백업 (push 실패해도 보존)
@@ -78,7 +79,7 @@ jobs:
 
         # 4. 변경된 파일만 add → commit → push
         for f in "${TRACKED_FILES[@]}"; do
-          git add "$f" 2>/dev/null || true
+          [ -f "$f" ] && git add "$f" || true
         done
 
         git diff --cached --quiet && { echo "변경사항 없음, 스킵"; exit 0; }
@@ -91,7 +92,7 @@ jobs:
           git pull origin main --rebase
           for f in "${TRACKED_FILES[@]}"; do
             [ -f "/tmp/tracker_backup/$f" ] && cp "/tmp/tracker_backup/$f" "$f"
-            git add "$f" 2>/dev/null || true
+            [ -f "$f" ] && git add "$f" || true
           done
           git commit --amend --no-edit 2>/dev/null || true
           git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git main
