@@ -1,4 +1,4 @@
-name: Bestseller Tracker
+name: 플스전체 Bestseller Tracker
 
 on:
   schedule:
