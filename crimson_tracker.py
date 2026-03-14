@@ -381,22 +381,18 @@ def generate_csv_buffer(results):
     import csv
     from io import StringIO
     buf = StringIO()
-    writer = csv.DictWriter(buf, fieldnames=["region", "country", "flag", "standard", "deluxe", "combined"])
+    writer = csv.DictWriter(buf, fieldnames=["region", "country", "flag", "combined"])
     writer.writeheader()
     for region_name, region_countries in REGIONS.items():
         for country in region_countries:
             if country not in results or country in SKIP_COUNTRIES:
                 continue
             data = results[country]
-            standard = data.get("standard")
-            deluxe = data.get("deluxe")
-            combined = calculate_combined_rank(standard, deluxe)
+            combined = calculate_combined_rank(data.get("standard"), data.get("deluxe"))
             writer.writerow({
                 "region": region_name,
                 "country": country,
                 "flag": FLAGS.get(country, ""),
-                "standard": standard if standard else "-",
-                "deluxe": deluxe if deluxe else "-",
                 "combined": combined if combined else "-",
             })
     from io import BytesIO
@@ -549,9 +545,14 @@ def send_discord(results, combined_avg):
             flag = FLAGS.get(c, "")
             country_label = f"{flag} [{c}]({store_url})" if store_url else f"{flag} {c}"
 
-            lines.append(
-                f"**{country_label}**: {s_emoji}S `{s_part}` / {d_emoji}D `{d_part}` → {c_emoji}`{c_part}`"
-            )
+            if is_post_release():
+                lines.append(
+                    f"**{country_label}**: {c_emoji}`{c_part}`"
+                )
+            else:
+                lines.append(
+                    f"**{country_label}**: {s_emoji}S `{s_part}` / {d_emoji}D `{d_part}` → {c_emoji}`{c_part}`"
+                )
         
         if lines:
             # Discord embed description 최대 4096자 제한 → 초과 시 분할 전송
