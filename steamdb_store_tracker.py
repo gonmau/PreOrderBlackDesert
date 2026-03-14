@@ -289,26 +289,42 @@ def main():
     now = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     dday = calc_dday()
     
-    # 최신 순위 (히스토리에서 가져오기)
+    # 최신 순위 + 이전 순위 (히스토리에서 가져오기)
     latest_rank = None
-    for entry in reversed(history):
-        if entry.get("rank") is not None:
-            latest_rank = entry["rank"]
-            break
-    
+    prev_rank = None
+    valid_entries = [e for e in history if e.get("rank") is not None]
+    if valid_entries:
+        latest_rank = valid_entries[-1]["rank"]
+    if len(valid_entries) >= 2:
+        prev_rank = valid_entries[-2]["rank"]
+
     display_rank = rank if rank is not None else latest_rank
-    
+
+    # 순위 변동 여부 확인 (1위 이상 변동 시에만 전송)
+    rank_changed = (
+        display_rank is not None
+        and prev_rank is not None
+        and abs(display_rank - prev_rank) >= 1
+    )
+
+    # SOP 신규 감지는 순위 변동 없어도 항상 전송
+    if not rank_changed and not alerts:
+        print(f"ℹ️  순위 변화 없음 (#{display_rank}) → 디스코드 알림 생략")
+        save_state(state)
+        print("✅ 완료!")
+        return
+
     # 그래프 생성
     graph_buffer = create_rank_graph(history)
-    
-    # Discord Embed - Wishlist 순위만!
+
+    # Discord Embed
     rank_text = f"⭐ **Wishlist Rank**: #{display_rank}" if display_rank else "⚠️ 데이터 수집 중..."
-    
+
     print(f"\n📊 Discord 전송 데이터:")
     print(f"  - Wishlist Rank: #{display_rank}")
     print(f"  - SOP Detected: {sop_detected}")
     print(f"  - History Count: {len(history)}")
-    
+
     embed = {
         "title": "📊 Crimson Desert Wishlist Tracker",
         "description": (
@@ -322,13 +338,13 @@ def main():
         ),
         "color": 0x1B2838
     }
-    
+
     # 알림 전송
     if alerts:
         send_discord("🚨 **변경 감지**\n" + "\n".join(alerts), embed)
     else:
         send_discord("📢 **상태 업데이트**", embed)
-    
+
     # 그래프를 별도 메시지로 전송
     if graph_buffer:
         graph_embed = {
