@@ -331,7 +331,20 @@ function renderMainChart() {
     options: {
       responsive: true, maintainAspectRatio: false,
       scales: {
-        x: { type: 'time', grid: { color: '#222' }, ticks: { color: '#fff' } },
+        x: {
+          type: 'time',
+          time: {
+            tooltipFormat: 'MM/dd HH:mm',
+            displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' }
+          },
+          grid: { color: '#222' },
+          ticks: {
+            color: '#fff',
+            maxRotation: 45,
+            autoSkip: true,
+            maxTicksLimit: 12
+          }
+        },
         y: { reverse: true, grid: { color: '#222' }, ticks: { color: '#fff' } }
       },
       plugins: { legend: { display: false } }
@@ -358,7 +371,15 @@ function showCountryChart(countryName) {
     options: {
       responsive: true, maintainAspectRatio: false,
       scales: {
-        x: { type: 'time', time: { unit: 'hour' }, grid: { color: '#333' }, ticks: { color: '#fff' } },
+        x: {
+          type: 'time',
+          time: {
+            tooltipFormat: 'MM/dd HH:mm',
+            displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' }
+          },
+          grid: { color: '#333' },
+          ticks: { color: '#fff', maxRotation: 45, autoSkip: true, maxTicksLimit: 10 }
+        },
         y: { reverse: true, min: 1, grid: { color: '#333' }, ticks: { color: '#fff' } }
       }
     }
