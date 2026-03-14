@@ -25,6 +25,7 @@ DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 STEAM_APP_IDS = {"3321460"}  # Crimson Desert
 
 HISTORY_FILE = "steam_topseller_history.json"
+BASELINE_FILE = "steam_topseller_baseline.json"  # 마지막 알림 발송 시점 기준값
 KST = timezone(timedelta(hours=9))
 
 TARGET_COUNTRIES = {
@@ -456,6 +457,21 @@ def make_graphs(history):
 # ======================
 # Discord 전송
 # ======================
+def load_baseline():
+    """마지막 Discord 알림 발송 시점의 wavg 로드"""
+    if not os.path.exists(BASELINE_FILE):
+        return None
+    try:
+        with open(BASELINE_FILE, "r", encoding="utf-8") as f:
+            return json.load(f).get("wavg")
+    except:
+        return None
+
+def save_baseline(wavg):
+    """Discord 알림 발송 시점의 wavg 저장"""
+    with open(BASELINE_FILE, "w", encoding="utf-8") as f:
+        json.dump({"wavg": wavg, "timestamp": datetime.now(KST).isoformat()}, f)
+
 def send_discord_text(embed):
     if not DISCORD_WEBHOOK:
         return
@@ -530,17 +546,22 @@ def main():
             elif diff < 0:
                 wavg_diff = f" (▼{abs(diff):.1f})"
 
-    # 평균 순위 변동량 계산 (1위 이상 변동 시에만 전송)
-    avg_changed = (
-        wavg is not None
-        and prev_wavg is not None
-        and abs(wavg - prev_wavg) >= 1.0
-    )
-
-    if not avg_changed:
-        print(f"ℹ️  평균 순위 변동 없음 ({wavg_str}위, 이전 {f'{prev_wavg:.1f}' if prev_wavg else 'N/A'}위) → 디스코드 알림 생략")
-        print("✅ 완료!")
-        return
+    # 평균 순위 변동량 계산 (baseline 기준 1.0 이상 변동 시에만 전송)
+    baseline_wavg = load_baseline()
+    if wavg is not None and baseline_wavg is not None:
+        diff_from_baseline = abs(wavg - baseline_wavg)
+        avg_changed = diff_from_baseline >= 1.0
+        if not avg_changed:
+            print(f"ℹ️  기준점 대비 변화 미미 (기준: {baseline_wavg:.1f} → 현재: {wavg_str}위, 차이: {diff_from_baseline:.2f}) → 디스코드 알림 생략")
+            print("✅ 완료!")
+            return
+        print(f"🔔 기준점 대비 변화 감지 (기준: {baseline_wavg:.1f} → 현재: {wavg_str}위, 차이: {diff_from_baseline:.2f}) → 알림 발송")
+    else:
+        avg_changed = wavg is not None  # 첫 실행 시 baseline 없으면 무조건 전송
+        if not avg_changed:
+            print("ℹ️  평균 순위 없음 → 디스코드 알림 생략")
+            print("✅ 완료!")
+            return
 
     # Discord 텍스트 embed
     cc_by_name = {v: k for k, v in TARGET_COUNTRIES.items()}
@@ -586,6 +607,11 @@ def main():
     if buf_bar:
         send_discord_image(buf_bar, "snapshot.png", "📊 최신 스냅샷")
         print("  ✅ 막대 그래프 전송")
+
+    # 알림 발송 완료 → baseline 갱신
+    if wavg is not None:
+        save_baseline(wavg)
+        print(f"✅ baseline 갱신: {wavg:.1f}")
 
     print("✅ 완료!")
 
