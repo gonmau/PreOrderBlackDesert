@@ -162,6 +162,7 @@ for country in ALL_COUNTRIES:
         SEARCH_TERMS[country] = ["crimson desert"]
 
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
+BASELINE_FILE = "crimson_discord_baseline.json"  # 마지막 알림 발송 시점 기준값
 
 # =============================================================================
 # 출시 후 자동 URL 전환 설정
@@ -303,6 +304,21 @@ def calculate_avg(results):
     
     return combined_sum / combined_w if combined_w > 0 else None
 
+def load_baseline():
+    """마지막 Discord 알림 발송 시점의 combined_avg 로드"""
+    if not os.path.exists(BASELINE_FILE):
+        return None
+    try:
+        with open(BASELINE_FILE, "r", encoding="utf-8") as f:
+            return json.load(f).get("combined_avg")
+    except:
+        return None
+
+def save_baseline(combined_avg):
+    """Discord 알림 발송 시점의 combined_avg 저장"""
+    with open(BASELINE_FILE, "w", encoding="utf-8") as f:
+        json.dump({"combined_avg": combined_avg, "timestamp": datetime.now(KST).isoformat()}, f)
+
 def format_diff(current, previous):
     """순위 숫자 증감 포맷팅"""
     if previous is None or current is None:
@@ -441,12 +457,17 @@ def send_discord(results, combined_avg):
     if was_recovered:
         print(f"✅  backup에서 복구된 데이터에 새 항목을 추가해 저장했습니다.")
 
-    # ── 전체 평균 변동 여부 확인 (1위 이상 변동 시에만 요약+그래프 전송) ──
-    avg_changed = (
-        prev_combined_avg is not None
-        and combined_avg is not None
-        and abs(combined_avg - prev_combined_avg) >= 1.0
-    )
+    # ── 전체 평균 변동 여부 확인 (baseline 기준 1.0 이상 변동 시에만 요약+그래프 전송) ──
+    baseline_avg = load_baseline()
+    if combined_avg is not None and baseline_avg is not None:
+        diff_from_baseline = abs(combined_avg - baseline_avg)
+        avg_changed = diff_from_baseline >= 1.0
+        if not avg_changed:
+            print(f"ℹ️  기준점 대비 변화 미미 (기준: {baseline_avg:.1f} → 현재: {combined_avg:.1f}, 차이: {diff_from_baseline:.2f}) - 요약 스킵")
+        else:
+            print(f"🔔 기준점 대비 변화 감지 (기준: {baseline_avg:.1f} → 현재: {combined_avg:.1f}, 차이: {diff_from_baseline:.2f}) - 요약 전송")
+    else:
+        avg_changed = combined_avg is not None  # 첫 실행 시 baseline 없으면 무조건 전송
 
     # ── 지역별: 순위 변화 있는 나라만 수집 ──
     region_changed_lines = {}  # {region_name: [line, ...]}
@@ -604,6 +625,11 @@ def send_discord(results, combined_avg):
             }
             requests.post(DISCORD_WEBHOOK, json=region_payload)
             time.sleep(1)  # Discord API rate limit 방지
+
+    # 알림 발송 완료 → baseline 갱신
+    if avg_changed and combined_avg is not None:
+        save_baseline(combined_avg)
+        print(f"✅ baseline 갱신: {combined_avg:.1f}")
 
 
 
