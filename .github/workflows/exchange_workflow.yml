@@ -1,4 +1,4 @@
-name: Exchange Rate Alert
+name: 환율 Exchange Rate Alert
 
 on:
  # schedule:
