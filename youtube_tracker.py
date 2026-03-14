@@ -24,6 +24,12 @@ except ImportError:
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 
+# 알림 종료 날짜 (이 날짜 이후로는 Discord 전송 안 함)
+NOTIFY_END_DATE = datetime(2025, 3, 20)
+
+# 조회수 마일스톤 (달성 시 알림)
+VIEW_MILESTONES = [1_000_000, 1_500_000]
+
 # Crimson Desert 공식 영상 ID들
 VIDEO_IDS = {
     # Trailer
@@ -236,11 +242,47 @@ def format_diff(current, previous):
     else:
         return "0"
 
+def check_milestones(stats_all):
+    """전체 트레일러 합산 조회수가 마일스톤을 새로 넘었는지 확인"""
+    history = load_history()
+    
+    # 현재 합산 조회수
+    current_total = sum(
+        s['views'] for name, s in stats_all.items()
+        if s and name.startswith("Trailer")
+    )
+    
+    # 이전 합산 조회수
+    prev_total = 0
+    if history:
+        prev_videos = history[-1].get('videos', {})
+        prev_total = sum(
+            v.get('views', 0) for name, v in prev_videos.items()
+            if v and name.startswith("Trailer")
+        )
+    
+    # 이번 실행에서 새로 넘은 마일스톤
+    crossed = [
+        m for m in VIEW_MILESTONES
+        if prev_total < m <= current_total
+    ]
+    
+    return crossed, current_total
+
+
 def send_discord(stats_all):
     """Discord로 결과 전송 (그래프 포함)"""
     if not DISCORD_WEBHOOK:
         print("⚠️  DISCORD_WEBHOOK 환경변수 없음")
         return
+    
+    # 3/20 이후 알림 종료
+    if datetime.now() > NOTIFY_END_DATE:
+        print(f"⏹️  알림 종료일({NOTIFY_END_DATE.strftime('%Y/%m/%d')}) 이후 - Discord 전송 스킵")
+        return
+    
+    # 마일스톤 체크
+    crossed_milestones, current_total = check_milestones(stats_all)
     
     history = load_history()
     prev_data = history[-1]['videos'] if history else {}
@@ -289,7 +331,15 @@ def send_discord(stats_all):
         lines.append(f"\n**📊 전체 합계**")
         lines.append(f"조회수: `{format_number(total_views)}` | 좋아요: `{format_number(total_likes)}`")
     
-    desc = "\n".join(lines)
+    # 마일스톤 달성 메시지
+    milestone_lines = []
+    for m in crossed_milestones:
+        milestone_lines.append(f"🎉 **트레일러 합산 조회수 {format_number(m)} 돌파!** (현재: {format_number(current_total)})")
+    
+    if milestone_lines:
+        desc = "\n".join(milestone_lines) + "\n\n" + "\n".join(lines)
+    else:
+        desc = "\n".join(lines)
     
     # 그래프 생성
     graph_buf = create_views_graph()
