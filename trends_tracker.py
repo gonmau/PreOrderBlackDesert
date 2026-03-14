@@ -529,8 +529,8 @@ def main():
     # 히스토리 저장
     save_history(google_data, console_data)
     
-    # Discord 전송
-    send_discord(google_data, console_data)
+    # Discord 전송 (비활성화)
+    # send_discord(google_data, console_data)
 
 
 if __name__ == "__main__":
