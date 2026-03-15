@@ -388,13 +388,35 @@ def send_discord(results, combined_avg, skipped_countries, history):
     tracked = sum(1 for c in results if c not in skipped_countries)
     found   = sum(1 for c, r in results.items() if c not in skipped_countries and r is not None)
 
+    # 순위 변화 국가 수 계산
+    def extract_rank_inline(val):
+        if isinstance(val, dict):
+            s = val.get("standard"); d = val.get("deluxe")
+            if s and d: return min(s, d)
+            return s or d or None
+        return val
+
+    prev_results_for_count = prev_run.get("raw_results", {}) if prev_run else {}
+    changed_count = 0
+    for c in results:
+        if c in skipped_countries:
+            continue
+        curr_r = results.get(c)
+        prev_r = extract_rank_inline(prev_results_for_count.get(c))
+        d = format_diff(curr_r, prev_r)
+        if d and d != "0":
+            changed_count += 1
+        elif (curr_r is None) != (prev_r is None):
+            changed_count += 1
+
     desc = ""
     if combined_avg:
         desc += f"📊 **전체 가중 평균**: `{combined_avg:.1f}위`"
         if avg_diff:
             desc += f" ({avg_diff})"
         desc += "\n"
-    desc += f"🌐 **추적 국가**: {tracked}개국 | **순위권 발견**: {found}개국\n\n"
+    desc += f"🌐 **추적 국가**: {tracked}개국 | **순위권 발견**: {found}개국\n"
+    desc += f"🔄 **순위 변화**: {changed_count}개국\n\n"
 
     for region_name in ["Americas", "Europe & Middle East", "Asia & Oceania"]:
         region_results = {c: results[c] for c in REGIONS[region_name]
@@ -434,8 +456,18 @@ def send_discord(results, combined_avg, skipped_countries, history):
             curr = results.get(c)
             prev = extract_rank(prev_results.get(c))
             diff = format_diff(curr, prev)
+
+            # ── 순위 변화가 없는 나라는 스킵 ──────────────────────────
+            # diff가 빈 문자열이면 변화 없음(이전 데이터 없거나 동일)
+            # diff == "0" 이면 순위 동일
+            # 미발견(curr=None)이고 이전도 미발견(prev=None)이면 스킵
+            if not diff or diff == "0":
+                if not (curr is None and prev is not None) and not (curr is not None and prev is None):
+                    continue
+            # ──────────────────────────────────────────────────────────
+
             emoji = get_emoji(diff)
-            rank_str = f"{curr}위 {diff}".strip() if curr else "미발견"
+            rank_str = f"{curr}위 {diff}".strip() if curr else f"미발견 {diff}".strip()
 
             store_url = get_browse_url(c)
             flag = FLAGS.get(c, "")
