@@ -1426,6 +1426,127 @@
   @media (max-width: 480px) {
     #capture-all-btn { bottom: 16px; right: 16px; padding: 8px 12px; font-size: 12px; }
   }
+
+  /* ── Steam 스케줄 트래커 ─────────────────────────── */
+  .sts-sched-wrap {
+    padding: 12px 0 4px;
+  }
+  .sts-sched-day-label {
+    font-size: 0.62rem;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sts-sched-day-label .day-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-size: 0.6rem;
+    color: var(--text);
+    letter-spacing: 0.5px;
+  }
+  .sts-sched-day-label .day-badge.today {
+    border-color: rgba(241,196,15,0.5);
+    color: #f1c40f;
+    background: rgba(241,196,15,0.07);
+  }
+  /* 격자 컨테이너 */
+  .sts-sched-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-bottom: 10px;
+  }
+  /* 개별 슬롯 셀 */
+  .sts-slot {
+    width: 22px;
+    height: 28px;
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    cursor: default;
+    position: relative;
+    transition: transform 0.1s;
+    border: 1px solid transparent;
+  }
+  .sts-slot:hover { transform: scale(1.25); z-index: 5; }
+  .sts-slot .slot-h {
+    font-size: 8px;
+    opacity: 0.7;
+    line-height: 1;
+    margin-bottom: 1px;
+  }
+  .sts-slot .slot-i { font-size: 10px; line-height: 1; }
+  /* 상태별 색상 */
+  .sts-slot.ok   { background: rgba(46,204,113,0.18); border-color: rgba(46,204,113,0.4); color: #2ecc71; }
+  .sts-slot.miss { background: rgba(255,71,87,0.07);  border-color: rgba(255,71,87,0.2);  color: #555; }
+  .sts-slot.fut  { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.06); color: #333; }
+  .sts-slot.now  { border-color: rgba(241,196,15,0.7) !important; box-shadow: 0 0 6px rgba(241,196,15,0.25); }
+  /* 요약 바 */
+  .sts-sched-summary {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+  .sts-sched-summary .ss { display: flex; flex-direction: column; gap: 1px; }
+  .sts-sched-summary .sv { font-size: 1rem; color: var(--text); font-weight: 700; }
+  .sts-sched-summary .sl { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .sts-next-badge {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(241,196,15,0.08);
+    border: 1px solid rgba(241,196,15,0.25);
+    border-radius: 4px;
+    padding: 3px 9px;
+    font-size: 0.68rem;
+    color: #f1c40f;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .sts-pulse {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #f1c40f;
+    animation: stsPulse 1.6s ease-in-out infinite;
+  }
+  @keyframes stsPulse {
+    0%,100%{opacity:1;transform:scale(1)}
+    50%{opacity:0.35;transform:scale(0.65)}
+  }
+  /* 범례 */
+  .sts-sched-legend {
+    display: flex;
+    gap: 10px;
+    font-size: 0.6rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .sts-sched-legend span { display: flex; align-items: center; gap: 4px; }
+  .sts-legend-dot {
+    width: 8px; height: 8px; border-radius: 2px;
+    display: inline-block; flex-shrink: 0;
+  }
+  @media (max-width: 480px) {
+    .sts-slot { width: 18px; height: 24px; }
+    .sts-slot .slot-h { font-size: 7px; }
+  }
+  /* ────────────────────────────────────────────────── */
   </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -1679,6 +1800,25 @@
       <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-chart-body',this)"><span style="white-space:nowrap">📈  평균 순위 히스토리</span> <button class="collapse-btn">▼ 펼치기</button><button class="capture-btn" onclick="captureSection(event,'steam-ts-section','Steam_TopSeller')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">캡처</span></button></div>
       <div class="collapsible-body collapsed" id="sts-chart-body">
         <div class="steam-ts-chart-box"><div class="steam-ts-chart-inner"><canvas id="stsChart"></canvas></div></div>
+      </div>
+
+      <!-- ⏱ 트래커 스케줄 (collapsible) -->
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-sched-body',this)">
+        <span style="white-space:nowrap">⏱ 트래커 스케줄</span>
+        <span id="sts-sched-cron" style="font-size:0.6rem;color:var(--muted);font-weight:400;margin-left:8px;letter-spacing:0"></span>
+        <button class="collapse-btn">▼ 펼치기</button>
+      </div>
+      <div class="collapsible-body collapsed" id="sts-sched-body">
+        <div class="sts-sched-wrap">
+          <div class="sts-sched-legend">
+            <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>실행됨</span>
+            <span><i class="sts-legend-dot" style="background:rgba(255,71,87,0.15);border:1px solid rgba(255,71,87,0.3)"></i>누락</span>
+            <span><i class="sts-legend-dot" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1)"></i>예정</span>
+            <span><i class="sts-legend-dot" style="background:transparent;border:1px solid rgba(241,196,15,0.7);box-shadow:0 0 4px rgba(241,196,15,0.2)"></i>현재 슬롯</span>
+          </div>
+          <div id="sts-sched-days"></div>
+          <div class="sts-sched-summary" id="sts-sched-summary"></div>
+        </div>
       </div>
       <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-countries-body',this)"><span style="white-space:nowrap">🌍 국가별 현황</span> <button class="collapse-btn">▼ 펼치기</button><button id="capture-countries-btn" class="capture-btn" onclick="captureAllCountryCharts(event)" disabled style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1);color:#555;cursor:not-allowed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">데이터 로딩 중…</span></button></div>
       <div class="collapsible-body collapsed" id="sts-countries-body">
@@ -3213,16 +3353,150 @@ const STS_W={
 const STS_F={"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","호주":"🇦🇺","한국":"🇰🇷","중국":"🇨🇳","러시아":"🇷🇺","폴란드":"🇵🇱","터키":"🇹🇷"};
 const STS_CC={"미국":"us","캐나다":"ca","브라질":"br","멕시코":"mx","영국":"gb","독일":"de","프랑스":"fr","스페인":"es","이탈리아":"it","일본":"jp","호주":"au","한국":"kr","중국":"cn","러시아":"ru","폴란드":"pl","터키":"tr"};
 let stsHist=[],stsCI=null,stsMCI=null;
+let stsSched=null; // schedule 메타 (JSON에서 로드)
 
 async function loadSteamTopSellerData(){
   try{
     const r=await fetch('steam_topseller_history.json?t='+Date.now());
     if(!r.ok)throw 0;
-    stsHist=await r.json();
+    const payload=await r.json();
+    // 신규 포맷: {"schedule":{...},"history":[...]}
+    if(Array.isArray(payload)){
+      stsHist=payload;
+    } else {
+      stsHist=payload.history||[];
+      if(payload.schedule){
+        stsSched=payload.schedule;
+        // 헤더에 cron 표현식 표시
+        const cronEl=document.getElementById('sts-sched-cron');
+        if(cronEl&&stsSched.cron) cronEl.textContent=stsSched.cron;
+      }
+    }
     renderSTS();
-    renderSteamSalesEstimate(); // Steam 판매량 역산
+    renderSteamSalesEstimate();
+    renderSteamSchedule();
   }catch(e){console.warn('sts load fail',e);}
 }
+
+/* ── Steam 스케줄 트래커 ──────────────────────────────────────────── */
+function renderSteamSchedule(){
+  const container=document.getElementById('sts-sched-days');
+  const summaryEl=document.getElementById('sts-sched-summary');
+  if(!container||!summaryEl)return;
+
+  // KST 기준 현재 시각
+  const nowUtc=new Date();
+  const KST_OFFSET=9*3600*1000;
+  const nowKst=new Date(nowUtc.getTime()+KST_OFFSET);
+
+  // 인터벌 결정 (stsSched가 없으면 30분 폴백)
+  let intervalMin=30;
+  if(stsSched){
+    if(stsSched.type==='interval') intervalMin=stsSched.interval_min||30;
+    // fixed 타입이면 best.html처럼 고정 슬롯으로 처리 (여기선 interval만 대응)
+  }
+
+  // 히스토리 타임스탬프를 ms로 변환
+  const stamps=stsHist.map(h=>new Date(h.timestamp).getTime());
+
+  // 허용 오차: 인터벌의 40% 또는 최대 18분
+  const toleranceMs=Math.min(intervalMin*0.4, 18)*60*1000;
+
+  // 오늘·어제 KST 자정(UTC 기준)
+  const todayKstMidnight=new Date(Date.UTC(
+    nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()
+  ) - KST_OFFSET); // UTC midnight that corresponds to KST midnight
+
+  const days=[
+    { label:'어제', date: new Date(todayKstMidnight.getTime()-86400000), isToday:false },
+    { label:'오늘', date: todayKstMidnight, isToday:true },
+  ];
+
+  const slotsPerDay=Math.floor(24*60/intervalMin); // 48 for 30min
+  let totalSlots=0, okSlots=0, missSlots=0;
+
+  container.innerHTML='';
+  days.forEach(({label, date, isToday})=>{
+    // 날짜 레이블
+    const kstDay=new Date(date.getTime()+KST_OFFSET);
+    const mm=kstDay.getUTCMonth()+1, dd=kstDay.getUTCDate();
+    const labelDiv=document.createElement('div');
+    labelDiv.className='sts-sched-day-label';
+    labelDiv.innerHTML=`<span class="day-badge${isToday?' today':''}">${label}</span>${mm}/${dd}`;
+    container.appendChild(labelDiv);
+
+    // 슬롯 격자
+    const grid=document.createElement('div');
+    grid.className='sts-sched-grid';
+
+    for(let i=0;i<slotsPerDay;i++){
+      const slotMs=date.getTime()+(i*intervalMin*60*1000); // UTC
+      const slotKst=new Date(slotMs+KST_OFFSET);
+      const slotH=slotKst.getUTCHours();
+      const slotM=slotKst.getUTCMinutes();
+      const hhmm=`${String(slotH).padStart(2,'0')}:${String(slotM).padStart(2,'0')}`;
+
+      const nowMs=nowUtc.getTime();
+      const isFuture=slotMs > nowMs+toleranceMs;
+      const isNow=Math.abs(slotMs-nowMs)<=toleranceMs;
+
+      let status='miss';
+      let actualTime='';
+      if(isFuture){
+        status='fut';
+      } else {
+        const found=stamps.find(s=>Math.abs(s-slotMs)<=toleranceMs);
+        if(found){
+          status='ok';
+          const ft=new Date(found+KST_OFFSET);
+          actualTime=`${String(ft.getUTCHours()).padStart(2,'0')}:${String(ft.getUTCMinutes()).padStart(2,'0')}`;
+          okSlots++; totalSlots++;
+        } else {
+          missSlots++; totalSlots++;
+        }
+      }
+
+      const slot=document.createElement('div');
+      slot.className=`sts-slot ${status}${isNow?' now':''}`;
+
+      const tooltipText=status==='ok'
+        ? `${mm}/${dd} ${hhmm} → 실행 ${actualTime}`
+        : status==='fut'
+        ? `${mm}/${dd} ${hhmm} (예정)`
+        : `${mm}/${dd} ${hhmm} — 누락`;
+      slot.title=tooltipText;
+
+      slot.innerHTML=`<span class="slot-h">${hhmm}</span><span class="slot-i">${
+        status==='ok'?'✓':status==='fut'?'·':'✗'
+      }</span>`;
+
+      grid.appendChild(slot);
+    }
+    container.appendChild(grid);
+  });
+
+  // 다음 실행 시각
+  function getNextRunLabel(){
+    const nowMs=nowUtc.getTime();
+    // 다음 정각 슬롯 찾기
+    const slotMs=intervalMin*60*1000;
+    const nextSlotMs=Math.ceil((nowMs+1000)/slotMs)*slotMs;
+    const nextKst=new Date(nextSlotMs+KST_OFFSET);
+    const diffMin=Math.round((nextSlotMs-nowMs)/60000);
+    const hhmm=`${String(nextKst.getUTCHours()).padStart(2,'0')}:${String(nextKst.getUTCMinutes()).padStart(2,'0')}`;
+    if(diffMin<=60) return `${hhmm} KST (${diffMin}분 후)`;
+    return `${hhmm} KST`;
+  }
+
+  const rate=totalSlots>0?Math.round(okSlots/totalSlots*100):100;
+  summaryEl.innerHTML=`
+    <div class="ss"><span class="sv">${okSlots}</span><span class="sl">실행 완료</span></div>
+    <div class="ss"><span class="sv" style="color:${missSlots>0?'var(--down)':'var(--up)'}">${missSlots}</span><span class="sl">누락</span></div>
+    <div class="ss"><span class="sv">${rate}%</span><span class="sl">성공률 (2일)</span></div>
+    <div class="sts-next-badge"><span class="sts-pulse"></span>다음: ${getNextRunLabel()}</div>
+  `;
+}
+/* ────────────────────────────────────────────────────────────────── */
 
 function stsAvg(h){
   if(!h||!h.results)return null;
@@ -3552,7 +3826,7 @@ async function loadSteamData() {
     steamHistory = await res.json();
     renderSteam();
     // STS 글로벌 순위 박스도 갱신 (steamHistory 로드 완료 후)
-    if(stsHist.length) renderSTS();
+    if(stsHist.length){ renderSTS(); renderSteamSchedule(); }
   } catch (e) {
     console.warn('steam_history.json 로드 실패:', e);
   }
