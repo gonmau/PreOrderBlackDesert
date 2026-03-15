@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Steam 국가별 Top Seller 순위 추적기 (44개국)
+Steam 국가별 Top Seller 순위 추적기 (29개국)
 - Steam 공식 API: search/results (Crimson Desert 발견 시 즉시 중단)
 - 디스코드: 텍스트 embed + 꺾은선 그래프 + 막대 그래프
 """
@@ -114,40 +114,22 @@ TARGET_COUNTRIES = {
     "it": "이탈리아",
     "pl": "폴란드",
     "tr": "터키",
-    "mx": "멕시코",
     # 유럽 추가
     "nl": "네덜란드",
     "se": "스웨덴",
     "no": "노르웨이",
     "dk": "덴마크",
     "fi": "핀란드",
-    "pt": "포르투갈",
     "at": "오스트리아",
     "ch": "스위스",
     "cz": "체코",
-    "hu": "헝가리",
-    "ro": "루마니아",
-    "ar": "아르헨티나",
-    "cl": "칠레",
-    "co": "콜롬비아",
     "sg": "싱가포르",
-    "za": "남아공",
     # 공식 차트 지원국 추가
     "be": "벨기에",
     "hk": "홍콩",
     "nz": "뉴질랜드",
     "tw": "대만",
-    # 동남아 / 남아시아
     "th": "태국",
-    "id": "인도네시아",
-    "my": "말레이시아",
-    "ph": "필리핀",
-    "vn": "베트남",
-    "in": "인도",
-    # 동유럽
-    "ua": "우크라이나",
-    # 남미
-    "pe": "페루",
 }
 
 COUNTRY_COLORS = {
@@ -167,36 +149,21 @@ COUNTRY_COLORS = {
     "IT": "#4ECDC4",
     "PL": "#A8E6CF",
     "TR": "#FF8B94",
-    "MX": "#88D8B0",
     # 신규
     "NL": "#FF9933",
     "SE": "#006AA7",
     "NO": "#EF2B2D",
     "DK": "#C60C30",
     "FI": "#003580",
-    "PT": "#006600",
     "AT": "#ED2939",
     "CH": "#FF0000",
     "CZ": "#D7141A",
-    "HU": "#CE2939",
-    "RO": "#002B7F",
-    "AR": "#74ACDF",
-    "CL": "#D52B1E",
-    "CO": "#FCD116",
     "SG": "#EF3340",
-    "ZA": "#007A4D",
     "BE": "#FAE042",
     "HK": "#DE2910",
     "NZ": "#00247D",
     "TW": "#FE0000",
     "TH": "#A51931",
-    "ID": "#CE1126",
-    "MY": "#CC0001",
-    "PH": "#0038A8",
-    "VN": "#DA251D",
-    "IN": "#FF9933",
-    "UA": "#005BBB",
-    "PE": "#D91023",
 }
 
 # Steam 시장 가중치 (index.html의 STS_W 와 동기화)
@@ -217,36 +184,21 @@ STEAM_WEIGHTS = {
     "it":  0.6,
     "pl":  0.7,
     "tr":  0.7,
-    "mx":  0.5,
     # 신규
     "nl":  0.8,
     "se":  0.7,
     "no":  0.5,
     "dk":  0.5,
     "fi":  0.4,
-    "pt":  0.5,
     "at":  0.6,
     "ch":  0.7,
     "cz":  0.4,
-    "hu":  0.3,
-    "ro":  0.3,
-    "ar":  0.6,
-    "cl":  0.4,
-    "co":  0.3,
     "sg":  0.5,
-    "za":  0.3,
     "be":  0.8,
     "hk":  0.7,
     "nz":  0.4,
     "tw":  0.8,
     "th":  0.8,
-    "id":  0.7,
-    "my":  0.5,
-    "ph":  0.5,
-    "vn":  0.5,
-    "in":  0.6,
-    "ua":  0.8,
-    "pe":  0.4,
 }
 
 def calc_weighted_avg(results):
@@ -258,22 +210,12 @@ def calc_weighted_avg(results):
 RETRY_DELAYS = {
     "cn": [10, 30, 60],
     "ru": [10, 30, 60],
-    "ar": [5, 15, 30],
-    "co": [5, 15, 30],
-    "vn": [5, 15, 30],
-    "ph": [5, 15, 30],
-    "in": [5, 15, 30],
 }
 DEFAULT_RETRY_DELAYS = [5, 15, 30]
 
 COUNTRY_SLEEP = {
     "cn": 5,
     "ru": 5,
-    "ar": 3,
-    "vn": 3,
-    "ph": 3,
-    "in": 3,
-    "id": 3,
 }
 DEFAULT_COUNTRY_SLEEP = 1.5
 
@@ -545,36 +487,21 @@ def make_graphs(history):
         "IT": ("#009246", "#FFFFFF"),
         "PL": ("#DC143C", "#FFFFFF"),
         "TR": ("#E30A17", "#FFFFFF"),
-        "MX": ("#006847", "#FFFFFF"),
         # 신규
         "NL": ("#AE1C28", "#FFFFFF"),
         "SE": ("#006AA7", "#FECC02"),
         "NO": ("#EF2B2D", "#FFFFFF"),
         "DK": ("#C60C30", "#FFFFFF"),
         "FI": ("#003580", "#FFFFFF"),
-        "PT": ("#006600", "#FFFFFF"),
         "AT": ("#ED2939", "#FFFFFF"),
         "CH": ("#FF0000", "#FFFFFF"),
         "CZ": ("#D7141A", "#FFFFFF"),
-        "HU": ("#CE2939", "#FFFFFF"),
-        "RO": ("#002B7F", "#FFD700"),
-        "AR": ("#74ACDF", "#FFFFFF"),
-        "CL": ("#D52B1E", "#FFFFFF"),
-        "CO": ("#003087", "#FFD116"),
         "SG": ("#EF3340", "#FFFFFF"),
-        "ZA": ("#007A4D", "#FFFFFF"),
         "BE": ("#FAE042", "#000000"),
         "HK": ("#DE2910", "#FFD700"),
         "NZ": ("#00247D", "#FFFFFF"),
         "TW": ("#FE0000", "#FFFFFF"),
         "TH": ("#A51931", "#FFD700"),
-        "ID": ("#CE1126", "#FFFFFF"),
-        "MY": ("#CC0001", "#FFD100"),
-        "PH": ("#0038A8", "#FFFFFF"),
-        "VN": ("#DA251D", "#FFD700"),
-        "IN": ("#FF9933", "#FFFFFF"),
-        "UA": ("#005BBB", "#FFD700"),
-        "PE": ("#D91023", "#FFFFFF"),
     }
 
     # ── 2. 막대 그래프 (최신 스냅샷) ─────────────────────────
@@ -732,7 +659,7 @@ def send_discord_image(buf, filename, caption):
 # ======================
 def main():
     print("=" * 60)
-    print("🎮 Steam Top Seller 순위 추적기 (44개국)")
+    print("🎮 Steam Top Seller 순위 추적기 (29개국)")
     print("=" * 60)
 
     now_kst = datetime.now(KST)
