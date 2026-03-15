@@ -1876,7 +1876,7 @@
           <div class="steam-ts-stat-value" id="sts-global-rank">—</div>
           <div class="steam-ts-stat-diff" id="sts-global-diff"></div>
         </div>
-        <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">추적국 가중 평균</div><div class="steam-ts-stat-value" id="sts-avg">—</div><div class="steam-ts-stat-diff" id="sts-avg-diff"></div></div>
+        <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">추적 29개국 가중 평균</div><div class="steam-ts-stat-value" id="sts-avg">—</div><div class="steam-ts-stat-diff" id="sts-avg-diff"></div><div class="steam-ts-stat-diff" style="font-size:.6rem;opacity:.6">글로벌과 차이 있을 수 있음</div></div>
         <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">최고 평균 순위</div><div class="steam-ts-stat-value" id="sts-best">—</div><div class="steam-ts-stat-diff" id="sts-best-date"></div></div>
         <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">추적 국가</div><div class="steam-ts-stat-value" id="sts-countries">—</div><div class="steam-ts-stat-diff">개국</div></div>
         <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">총 기록 수</div><div class="steam-ts-stat-value" id="sts-count">—</div><div class="steam-ts-stat-diff">개</div></div>
@@ -3772,9 +3772,16 @@ function renderSteamSchedule(){
 
 function stsAvg(h){
   if(!h||!h.results)return null;
-  let s=0,cnt=0;
-  for(const[n,d]of Object.entries(h.results)){const r=d&&d.rank;if(r){s+=r;cnt++;}}
-  return cnt>0?Math.round(s/cnt*10)/10:null;
+  // 가중평균: STS_W 기준, 미진입 국가는 제외 후 진입국 가중치만으로 정규화
+  let totalW=0, totalSum=0;
+  for(const[n,d]of Object.entries(h.results)){
+    const r=d&&d.rank;
+    if(!r)continue;
+    const w=STS_W[n]||1.0;
+    totalSum+=r*w;
+    totalW+=w;
+  }
+  return totalW>0?Math.round(totalSum/totalW*10)/10:null;
 }
 
 function renderSTS(){
