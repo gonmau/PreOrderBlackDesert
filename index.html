@@ -1924,7 +1924,7 @@
         <!-- 국가별 현황 요약 통계 -->
         <div class="steam-ts-stats-row" id="sts-country-summary-row" style="margin-bottom:12px;display:none">
           <div class="steam-ts-stat-box">
-            <div class="steam-ts-stat-label">📊 순위권 평균</div>
+            <div class="steam-ts-stat-label">📊 가중 평균</div>
             <div class="steam-ts-stat-value" id="sts-cs-avg">—</div>
             <div class="steam-ts-stat-diff" id="sts-cs-avg-sub"></div>
           </div>
@@ -3936,7 +3936,14 @@ function renderSTS(){
 function renderStsGrid(lat,prv){
   const g=document.getElementById('sts-country-grid');
   if(!g||!lat.results)return;
-  const s=Object.entries(lat.results).sort((a,b)=>(STS_W[b[0]]||0)-(STS_W[a[0]]||0));
+  // 순위 좋은 순(숫자 작은 순) → 미진입은 뒤로, 같은 순위면 가중치 큰 순
+  const s=Object.entries(lat.results).sort((a,b)=>{
+    const ra=a[1]&&a[1].rank, rb=b[1]&&b[1].rank;
+    if(ra&&rb) return ra!==rb ? ra-rb : (STS_W[b[0]]||0)-(STS_W[a[0]]||0);
+    if(ra) return -1;
+    if(rb) return 1;
+    return (STS_W[b[0]]||0)-(STS_W[a[0]]||0);
+  });
 
   // ── 국가별 현황 요약 통계 계산 ─────────────────────────────
   const ranked=s.filter(([,d])=>d&&d.rank!=null);
@@ -3944,8 +3951,10 @@ function renderStsGrid(lat,prv){
   const foundCount=ranked.length;
 
   if(ranked.length>0){
-    // 순위권 단순평균
-    const rankAvg=Math.round(ranked.reduce((sum,[,d])=>sum+d.rank,0)/ranked.length*10)/10;
+    // 가중평균 (stsAvg와 동일 로직)
+    let _tw=0,_ts=0;
+    ranked.forEach(([n,d])=>{const w=STS_W[n]||1.0;_tw+=w;_ts+=d.rank*w;});
+    const rankAvg=Math.round(_ts/_tw*10)/10;
     // 최고(숫자 가장 작음) / 최하위(숫자 가장 큼) 국가
     const best=ranked.reduce((a,b)=>a[1].rank<b[1].rank?a:b);
     const worst=ranked.reduce((a,b)=>a[1].rank>b[1].rank?a:b);
@@ -3956,7 +3965,7 @@ function renderStsGrid(lat,prv){
     const csAvgEl=document.getElementById('sts-cs-avg');
     if(csAvgEl) csAvgEl.textContent='#'+rankAvg.toFixed(1);
     const csAvgSub=document.getElementById('sts-cs-avg-sub');
-    if(csAvgSub) csAvgSub.textContent='순위권 '+foundCount+'개국 기준';
+    if(csAvgSub) csAvgSub.textContent='가중평균 (진입 '+foundCount+'개국)';
 
     const bFlag=STS_F[best[0]]||'';
     const bCC=STS_CC[best[0]]||'us';
