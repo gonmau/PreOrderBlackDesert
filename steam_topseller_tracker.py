@@ -24,9 +24,78 @@ import requests
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 STEAM_APP_IDS = {"3321460"}  # Crimson Desert
 
-HISTORY_FILE = "steam_topseller_history.json"
+HISTORY_FILE  = "steam_topseller_history.json"
 BASELINE_FILE = "steam_topseller_baseline.json"  # 마지막 알림 발송 시점 기준값
+WORKFLOW_FILE = ".github/workflows/steam_topseller_tracker.yml"  # 스케줄 소스
 KST = timezone(timedelta(hours=9))
+
+
+# ======================
+# 스케줄 파싱 (yml → JSON 메타 → 대시보드)
+# ======================
+
+def parse_cron_to_kst_slots(cron_expr: str) -> list:
+    """
+    'MIN HOUR ...' cron 표현식에서 UTC hour 목록을 추출 → KST(+9) 변환.
+    분(MIN) 필드에 복수 값이 있으면(예: '0,30 * * * *') 슬롯을 분 단위로 반환.
+    반환 형식: {"type": "interval", "interval_min": 30}
+              또는 {"type": "fixed", "slots_kst": [6, 18]}
+    """
+    parts = cron_expr.strip().split()
+    if len(parts) < 2:
+        return {"type": "unknown"}
+
+    min_field  = parts[0]
+    hour_field = parts[1]
+
+    # 매 N분 패턴: */N  or  0,30  or  * (모든 분)
+    if hour_field == '*':
+        if min_field == '*':
+            return {"type": "interval", "interval_min": 1}
+        if min_field.startswith('*/'):
+            interval = int(min_field[2:])
+            return {"type": "interval", "interval_min": interval}
+        # 0,30  → 간격 계산
+        mins = sorted(int(m) for m in min_field.split(',') if m.strip().isdigit())
+        if len(mins) >= 2:
+            interval = mins[1] - mins[0]
+            return {"type": "interval", "interval_min": interval}
+        return {"type": "interval", "interval_min": 60}
+
+    # 고정 시각 패턴: '0 9,21 * * *'
+    utc_hours = []
+    for token in hour_field.split(','):
+        token = token.strip()
+        if token.isdigit():
+            utc_hours.append(int(token))
+    kst_hours = sorted(set((h + 9) % 24 for h in utc_hours))
+    return {"type": "fixed", "slots_kst": kst_hours}
+
+
+def read_schedule_meta() -> dict:
+    """
+    workflow yml에서 cron 표현식을 읽어 스케줄 메타 dict 반환.
+    읽기 실패 시 None 반환 (기존 JSON의 schedule 값 유지).
+    """
+    import re as _re
+    if not os.path.exists(WORKFLOW_FILE):
+        print(f"ℹ️  {WORKFLOW_FILE} 없음 → 스케줄 메타 업데이트 스킵")
+        return None
+    try:
+        with open(WORKFLOW_FILE, "r", encoding="utf-8") as f:
+            content = f.read()
+        m = _re.search(r"cron:\s*['\"]([^'\"]+)['\"]", content)
+        if not m:
+            print("ℹ️  cron 표현식 파싱 실패 → 스케줄 메타 업데이트 스킵")
+            return None
+        cron_expr = m.group(1)
+        parsed = parse_cron_to_kst_slots(cron_expr)
+        meta = {"cron": cron_expr, **parsed}
+        print(f"✅  스케줄 파싱: {cron_expr!r} → {parsed}")
+        return meta
+    except Exception as e:
+        print(f"⚠️  스케줄 파싱 오류: {e}")
+        return None
 
 TARGET_COUNTRIES = {
     "us": "미국",
@@ -190,13 +259,43 @@ def load_history():
         return []
     try:
         with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+        # 신규 포맷: {"schedule": ..., "history": [...]}
+        if isinstance(data, dict) and "history" in data:
+            return data["history"]
+        # 구버전 포맷: 리스트 그대로
+        if isinstance(data, list):
+            return data
+        return []
     except:
         return []
 
-def save_history(history):
+def save_history(history, schedule_meta=None):
+    """
+    history 리스트를 저장합니다.
+    schedule_meta가 주어지면 {"schedule": ..., "history": [...]} 형식으로,
+    없으면 기존 schedule 값을 유지합니다.
+    대시보드(index.html)는 schedule 키를 읽어 스케줄 표시에 활용합니다.
+    """
+    # 기존 파일에서 schedule 값 유지
+    existing_schedule = None
+    if os.path.exists(HISTORY_FILE):
+        try:
+            with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+                existing = json.load(f)
+            if isinstance(existing, dict):
+                existing_schedule = existing.get("schedule")
+        except Exception:
+            pass
+
+    final_schedule = schedule_meta if schedule_meta is not None else existing_schedule
+
+    payload = {"history": history}
+    if final_schedule:
+        payload["schedule"] = final_schedule
+
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(history, f, indent=2, ensure_ascii=False)
+        json.dump(payload, f, indent=2, ensure_ascii=False)
 
 # ======================
 # 그래프 생성
@@ -528,8 +627,9 @@ def main():
             prev_results = entry["results"]
             break
 
+    schedule_meta = read_schedule_meta()  # yml에서 cron 파싱
     history.append({"timestamp": timestamp, "results": results})
-    save_history(history)
+    save_history(history, schedule_meta)
     print(f"\n✅ 히스토리 저장 완료 (총 {len(history)}개)")
 
     # 가중평균 계산 + 변동량
