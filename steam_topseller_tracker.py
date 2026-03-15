@@ -628,19 +628,24 @@ def make_graphs(history):
 # Discord 전송
 # ======================
 def load_baseline():
-    """마지막 Discord 알림 발송 시점의 wavg 로드"""
+    """마지막 Discord 알림 발송 시점의 baseline 로드"""
     if not os.path.exists(BASELINE_FILE):
-        return None
+        return None, set()
     try:
         with open(BASELINE_FILE, "r", encoding="utf-8") as f:
-            return json.load(f).get("wavg")
+            data = json.load(f)
+        return data.get("wavg"), set(data.get("rank1_countries", []))
     except:
-        return None
+        return None, set()
 
-def save_baseline(wavg):
-    """Discord 알림 발송 시점의 wavg 저장"""
+def save_baseline(wavg, rank1_countries):
+    """Discord 알림 발송 시점의 baseline 저장"""
     with open(BASELINE_FILE, "w", encoding="utf-8") as f:
-        json.dump({"wavg": wavg, "timestamp": datetime.now(KST).isoformat()}, f)
+        json.dump({
+            "wavg": wavg,
+            "rank1_countries": list(rank1_countries),
+            "timestamp": datetime.now(KST).isoformat()
+        }, f)
 
 def send_discord_text(embed):
     if not DISCORD_WEBHOOK:
@@ -717,22 +722,47 @@ def main():
             elif diff < 0:
                 wavg_diff = f" (▼{abs(diff):.1f})"
 
-    # 평균 순위 변동량 계산 (baseline 기준 1.0 이상 변동 시에만 전송)
-    baseline_wavg = load_baseline()
+    # ── 알림 발송 조건 판단 ────────────────────────────────────────
+    # 조건 1: 가중평균이 baseline 대비 1.0 이상 변동
+    # 조건 2: 이전에 1위가 아니었던 국가가 새로 1위 진입
+    baseline_wavg, baseline_rank1 = load_baseline()
+
+    # 현재 1위 국가 집합
+    current_rank1 = {name for name, data in results.items() if data.get("rank") == 1}
+    # 신규 1위 국가 (이전에 1위가 아니었던 나라)
+    new_rank1 = current_rank1 - baseline_rank1
+
+    trigger_avg    = False
+    trigger_rank1  = False
+    trigger_reason = []
+
     if wavg is not None and baseline_wavg is not None:
         diff_from_baseline = abs(wavg - baseline_wavg)
-        avg_changed = diff_from_baseline >= 1.0
-        if not avg_changed:
-            print(f"ℹ️  기준점 대비 변화 미미 (기준: {baseline_wavg:.1f} → 현재: {wavg_str}위, 차이: {diff_from_baseline:.2f}) → 디스코드 알림 생략")
-            print("✅ 완료!")
-            return
-        print(f"🔔 기준점 대비 변화 감지 (기준: {baseline_wavg:.1f} → 현재: {wavg_str}위, 차이: {diff_from_baseline:.2f}) → 알림 발송")
-    else:
-        avg_changed = wavg is not None  # 첫 실행 시 baseline 없으면 무조건 전송
-        if not avg_changed:
-            print("ℹ️  평균 순위 없음 → 디스코드 알림 생략")
-            print("✅ 완료!")
-            return
+        if diff_from_baseline >= 1.0:
+            trigger_avg = True
+            trigger_reason.append(f"평균순위 변동 {baseline_wavg:.1f}→{wavg_str} (Δ{diff_from_baseline:.2f})")
+    elif wavg is not None:
+        # 첫 실행 (baseline 없음) → 무조건 전송
+        trigger_avg = True
+        trigger_reason.append("첫 실행")
+
+    if new_rank1:
+        trigger_rank1 = True
+        trigger_reason.append(f"신규 1위 진입: {', '.join(new_rank1)}")
+
+    if not trigger_avg and not trigger_rank1:
+        wavg_disp = f"{wavg_str}" if wavg else "N/A"
+        base_disp = f"{baseline_wavg:.1f}" if baseline_wavg else "N/A"
+        print(f"ℹ️  알림 조건 미충족 (평균: {base_disp}→{wavg_disp}, 1위국가 변화 없음) → 디스코드 알림 생략")
+        # rank1_countries는 매 실행마다 최신화 (재진입 감지를 위해)
+        # wavg가 None이어도 저장 — 재알림 방지 및 재진입 감지 보장
+        save_baseline(baseline_wavg, current_rank1)
+        print(f"✅ rank1 최신화: {current_rank1}")
+        print("✅ 완료!")
+        return
+
+    print(f"🔔 알림 발송 조건 충족: {' | '.join(trigger_reason)}")
+    # ───────────────────────────────────────────────────────────────
 
     # Discord 텍스트 embed
     cc_by_name = {v: k for k, v in TARGET_COUNTRIES.items()}
@@ -843,9 +873,10 @@ def main():
         print("  ✅ 막대 그래프 전송")
 
     # 알림 발송 완료 → baseline 갱신
-    if wavg is not None:
-        save_baseline(wavg)
-        print(f"✅ baseline 갱신: {wavg:.1f}")
+    # wavg: 알림 시점 값으로 갱신 (없으면 기존 값 유지)
+    # rank1: 항상 최신화 (wavg가 None이어도 저장 — 재알림 방지)
+    save_baseline(wavg if wavg is not None else baseline_wavg, current_rank1)
+    print(f"✅ baseline 갱신: wavg={wavg:.1f if wavg else 'N/A'}, 1위국가: {current_rank1}")
 
     print("✅ 완료!")
 
