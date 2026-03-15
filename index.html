@@ -1908,6 +1908,29 @@
       </div>
       <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('sts-countries-body',this)"><span style="white-space:nowrap">🌍 국가별 현황</span> <button class="collapse-btn">▼ 펼치기</button><button id="capture-countries-btn" class="capture-btn" onclick="captureAllCountryCharts(event)" disabled style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1);color:#555;cursor:not-allowed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="btn-text">데이터 로딩 중…</span></button></div>
       <div class="collapsible-body collapsed" id="sts-countries-body">
+        <!-- 국가별 현황 요약 통계 -->
+        <div class="steam-ts-stats-row" id="sts-country-summary-row" style="margin-bottom:12px;display:none">
+          <div class="steam-ts-stat-box">
+            <div class="steam-ts-stat-label">📊 순위권 평균</div>
+            <div class="steam-ts-stat-value" id="sts-cs-avg">—</div>
+            <div class="steam-ts-stat-diff" id="sts-cs-avg-sub"></div>
+          </div>
+          <div class="steam-ts-stat-box">
+            <div class="steam-ts-stat-label">🥇 최고 순위</div>
+            <div class="steam-ts-stat-value" id="sts-cs-best-flag" style="font-size:1.8rem;line-height:1.1">—</div>
+            <div class="steam-ts-stat-diff" id="sts-cs-best-name"></div>
+          </div>
+          <div class="steam-ts-stat-box">
+            <div class="steam-ts-stat-label">🔻 최하위 순위</div>
+            <div class="steam-ts-stat-value" id="sts-cs-worst-flag" style="font-size:1.8rem;line-height:1.1">—</div>
+            <div class="steam-ts-stat-diff" id="sts-cs-worst-name"></div>
+          </div>
+          <div class="steam-ts-stat-box">
+            <div class="steam-ts-stat-label">✅ 순위권 진입</div>
+            <div class="steam-ts-stat-value" id="sts-cs-found">—</div>
+            <div class="steam-ts-stat-diff" id="sts-cs-found-sub">/ 추적국가</div>
+          </div>
+        </div>
         <div class="steam-ts-country-grid" id="sts-country-grid"></div>
       </div>
     </div>
@@ -3583,10 +3606,15 @@ const STS_W={
   "한국":4.2,  "프랑스":4.0,"일본":3.5,
   "캐나다":3.5,"호주":2.5,  "터키":2.0,
   "폴란드":2.0,"스페인":2.0,"이탈리아":1.8,
-  "멕시코":1.5
+  "멕시코":1.5,
+  "네덜란드":0.8,"스웨덴":0.7,"노르웨이":0.5,"덴마크":0.5,
+  "핀란드":0.4,"포르투갈":0.5,"오스트리아":0.6,"스위스":0.7,
+  "체코":0.4,"헝가리":0.3,"루마니아":0.3,
+  "아르헨티나":0.6,"칠레":0.4,"콜롬비아":0.3,
+  "싱가포르":0.5,"남아공":0.3,"태국":0.8,"인도네시아":0.7,"말레이시아":0.5,"필리핀":0.5,"베트남":0.5,"인도":0.6,"우크라이나":0.8,"페루":0.4
 };
-const STS_F={"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","호주":"🇦🇺","한국":"🇰🇷","중국":"🇨🇳","러시아":"🇷🇺","폴란드":"🇵🇱","터키":"🇹🇷"};
-const STS_CC={"미국":"us","캐나다":"ca","브라질":"br","멕시코":"mx","영국":"gb","독일":"de","프랑스":"fr","스페인":"es","이탈리아":"it","일본":"jp","호주":"au","한국":"kr","중국":"cn","러시아":"ru","폴란드":"pl","터키":"tr"};
+const STS_F={"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","호주":"🇦🇺","한국":"🇰🇷","중국":"🇨🇳","러시아":"🇷🇺","폴란드":"🇵🇱","터키":"🇹🇷","네덜란드":"🇳🇱","스웨덴":"🇸🇪","노르웨이":"🇳🇴","덴마크":"🇩🇰","핀란드":"🇫🇮","포르투갈":"🇵🇹","오스트리아":"🇦🇹","스위스":"🇨🇭","체코":"🇨🇿","헝가리":"🇭🇺","루마니아":"🇷🇴","아르헨티나":"🇦🇷","칠레":"🇨🇱","콜롬비아":"🇨🇴","싱가포르":"🇸🇬","남아공":"🇿🇦","태국":"🇹🇭","인도네시아":"🇮🇩","말레이시아":"🇲🇾","필리핀":"🇵🇭","베트남":"🇻🇳","인도":"🇮🇳","우크라이나":"🇺🇦","페루":"🇵🇪"};
+const STS_CC={"미국":"us","캐나다":"ca","브라질":"br","멕시코":"mx","영국":"gb","독일":"de","프랑스":"fr","스페인":"es","이탈리아":"it","일본":"jp","호주":"au","한국":"kr","중국":"cn","러시아":"ru","폴란드":"pl","터키":"tr","네덜란드":"nl","스웨덴":"se","노르웨이":"no","덴마크":"dk","핀란드":"fi","포르투갈":"pt","오스트리아":"at","스위스":"ch","체코":"cz","헝가리":"hu","루마니아":"ro","아르헨티나":"ar","칠레":"cl","콜롬비아":"co","싱가포르":"sg","남아공":"za","태국":"th","인도네시아":"id","말레이시아":"my","필리핀":"ph","베트남":"vn","인도":"in","우크라이나":"ua","페루":"pe"};
 let stsHist=[],stsCI=null,stsMCI=null;
 let stsSched=null; // schedule 메타 (JSON에서 로드)
 
@@ -3887,6 +3915,44 @@ function renderStsGrid(lat,prv){
   const g=document.getElementById('sts-country-grid');
   if(!g||!lat.results)return;
   const s=Object.entries(lat.results).sort((a,b)=>(STS_W[b[0]]||0)-(STS_W[a[0]]||0));
+
+  // ── 국가별 현황 요약 통계 계산 ─────────────────────────────
+  const ranked=s.filter(([,d])=>d&&d.rank!=null);
+  const total=s.length;
+  const foundCount=ranked.length;
+
+  if(ranked.length>0){
+    // 순위권 단순평균
+    const rankAvg=Math.round(ranked.reduce((sum,[,d])=>sum+d.rank,0)/ranked.length*10)/10;
+    // 최고(숫자 가장 작음) / 최하위(숫자 가장 큼) 국가
+    const best=ranked.reduce((a,b)=>a[1].rank<b[1].rank?a:b);
+    const worst=ranked.reduce((a,b)=>a[1].rank>b[1].rank?a:b);
+
+    const summaryRow=document.getElementById('sts-country-summary-row');
+    if(summaryRow) summaryRow.style.display='';
+
+    const csAvgEl=document.getElementById('sts-cs-avg');
+    if(csAvgEl) csAvgEl.textContent='#'+rankAvg.toFixed(1);
+    const csAvgSub=document.getElementById('sts-cs-avg-sub');
+    if(csAvgSub) csAvgSub.textContent='순위권 '+foundCount+'개국 기준';
+
+    const bFlag=STS_F[best[0]]||'';
+    const bCC=STS_CC[best[0]]||'us';
+    document.getElementById('sts-cs-best-flag').innerHTML=
+      `<img src="https://flagcdn.com/w40/${bCC}.png" style="width:36px;height:26px;object-fit:cover;border-radius:3px"> ${bFlag}`;
+    document.getElementById('sts-cs-best-name').textContent=best[0]+' #'+best[1].rank;
+
+    const wFlag=STS_F[worst[0]]||'';
+    const wCC=STS_CC[worst[0]]||'us';
+    document.getElementById('sts-cs-worst-flag').innerHTML=
+      `<img src="https://flagcdn.com/w40/${wCC}.png" style="width:36px;height:26px;object-fit:cover;border-radius:3px"> ${wFlag}`;
+    document.getElementById('sts-cs-worst-name').textContent=worst[0]+' #'+worst[1].rank;
+
+    document.getElementById('sts-cs-found').textContent=foundCount;
+    document.getElementById('sts-cs-found-sub').textContent='/ '+total+'개국 추적';
+  }
+  // ──────────────────────────────────────────────────────────
+
   g.innerHTML=s.map(([n,d])=>{
     const r=d&&d.rank,w=STS_W[n]||1,rs=r?'#'+r:'—';
     const cc=STS_CC[n]||'us';
@@ -3896,7 +3962,9 @@ function renderStsGrid(lat,prv){
       const pr=prv.results[n]&&prv.results[n].rank;
       if(pr&&r){const dd=pr-r;if(dd>0)dh='<span class="steam-ts-country-diff up">▲'+dd+'</span>';else if(dd<0)dh='<span class="steam-ts-country-diff down">▼'+Math.abs(dd)+'</span>';else dh='<span class="steam-ts-country-diff">-</span>';}
     }
-    return `<div class="steam-ts-country-card" onclick="openStsModal('${n}')">${flagImg}<div class="steam-ts-country-info"><div class="steam-ts-country-name">${n}</div><div class="steam-ts-country-rank">${rs} ${dh}</div></div></div>`;
+    // 미발견 카드는 약간 어둡게
+    const cardStyle=r?'':'opacity:0.5';
+    return `<div class="steam-ts-country-card" onclick="openStsModal('${n}')" style="${cardStyle}">${flagImg}<div class="steam-ts-country-info"><div class="steam-ts-country-name">${n}</div><div class="steam-ts-country-rank">${rs} ${dh}</div></div></div>`;
   }).join('');
 }
 
