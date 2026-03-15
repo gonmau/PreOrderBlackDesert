@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Steam 국가별 Top Seller 순위 추적기 (10개국)
+Steam 국가별 Top Seller 순위 추적기 (40개국)
 - Steam 공식 API: search/results (Crimson Desert 발견 시 즉시 중단)
 - 디스코드: 텍스트 embed + 꺾은선 그래프 + 막대 그래프
 """
@@ -98,6 +98,7 @@ def read_schedule_meta() -> dict:
         return None
 
 TARGET_COUNTRIES = {
+    # 기존 16개국
     "us": "미국",
     "gb": "영국",
     "de": "독일",
@@ -114,9 +115,38 @@ TARGET_COUNTRIES = {
     "pl": "폴란드",
     "tr": "터키",
     "mx": "멕시코",
+    # 신규 16개국
+    "nl": "네덜란드",
+    "se": "스웨덴",
+    "no": "노르웨이",
+    "dk": "덴마크",
+    "fi": "핀란드",
+    "pt": "포르투갈",
+    "at": "오스트리아",
+    "ch": "스위스",
+    "cz": "체코",
+    "hu": "헝가리",
+    "ro": "루마니아",
+    "ar": "아르헨티나",
+    "cl": "칠레",
+    "co": "콜롬비아",
+    "sg": "싱가포르",
+    "za": "남아공",
+    # 동남아 / 남아시아
+    "th": "태국",
+    "id": "인도네시아",
+    "my": "말레이시아",
+    "ph": "필리핀",
+    "vn": "베트남",
+    "in": "인도",
+    # 동유럽
+    "ua": "우크라이나",
+    # 남미
+    "pe": "페루",
 }
 
 COUNTRY_COLORS = {
+    # 기존
     "US": "#4A90D9",
     "GB": "#C0392B",
     "DE": "#2ECC71",
@@ -133,10 +163,36 @@ COUNTRY_COLORS = {
     "PL": "#A8E6CF",
     "TR": "#FF8B94",
     "MX": "#88D8B0",
+    # 신규
+    "NL": "#FF9933",
+    "SE": "#006AA7",
+    "NO": "#EF2B2D",
+    "DK": "#C60C30",
+    "FI": "#003580",
+    "PT": "#006600",
+    "AT": "#ED2939",
+    "CH": "#FF0000",
+    "CZ": "#D7141A",
+    "HU": "#CE2939",
+    "RO": "#002B7F",
+    "AR": "#74ACDF",
+    "CL": "#D52B1E",
+    "CO": "#FCD116",
+    "SG": "#EF3340",
+    "ZA": "#007A4D",
+    "TH": "#A51931",
+    "ID": "#CE1126",
+    "MY": "#CC0001",
+    "PH": "#0038A8",
+    "VN": "#DA251D",
+    "IN": "#FF9933",
+    "UA": "#005BBB",
+    "PE": "#D91023",
 }
 
-# Steam 시장 가중치 (index.html의 STEAM_MARKET_WEIGHTS 기준, 미국=10 베이스)
+# Steam 시장 가중치 (index.html의 STS_W 와 동기화)
 STEAM_WEIGHTS = {
+    # 기존
     "us": 10.0,
     "gb":  1.9,
     "de":  1.9,
@@ -153,10 +209,35 @@ STEAM_WEIGHTS = {
     "pl":  0.7,
     "tr":  0.7,
     "mx":  0.5,
+    # 신규
+    "nl":  0.8,
+    "se":  0.7,
+    "no":  0.5,
+    "dk":  0.5,
+    "fi":  0.4,
+    "pt":  0.5,
+    "at":  0.6,
+    "ch":  0.7,
+    "cz":  0.4,
+    "hu":  0.3,
+    "ro":  0.3,
+    "ar":  0.6,
+    "cl":  0.4,
+    "co":  0.3,
+    "sg":  0.5,
+    "za":  0.3,
+    "th":  0.8,
+    "id":  0.7,
+    "my":  0.5,
+    "ph":  0.5,
+    "vn":  0.5,
+    "in":  0.6,
+    "ua":  0.8,
+    "pe":  0.4,
 }
 
 def calc_weighted_avg(results):
-    """10개국 단순평균 순위 계산 (순위 없으면 해당 국가 제외)"""
+    """추적국 단순평균 순위 계산 (순위 없으면 해당 국가 제외)"""
     ranks = [data.get("rank") for data in results.values() if data.get("rank") is not None]
     return round(sum(ranks) / len(ranks), 1) if ranks else None
 
@@ -164,12 +245,22 @@ def calc_weighted_avg(results):
 RETRY_DELAYS = {
     "cn": [10, 30, 60],
     "ru": [10, 30, 60],
+    "ar": [5, 15, 30],
+    "co": [5, 15, 30],
+    "vn": [5, 15, 30],
+    "ph": [5, 15, 30],
+    "in": [5, 15, 30],
 }
 DEFAULT_RETRY_DELAYS = [5, 15, 30]
 
 COUNTRY_SLEEP = {
     "cn": 5,
     "ru": 5,
+    "ar": 3,
+    "vn": 3,
+    "ph": 3,
+    "in": 3,
+    "id": 3,
 }
 DEFAULT_COUNTRY_SLEEP = 1.5
 
@@ -308,7 +399,7 @@ def make_graphs(history):
     GRID = "#4A5568"
     TEXT = "#C7D5E0"
 
-    # 데이터 파싱 (10개국 완전한 레코드만)
+    # 데이터 파싱 (추적국 전체, 국가 수 변경에도 기존 데이터 보존)
     timestamps = []
     cc_ranks = {cc: [] for cc in cc_list}
     wavg_list = []
@@ -376,7 +467,7 @@ def make_graphs(history):
     plt.close(fig0)
 
     # ── 1. 꺾은선 그래프 ─────────────────────────────────────
-    fig1, ax1 = plt.subplots(figsize=(13, 6))
+    fig1, ax1 = plt.subplots(figsize=(14, max(7, len(cc_list) * 0.18 + 5)))
     fig1.patch.set_facecolor(BG)
     ax1.set_facecolor(BG)
 
@@ -408,14 +499,15 @@ def make_graphs(history):
 
     # 레전드를 그래프 위(제목 아래)에 가로로 배치
     handles, labels = ax1.get_legend_handles_labels()
+    ncol = min(len(labels), 16)  # 최대 16열로 2줄까지 허용
     fig1.legend(handles, labels,
                 loc="upper center", bbox_to_anchor=(0.5, 0.97),
-                ncol=len(labels), fontsize=8,
+                ncol=ncol, fontsize=8,
                 framealpha=0.25, labelcolor="white", facecolor="#2A3F5F",
                 edgecolor="none", handlelength=1.5, columnspacing=1.0)
 
     fig1.tight_layout()
-    fig1.subplots_adjust(top=0.82)  # 레전드 공간 확보
+    fig1.subplots_adjust(top=0.78)  # 32개국 2줄 legend 공간 확보
 
     buf1 = io.BytesIO()
     fig1.savefig(buf1, format="png", dpi=130, bbox_inches="tight", facecolor=BG)
@@ -424,22 +516,48 @@ def make_graphs(history):
 
     # 국기 색상 표현 (국가별 대표 2색: [배경, 텍스트색])
     FLAG_COLORS = {
-        "US": ("#3C3B6E", "#FFFFFF"),   # 남색
-        "GB": ("#C8102E", "#FFFFFF"),   # 빨강
-        "DE": ("#000000", "#FFD700"),   # 검정/금
-        "FR": ("#0055A4", "#FFFFFF"),   # 파랑
-        "CA": ("#FF0000", "#FFFFFF"),   # 빨강
-        "BR": ("#009C3B", "#FFD700"),   # 초록/노랑
-        "JP": ("#BC002D", "#FFFFFF"),   # 빨강
-        "KR": ("#003478", "#FFFFFF"),   # 남색
-        "CN": ("#DE2910", "#FFD700"),   # 빨강/노랑
-        "RU": ("#0039A6", "#FFFFFF"),   # 파랑
-        "AU": ("#00008B", "#FFFFFF"),   # 남색
-        "ES": ("#AA151B", "#F1BF00"),   # 빨강/노랑
-        "IT": ("#009246", "#FFFFFF"),   # 초록
-        "PL": ("#DC143C", "#FFFFFF"),   # 빨강
-        "TR": ("#E30A17", "#FFFFFF"),   # 빨강
-        "MX": ("#006847", "#FFFFFF"),   # 초록
+        # 기존
+        "US": ("#3C3B6E", "#FFFFFF"),
+        "GB": ("#C8102E", "#FFFFFF"),
+        "DE": ("#000000", "#FFD700"),
+        "FR": ("#0055A4", "#FFFFFF"),
+        "CA": ("#FF0000", "#FFFFFF"),
+        "BR": ("#009C3B", "#FFD700"),
+        "JP": ("#BC002D", "#FFFFFF"),
+        "KR": ("#003478", "#FFFFFF"),
+        "CN": ("#DE2910", "#FFD700"),
+        "RU": ("#0039A6", "#FFFFFF"),
+        "AU": ("#00008B", "#FFFFFF"),
+        "ES": ("#AA151B", "#F1BF00"),
+        "IT": ("#009246", "#FFFFFF"),
+        "PL": ("#DC143C", "#FFFFFF"),
+        "TR": ("#E30A17", "#FFFFFF"),
+        "MX": ("#006847", "#FFFFFF"),
+        # 신규
+        "NL": ("#AE1C28", "#FFFFFF"),
+        "SE": ("#006AA7", "#FECC02"),
+        "NO": ("#EF2B2D", "#FFFFFF"),
+        "DK": ("#C60C30", "#FFFFFF"),
+        "FI": ("#003580", "#FFFFFF"),
+        "PT": ("#006600", "#FFFFFF"),
+        "AT": ("#ED2939", "#FFFFFF"),
+        "CH": ("#FF0000", "#FFFFFF"),
+        "CZ": ("#D7141A", "#FFFFFF"),
+        "HU": ("#CE2939", "#FFFFFF"),
+        "RO": ("#002B7F", "#FFD700"),
+        "AR": ("#74ACDF", "#FFFFFF"),
+        "CL": ("#D52B1E", "#FFFFFF"),
+        "CO": ("#003087", "#FFD116"),
+        "SG": ("#EF3340", "#FFFFFF"),
+        "ZA": ("#007A4D", "#FFFFFF"),
+        "TH": ("#A51931", "#FFD700"),
+        "ID": ("#CE1126", "#FFFFFF"),
+        "MY": ("#CC0001", "#FFD100"),
+        "PH": ("#0038A8", "#FFFFFF"),
+        "VN": ("#DA251D", "#FFD700"),
+        "IN": ("#FF9933", "#FFFFFF"),
+        "UA": ("#005BBB", "#FFD700"),
+        "PE": ("#D91023", "#FFFFFF"),
     }
 
     # ── 2. 막대 그래프 (최신 스냅샷) ─────────────────────────
@@ -597,7 +715,7 @@ def send_discord_image(buf, filename, caption):
 # ======================
 def main():
     print("=" * 60)
-    print("🎮 Steam Top Seller 순위 추적기 (16개국)")
+    print("🎮 Steam Top Seller 순위 추적기 (40개국)")
     print("=" * 60)
 
     now_kst = datetime.now(KST)
@@ -665,16 +783,41 @@ def main():
 
     # Discord 텍스트 embed
     cc_by_name = {v: k for k, v in TARGET_COUNTRIES.items()}
+
+    # 순위권 진입 국가만 별도 추출 (통계용)
+    ranked_results = {name: data for name, data in results.items() if data.get("rank")}
+    total_tracked  = len(results)
+    found_count    = len(ranked_results)
+
+    # 순위권 단순평균 / 1위 / 최하위 국가
+    rank_vals = [(name, data["rank"]) for name, data in ranked_results.items()]
+    simple_avg = round(sum(r for _, r in rank_vals) / len(rank_vals), 1) if rank_vals else None
+    best_entry  = min(rank_vals, key=lambda x: x[1]) if rank_vals else None
+    worst_entry = max(rank_vals, key=lambda x: x[1]) if rank_vals else None
+
+    # 요약 헤더 라인
+    summary_lines = []
+    if simple_avg:
+        summary_lines.append(f"📊 순위권 평균: **#{simple_avg}** ({found_count}/{total_tracked}개국 진입)")
+    if best_entry:
+        summary_lines.append(f"🥇 최고순위: **{best_entry[0]} #{best_entry[1]}**")
+    if worst_entry:
+        summary_lines.append(f"🔻 최하위: **{worst_entry[0]} #{worst_entry[1]}**")
+
+    # 국가 목록 (시장 가중치 내림차순, 순위권/미진입 구분)
     lines = []
-    for name, data in results.items():
+    sorted_names = sorted(results.keys(),
+                          key=lambda n: STEAM_WEIGHTS.get(cc_by_name.get(n, ""), 0),
+                          reverse=True)
+    for name in sorted_names:
+        data = results[name]
         rank = data.get("rank")
-        rank_str = f"**#{rank}**" if rank else "순위권 밖"
-        # 변동량 계산
+        rank_str = f"**#{rank}**" if rank else "~~미진입~~"
         diff_str = ""
         if rank and prev_results and prev_results.get(name):
             prev_rank = prev_results[name].get("rank")
             if prev_rank:
-                diff = prev_rank - rank  # 순위 올라가면(숫자 작아지면) 양수
+                diff = prev_rank - rank
                 if diff > 0:
                     diff_str = f" **(▲{diff})**"
                 elif diff < 0:
@@ -687,12 +830,50 @@ def main():
         "title": "🎮 Steam Top Seller — Crimson Desert",
         "description": (
             f"📅 {now_kst.strftime('%Y-%m-%d %H:%M KST')}\n"
-            f"⚖️ 평균 순위: **#{wavg_str}**{wavg_diff}\n\n"
+            f"⚖️ 가중 평균: **#{wavg_str}**{wavg_diff}\n"
+            + "\n".join(summary_lines)
+            + "\n\n"
             + "\n".join(lines)
         ),
         "color": 0x1B2838,
     }
-    send_discord_text(embed)
+
+    # 4096자 초과 시 국가 목록을 분할 전송
+    LIMIT = 3800
+    header = (
+        f"📅 {now_kst.strftime('%Y-%m-%d %H:%M KST')}\n"
+        f"⚖️ 가중 평균: **#{wavg_str}**{wavg_diff}\n"
+        + "\n".join(summary_lines)
+        + "\n\n"
+    )
+    body = "\n".join(lines)
+    if len(header) + len(body) > LIMIT:
+        # 헤더 embed 먼저
+        send_discord_text({
+            "title": "🎮 Steam Top Seller — Crimson Desert",
+            "description": header.rstrip(),
+            "color": 0x1B2838,
+        })
+        time.sleep(1)
+        # 국가 목록 청크 분할
+        chunks, cur, cur_len = [], [], 0
+        for line in lines:
+            if cur_len + len(line) + 1 > LIMIT and cur:
+                chunks.append(cur); cur = [line]; cur_len = len(line)
+            else:
+                cur.append(line); cur_len += len(line) + 1
+        if cur:
+            chunks.append(cur)
+        for i, chunk in enumerate(chunks):
+            part = f" ({i+1}/{len(chunks)})" if len(chunks) > 1 else ""
+            send_discord_text({
+                "title": f"🌍 국가별 현황{part}",
+                "description": "\n".join(chunk),
+                "color": 0x1B2838,
+            })
+            time.sleep(1)
+    else:
+        send_discord_text(embed)
 
     # Discord 그래프
     print("\n📊 그래프 생성 중...")
