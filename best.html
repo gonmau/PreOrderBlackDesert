@@ -63,6 +63,139 @@
   .trend-up   { color: #2ecc71; font-weight: 700; letter-spacing: 2px; }
   .trend-down { color: #ff4757; font-weight: 700; letter-spacing: 2px; }
   .trend-arrow { margin-right: 4px; }
+
+  /* Schedule Tracker */
+  .schedule-section {
+    background: #0a0a0a;
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+  }
+  .schedule-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .schedule-title {
+    font-size: 16px;
+    color: var(--gold);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .schedule-legend {
+    display: flex;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--text-sub);
+  }
+  .schedule-legend span { display: flex; align-items: center; gap: 5px; }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+  }
+  .legend-ok   { background: #2ecc71; }
+  .legend-miss { background: #444; border: 1px solid #666; }
+  .legend-fut  { background: #1a1a1a; border: 1px dashed #555; }
+
+  .schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    gap: 8px;
+  }
+  .sched-day {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 7px;
+    padding: 10px 8px 8px;
+    text-align: center;
+    min-width: 0;
+  }
+  .sched-day.today {
+    border-color: var(--gold);
+    box-shadow: 0 0 8px rgba(241,196,15,0.15);
+  }
+  .sched-date {
+    font-size: 11px;
+    color: var(--text-sub);
+    margin-bottom: 6px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .sched-day.today .sched-date { color: var(--gold); }
+  .sched-slots {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+  }
+  .sched-slot {
+    flex: 1;
+    border-radius: 4px;
+    padding: 5px 2px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 0;
+  }
+  .sched-slot .slot-label {
+    font-size: 9px;
+    opacity: 0.7;
+    letter-spacing: 0.3px;
+    color: #888;
+  }
+  .sched-slot .slot-time {
+    font-size: 10px;
+    font-weight: 800;
+  }
+  .slot-ok   { background: rgba(46,204,113,0.15); border: 1px solid rgba(46,204,113,0.4); color: #2ecc71; }
+  .slot-miss { background: rgba(255,71,87,0.08);  border: 1px solid rgba(255,71,87,0.25);  color: #666; }
+  .slot-fut  { background: #1a1a1a; border: 1px dashed #333; color: #444; }
+  .slot-icon { font-size: 13px; line-height: 1; }
+
+  .schedule-summary {
+    margin-top: 12px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--text-sub);
+    border-top: 1px solid #1e1e1e;
+    padding-top: 10px;
+  }
+  .sched-stat { display: flex; flex-direction: column; gap: 2px; }
+  .sched-stat .sv { font-size: 18px; font-family: 'Cinzel', serif; color: #fff; }
+  .sched-stat .sl { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+  .next-run-badge {
+    margin-left: auto;
+    background: rgba(241,196,15,0.1);
+    border: 1px solid rgba(241,196,15,0.3);
+    border-radius: 5px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--gold);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .pulse-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--gold);
+    display: inline-block;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
 </style>
 </head>
 <body>
@@ -91,6 +224,20 @@
   <div class="top10-section">
     <div class="top10-title">Market Leaders (Top 10 Weight) - Click for History</div>
     <div class="top10-grid" id="top10-grid"></div>
+  </div>
+
+  <!-- Schedule Tracker -->
+  <div class="schedule-section">
+    <div class="schedule-header">
+      <div class="schedule-title">⏱ Tracker Schedule</div>
+      <div class="schedule-legend">
+        <span><i class="legend-dot legend-ok"></i> 실행됨</span>
+        <span><i class="legend-dot legend-miss"></i> 누락</span>
+        <span><i class="legend-dot legend-fut"></i> 예정</span>
+      </div>
+    </div>
+    <div class="schedule-grid" id="schedule-grid"></div>
+    <div class="schedule-summary" id="schedule-summary"></div>
   </div>
 
   <div class="chart-section"><canvas id="mainChart"></canvas></div>
@@ -227,13 +374,35 @@ const FLAGS = {
 };
 
 let historyData = [];
+let scheduleSlots = [  // fallback (JSON에 schedule 없을 시 사용)
+  { hour: 6,  label: 'AM' },
+  { hour: 18, label: 'PM' },
+];
 // 기본 정렬을 가중치(weight) 기준으로, 내림차순(false) 설정
 let sortKey = 'weight'; let sortAsc = false; 
 let mainChart = null; let countryChart = null;
 
 async function init() {
   const res = await fetch('./bestseller_history.json?t=' + Date.now());
-  historyData = await res.json();
+  const payload = await res.json();
+
+  // 신규 포맷: {"schedule": {...}, "history": [...]}
+  // 구버전 포맷: 리스트 그대로
+  if (Array.isArray(payload)) {
+    historyData = payload;
+  } else {
+    historyData = payload.history || [];
+    // schedule.slots_kst 가 있으면 하드코딩 대신 사용
+    if (payload.schedule && Array.isArray(payload.schedule.slots_kst)) {
+      scheduleSlots = payload.schedule.slots_kst.map(h => ({
+        hour: h,
+        label: h < 12 ? 'AM' : 'PM'
+      }));
+      window._scheduleCron = payload.schedule.cron || '';
+      console.log('[Schedule] yml에서 로드:', payload.schedule.cron, '→ KST slots:', payload.schedule.slots_kst);
+    }
+  }
+
   render();
 }
 
@@ -311,6 +480,7 @@ function render() {
   });
 
   renderMainChart();
+  renderSchedule();
 
   // 모든 이모지를 Twemoji 이미지로 변환 (PC/모바일 크로스 플랫폼)
   twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
@@ -388,6 +558,129 @@ function showCountryChart(countryName) {
 
 function closeModal() { document.getElementById('chartModal').style.display = 'none'; }
 function setSort(key) { if (sortKey === key) sortAsc = !sortAsc; else { sortKey = key; sortAsc = (key === 'weight' ? false : true); } render(); }
+
+/* ── Schedule Tracker ─────────────────────────────────────────────── */
+// cron은 yml 기준. Python이 파싱해서 JSON에 저장 → scheduleSlots로 로드됨.
+// JSON에 schedule 키가 없을 경우 위 fallback 값(06:00/18:00)이 사용됨.
+const TOLERANCE_MIN = 90; // ±90분 허용
+
+function renderSchedule() {
+  // KST 기준 현재 시각
+  const nowUtc = new Date();
+  const kstOffset = 9 * 60 * 60 * 1000;
+  const nowKst = new Date(nowUtc.getTime() + kstOffset);
+
+  // JSON에서 모든 타임스탬프 파싱 (KST 변환)
+  const stamps = historyData.map(h => {
+    const d = new Date(h.timestamp);
+    return new Date(d.getTime()); // ISO 문자열에 +09:00 포함됨
+  });
+
+  // 최근 8일 날짜 생성 (KST 기준 오늘 포함)
+  const todayKst = new Date(nowKst);
+  todayKst.setUTCHours(0, 0, 0, 0);
+
+  const days = [];
+  for (let i = 7; i >= 0; i--) {
+    const d = new Date(todayKst.getTime() - i * 86400000);
+    days.push(d);
+  }
+
+  // 날짜+슬롯별 실행 여부 판단
+  function checkSlot(dayUtcMidnight, slotHourKst) {
+    // 슬롯의 KST 시각 → UTC로
+    const slotKstMs = dayUtcMidnight.getTime() + (slotHourKst - 9) * 3600000; // UTC equiv
+    const now = nowUtc.getTime();
+    if (slotKstMs > now + TOLERANCE_MIN * 60000) return 'future';
+    // tolerance 범위 내 타임스탬프 존재 여부
+    const found = stamps.find(s => Math.abs(s.getTime() - slotKstMs) <= TOLERANCE_MIN * 60000);
+    if (found) {
+      // 실제 실행 KST 시간 반환
+      const kst = new Date(found.getTime() + kstOffset);
+      return `${String(kst.getUTCHours()).padStart(2,'0')}:${String(kst.getUTCMinutes()).padStart(2,'0')}`;
+    }
+    return 'miss';
+  }
+
+  const grid = document.getElementById('schedule-grid');
+  grid.innerHTML = '';
+
+  // 타이틀에 cron 표현식 반영
+  const titleEl = document.querySelector('.schedule-title');
+  if (titleEl) {
+    const cronStr = (typeof payload !== 'undefined' && window._scheduleCron) ? ` <span style="color:#555;font-size:11px;font-weight:400">${window._scheduleCron}</span>` : '';
+    titleEl.innerHTML = `⏱ Tracker Schedule${cronStr}`;
+  }
+  let totalSlots = 0, okSlots = 0, missSlots = 0;
+
+  const dayNames = ['일','월','화','수','목','금','토'];
+  days.forEach(day => {
+    const isToday = (day.getTime() === todayKst.getTime());
+    const kstDay = new Date(day.getTime() + kstOffset);
+    const mm = kstDay.getUTCMonth() + 1;
+    const dd = kstDay.getUTCDate();
+    const dow = dayNames[kstDay.getUTCDay()];
+
+    const div = document.createElement('div');
+    div.className = 'sched-day' + (isToday ? ' today' : '');
+
+    let slotsHtml = '';
+    scheduleSlots.forEach(({ hour, label }) => {
+      const result = checkSlot(day, hour);
+      if (result === 'future') {
+        slotsHtml += `<div class="sched-slot slot-fut">
+          <span class="slot-label">${label}</span>
+          <span class="slot-icon">·</span>
+          <span class="slot-time" style="color:#333">${String(hour).padStart(2,'0')}:00</span>
+        </div>`;
+      } else if (result === 'miss') {
+        missSlots++; totalSlots++;
+        slotsHtml += `<div class="sched-slot slot-miss" title="${mm}/${dd} ${label} — 누락">
+          <span class="slot-label">${label}</span>
+          <span class="slot-icon">✗</span>
+          <span class="slot-time">—</span>
+        </div>`;
+      } else {
+        okSlots++; totalSlots++;
+        slotsHtml += `<div class="sched-slot slot-ok" title="${mm}/${dd} ${label} — ${result} 실행">
+          <span class="slot-label">${label}</span>
+          <span class="slot-icon">✓</span>
+          <span class="slot-time">${result}</span>
+        </div>`;
+      }
+    });
+
+    div.innerHTML = `<div class="sched-date">${mm}/${dd} <span style="color:#555">${dow}</span></div>
+      <div class="sched-slots">${slotsHtml}</div>`;
+    grid.appendChild(div);
+  });
+
+  // 다음 실행 시각 계산
+  function getNextRun() {
+    const nowKstH = nowKst.getUTCHours();
+    const nowKstM = nowKst.getUTCMinutes();
+    const nowMin = nowKstH * 60 + nowKstM;
+    const slotMins = scheduleSlots.map(s => s.hour * 60);
+    let nextMin = slotMins.find(m => m > nowMin);
+    let nextLabel;
+    if (nextMin !== undefined) {
+      nextLabel = `오늘 ${String(Math.floor(nextMin/60)).padStart(2,'0')}:00 KST`;
+    } else {
+      nextLabel = `내일 ${String(scheduleSlots[0].hour).padStart(2,'0')}:00 KST`;
+    }
+    return nextLabel;
+  }
+
+  const rate = totalSlots > 0 ? Math.round(okSlots / totalSlots * 100) : 100;
+  const summary = document.getElementById('schedule-summary');
+  summary.innerHTML = `
+    <div class="sched-stat"><span class="sv">${okSlots}</span><span class="sl">실행 완료</span></div>
+    <div class="sched-stat"><span class="sv" style="color:${missSlots>0?'#ff4757':'#2ecc71'}">${missSlots}</span><span class="sl">누락</span></div>
+    <div class="sched-stat"><span class="sv">${rate}%</span><span class="sl">성공률 (8일)</span></div>
+    <div class="next-run-badge"><span class="pulse-dot"></span>다음 실행: ${getNextRun()}</div>
+  `;
+}
+/* ───────────────────────────────────────────────────────────────────── */
 
 init();
 </script>
