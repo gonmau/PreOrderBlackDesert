@@ -120,9 +120,60 @@ LOCALE_MAP = {
 SKIP_COUNTRIES = {"중국", "베트남", "슬로베니아", "필리핀"}
 
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
-HISTORY_FILE = "bestseller_history.json"
-BACKUP_FILE  = HISTORY_FILE + ".backup"
-BASELINE_FILE = "discord_baseline.json"  # 마지막 알림 발송 시점 기준값
+HISTORY_FILE  = "bestseller_history.json"
+BACKUP_FILE   = HISTORY_FILE + ".backup"
+BASELINE_FILE = "discord_baseline.json"   # 마지막 알림 발송 시점 기준값
+WORKFLOW_FILE = ".github/workflows/bestseller_tracker.yml"  # 스케줄 소스
+
+
+# =============================================================================
+# 스케줄 파싱 (yml → JSON 메타로 저장 → 대시보드가 읽음)
+# =============================================================================
+
+def parse_cron_to_kst_slots(cron_expr: str) -> list[int]:
+    """
+    'MIN HOUR ...' 형식의 cron 표현식에서 UTC hour 목록을 추출하고
+    KST(+9)로 변환해 정렬된 리스트로 반환합니다.
+    예) '0 9,21 * * *' → UTC [9,21] → KST [18, 6] → 정렬 [6, 18]
+    """
+    parts = cron_expr.strip().split()
+    if len(parts) < 2:
+        return []
+    hour_field = parts[1]
+    utc_hours = []
+    for token in hour_field.split(","):
+        token = token.strip()
+        if token.isdigit():
+            utc_hours.append(int(token))
+    kst_hours = sorted(set((h + 9) % 24 for h in utc_hours))
+    return kst_hours
+
+
+def read_schedule_meta() -> dict:
+    """
+    workflow yml에서 cron 문자열을 읽어 스케줄 메타 dict를 반환합니다.
+    yml을 읽을 수 없으면 기존 히스토리의 마지막 메타를 유지하기 위해 None 반환.
+    반환 형식: {"cron": "0 9,21 * * *", "slots_kst": [6, 18]}
+    """
+    if not os.path.exists(WORKFLOW_FILE):
+        print(f"ℹ️  {WORKFLOW_FILE} 없음 → 스케줄 메타 업데이트 스킵")
+        return None
+    try:
+        with open(WORKFLOW_FILE, "r", encoding="utf-8") as f:
+            content = f.read()
+        # cron: '...' 또는 cron: "..." 패턴
+        import re
+        m = re.search(r"cron:\s*['\"]([^'\"]+)['\"]", content)
+        if not m:
+            print("ℹ️  cron 표현식 파싱 실패 → 스케줄 메타 업데이트 스킵")
+            return None
+        cron_expr = m.group(1)
+        slots = parse_cron_to_kst_slots(cron_expr)
+        print(f"✅  스케줄 파싱: {cron_expr!r} → KST {slots}")
+        return {"cron": cron_expr, "slots_kst": slots}
+    except Exception as e:
+        print(f"⚠️  스케줄 파싱 오류: {e}")
+        return None
 
 # 게임 미발견 시 최대 탐색 페이지
 MAX_PAGES = 30
@@ -234,7 +285,13 @@ def load_history_safe():
         try:
             with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            return data if isinstance(data, list) else None
+            # 신규 포맷: {"schedule": ..., "history": [...]}
+            if isinstance(data, dict) and "history" in data:
+                return data["history"]
+            # 구버전 포맷: 리스트 그대로
+            if isinstance(data, list):
+                return data
+            return None
         except Exception as e:
             print(f"⚠️  {path} 로드 실패: {e}")
             return None
@@ -253,11 +310,41 @@ def load_history_safe():
     print("ℹ️  히스토리 없음 → 새로 시작")
     return [], False
 
-def save_history(history):
+def save_history(history, schedule_meta=None):
+    """
+    history 리스트를 JSON으로 저장합니다.
+    schedule_meta가 주어지면 최상위 키 "schedule"에 함께 저장합니다.
+    대시보드는 이 값을 읽어 하드코딩 없이 스케줄을 표시합니다.
+
+    저장 형식:
+      {
+        "schedule": {"cron": "0 9,21 * * *", "slots_kst": [6, 18]},
+        "history": [ ... ]
+      }
+    또는 schedule_meta가 None이면 기존 schedule 값을 유지합니다.
+    """
     if os.path.exists(HISTORY_FILE):
         shutil.copy2(HISTORY_FILE, BACKUP_FILE)
+
+    # 기존 파일에서 schedule 값 읽기 (메타가 없을 때 유지용)
+    existing_schedule = None
+    if os.path.exists(HISTORY_FILE):
+        try:
+            with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+                existing = json.load(f)
+            if isinstance(existing, dict):
+                existing_schedule = existing.get("schedule")
+        except Exception:
+            pass
+
+    final_schedule = schedule_meta if schedule_meta is not None else existing_schedule
+
+    payload = {"history": history}
+    if final_schedule:
+        payload["schedule"] = final_schedule
+
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(history, f, indent=2, ensure_ascii=False)
+        json.dump(payload, f, indent=2, ensure_ascii=False)
 
 def load_baseline():
     """마지막 Discord 알림 발송 시점의 combined_avg 로드"""
@@ -446,6 +533,7 @@ def main():
         print(f"\n전체 가중 평균: {combined_avg:.1f}위")
 
     history, _ = load_history_safe()
+    schedule_meta = read_schedule_meta()  # yml에서 cron 파싱
     new_entry = {
         "timestamp": datetime.now(KST).isoformat(),
         "averages": {"combined": combined_avg},
@@ -457,7 +545,7 @@ def main():
         print("\n⚠️  전국 미발견 (combined_avg=None) → 히스토리 저장 스킵")
     else:
         history.append(new_entry)
-        save_history(history)
+        save_history(history, schedule_meta)
         print(f"\n✅  {HISTORY_FILE} 저장 완료 (총 {len(history)}개 레코드)")
 
     send_discord(results, combined_avg, skipped, history)
