@@ -169,21 +169,21 @@ COUNTRY_COLORS = {
 # Steam 시장 가중치 (index.html의 STS_W 와 동기화)
 STEAM_WEIGHTS = {
     # 기존
-    "us": 10.0,
-    "gb":  1.9,
-    "de":  1.9,
-    "fr":  1.7,
-    "ca":  1.8,
-    "br":  1.4,
-    "jp":  1.2,
-    "kr":  0.9,
-    "cn": 12.3,
-    "ru":  3.2,
-    "au":  0.9,
-    "es":  0.7,
-    "it":  0.6,
-    "pl":  0.7,
-    "tr":  0.7,
+    "us":  30.0,
+    "gb":  5.0,
+    "de":  5.5,
+    "fr":  4.0,
+    "ca":  3.5,
+    "br":  4.5,
+    "jp":  3.5,
+    "kr":  4.2,
+    "cn":  28.0,
+    "ru":  6.0,
+    "au":  2.5,
+    "es":  2.0,
+    "it":  1.8,
+    "pl":  2.0,
+    "tr":  2.0,
     # 신규
     "nl":  0.8,
     "se":  0.7,
@@ -202,9 +202,18 @@ STEAM_WEIGHTS = {
 }
 
 def calc_weighted_avg(results):
-    """추적국 단순평균 순위 계산 (순위 없으면 해당 국가 제외)"""
-    ranks = [data.get("rank") for data in results.values() if data.get("rank") is not None]
-    return round(sum(ranks) / len(ranks), 1) if ranks else None
+    """추적국 가중평균 순위 계산 (STEAM_WEIGHTS 기준, 미진입 국가 제외 후 정규화)"""
+    cc_by_name = {v: k for k, v in TARGET_COUNTRIES.items()}
+    total_w, total_sum = 0.0, 0.0
+    for name, data in results.items():
+        rank = data.get("rank")
+        if rank is None:
+            continue
+        cc = cc_by_name.get(name, "")
+        w = STEAM_WEIGHTS.get(cc, 1.0)
+        total_sum += rank * w
+        total_w   += w
+    return round(total_sum / total_w, 1) if total_w > 0 else None
 
 
 RETRY_DELAYS = {
