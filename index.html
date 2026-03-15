@@ -1547,6 +1547,73 @@
     .sts-slot .slot-h { font-size: 7px; }
   }
   /* ────────────────────────────────────────────────── */
+
+  /* ── PS 스케줄 트래커 ─────────────────────────────── */
+  .ps-sched-wrap { padding: 12px 0 4px; }
+  .ps-sched-day-label {
+    font-size: 0.62rem; letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .ps-sched-day-label .ps-day-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 3px; padding: 1px 7px;
+    font-size: 0.6rem; color: var(--text); letter-spacing: 0.5px;
+  }
+  .ps-sched-day-label .ps-day-badge.today {
+    border-color: rgba(0,112,243,0.6); color: #4da3ff;
+    background: rgba(0,112,243,0.08);
+  }
+  .ps-sched-grid {
+    display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 10px;
+  }
+  .ps-slot {
+    width: 34px; height: 34px; border-radius: 3px;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; cursor: default; position: relative;
+    transition: transform 0.1s; border: 1px solid transparent;
+  }
+  .ps-slot:hover { transform: scale(1.2); z-index: 5; }
+  .ps-slot .ps-slot-h { font-size: 8px; opacity: 0.7; line-height: 1; margin-bottom: 2px; font-weight: 700; }
+  .ps-slot .ps-slot-i { font-size: 11px; line-height: 1; font-weight: 700; }
+  .ps-slot .ps-slot-t { font-size: 7px; opacity: 0.8; line-height: 1; margin-top: 1px; }
+  .ps-slot.ok   { background: rgba(46,204,113,0.15); border-color: rgba(46,204,113,0.4); color: #2ecc71; }
+  .ps-slot.miss { background: rgba(255,71,87,0.07);  border-color: rgba(255,71,87,0.2);  color: #555; }
+  .ps-slot.fut  { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.06); color: #2a2a2a; }
+  .ps-slot.now  { border-color: rgba(77,163,255,0.8) !important; box-shadow: 0 0 7px rgba(77,163,255,0.25); }
+  .ps-sched-legend {
+    display: flex; gap: 10px; font-size: 0.6rem;
+    color: var(--muted); margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .ps-sched-legend span { display: flex; align-items: center; gap: 4px; }
+  .ps-legend-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
+  .ps-sched-summary {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding-top: 8px; border-top: 1px solid var(--border);
+    font-size: 0.68rem; color: var(--muted);
+  }
+  .ps-sched-summary .pss { display: flex; flex-direction: column; gap: 1px; }
+  .ps-sched-summary .psv { font-size: 1rem; color: var(--text); font-weight: 700; }
+  .ps-sched-summary .psl { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .ps-next-badge {
+    margin-left: auto; display: flex; align-items: center; gap: 5px;
+    background: rgba(77,163,255,0.08); border: 1px solid rgba(77,163,255,0.25);
+    border-radius: 4px; padding: 3px 9px;
+    font-size: 0.68rem; color: #4da3ff; font-weight: 700; white-space: nowrap;
+  }
+  .ps-pulse {
+    width: 6px; height: 6px; border-radius: 50%; background: #4da3ff;
+    animation: psPulse 1.6s ease-in-out infinite;
+  }
+  @keyframes psPulse {
+    0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.35;transform:scale(0.65)}
+  }
+  @media (max-width: 480px) {
+    .ps-slot { width: 28px; height: 30px; }
+    .ps-slot .ps-slot-h { font-size: 7px; }
+    .ps-slot .ps-slot-t { display: none; }
+  }
+  /* ── PS 스케줄 트래커 끝 ─────────────────────────── */
   </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -1635,6 +1702,25 @@
       <div class="chart-wrapper">
         <canvas id="rankChart"></canvas>
       </div>
+      </div>
+
+      <!-- ⏱ PS 트래커 스케줄 (collapsible) -->
+      <div class="section-title collapsible-header" style="margin-bottom:8px" onclick="toggleSection('ps-sched-body',this)">
+        <span style="white-space:nowrap">⏱ 트래커 스케줄</span>
+        <span id="ps-sched-cron" style="font-size:0.6rem;color:var(--muted);font-weight:400;margin-left:8px;letter-spacing:0"></span>
+        <button class="collapse-btn">▼ 펼치기</button>
+      </div>
+      <div class="collapsible-body collapsed" id="ps-sched-body">
+        <div class="ps-sched-wrap">
+          <div class="ps-sched-legend">
+            <span><i class="ps-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>실행됨</span>
+            <span><i class="ps-legend-dot" style="background:rgba(255,71,87,0.15);border:1px solid rgba(255,71,87,0.3)"></i>누락</span>
+            <span><i class="ps-legend-dot" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1)"></i>예정</span>
+            <span><i class="ps-legend-dot" style="background:transparent;border:1px solid rgba(77,163,255,0.8);box-shadow:0 0 4px rgba(77,163,255,0.2)"></i>현재 슬롯</span>
+          </div>
+          <div id="ps-sched-days"></div>
+          <div class="ps-sched-summary" id="ps-sched-summary"></div>
+        </div>
       </div>
     </div>
 
@@ -2193,6 +2279,7 @@ function getRegion(country) {
 
 // ─── 전역 상태 ───
 let allHistory = [];
+let allSched = null;   // PS 스케줄 메타 (rank_history.json의 schedule 키)
 let currentTab = 'all';
 let chartInstance = null;
 
@@ -2201,7 +2288,24 @@ async function loadData() {
   try {
     const res = await fetch('rank_history.json?t=' + Date.now());
     if (!res.ok) throw new Error('fetch failed');
-    allHistory = await res.json();
+    const payload = await res.json();
+    // 신규 포맷: {"schedule":{...},"history":[...]}
+    if (Array.isArray(payload)) {
+      allHistory = payload;
+    } else {
+      allHistory = payload.history || [];
+      if (payload.schedule) {
+        allSched = payload.schedule;
+        // 헤더에 cron 표현식 표시
+        const cronEl = document.getElementById('ps-sched-cron');
+        if (cronEl && allSched.cron) {
+          const cronStr = Array.isArray(allSched.cron)
+            ? allSched.cron.join('  |  ')
+            : allSched.cron;
+          cronEl.textContent = cronStr;
+        }
+      }
+    }
   } catch (e) {
     // 데이터 로드 실패 시 에러 표시
     document.getElementById('loading-screen').style.opacity = 0;
@@ -2212,6 +2316,7 @@ async function loadData() {
   }
 
   render();
+  renderPSSchedule();
 
   // 로딩 숨기기
   const ls = document.getElementById('loading-screen');
@@ -2221,6 +2326,136 @@ async function loadData() {
   app.style.transition = 'opacity 0.5s';
   app.style.opacity = 1;
 }
+
+/* ── PS 트래커 스케줄 ─────────────────────────────────────────────── */
+function renderPSSchedule() {
+  const container = document.getElementById('ps-sched-days');
+  const summaryEl = document.getElementById('ps-sched-summary');
+  if (!container || !summaryEl) return;
+
+  const KST_OFFSET = 9 * 3600 * 1000;
+  const nowUtc = new Date();
+  const nowKst = new Date(nowUtc.getTime() + KST_OFFSET);
+
+  // 슬롯 목록 결정: allSched.slots_kst 우선, 없으면 yml 기반 하드코딩 폴백
+  // [[h,m], ...] 형태
+  let rawSlots = null;
+  if (allSched && allSched.type === 'fixed' && Array.isArray(allSched.slots_kst)) {
+    rawSlots = allSched.slots_kst;
+  } else {
+    // cron: '10 23,1,2,3,4,5,6,7,8,11' + '40 1,2,3,4,5,6,7,8' → KST
+    rawSlots = [
+      [8,10],[10,10],[10,40],[11,10],[11,40],
+      [12,10],[12,40],[13,10],[13,40],[14,10],
+      [14,40],[15,10],[15,40],[16,10],[16,40],
+      [17,10],[17,40],[20,10]
+    ];
+  }
+  // 정렬 보장 (h*60+m 기준)
+  const slots = rawSlots.map(s => Array.isArray(s) ? s : [s[0], s[1]])
+    .sort((a, b) => a[0] * 60 + a[1] - (b[0] * 60 + b[1]));
+
+  // 허용 오차 15분
+  const TOLERANCE_MS = 15 * 60 * 1000;
+
+  // 히스토리 타임스탬프 ms 배열
+  const stamps = allHistory.map(h => new Date(h.timestamp).getTime());
+
+  // 오늘·어제 KST 자정 (UTC ms)
+  const todayKstMidnight = Date.UTC(
+    nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()
+  ) - KST_OFFSET;
+
+  const days = [
+    { label: '어제', base: todayKstMidnight - 86400000, isToday: false },
+    { label: '오늘', base: todayKstMidnight,             isToday: true  },
+  ];
+
+  const dayNames = ['일','월','화','수','목','금','토'];
+  let totalSlots = 0, okSlots = 0, missSlots = 0;
+  container.innerHTML = '';
+
+  days.forEach(({ label, base, isToday }) => {
+    const kstDay = new Date(base + KST_OFFSET);
+    const mm = kstDay.getUTCMonth() + 1;
+    const dd = kstDay.getUTCDate();
+    const dow = dayNames[kstDay.getUTCDay()];
+
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'ps-sched-day-label';
+    labelDiv.innerHTML = `<span class="ps-day-badge${isToday ? ' today' : ''}">${label}</span>${mm}/${dd} ${dow}`;
+    container.appendChild(labelDiv);
+
+    const grid = document.createElement('div');
+    grid.className = 'ps-sched-grid';
+
+    slots.forEach(([sh, sm]) => {
+      // 슬롯 UTC ms = KST 자정 UTC + (KST 시간을 UTC로) = base + (sh-9)*3600*1000 + sm*60*1000
+      const slotUtcMs = base + (sh * 3600 + sm * 60) * 1000;
+      const nowMs = nowUtc.getTime();
+      const isFuture = slotUtcMs > nowMs + TOLERANCE_MS;
+      const isNow    = Math.abs(slotUtcMs - nowMs) <= TOLERANCE_MS;
+
+      let status = 'miss', actualTime = '';
+      if (isFuture) {
+        status = 'fut';
+      } else {
+        const found = stamps.find(s => Math.abs(s - slotUtcMs) <= TOLERANCE_MS);
+        if (found !== undefined) {
+          status = 'ok';
+          const ft = new Date(found + KST_OFFSET);
+          actualTime = `${String(ft.getUTCHours()).padStart(2,'0')}:${String(ft.getUTCMinutes()).padStart(2,'0')}`;
+          okSlots++; totalSlots++;
+        } else {
+          missSlots++; totalSlots++;
+        }
+      }
+
+      const hhmm = `${String(sh).padStart(2,'0')}:${String(sm).padStart(2,'0')}`;
+      const tooltip = status === 'ok'   ? `${mm}/${dd} ${hhmm} → 실행 ${actualTime}`
+                    : status === 'fut'  ? `${mm}/${dd} ${hhmm} (예정)`
+                    :                    `${mm}/${dd} ${hhmm} — 누락`;
+
+      const cell = document.createElement('div');
+      cell.className = `ps-slot ${status}${isNow ? ' now' : ''}`;
+      cell.title = tooltip;
+      cell.innerHTML = `
+        <span class="ps-slot-h">${hhmm}</span>
+        <span class="ps-slot-i">${status === 'ok' ? '✓' : status === 'fut' ? '·' : '✗'}</span>
+        ${status === 'ok' ? `<span class="ps-slot-t">${actualTime}</span>` : ''}
+      `;
+      grid.appendChild(cell);
+    });
+
+    container.appendChild(grid);
+  });
+
+  // 다음 실행 슬롯 계산
+  function getNextRunLabel() {
+    const nowKstH = nowKst.getUTCHours();
+    const nowKstM = nowKst.getUTCMinutes();
+    const nowKstMin = nowKstH * 60 + nowKstM;
+    // 오늘 남은 슬롯 먼저
+    const next = slots.find(([h, m]) => h * 60 + m > nowKstMin);
+    if (next) {
+      const [nh, nm] = next;
+      const diff = nh * 60 + nm - nowKstMin;
+      return `${String(nh).padStart(2,'0')}:${String(nm).padStart(2,'0')} KST (${diff}분 후)`;
+    }
+    // 내일 첫 슬롯
+    const [fh, fm] = slots[0];
+    return `내일 ${String(fh).padStart(2,'0')}:${String(fm).padStart(2,'0')} KST`;
+  }
+
+  const rate = totalSlots > 0 ? Math.round(okSlots / totalSlots * 100) : 100;
+  summaryEl.innerHTML = `
+    <div class="pss"><span class="psv">${okSlots}</span><span class="psl">실행 완료</span></div>
+    <div class="pss"><span class="psv" style="color:${missSlots > 0 ? 'var(--down)' : 'var(--up)'}">${missSlots}</span><span class="psl">누락</span></div>
+    <div class="pss"><span class="psv">${rate}%</span><span class="psl">성공률 (2일)</span></div>
+    <div class="ps-next-badge"><span class="ps-pulse"></span>다음: ${getNextRunLabel()}</div>
+  `;
+}
+/* ─────────────────────────────────────────────────────────────────── */
 
 function render() {
   if (!allHistory.length) return;

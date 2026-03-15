@@ -162,7 +162,70 @@ for country in ALL_COUNTRIES:
         SEARCH_TERMS[country] = ["crimson desert"]
 
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
-BASELINE_FILE = "crimson_discord_baseline.json"  # 마지막 알림 발송 시점 기준값
+BASELINE_FILE   = "crimson_discord_baseline.json"  # 마지막 알림 발송 시점 기준값
+HISTORY_FILE    = "rank_history.json"
+WORKFLOW_FILE   = ".github/workflows/combined_tracker.yml"  # 스케줄 소스
+
+
+# =============================================================================
+# 스케줄 파싱 (yml → JSON 메타 → 대시보드)
+# =============================================================================
+
+def parse_cron_to_kst_slots(cron_expr: str) -> list:
+    """
+    'MIN HOUR * * *' cron 표현식 → KST 고정 슬롯 목록 반환.
+    반환: {"type": "fixed", "slots_kst": [(h, m), ...]}
+    """
+    parts = cron_expr.strip().split()
+    if len(parts) < 2:
+        return {"type": "unknown"}
+    min_field, hour_field = parts[0], parts[1]
+    if hour_field == '*':
+        # 인터벌형 (매 N분)
+        mins = [int(m) for m in min_field.replace('*/', '').split(',') if m.strip().replace('*/','').isdigit()]
+        interval = mins[1] - mins[0] if len(mins) >= 2 else int(min_field.split('/')[1]) if '/' in min_field else 60
+        return {"type": "interval", "interval_min": interval}
+    slots = []
+    for h_tok in hour_field.split(','):
+        if not h_tok.strip().isdigit():
+            continue
+        kst_h = (int(h_tok) + 9) % 24
+        for m_tok in min_field.split(','):
+            if m_tok.strip().isdigit():
+                slots.append([kst_h, int(m_tok)])
+    return {"type": "fixed", "slots_kst": sorted(set(map(tuple, slots)))}
+
+
+def read_schedule_meta_from_yml(yml_path: str) -> dict:
+    """
+    yml에서 모든 cron 표현식을 읽어 슬롯을 합산, 스케줄 메타 반환.
+    복수 cron 스케줄도 통합 처리.
+    """
+    if not os.path.exists(yml_path):
+        print(f"ℹ️  {yml_path} 없음 → 스케줄 메타 업데이트 스킵")
+        return None
+    try:
+        with open(yml_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        cron_exprs = re.findall(r"cron:\s*['\"]([^'\"]+)['\"]", content)
+        if not cron_exprs:
+            print("ℹ️  cron 표현식 없음 → 스케줄 메타 업데이트 스킵")
+            return None
+        all_slots = set()
+        for expr in cron_exprs:
+            parsed = parse_cron_to_kst_slots(expr)
+            if parsed.get("type") == "fixed":
+                all_slots.update(parsed["slots_kst"])
+        meta = {
+            "cron": cron_exprs,          # 원본 표현식 목록
+            "type": "fixed",
+            "slots_kst": sorted(all_slots)  # [[h, m], ...]
+        }
+        print(f"✅  스케줄 파싱: {cron_exprs} → {len(all_slots)}개 슬롯 (KST)")
+        return meta
+    except Exception as e:
+        print(f"⚠️  스케줄 파싱 오류: {e}")
+        return None
 
 # =============================================================================
 # 출시 후 자동 URL 전환 설정
@@ -344,6 +407,8 @@ def get_emoji(diff_text):
 def load_history_safe(history_file):
     """
     rank_history.json을 안전하게 읽어 반환한다.
+    - 신규 포맷: {"schedule": ..., "history": [...]}
+    - 구버전 포맷: 리스트 그대로
     - 읽기/파싱 실패 시 .backup 파일로 자동 복구 시도
     - .backup도 실패하면 RuntimeError를 raise해 호출부에서 스크립트를 중단
     - 성공 시 (history 리스트, 복구 여부 bool) 튜플 반환
@@ -359,6 +424,9 @@ def load_history_safe(history_file):
         try:
             with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
+            # 신규 포맷: {"schedule": ..., "history": [...]}
+            if isinstance(data, dict) and "history" in data:
+                return data["history"]
             if not isinstance(data, list):
                 print(f"⚠️  {path} 형식 오류: list가 아닙니다.")
                 return None
@@ -450,8 +518,27 @@ def send_discord(results, combined_avg):
     if os.path.exists(history_file):
         shutil.copy2(history_file, backup_file)
 
+    # schedule 메타 읽기 (yml → JSON에 포함시켜 대시보드가 활용)
+    schedule_meta = read_schedule_meta_from_yml(WORKFLOW_FILE)
+
+    # 기존 파일에서 schedule 유지 (메타 파싱 실패 시)
+    existing_schedule = None
+    if os.path.exists(history_file):
+        try:
+            with open(history_file, "r", encoding="utf-8") as _f:
+                _existing = json.load(_f)
+            if isinstance(_existing, dict):
+                existing_schedule = _existing.get("schedule")
+        except Exception:
+            pass
+    final_schedule = schedule_meta if schedule_meta is not None else existing_schedule
+
+    payload = {"history": history}
+    if final_schedule:
+        payload["schedule"] = final_schedule
+
     with open(history_file, "w", encoding="utf-8") as f:
-        json.dump(history, f, indent=2, ensure_ascii=False)
+        json.dump(payload, f, indent=2, ensure_ascii=False)
 
 
     if was_recovered:
