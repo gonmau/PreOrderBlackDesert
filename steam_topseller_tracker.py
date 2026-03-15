@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Steam 국가별 Top Seller 순위 추적기 (40개국)
+Steam 국가별 Top Seller 순위 추적기 (44개국)
 - Steam 공식 API: search/results (Crimson Desert 발견 시 즉시 중단)
 - 디스코드: 텍스트 embed + 꺾은선 그래프 + 막대 그래프
 """
@@ -98,7 +98,7 @@ def read_schedule_meta() -> dict:
         return None
 
 TARGET_COUNTRIES = {
-    # 기존 16개국
+    # 기존 (미주/유럽/아시아 핵심)
     "us": "미국",
     "gb": "영국",
     "de": "독일",
@@ -115,7 +115,7 @@ TARGET_COUNTRIES = {
     "pl": "폴란드",
     "tr": "터키",
     "mx": "멕시코",
-    # 신규 16개국
+    # 유럽 추가
     "nl": "네덜란드",
     "se": "스웨덴",
     "no": "노르웨이",
@@ -132,6 +132,11 @@ TARGET_COUNTRIES = {
     "co": "콜롬비아",
     "sg": "싱가포르",
     "za": "남아공",
+    # 공식 차트 지원국 추가
+    "be": "벨기에",
+    "hk": "홍콩",
+    "nz": "뉴질랜드",
+    "tw": "대만",
     # 동남아 / 남아시아
     "th": "태국",
     "id": "인도네시아",
@@ -180,6 +185,10 @@ COUNTRY_COLORS = {
     "CO": "#FCD116",
     "SG": "#EF3340",
     "ZA": "#007A4D",
+    "BE": "#FAE042",
+    "HK": "#DE2910",
+    "NZ": "#00247D",
+    "TW": "#FE0000",
     "TH": "#A51931",
     "ID": "#CE1126",
     "MY": "#CC0001",
@@ -226,6 +235,10 @@ STEAM_WEIGHTS = {
     "co":  0.3,
     "sg":  0.5,
     "za":  0.3,
+    "be":  0.8,
+    "hk":  0.7,
+    "nz":  0.4,
+    "tw":  0.8,
     "th":  0.8,
     "id":  0.7,
     "my":  0.5,
@@ -507,7 +520,7 @@ def make_graphs(history):
                 edgecolor="none", handlelength=1.5, columnspacing=1.0)
 
     fig1.tight_layout()
-    fig1.subplots_adjust(top=0.78)  # 32개국 2줄 legend 공간 확보
+    fig1.subplots_adjust(top=0.78)  # 다국 legend 2줄 공간 확보
 
     buf1 = io.BytesIO()
     fig1.savefig(buf1, format="png", dpi=130, bbox_inches="tight", facecolor=BG)
@@ -550,6 +563,10 @@ def make_graphs(history):
         "CO": ("#003087", "#FFD116"),
         "SG": ("#EF3340", "#FFFFFF"),
         "ZA": ("#007A4D", "#FFFFFF"),
+        "BE": ("#FAE042", "#000000"),
+        "HK": ("#DE2910", "#FFD700"),
+        "NZ": ("#00247D", "#FFFFFF"),
+        "TW": ("#FE0000", "#FFFFFF"),
         "TH": ("#A51931", "#FFD700"),
         "ID": ("#CE1126", "#FFFFFF"),
         "MY": ("#CC0001", "#FFD100"),
@@ -715,7 +732,7 @@ def send_discord_image(buf, filename, caption):
 # ======================
 def main():
     print("=" * 60)
-    print("🎮 Steam Top Seller 순위 추적기 (40개국)")
+    print("🎮 Steam Top Seller 순위 추적기 (44개국)")
     print("=" * 60)
 
     now_kst = datetime.now(KST)
