@@ -876,7 +876,8 @@ def main():
     # wavg: 알림 시점 값으로 갱신 (없으면 기존 값 유지)
     # rank1: 항상 최신화 (wavg가 None이어도 저장 — 재알림 방지)
     save_baseline(wavg if wavg is not None else baseline_wavg, current_rank1)
-    print(f"✅ baseline 갱신: wavg={wavg:.1f if wavg else 'N/A'}, 1위국가: {current_rank1}")
+    wavg_disp2 = f"{wavg:.1f}" if wavg is not None else "N/A"
+    print(f"✅ baseline 갱신: wavg={wavg_disp2}, 1위국가: {current_rank1}")
 
     print("✅ 완료!")
 
