@@ -42,9 +42,43 @@
   /* Chart & Table */
   .chart-section { background: #080808; border: 1px solid var(--border); padding: 20px; margin-bottom: 25px; border-radius: 10px; height: 350px; }
   .table-wrapper { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; min-width: 800px; }
-  th { background: #1a1a1a; padding: 15px; text-align: left; font-size: 13px; color: var(--gold); border-bottom: 1px solid var(--border); cursor: pointer; }
-  td { padding: 12px 15px; border-bottom: 1px solid #222; font-size: 16px; }
+  table { width: 100%; border-collapse: collapse; min-width: 600px; }
+  th { background: #1a1a1a; padding: 12px 10px; text-align: left; font-size: 12px; color: var(--gold); border-bottom: 1px solid var(--border); cursor: pointer; white-space: nowrap; }
+  td { padding: 10px; border-bottom: 1px solid #222; font-size: 14px; }
+  .td-mobile-meta { display: none; }
+
+  /* 모바일 카드형 테이블 */
+  @media (max-width: 640px) {
+    .table-wrapper { overflow-x: unset; background: transparent; border: none; padding: 0; }
+    table { min-width: unset; width: 100%; }
+    thead { display: none; }
+    tbody tr {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      gap: 2px 8px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      padding: 10px 12px;
+    }
+    td { display: block; border: none; padding: 0; }
+    /* 국가명: 좌상단 */
+    td:nth-child(1) { grid-column: 1; grid-row: 1; font-size: 14px; font-weight: 700; }
+    /* 현재순위: 우측 전체 */
+    td:nth-child(2) { grid-column: 2; grid-row: 1 / 3; display: flex; align-items: center; justify-content: flex-end; }
+    td:nth-child(2) .rank-box { width: 52px; font-size: 14px; }
+    /* PC 전용 컬럼 숨김 */
+    .td-meta { display: none !important; }
+    /* 모바일 메타 한 줄: 좌하단 */
+    .td-mobile-meta {
+      display: flex !important;
+      grid-column: 1; grid-row: 2;
+      gap: 8px; align-items: center; flex-wrap: wrap;
+      margin-top: 3px;
+    }
+  }
 
   /* 링크 스타일 */
   .country-link { color: inherit; text-decoration: none; display: flex; align-items: center; }
@@ -282,10 +316,11 @@
         <tr>
           <th onclick="setSort('name')">Country (PS Store Link)</th>
           <th onclick="setSort('rank')">Current Rank</th>
-          <th onclick="setSort('best')">Best Rank</th>
-          <th onclick="setSort('avg')">Avg Rank</th>
-          <th onclick="setSort('change')">Trend</th>
-          <th onclick="setSort('weight')">Weight ↓</th>
+          <th onclick="setSort('best')" class="td-meta">Best Rank</th>
+          <th onclick="setSort('avg')" class="td-meta">Avg Rank</th>
+          <th onclick="setSort('change')" class="td-meta">Trend</th>
+          <th onclick="setSort('weight')" class="td-meta">Weight ↓</th>
+          <th class="td-mobile-meta" style="display:none;"></th>
         </tr>
       </thead>
       <tbody id="table-body"></tbody>
@@ -510,6 +545,11 @@ function render() {
   list.forEach(d => {
     const tr = document.createElement('tr');
     const opacity = d.rank >= 999 ? 0 : Math.max(0.2, 1 - (d.rank / 120));
+    const bestStr = d.best === 999 ? '—' : d.best + '위';
+    const avgStr  = d.avg  === 999 ? '—' : d.avg.toFixed(1) + '위';
+    const trendStr = d.change > 0
+      ? `<span class="trend-up">▲${d.change}</span>`
+      : (d.change < 0 ? `<span class="trend-down">▼${Math.abs(d.change)}</span>` : '—');
     tr.innerHTML = `
       <td>
         <a href="${getStoreUrl(d.name)}" target="_blank" class="country-link">
@@ -521,10 +561,16 @@ function render() {
           ${d.rank === 999 ? '—' : d.rank + '위'}
         </span>
       </td>
-      <td style="color:#f1c40f; font-weight:700;">${d.best === 999 ? '—' : d.best + '위'}</td>
-      <td style="color:#aaaaaa; font-weight:600;">${d.avg === 999 ? '—' : d.avg.toFixed(1) + '위'}</td>
-      <td class="${d.change > 0 ? 'trend-up' : (d.change < 0 ? 'trend-down' : '')}">${d.change > 0 ? '<span class="trend-arrow">▲</span>' + d.change : (d.change < 0 ? '<span class="trend-arrow">▼</span>' + Math.abs(d.change) : '—')}</td>
-      <td style="color:var(--gold); font-weight:bold;">${d.weight}</td>
+      <td class="td-meta" style="color:#f1c40f; font-weight:700;">${bestStr}</td>
+      <td class="td-meta" style="color:#aaaaaa; font-weight:600;">${avgStr}</td>
+      <td class="td-meta ${d.change > 0 ? 'trend-up' : (d.change < 0 ? 'trend-down' : '')}">${trendStr}</td>
+      <td class="td-meta" style="color:var(--gold); font-weight:bold;">${d.weight}</td>
+      <td class="td-mobile-meta">
+        <span style="color:#f1c40f;font-size:11px;font-weight:700;">최고 ${bestStr}</span>
+        <span style="color:#aaa;font-size:11px;">평균 ${avgStr}</span>
+        ${trendStr !== '—' ? `<span style="font-size:11px;">${trendStr}</span>` : ''}
+        <span style="color:#888;font-size:11px;">W:${d.weight}</span>
+      </td>
     `;
     tbody.appendChild(tr);
   });
