@@ -60,7 +60,37 @@
   /* Twemoji img 태그 크기 통일 */
   img.emoji { height: 1.3em; width: 1.3em; vertical-align: -0.2em; margin-right: 6px; display: inline-block; }
   .top10-item img.emoji { height: 1.1em; width: 1.1em; margin-right: 3px; }
-  .trend-up   { color: #2ecc71; font-weight: 700; letter-spacing: 2px; }
+  /* CSV 다운로드 툴바 */
+  .table-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+  }
+  .csv-btn {
+    background: #1a1a1a;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 7px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .csv-btn:hover { background: rgba(241,196,15,0.15); }
+
+  /* 모바일 반응형 */
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .chart-section { height: 220px; }
+    .table-toolbar { margin-bottom: 6px; }
+    .csv-btn { font-size: 12px; padding: 6px 10px; }
+    .top10-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+    .schedule-grid { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); }
+  }
+
   .trend-down { color: #ff4757; font-weight: 700; letter-spacing: 2px; }
   .trend-arrow { margin-right: 4px; }
 
@@ -242,12 +272,18 @@
 
   <div class="chart-section"><canvas id="mainChart"></canvas></div>
 
+  <div class="table-toolbar">
+    <button class="csv-btn" onclick="downloadCSV()">📥 CSV 다운로드 (현재순위 정렬)</button>
+  </div>
+
   <div class="table-wrapper">
     <table>
       <thead>
         <tr>
           <th onclick="setSort('name')">Country (PS Store Link)</th>
           <th onclick="setSort('rank')">Current Rank</th>
+          <th onclick="setSort('best')">Best Rank</th>
+          <th onclick="setSort('avg')">Avg Rank</th>
           <th onclick="setSort('change')">Trend</th>
           <th onclick="setSort('weight')">Weight ↓</th>
         </tr>
@@ -378,8 +414,8 @@ let scheduleSlots = [  // fallback (JSON에 schedule 없을 시 사용)
   { hour: 6,  label: 'AM' },
   { hour: 18, label: 'PM' },
 ];
-// 기본 정렬을 가중치(weight) 기준으로, 내림차순(false) 설정
-let sortKey = 'weight'; let sortAsc = false; 
+// 기본 정렬을 현재순위(rank) 기준으로, 오름차순(true) 설정
+let sortKey = 'rank'; let sortAsc = true; 
 let mainChart = null; let countryChart = null;
 
 async function init() {
@@ -428,6 +464,14 @@ function render() {
   let list = [];
   let best = { r: 999, n: '' }; let worst = { r: 0, n: '' };
 
+  // 국가별 best/avg 계산
+  const countryBest = {}; const countryAvg = {};
+  Object.keys(curr.raw_results).forEach(name => {
+    const allRanks = historyData.map(h => getRank(h, name)).filter(r => r !== 999);
+    countryBest[name] = allRanks.length > 0 ? Math.min(...allRanks) : 999;
+    countryAvg[name] = allRanks.length > 0 ? (allRanks.reduce((a,b)=>a+b,0) / allRanks.length) : 999;
+  });
+
   Object.keys(curr.raw_results).forEach(name => {
     const r = getRank(curr, name);
     const p = prev ? getRank(prev, name) : 999;
@@ -435,7 +479,7 @@ function render() {
       if (r < best.r) best = { r, n: name };
       if (r > worst.r && r < 999) worst = { r, n: name };
     }
-    list.push({ name, rank: r, change: (p === 999 || r === 999) ? 0 : p - r, weight: WEIGHTS[name] || 1.0 });
+    list.push({ name, rank: r, change: (p === 999 || r === 999) ? 0 : p - r, weight: WEIGHTS[name] || 1.0, best: countryBest[name], avg: countryAvg[name] });
   });
 
   document.getElementById('stat-best-val').innerText = best.r + '위';
@@ -455,8 +499,12 @@ function render() {
     t10Grid.appendChild(div);
   });
 
-  // 정렬 로직
-  list.sort((a, b) => sortAsc ? (a[sortKey] > b[sortKey] ? 1 : -1) : (a[sortKey] < b[sortKey] ? 1 : -1));
+  // 정렬 로직 (rank/best/avg에서 999는 항상 마지막)
+  list.sort((a, b) => {
+    const av = a[sortKey] === 999 ? (sortAsc ? 99999 : -99999) : a[sortKey];
+    const bv = b[sortKey] === 999 ? (sortAsc ? 99999 : -99999) : b[sortKey];
+    return sortAsc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+  });
   const tbody = document.getElementById('table-body');
   tbody.innerHTML = '';
   list.forEach(d => {
@@ -473,6 +521,8 @@ function render() {
           ${d.rank === 999 ? '—' : d.rank + '위'}
         </span>
       </td>
+      <td style="color:#f1c40f; font-weight:700;">${d.best === 999 ? '—' : d.best + '위'}</td>
+      <td style="color:#aaaaaa; font-weight:600;">${d.avg === 999 ? '—' : d.avg.toFixed(1) + '위'}</td>
       <td class="${d.change > 0 ? 'trend-up' : (d.change < 0 ? 'trend-down' : '')}">${d.change > 0 ? '<span class="trend-arrow">▲</span>' + d.change : (d.change < 0 ? '<span class="trend-arrow">▼</span>' + Math.abs(d.change) : '—')}</td>
       <td style="color:var(--gold); font-weight:bold;">${d.weight}</td>
     `;
@@ -495,7 +545,7 @@ function renderMainChart() {
       datasets: [{
         label: 'Global Weighted Avg',
         data: historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.averages.combined })),
-        borderColor: '#f1c40f', borderWidth: 4, pointRadius: 4, tension: 0.2, fill: false
+        borderColor: '#f1c40f', borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, tension: 0.2, fill: false
       }]
     },
     options: {
@@ -535,7 +585,7 @@ function showCountryChart(countryName) {
       datasets: [{
         label: countryName,
         data: countryData,
-        borderColor: '#ff4757', borderWidth: 4, pointRadius: 5, tension: 0.2, fill: false
+        borderColor: '#ff4757', borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, tension: 0.2, fill: false
       }]
     },
     options: {
@@ -557,7 +607,52 @@ function showCountryChart(countryName) {
 }
 
 function closeModal() { document.getElementById('chartModal').style.display = 'none'; }
-function setSort(key) { if (sortKey === key) sortAsc = !sortAsc; else { sortKey = key; sortAsc = (key === 'weight' ? false : true); } render(); }
+
+function setSort(key) {
+  if (sortKey === key) sortAsc = !sortAsc;
+  else { sortKey = key; sortAsc = (key === 'weight' ? false : true); }
+  render();
+}
+
+function downloadCSV() {
+  const curr = historyData[historyData.length - 1];
+
+  // 국가별 best/avg 재계산
+  const rows = [];
+  Object.keys(curr.raw_results).forEach(name => {
+    const r = getRank(curr, name);
+    const allRanks = historyData.map(h => getRank(h, name)).filter(v => v !== 999);
+    const bestR = allRanks.length > 0 ? Math.min(...allRanks) : null;
+    const avgR = allRanks.length > 0 ? (allRanks.reduce((a,b)=>a+b,0)/allRanks.length) : null;
+    rows.push({ name, rank: r, best: bestR, avg: avgR, url: getStoreUrl(name) });
+  });
+
+  // 현재 순위 오름차순 정렬 (999 = 마지막)
+  rows.sort((a, b) => {
+    const ar = a.rank === 999 ? 9999 : a.rank;
+    const br = b.rank === 999 ? 9999 : b.rank;
+    return ar - br;
+  });
+
+  const header = ['Country', 'Current Rank', 'Best Rank', 'Avg Rank', 'PS Store URL'];
+  const csvLines = [header.join(',')];
+  rows.forEach(r => {
+    csvLines.push([
+      r.name,
+      r.rank === 999 ? '' : r.rank,
+      r.best !== null ? r.best : '',
+      r.avg !== null ? r.avg.toFixed(1) : '',
+      r.url
+    ].map(v => `"${v}"`).join(','));
+  });
+
+  const blob = new Blob(['\uFEFF' + csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const ts = curr.timestamp.split('.')[0].replace(/[-:T]/g, '').slice(0,12);
+  a.download = `crimson_desert_ranks_${ts}.csv`;
+  a.click();
+}
 
 /* ── Schedule Tracker ─────────────────────────────────────────────── */
 // cron은 yml 기준. Python이 파싱해서 JSON에 저장 → scheduleSlots로 로드됨.
