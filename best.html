@@ -403,88 +403,114 @@
   </header>
 
   <!-- PS Store 섹션 접기/펼치기 헤더 -->
+  <!-- PS Store 최상위 헤더 (항상 표시) -->
   <div class="sts-collapsible-header" onclick="stToggle('ps-main-body', this)" style="margin-bottom:12px">
     <span class="sts-collapsible-title">🎮 PS Store 순위 현황</span>
-    <button class="sts-collapse-btn">▼ 펼치기</button>
+    <button class="sts-collapse-btn">▲ 접기</button>
   </div>
-  <div class="sts-collapsible-body collapsed" id="ps-main-body">
+  <div class="sts-collapsible-body" id="ps-main-body">
 
-  <div class="stats">
-    <div class="card"><div class="lbl">Weighted Average</div><div class="val" id="stat-avg">—</div></div>
-    <div class="card">
-      <div class="lbl">Best Rank</div>
-      <div class="val" id="stat-best-val">—</div>
-      <div class="sub" id="stat-best-name">...</div>
-    </div>
-    <div class="card">
-      <div class="lbl">Worst Rank</div>
-      <div class="val" id="stat-worst-val">—</div>
-      <div class="sub" id="stat-worst-name">...</div>
-    </div>
-    <div class="card">
-      <div class="lbl">순위권 진입 국가</div>
-      <div id="stat-rank-breakdown" style="display:flex;flex-direction:column;gap:5px;margin-top:4px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:13px">🥇 <span style="color:#FFD700">#1</span></span>
-          <span id="stat-cnt-1" style="font-family:'Cinzel',serif;font-size:20px;color:#FFD700">—</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:13px">🥈 <span style="color:#C0C0C0">#2~3</span></span>
-          <span id="stat-cnt-3" style="font-family:'Cinzel',serif;font-size:20px;color:#C0C0C0">—</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:13px">🏅 <span style="color:#cd7f32">#4~10</span></span>
-          <span id="stat-cnt-10" style="font-family:'Cinzel',serif;font-size:20px;color:#cd7f32">—</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #333;padding-top:5px;margin-top:2px">
-          <span style="font-size:12px;color:var(--text-sub)">#11+ / 전체</span>
-          <span id="stat-cnt-rest" style="font-size:13px;color:var(--text-sub)">— / —</span>
+    <!-- ① 스탯 카드 — 기본 펼침 -->
+    <div class="stats" style="margin-bottom:12px">
+      <div class="card"><div class="lbl">Weighted Average</div><div class="val" id="stat-avg">—</div></div>
+      <div class="card">
+        <div class="lbl">Best Rank</div>
+        <div class="val" id="stat-best-val">—</div>
+        <div class="sub" id="stat-best-name">...</div>
+      </div>
+      <div class="card">
+        <div class="lbl">Worst Rank</div>
+        <div class="val" id="stat-worst-val">—</div>
+        <div class="sub" id="stat-worst-name">...</div>
+      </div>
+      <div class="card">
+        <div class="lbl">순위권 진입 국가</div>
+        <div id="stat-rank-breakdown" style="display:flex;flex-direction:column;gap:5px;margin-top:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">🥇 <span style="color:#FFD700">#1</span></span>
+            <span id="stat-cnt-1" style="font-family:'Cinzel',serif;font-size:20px;color:#FFD700">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">🥈 <span style="color:#C0C0C0">#2~3</span></span>
+            <span id="stat-cnt-3" style="font-family:'Cinzel',serif;font-size:20px;color:#C0C0C0">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">🏅 <span style="color:#cd7f32">#4~10</span></span>
+            <span id="stat-cnt-10" style="font-family:'Cinzel',serif;font-size:20px;color:#cd7f32">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #333;padding-top:5px;margin-top:2px">
+            <span style="font-size:12px;color:var(--text-sub)">#11+ / 전체</span>
+            <span id="stat-cnt-rest" style="font-size:13px;color:var(--text-sub)">— / —</span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="top10-section">
-    <div class="top10-title">Market Leaders (Top 10 Weight) - Click for History</div>
-    <div class="top10-grid" id="top10-grid"></div>
-  </div>
-
-  <!-- Schedule Tracker -->
-  <div class="schedule-section">
-    <div class="schedule-header">
-      <div class="schedule-title">⏱ Tracker Schedule</div>
-      <div class="schedule-legend">
-        <span><i class="legend-dot legend-ok"></i> 실행됨</span>
-        <span><i class="legend-dot legend-miss"></i> 누락</span>
-        <span><i class="legend-dot legend-fut"></i> 예정</span>
+    <!-- ② Market Leaders — 기본 접힘 -->
+    <div class="sts-collapsible-header" onclick="stToggle('ps-top10-body', this)" style="margin-bottom:8px">
+      <span class="sts-collapsible-title">🏆 Market Leaders (Top 10 Weight)</span>
+      <button class="sts-collapse-btn">▼ 펼치기</button>
+    </div>
+    <div class="sts-collapsible-body collapsed" id="ps-top10-body" style="margin-bottom:12px">
+      <div class="top10-section" style="margin-bottom:0">
+        <div class="top10-grid" id="top10-grid"></div>
       </div>
     </div>
-    <div class="schedule-grid" id="schedule-grid"></div>
-    <div class="schedule-summary" id="schedule-summary"></div>
-  </div>
 
-  <div class="chart-section"><canvas id="mainChart"></canvas></div>
+    <!-- ③ 트래커 스케줄 — 기본 접힘 -->
+    <div class="sts-collapsible-header" onclick="stToggle('ps-sched-body', this)" style="margin-bottom:8px">
+      <span class="sts-collapsible-title">⏱ 트래커 스케줄</span>
+      <button class="sts-collapse-btn">▼ 펼치기</button>
+    </div>
+    <div class="sts-collapsible-body collapsed" id="ps-sched-body" style="margin-bottom:12px">
+      <div class="schedule-section" style="margin-bottom:0">
+        <div class="schedule-header">
+          <div class="schedule-legend">
+            <span><i class="legend-dot legend-ok"></i> 실행됨</span>
+            <span><i class="legend-dot legend-miss"></i> 누락</span>
+            <span><i class="legend-dot legend-fut"></i> 예정</span>
+          </div>
+        </div>
+        <div class="schedule-grid" id="schedule-grid"></div>
+        <div class="schedule-summary" id="schedule-summary"></div>
+      </div>
+    </div>
 
-  <div class="table-toolbar">
-    <button class="csv-btn" onclick="downloadCSV()">📥 CSV 다운로드 (현재순위 정렬)</button>
-  </div>
+    <!-- ④ 평균 순위 히스토리 차트 — 기본 접힘 -->
+    <div class="sts-collapsible-header" onclick="stToggle('ps-chart-body', this)" style="margin-bottom:8px">
+      <span class="sts-collapsible-title">📈 평균 순위 히스토리</span>
+      <button class="sts-collapse-btn">▼ 펼치기</button>
+    </div>
+    <div class="sts-collapsible-body collapsed" id="ps-chart-body" style="margin-bottom:12px">
+      <div class="chart-section"><canvas id="mainChart"></canvas></div>
+    </div>
 
-  <div class="table-wrapper">
-    <table>
-      <thead>
-        <tr>
-          <th onclick="setSort('name')">Country (PS Store Link)</th>
-          <th onclick="setSort('rank')">Current Rank</th>
-          <th onclick="setSort('best')" class="td-meta">Best Rank</th>
-          <th onclick="setSort('avg')" class="td-meta">Avg Rank</th>
-          <th onclick="setSort('change')" class="td-meta">Trend</th>
-          <th onclick="setSort('weight')" class="td-meta">Weight ↓</th>
-          <th class="td-mobile-meta" style="display:none;"></th>
-        </tr>
-      </thead>
-      <tbody id="table-body"></tbody>
-    </table>
-  </div>
+    <!-- ⑤ 국가별 테이블 — 기본 접힘 -->
+    <div class="sts-collapsible-header" onclick="stToggle('ps-table-body', this)" style="margin-bottom:8px">
+      <span class="sts-collapsible-title">🌍 국가별 현황</span>
+      <button class="sts-collapse-btn">▼ 펼치기</button>
+    </div>
+    <div class="sts-collapsible-body collapsed" id="ps-table-body" style="margin-bottom:12px">
+      <div class="table-toolbar">
+        <button class="csv-btn" onclick="downloadCSV()">📥 CSV 다운로드 (현재순위 정렬)</button>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="setSort('name')">Country (PS Store Link)</th>
+              <th onclick="setSort('rank')">Current Rank</th>
+              <th onclick="setSort('best')" class="td-meta">Best Rank</th>
+              <th onclick="setSort('avg')" class="td-meta">Avg Rank</th>
+              <th onclick="setSort('change')" class="td-meta">Trend</th>
+              <th onclick="setSort('weight')" class="td-meta">Weight ↓</th>
+              <th class="td-mobile-meta" style="display:none;"></th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
 
   </div><!-- /ps-main-body -->
 
@@ -1147,6 +1173,13 @@ function stToggle(bodyId, headerEl) {
   const collapsed = body.classList.toggle('collapsed');
   const btn = headerEl ? headerEl.querySelector('.sts-collapse-btn') : null;
   if (btn) btn.textContent = collapsed ? '▼ 펼치기' : '▲ 접기';
+  // 차트가 포함된 섹션 펼칠 때 Chart.js resize 트리거
+  if (!collapsed) {
+    requestAnimationFrame(() => {
+      if (bodyId === 'ps-chart-body' && mainChart) mainChart.resize();
+      if (bodyId === 'sts-chart-body' && stsCI) stsCI.resize();
+    });
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
