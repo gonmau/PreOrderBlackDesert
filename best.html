@@ -561,6 +561,8 @@
     <a id="sts-modal-link" href="#" target="_blank" class="steamdb-btn-sts">🔗 Steam Charts에서 보기 ↗</a>
   </div>
 </div>
+
+<div id="chartModal" class="modal">
   <div class="modal-content">
     <span class="close-btn" onclick="closeModal()">&times;</span>
     <h2 id="modalTitle" style="margin-bottom:20px; font-family:'Cinzel'; color:var(--gold);">Country Trend</h2>
@@ -895,8 +897,8 @@ function showCountryChart(countryName) {
     });
   }
 
-  // display:flex 후 layout이 완료될 때까지 대기 (double-rAF가 single보다 안정적)
-  requestAnimationFrame(() => requestAnimationFrame(drawCountryChart));
+  // position:fixed 모달 내 캔버스는 rAF로도 offsetWidth=0인 경우 있음 → setTimeout으로 확실히
+  setTimeout(drawCountryChart, 50);
 }
 
 function closeModal() { document.getElementById('chartModal').style.display = 'none'; }
