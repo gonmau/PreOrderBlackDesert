@@ -1475,25 +1475,48 @@ async function fetchStock() {
   const changeEl = document.getElementById('pa-change');
   const boxEl    = document.getElementById('pa-stock');
   priceEl.textContent = '…';
-  try {
-    // Yahoo Finance 비공식 v8 API (CORS 우회용 프록시)
-    const url = 'https://query1.finance.yahoo.com/v8/finance/chart/263750.KQ?interval=1d&range=2d';
-    const res = await fetch(url);
-    const json = await res.json();
-    const meta = json.chart.result[0].meta;
-    const price  = meta.regularMarketPrice;
-    const prev   = meta.previousClose || meta.chartPreviousClose;
-    const diff   = price - prev;
-    const pct    = (diff / prev * 100);
-    priceEl.textContent  = price.toLocaleString() + '원';
-    changeEl.textContent = (diff >= 0 ? '▲' : '▼') + Math.abs(diff).toLocaleString() + ' (' + Math.abs(pct).toFixed(2) + '%)';
-    changeEl.style.color = diff >= 0 ? '#2ecc71' : '#ff4757';
-    boxEl.title = `펄어비스 (263750) | 직전종가: ${prev.toLocaleString()}원 | 클릭하여 새로고침`;
-  } catch(e) {
-    priceEl.textContent  = '—';
-    changeEl.textContent = '로드 실패';
-    changeEl.style.color = '#666';
+  changeEl.textContent = '';
+
+  // 여러 엔드포인트 순서대로 시도
+  const endpoints = [
+    // 1) corsproxy.io 경유 Yahoo Finance
+    () => fetch('https://corsproxy.io/?url=' + encodeURIComponent('https://query2.finance.yahoo.com/v8/finance/chart/263750.KQ?interval=1d&range=5d'))
+          .then(r => r.json()).then(j => {
+            const meta = j.chart.result[0].meta;
+            return { price: meta.regularMarketPrice, prev: meta.previousClose || meta.chartPreviousClose };
+          }),
+    // 2) allorigins 경유 Yahoo Finance
+    () => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://query2.finance.yahoo.com/v8/finance/chart/263750.KQ?interval=1d&range=5d'))
+          .then(r => r.json()).then(j => {
+            const meta = JSON.parse(j.contents).chart.result[0].meta;
+            return { price: meta.regularMarketPrice, prev: meta.previousClose || meta.chartPreviousClose };
+          }),
+    // 3) Yahoo Finance v7 quote (다른 경로)
+    () => fetch('https://corsproxy.io/?url=' + encodeURIComponent('https://query1.finance.yahoo.com/v7/finance/quote?symbols=263750.KQ'))
+          .then(r => r.json()).then(j => {
+            const q = j.quoteResponse.result[0];
+            return { price: q.regularMarketPrice, prev: q.regularMarketPreviousClose };
+          }),
+  ];
+
+  for (const tryFn of endpoints) {
+    try {
+      const { price, prev } = await tryFn();
+      if (!price) continue;
+      const diff = price - prev;
+      const pct  = diff / prev * 100;
+      priceEl.textContent  = price.toLocaleString() + '원';
+      changeEl.textContent = (diff >= 0 ? '▲' : '▼') + Math.abs(diff).toLocaleString()
+                           + ' (' + Math.abs(pct).toFixed(2) + '%)';
+      changeEl.style.color = diff >= 0 ? '#2ecc71' : '#ff4757';
+      boxEl.title = '펄어비스 (263750) | 직전종가 ' + prev.toLocaleString() + '원 | 클릭하여 새로고침';
+      return;
+    } catch(e) { /* 다음 엔드포인트로 */ }
   }
+
+  // 전부 실패 시 Naver Finance 링크로 대체
+  priceEl.textContent  = '—';
+  changeEl.innerHTML   = '<a href="https://finance.naver.com/item/main.nhn?code=263750" target="_blank" style="color:#4a9eff;font-size:11px">네이버 확인 ↗</a>';
 }
 
 init();
