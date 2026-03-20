@@ -11,6 +11,7 @@
     --blood: #ff4757; --gold: #f1c40f; --dark: #000000; --panel: #111111;
     --border: #333333; --text-main: #ffffff; --text-sub: #aaaaaa;
     --up: #2ecc71; --down: #ff4757;
+    --muted: #aaaaaa; --text: #ffffff; --surface2: #1a1a1a; --surface: #111111;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -260,6 +261,125 @@
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.4; transform: scale(0.7); }
   }
+
+  /* ─── Steam Top Seller Section ─── */
+  .steam-ts-section { margin-bottom: 25px; }
+  .steam-ts-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; flex-wrap: wrap; gap: 8px;
+  }
+  .steam-ts-title { font-size: 16px; color: #4a9eff; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+  .steam-ts-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(74,158,255,0.1); border: 1px solid rgba(74,158,255,0.3);
+    color: #4a9eff; text-decoration: none; font-size: 12px; font-weight: 700;
+    padding: 6px 12px; border-radius: 6px; transition: 0.2s;
+  }
+  .steam-ts-link:hover { background: rgba(74,158,255,0.2); }
+  .steam-ts-dl-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(39,174,96,0.1); border: 1px solid rgba(39,174,96,0.35);
+    color: #6fcf97; text-decoration: none; font-size: 12px; font-weight: 700;
+    padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s;
+  }
+  .steam-ts-dl-btn:hover { background: rgba(39,174,96,0.2); }
+
+  .steam-ts-stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .steam-ts-stat-box { background: var(--panel); border: 1px solid var(--border); border-left: 3px solid #4a9eff; border-radius: 8px; padding: 12px 14px; text-align: center; }
+  .steam-ts-stat-label { font-size: 0.68rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .steam-ts-stat-value { font-family: 'Cinzel', serif; font-size: 1.9rem; color: #fff; line-height: 1; }
+  .steam-ts-stat-diff { font-size: 0.72rem; margin-top: 4px; color: var(--muted); }
+  .steam-ts-stat-diff.up { color: var(--up); }
+  .steam-ts-stat-diff.down { color: var(--down); }
+
+  /* Collapsible */
+  .sts-collapsible-header {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; padding: 10px 14px;
+    background: #0a0a0a; border: 1px solid var(--border); border-radius: 8px;
+    margin-bottom: 8px; user-select: none;
+  }
+  .sts-collapsible-header:hover { background: #111; }
+  .sts-collapsible-title { font-size: 13px; color: var(--gold); font-weight: 700; }
+  .sts-collapse-btn { font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0; }
+  .sts-collapsible-body { overflow: hidden; transition: max-height 0.3s ease; }
+  .sts-collapsible-body.collapsed { display: none; }
+
+  /* Chart box */
+  .steam-ts-chart-box { background: #080808; border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 8px; }
+  .steam-ts-chart-inner { position: relative; height: 220px; }
+
+  /* Country Grid */
+  .steam-ts-country-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-top: 10px; }
+  .steam-ts-country-card { background: #0d0d0d; border: 1px solid rgba(74,158,255,0.2); border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: background 0.2s; }
+  .steam-ts-country-card:hover { background: rgba(74,158,255,0.1) !important; }
+  .steam-ts-country-info { flex: 1; min-width: 0; }
+  .steam-ts-country-name { font-size: 0.8rem; color: #fff; font-weight: 700; }
+  .steam-ts-country-rank { font-family: 'Cinzel', serif; font-size: 1.3rem; color: #fff; line-height: 1.2; }
+  .steam-ts-country-diff { font-size: 0.68rem; }
+  .steam-ts-country-diff.up { color: var(--up); }
+  .steam-ts-country-diff.down { color: var(--down); }
+  .steam-ts-weight-badge { font-size: 0.6rem; color: var(--muted); background: rgba(255,255,255,0.07); border-radius: 4px; padding: 1px 5px; margin-top: 2px; display: inline-block; }
+  .steam-ts-country-card.rank1 { background: rgba(255,200,40,0.10) !important; border-color: rgba(255,200,40,0.55) !important; }
+  .steam-ts-country-card.rank1 .steam-ts-country-rank { color: #FFD700 !important; }
+  .steam-ts-country-card.rank2 { background: rgba(192,192,192,0.09) !important; border-color: rgba(192,192,192,0.45) !important; }
+  .steam-ts-country-card.rank2 .steam-ts-country-rank { color: #C0C0C0 !important; }
+  .steam-ts-country-card.rank3 { background: rgba(205,127,50,0.09) !important; border-color: rgba(205,127,50,0.45) !important; }
+  .steam-ts-country-card.rank3 .steam-ts-country-rank { color: #CD7F32 !important; }
+  .steam-ts-rank-badge { font-size: 0.65rem; font-weight: 700; padding: 1px 5px; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
+  .rank1 .steam-ts-rank-badge { background: rgba(255,200,40,0.25); color: #FFD700; border: 1px solid rgba(255,200,40,0.4); }
+  .rank2 .steam-ts-rank-badge { background: rgba(192,192,192,0.2); color: #C0C0C0; border: 1px solid rgba(192,192,192,0.35); }
+  .rank3 .steam-ts-rank-badge { background: rgba(205,127,50,0.2); color: #CD7F32; border: 1px solid rgba(205,127,50,0.35); }
+  .steam-ts-store-link { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); color: var(--muted); text-decoration: none; font-size: 0.75rem; flex-shrink: 0; transition: 0.2s; }
+  .steam-ts-store-link:hover { background: rgba(27,40,56,0.9); color: #c7d5e0; border-color: #4a90d9; }
+  .steam-ts-store-link svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* Country summary row */
+  .sts-country-summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
+
+  /* Modal */
+  .steam-ts-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; align-items: center; justify-content: center; }
+  .steam-ts-modal-overlay.open { display: flex; }
+  .steam-ts-modal { background: #111; border: 1px solid #4a9eff55; border-radius: 14px; padding: 28px; width: min(480px, 92vw); max-height: 80vh; overflow-y: auto; }
+  .steam-ts-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .steam-ts-modal-title { font-family: 'Cinzel', serif; font-size: 1.4rem; color: #fff; display: flex; align-items: center; gap: 10px; }
+  .steam-ts-modal-close { background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; }
+  .steam-ts-modal-stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .steam-ts-modal-chart-inner { position: relative; height: 240px; margin-top: 14px; }
+  .steamdb-btn-sts {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(74,158,255,0.1); border: 1px solid rgba(74,158,255,0.3);
+    color: #4a9eff; text-decoration: none; font-size: 12px; font-weight: 700;
+    padding: 7px 14px; border-radius: 6px; margin-top: 14px; width: 100%; justify-content: center;
+  }
+  .steamdb-btn-sts:hover { background: rgba(74,158,255,0.2); }
+
+  /* Steam Schedule Tracker */
+  .sts-sched-wrap { padding: 12px 0 4px; }
+  .sts-sched-day-label { font-size: 0.62rem; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .sts-sched-day-label .day-badge { background: #1a1a1a; border: 1px solid var(--border); border-radius: 3px; padding: 1px 7px; font-size: 0.6rem; color: #fff; letter-spacing: 0.5px; }
+  .sts-sched-day-label .day-badge.today { border-color: rgba(241,196,15,0.5); color: #f1c40f; background: rgba(241,196,15,0.07); }
+  .sts-sched-grid { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 10px; }
+  .sts-slot { width: 22px; height: 28px; border-radius: 3px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; cursor: default; position: relative; transition: transform 0.1s; border: 1px solid transparent; }
+  .sts-slot:hover { transform: scale(1.25); z-index: 5; }
+  .sts-slot .slot-h { font-size: 8px; opacity: 0.7; line-height: 1; margin-bottom: 1px; }
+  .sts-slot .slot-i { font-size: 10px; line-height: 1; }
+  .sts-slot.ok   { background: rgba(46,204,113,0.18); border-color: rgba(46,204,113,0.4); color: #2ecc71; }
+  .sts-slot.miss { background: rgba(255,71,87,0.07);  border-color: rgba(255,71,87,0.2);  color: #555; }
+  .sts-slot.fut  { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.06); color: #333; }
+  .sts-slot.now  { border-color: rgba(241,196,15,0.7) !important; box-shadow: 0 0 6px rgba(241,196,15,0.25); }
+  .sts-sched-summary { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid #1e1e1e; font-size: 0.68rem; color: var(--muted); }
+  .sts-sched-summary .ss { display: flex; flex-direction: column; gap: 1px; }
+  .sts-sched-summary .sv { font-size: 1rem; color: #fff; font-weight: 700; }
+  .sts-sched-summary .sl { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .sts-next-badge { margin-left: auto; display: flex; align-items: center; gap: 5px; background: rgba(241,196,15,0.08); border: 1px solid rgba(241,196,15,0.25); border-radius: 4px; padding: 3px 9px; font-size: 0.68rem; color: #f1c40f; font-weight: 700; white-space: nowrap; }
+  .sts-pulse { width: 6px; height: 6px; border-radius: 50%; background: #f1c40f; animation: stsPulse 1.6s ease-in-out infinite; }
+  @keyframes stsPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.35;transform:scale(0.65)} }
+  .sts-sched-legend { display: flex; gap: 10px; font-size: 0.6rem; color: var(--muted); margin-bottom: 8px; flex-wrap: wrap; }
+  .sts-sched-legend span { display: flex; align-items: center; gap: 4px; }
+  .sts-legend-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
+  @media (max-width: 480px) { .sts-slot { width: 18px; height: 24px; } .sts-slot .slot-h { font-size: 7px; } }
+  @media (max-width: 600px) { .steam-ts-country-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
 </style>
 </head>
 <body>
@@ -326,9 +446,121 @@
       <tbody id="table-body"></tbody>
     </table>
   </div>
+  <!-- Steam Top Seller Section -->
+  <div class="steam-ts-section" id="steam-ts-section">
+    <div class="steam-ts-header">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div class="steam-ts-title">📊 Steam Top Seller 순위</div>
+        <button class="steam-ts-dl-btn" onclick="downloadSteamCSV()">📥 Steam CSV</button>
+      </div>
+      <a class="steam-ts-link" href="https://store.steampowered.com/charts/topselling/KR" target="_blank">🔗 Steam Charts ↗</a>
+    </div>
+
+    <div class="steam-ts-stats-row">
+      <div class="steam-ts-stat-box" id="sts-global-box" style="display:none">
+        <div class="steam-ts-stat-label">🌍 글로벌 순위</div>
+        <div class="steam-ts-stat-value" id="sts-global-rank">—</div>
+        <div class="steam-ts-stat-diff" id="sts-global-diff"></div>
+      </div>
+      <div class="steam-ts-stat-box">
+        <div class="steam-ts-stat-label">추적 29개국 가중 평균</div>
+        <div class="steam-ts-stat-value" id="sts-avg">—</div>
+        <div class="steam-ts-stat-diff" id="sts-avg-diff"></div>
+      </div>
+      <div class="steam-ts-stat-box">
+        <div class="steam-ts-stat-label">최고 평균 순위</div>
+        <div class="steam-ts-stat-value" id="sts-best">—</div>
+        <div class="steam-ts-stat-diff" id="sts-best-date"></div>
+      </div>
+      <div class="steam-ts-stat-box">
+        <div class="steam-ts-stat-label">추적 국가</div>
+        <div class="steam-ts-stat-value" id="sts-countries">—</div>
+        <div class="steam-ts-stat-diff">개국</div>
+      </div>
+      <div class="steam-ts-stat-box">
+        <div class="steam-ts-stat-label">총 기록 수</div>
+        <div class="steam-ts-stat-value" id="sts-count">—</div>
+        <div class="steam-ts-stat-diff">개</div>
+      </div>
+    </div>
+
+    <!-- 평균 순위 히스토리 (접기/펼치기) -->
+    <div class="sts-collapsible-header" onclick="stToggle('sts-chart-body', this)">
+      <span class="sts-collapsible-title">📈 평균 순위 히스토리</span>
+      <button class="sts-collapse-btn">▼ 펼치기</button>
+    </div>
+    <div class="sts-collapsible-body collapsed" id="sts-chart-body">
+      <div class="steam-ts-chart-box"><div class="steam-ts-chart-inner"><canvas id="stsChart"></canvas></div></div>
+    </div>
+
+    <!-- 트래커 스케줄 (접기/펼치기) -->
+    <div class="sts-collapsible-header" onclick="stToggle('sts-sched-body', this)">
+      <span class="sts-collapsible-title">⏱ 트래커 스케줄<span id="sts-sched-cron" style="font-size:0.6rem;color:#555;font-weight:400;margin-left:8px;letter-spacing:0"></span></span>
+      <button class="sts-collapse-btn">▼ 펼치기</button>
+    </div>
+    <div class="sts-collapsible-body collapsed" id="sts-sched-body">
+      <div class="sts-sched-wrap">
+        <div class="sts-sched-legend">
+          <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>실행됨</span>
+          <span><i class="sts-legend-dot" style="background:rgba(255,71,87,0.15);border:1px solid rgba(255,71,87,0.3)"></i>누락</span>
+          <span><i class="sts-legend-dot" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1)"></i>예정</span>
+          <span><i class="sts-legend-dot" style="background:transparent;border:1px solid rgba(241,196,15,0.7);box-shadow:0 0 4px rgba(241,196,15,0.2)"></i>현재 슬롯</span>
+        </div>
+        <div id="sts-sched-days"></div>
+        <div class="sts-sched-summary" id="sts-sched-summary"></div>
+      </div>
+    </div>
+
+    <!-- 국가별 현황 (접기/펼치기) -->
+    <div class="sts-collapsible-header" onclick="stToggle('sts-countries-body', this)">
+      <span class="sts-collapsible-title">🌍 국가별 현황</span>
+      <button class="sts-collapse-btn">▼ 펼치기</button>
+    </div>
+    <div class="sts-collapsible-body collapsed" id="sts-countries-body">
+      <div class="sts-country-summary-row steam-ts-stats-row" id="sts-country-summary-row" style="display:none;margin-bottom:12px">
+        <div class="steam-ts-stat-box">
+          <div class="steam-ts-stat-label">📊 가중 평균</div>
+          <div class="steam-ts-stat-value" id="sts-cs-avg">—</div>
+          <div class="steam-ts-stat-diff" id="sts-cs-avg-sub"></div>
+        </div>
+        <div class="steam-ts-stat-box">
+          <div class="steam-ts-stat-label">🥇 최고 순위</div>
+          <div class="steam-ts-stat-value" id="sts-cs-best-flag" style="font-size:1.8rem;line-height:1.1">—</div>
+          <div class="steam-ts-stat-diff" id="sts-cs-best-name"></div>
+        </div>
+        <div class="steam-ts-stat-box">
+          <div class="steam-ts-stat-label">🔻 최하위 순위</div>
+          <div class="steam-ts-stat-value" id="sts-cs-worst-flag" style="font-size:1.8rem;line-height:1.1">—</div>
+          <div class="steam-ts-stat-diff" id="sts-cs-worst-name"></div>
+        </div>
+        <div class="steam-ts-stat-box">
+          <div class="steam-ts-stat-label">✅ 순위권 진입</div>
+          <div class="steam-ts-stat-value" id="sts-cs-found">—</div>
+          <div class="steam-ts-stat-diff" id="sts-cs-found-sub">/ 추적국가</div>
+        </div>
+      </div>
+      <div class="steam-ts-country-grid" id="sts-country-grid"></div>
+    </div>
+  </div>
+
 </div>
 
-<div id="chartModal" class="modal">
+<!-- Steam TS 국가 상세 모달 -->
+<div class="steam-ts-modal-overlay" id="sts-modal" onclick="closeStsModal(event)">
+  <div class="steam-ts-modal">
+    <div class="steam-ts-modal-header">
+      <div class="steam-ts-modal-title" id="sts-modal-title">—</div>
+      <button class="steam-ts-modal-close" onclick="closeStsModalDirect()">✕</button>
+    </div>
+    <div class="steam-ts-modal-stats">
+      <div class="steam-ts-stat-box" style="flex:1;min-width:100px"><div class="steam-ts-stat-label">현재</div><div class="steam-ts-stat-value" id="sts-modal-current">—</div></div>
+      <div class="steam-ts-stat-box" style="flex:1;min-width:100px"><div class="steam-ts-stat-label">최고</div><div class="steam-ts-stat-value" id="sts-modal-best">—</div></div>
+      <div class="steam-ts-stat-box" style="flex:1;min-width:100px"><div class="steam-ts-stat-label">평균</div><div class="steam-ts-stat-value" id="sts-modal-avg">—</div></div>
+    </div>
+    <div class="steam-ts-modal-chart-inner"><canvas id="stsModalChart"></canvas></div>
+    <a id="sts-modal-link" href="#" target="_blank" class="steamdb-btn-sts">🔗 Steam Charts에서 보기 ↗</a>
+  </div>
+</div>
   <div class="modal-content">
     <span class="close-btn" onclick="closeModal()">&times;</span>
     <h2 id="modalTitle" style="margin-bottom:20px; font-family:'Cinzel'; color:var(--gold);">Country Trend</h2>
@@ -475,6 +707,7 @@ async function init() {
   }
 
   render();
+  loadSteamTopSellerData();
 }
 
 function getRank(entry, country) {
@@ -822,6 +1055,337 @@ function renderSchedule() {
   `;
 }
 /* ───────────────────────────────────────────────────────────────────── */
+
+/* ── stToggle: collapsible helper ── */
+function stToggle(bodyId, headerEl) {
+  const body = document.getElementById(bodyId);
+  if (!body) return;
+  const collapsed = body.classList.toggle('collapsed');
+  const btn = headerEl ? headerEl.querySelector('.sts-collapse-btn') : null;
+  if (btn) btn.textContent = collapsed ? '▼ 펼치기' : '▲ 접기';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STEAM TOP SELLER DATA & RENDERING
+══════════════════════════════════════════════════════════════ */
+const STS_W={"미국":30.0,"중국":28.0,"러시아":6.0,"독일":5.5,"영국":5.0,"브라질":4.5,"한국":4.2,"프랑스":4.0,"일본":3.5,"캐나다":3.5,"호주":2.5,"터키":2.0,"폴란드":2.0,"스페인":2.0,"이탈리아":1.8,"네덜란드":0.8,"스웨덴":0.7,"노르웨이":0.5,"덴마크":0.5,"핀란드":0.4,"오스트리아":0.6,"스위스":0.7,"체코":0.4,"싱가포르":0.5,"태국":0.8,"벨기에":0.8,"홍콩":0.7,"뉴질랜드":0.4,"대만":0.8};
+const STS_F={"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","호주":"🇦🇺","한국":"🇰🇷","중국":"🇨🇳","러시아":"🇷🇺","폴란드":"🇵🇱","터키":"🇹🇷","네덜란드":"🇳🇱","스웨덴":"🇸🇪","노르웨이":"🇳🇴","덴마크":"🇩🇰","핀란드":"🇫🇮","오스트리아":"🇦🇹","스위스":"🇨🇭","체코":"🇨🇿","싱가포르":"🇸🇬","태국":"🇹🇭","벨기에":"🇧🇪","홍콩":"🇭🇰","뉴질랜드":"🇳🇿","대만":"🇹🇼"};
+const STS_CC={"미국":"us","캐나다":"ca","브라질":"br","영국":"gb","독일":"de","프랑스":"fr","스페인":"es","이탈리아":"it","일본":"jp","호주":"au","한국":"kr","중국":"cn","러시아":"ru","폴란드":"pl","터키":"tr","네덜란드":"nl","스웨덴":"se","노르웨이":"no","덴마크":"dk","핀란드":"fi","오스트리아":"at","스위스":"ch","체코":"cz","싱가포르":"sg","태국":"th","벨기에":"be","홍콩":"hk","뉴질랜드":"nz","대만":"tw"};
+let stsHist=[], stsCI=null, stsMCI=null, stsSched=null;
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
+}
+
+async function loadSteamTopSellerData() {
+  try {
+    const r = await fetch('./steam_topseller_history.json?t=' + Date.now());
+    if (!r.ok) throw 0;
+    const payload = await r.json();
+    if (Array.isArray(payload)) { stsHist = payload; }
+    else {
+      stsHist = payload.history || [];
+      if (payload.schedule) {
+        stsSched = payload.schedule;
+        const cronEl = document.getElementById('sts-sched-cron');
+        if (cronEl && stsSched.cron) cronEl.textContent = stsSched.cron;
+      }
+    }
+    renderSTS();
+    renderSteamSchedule();
+  } catch(e) { console.warn('Steam TS load fail', e); }
+}
+
+function stsAvg(h) {
+  if (!h || !h.results) return null;
+  let tw = 0, ts = 0;
+  for (const [n, d] of Object.entries(h.results)) {
+    const r = d && d.rank; if (!r) continue;
+    const w = STS_W[n] || 1.0; ts += r * w; tw += w;
+  }
+  return tw > 0 ? Math.round(ts / tw * 10) / 10 : null;
+}
+
+function renderSTS() {
+  if (!stsHist.length) return;
+  const v = stsHist.filter(h => stsAvg(h) !== null);
+  if (!v.length) return;
+  const lat = v[v.length-1], prv = v.length >= 2 ? v[v.length-2] : null;
+  const la = stsAvg(lat), pa = prv ? stsAvg(prv) : null;
+
+  document.getElementById('sts-avg').textContent = la ? '#' + la.toFixed(1) : '—';
+  document.getElementById('sts-count').textContent = stsHist.length;
+  document.getElementById('sts-countries').textContent = Object.keys(lat.results || {}).length;
+
+  const el = document.getElementById('sts-avg-diff');
+  if (pa !== null && la !== null) {
+    const d = Math.round((pa - la) * 10) / 10;
+    if (d > 0) { el.textContent = '▲ ' + d + ' 상승'; el.className = 'steam-ts-stat-diff up'; }
+    else if (d < 0) { el.textContent = '▼ ' + Math.abs(d) + ' 하락'; el.className = 'steam-ts-stat-diff down'; }
+    else { el.textContent = '변동없음'; el.className = 'steam-ts-stat-diff'; }
+  }
+
+  let best = null, be = null;
+  for (const h of v) { const a = stsAvg(h); if (a !== null && (best === null || a < best)) { best = a; be = h; } }
+  document.getElementById('sts-best').textContent = best ? '#' + best.toFixed(1) : '—';
+  if (be) document.getElementById('sts-best-date').textContent = fmtDate(be.timestamp);
+
+  // 글로벌 순위
+  const globalRankLatest = stsHist.slice().reverse().find(h => h.global_rank != null);
+  const globalBox = document.getElementById('sts-global-box');
+  if (globalRankLatest) {
+    globalBox.style.display = '';
+    const gr = globalRankLatest.global_rank;
+    document.getElementById('sts-global-rank').textContent = '#' + gr;
+    const prevGlobal = stsHist.slice().reverse().find(h => h.global_rank != null && h !== globalRankLatest);
+    const gdEl = document.getElementById('sts-global-diff');
+    if (prevGlobal) {
+      const gd = prevGlobal.global_rank - gr;
+      if (gd > 0) { gdEl.textContent = '▲ ' + gd + ' 상승'; gdEl.className = 'steam-ts-stat-diff up'; }
+      else if (gd < 0) { gdEl.textContent = '▼ ' + Math.abs(gd) + ' 하락'; gdEl.className = 'steam-ts-stat-diff down'; }
+      else { gdEl.textContent = '변동없음'; }
+    }
+  }
+
+  // 히스토리 차트
+  const lbs = v.map(h => new Date(h.timestamp)), dv = v.map(h => stsAvg(h));
+  const ctx = document.getElementById('stsChart').getContext('2d');
+  if (stsCI) stsCI.destroy();
+
+  const idxFirst=0, idxLast=dv.length-1;
+  const idxBest  = dv.reduce((bi,val,i,a) => val!==null && (a[bi]===null || val<a[bi]) ? i : bi, 0);
+  const idxWorst = dv.reduce((wi,val,i,a) => val!==null && (a[wi]===null || val>a[wi]) ? i : wi, 0);
+  const specialIdx = new Set([idxFirst, idxLast, idxBest, idxWorst]);
+  const ptR = dv.map((_,i) => specialIdx.has(i) ? 5 : 0);
+  const ptC = dv.map((_,i) => i===idxBest?'#2ecc71': i===idxWorst?'#e74c3c': i===idxLast?'#f1c40f':'#ffffff');
+
+  const labelPlugin = {
+    id: 'stsLabel',
+    afterDatasetsDraw(chart) {
+      const {ctx:c, scales:{x,y}} = chart;
+      const ds = chart.data.datasets[0].data;
+      [{idx:idxFirst,label:'시작',color:'#fff'},{idx:idxLast,label:'현재',color:'#f1c40f'},
+       {idx:idxBest,label:'최고',color:'#2ecc71'},{idx:idxWorst,label:'최저',color:'#e74c3c'}]
+      .forEach(({idx,label,color}) => {
+        const val = ds[idx]; if (val == null) return;
+        const px = x.getPixelForValue(lbs[idx]), py = y.getPixelForValue(val);
+        const text = `${label}: #${val.toFixed(1)}`;
+        const offsetY = label === '최저' ? 18 : -14;
+        c.save(); c.font='bold 10px sans-serif'; c.textAlign='center'; c.textBaseline='middle';
+        c.strokeStyle='rgba(0,0,0,0.9)'; c.lineWidth=3; c.strokeText(text, px, py+offsetY);
+        c.fillStyle=color; c.fillText(text, px, py+offsetY); c.restore();
+      });
+    }
+  };
+
+  stsCI = new Chart(ctx, {
+    type: 'line',
+    data: { labels: lbs, datasets: [{ label: '평균', data: dv, borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.1)', borderWidth: 2, pointRadius: ptR, pointBackgroundColor: ptC, pointBorderColor: ptC, fill: true, tension: 0.3 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { type: 'time', time: { unit: 'day', tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' } }, ticks: { color: '#fff', maxTicksLimit: 8 }, grid: { color: '#222' } },
+        y: { reverse: true, min: 1, ticks: { color: '#fff', stepSize: 1, callback: v => '#' + v }, grid: { color: '#222' } }
+      },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '순위 #' + c.parsed.y } } }
+    },
+    plugins: [labelPlugin]
+  });
+
+  renderStsGrid(lat, prv);
+}
+
+function renderStsGrid(lat, prv) {
+  const g = document.getElementById('sts-country-grid');
+  if (!g || !lat.results) return;
+  const s = Object.entries(lat.results).sort((a, b) => {
+    const ra = a[1] && a[1].rank, rb = b[1] && b[1].rank;
+    if (ra && rb) return ra !== rb ? ra - rb : (STS_W[b[0]]||0) - (STS_W[a[0]]||0);
+    if (ra) return -1; if (rb) return 1;
+    return (STS_W[b[0]]||0) - (STS_W[a[0]]||0);
+  });
+
+  const ranked = s.filter(([,d]) => d && d.rank != null);
+  if (ranked.length > 0) {
+    let tw=0, ts=0;
+    ranked.forEach(([n,d]) => { const w=STS_W[n]||1.0; tw+=w; ts+=d.rank*w; });
+    const best  = ranked.reduce((a,b) => a[1].rank < b[1].rank ? a : b);
+    const worst = ranked.reduce((a,b) => a[1].rank > b[1].rank ? a : b);
+    const summaryRow = document.getElementById('sts-country-summary-row');
+    if (summaryRow) summaryRow.style.display = '';
+    document.getElementById('sts-cs-avg').textContent = '#' + (Math.round(ts/tw*10)/10).toFixed(1);
+    document.getElementById('sts-cs-avg-sub').textContent = '가중평균 (진입 ' + ranked.length + '개국)';
+    const bcc = STS_CC[best[0]]||'us';
+    document.getElementById('sts-cs-best-flag').innerHTML = `<img src="https://flagcdn.com/w40/${bcc}.png" style="width:36px;height:26px;object-fit:cover;border-radius:3px"> ${STS_F[best[0]]||''}`;
+    document.getElementById('sts-cs-best-name').textContent = best[0] + ' #' + best[1].rank;
+    const wcc = STS_CC[worst[0]]||'us';
+    document.getElementById('sts-cs-worst-flag').innerHTML = `<img src="https://flagcdn.com/w40/${wcc}.png" style="width:36px;height:26px;object-fit:cover;border-radius:3px"> ${STS_F[worst[0]]||''}`;
+    document.getElementById('sts-cs-worst-name').textContent = worst[0] + ' #' + worst[1].rank;
+    document.getElementById('sts-cs-found').textContent = ranked.length;
+    document.getElementById('sts-cs-found-sub').textContent = '/ ' + s.length + '개국 추적';
+  }
+
+  g.innerHTML = s.map(([n, d]) => {
+    const r = d && d.rank, rs = r ? '#' + r : '—';
+    const cc = STS_CC[n] || 'us';
+    const flagImg = `<img src="https://flagcdn.com/w40/${cc}.png" alt="${n}" style="width:28px;height:20px;object-fit:cover;border-radius:2px;display:block;flex-shrink:0">`;
+    let dh = '';
+    if (prv && prv.results && prv.results[n]) {
+      const pr = prv.results[n] && prv.results[n].rank;
+      if (pr && r) {
+        const dd = pr - r;
+        if (dd > 0) dh = '<span class="steam-ts-country-diff up">▲'+dd+'</span>';
+        else if (dd < 0) dh = '<span class="steam-ts-country-diff down">▼'+Math.abs(dd)+'</span>';
+        else dh = '<span class="steam-ts-country-diff">-</span>';
+      }
+    }
+    let rankClass = '', rankBadge = '';
+    if (r===1) { rankClass='rank1'; rankBadge=`<span class="steam-ts-rank-badge">🥇 1위</span>`; }
+    else if (r===2) { rankClass='rank2'; rankBadge=`<span class="steam-ts-rank-badge">🥈 2위</span>`; }
+    else if (r===3) { rankClass='rank3'; rankBadge=`<span class="steam-ts-rank-badge">🥉 3위</span>`; }
+    const cardStyle = r ? '' : 'opacity:0.5';
+    const storeUrl = `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`;
+    const linkIcon = `<a class="steam-ts-store-link" href="${storeUrl}" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>`;
+    return `<div class="steam-ts-country-card ${rankClass}" onclick="openStsModal('${n}')" style="${cardStyle}">${flagImg}<div class="steam-ts-country-info"><div class="steam-ts-country-name">${n}${rankBadge}</div><div class="steam-ts-country-rank">${rs} ${dh}</div><span class="steam-ts-weight-badge">W:${STS_W[n]||1}</span></div>${linkIcon}</div>`;
+  }).join('');
+
+  twemoji.parse(g, { folder: 'svg', ext: '.svg' });
+}
+
+function openStsModal(n) {
+  const m = document.getElementById('sts-modal');
+  if (!m || !stsHist.length) return;
+  const cc = STS_CC[n] || 'us';
+  const flagImg = `<img src="https://flagcdn.com/w40/${cc}.png" style="width:32px;height:22px;object-fit:cover;border-radius:2px;display:inline-block;vertical-align:middle">`;
+  document.getElementById('sts-modal-title').innerHTML = flagImg + ' ' + n;
+  document.getElementById('sts-modal-link').href = 'https://store.steampowered.com/charts/topselling/' + cc.toUpperCase();
+  const h = stsHist.filter(x => x.results && x.results[n] && x.results[n].rank).map(x => ({ t: new Date(x.timestamp), r: x.results[n].rank }));
+  if (!h.length) {
+    ['sts-modal-current','sts-modal-best','sts-modal-avg'].forEach(id => document.getElementById(id).textContent = '—');
+  } else {
+    const cur = h[h.length-1].r, best = Math.min(...h.map(x=>x.r)), avg = Math.round(h.reduce((s,x)=>s+x.r,0)/h.length*10)/10;
+    document.getElementById('sts-modal-current').textContent = '#' + cur;
+    document.getElementById('sts-modal-best').textContent    = '#' + best;
+    document.getElementById('sts-modal-avg').textContent     = '#' + avg;
+    const c2 = document.getElementById('stsModalChart').getContext('2d');
+    if (stsMCI) stsMCI.destroy();
+    const ptR2 = h.length > 60 ? 0 : h.length > 20 ? 2 : 3;
+    stsMCI = new Chart(c2, {
+      type: 'line',
+      data: { labels: h.map(x=>x.t), datasets: [{ label: '순위', data: h.map(x=>x.r), borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.1)', borderWidth: 2, pointRadius: ptR2, pointHoverRadius: ptR2+2, fill: true, tension: 0.3, spanGaps: true }] },
+      options: { responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { type:'time', time:{ unit: h.length>48?'day':'hour', displayFormats:{hour:'M/d HH:mm',day:'M/d'}}, ticks:{color:'#fff',maxTicksLimit:7,maxRotation:30,font:{size:10}}, grid:{color:'#222'} },
+          y: { reverse:true, min:1, ticks:{color:'#fff',stepSize:1,callback:v=>'#'+v,font:{size:11}}, grid:{color:'#222'} }
+        },
+        plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>'순위: #'+c.parsed.y}} }
+      }
+    });
+  }
+  m.classList.add('open'); document.body.style.overflow = 'hidden';
+}
+
+function closeStsModal(e) { if (e.target === document.getElementById('sts-modal')) closeStsModalDirect(); }
+function closeStsModalDirect() { document.getElementById('sts-modal').classList.remove('open'); document.body.style.overflow = ''; }
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeStsModalDirect(); });
+
+/* ── Steam Schedule Tracker ── */
+function renderSteamSchedule() {
+  const container = document.getElementById('sts-sched-days');
+  const summaryEl = document.getElementById('sts-sched-summary');
+  if (!container || !summaryEl) return;
+
+  const nowUtc = new Date(), KST_OFFSET = 9*3600*1000;
+  const nowKst = new Date(nowUtc.getTime() + KST_OFFSET);
+  let intervalMin = 30;
+  if (stsSched && stsSched.type === 'interval') intervalMin = stsSched.interval_min || 30;
+
+  const stamps = stsHist.map(h => new Date(h.timestamp).getTime());
+  const toleranceMs = Math.min(intervalMin * 0.4, 18) * 60 * 1000;
+
+  const todayKstMidnight = new Date(Date.UTC(nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()) - KST_OFFSET);
+  const days = [
+    { label: '어제', date: new Date(todayKstMidnight.getTime() - 86400000), isToday: false },
+    { label: '오늘', date: todayKstMidnight, isToday: true },
+  ];
+  const slotsPerDay = Math.floor(24*60/intervalMin);
+  let totalSlots=0, okSlots=0, missSlots=0;
+  container.innerHTML = '';
+
+  days.forEach(({ label, date, isToday }) => {
+    const kstDay = new Date(date.getTime() + KST_OFFSET);
+    const mm = kstDay.getUTCMonth()+1, dd = kstDay.getUTCDate();
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'sts-sched-day-label';
+    labelDiv.innerHTML = `<span class="day-badge${isToday?' today':''}">${label}</span>${mm}/${dd}`;
+    container.appendChild(labelDiv);
+
+    const grid = document.createElement('div');
+    grid.className = 'sts-sched-grid';
+    for (let i = 0; i < slotsPerDay; i++) {
+      const slotMs = date.getTime() + (i * intervalMin * 60 * 1000);
+      const slotKst = new Date(slotMs + KST_OFFSET);
+      const hhmm = `${String(slotKst.getUTCHours()).padStart(2,'0')}:${String(slotKst.getUTCMinutes()).padStart(2,'0')}`;
+      const isFuture = slotMs > nowUtc.getTime() + toleranceMs;
+      const isNow = Math.abs(slotMs - nowUtc.getTime()) <= toleranceMs;
+      let status = 'miss', actualTime = '';
+      if (isFuture) { status = 'fut'; }
+      else {
+        const found = stamps.find(s => Math.abs(s - slotMs) <= toleranceMs);
+        if (found) {
+          status = 'ok'; okSlots++; totalSlots++;
+          const ft = new Date(found + KST_OFFSET);
+          actualTime = `${String(ft.getUTCHours()).padStart(2,'0')}:${String(ft.getUTCMinutes()).padStart(2,'0')}`;
+        } else { missSlots++; totalSlots++; }
+      }
+      const slot = document.createElement('div');
+      slot.className = `sts-slot ${status}${isNow?' now':''}`;
+      const tip = status==='ok' ? `${mm}/${dd} ${hhmm} → 실행 ${actualTime}` : status==='fut' ? `${mm}/${dd} ${hhmm} (예정)` : `${mm}/${dd} ${hhmm} — 누락`;
+      slot.title = tip;
+      slot.innerHTML = `<span class="slot-h">${hhmm}</span><span class="slot-i">${status==='ok'?'✓':status==='fut'?'·':'✗'}</span>`;
+      grid.appendChild(slot);
+    }
+    container.appendChild(grid);
+  });
+
+  function getNextRunLabel() {
+    const nowMs = nowUtc.getTime(), slotMs = intervalMin*60*1000;
+    const nextSlotMs = Math.ceil((nowMs+1000)/slotMs)*slotMs;
+    const nextKst = new Date(nextSlotMs + KST_OFFSET);
+    const diffMin = Math.round((nextSlotMs - nowMs)/60000);
+    const hhmm = `${String(nextKst.getUTCHours()).padStart(2,'0')}:${String(nextKst.getUTCMinutes()).padStart(2,'0')}`;
+    return diffMin <= 60 ? `${hhmm} KST (${diffMin}분 후)` : `${hhmm} KST`;
+  }
+  const rate = totalSlots > 0 ? Math.round(okSlots/totalSlots*100) : 100;
+  summaryEl.innerHTML = `
+    <div class="ss"><span class="sv">${okSlots}</span><span class="sl">실행 완료</span></div>
+    <div class="ss"><span class="sv" style="color:${missSlots>0?'var(--down)':'var(--up)'}">${missSlots}</span><span class="sl">누락</span></div>
+    <div class="ss"><span class="sv">${rate}%</span><span class="sl">성공률 (2일)</span></div>
+    <div class="sts-next-badge"><span class="sts-pulse"></span>다음: ${getNextRunLabel()}</div>`;
+}
+
+/* ── Steam CSV download ── */
+function downloadSteamCSV() {
+  if (!stsHist.length) { alert('Steam 데이터가 없습니다.'); return; }
+  const latest = stsHist[stsHist.length-1];
+  const ts = new Date(latest.timestamp).toISOString().slice(0,10);
+  const rows = [['국가','현재_순위','최고_순위','평균_순위','가중치(Steam)','Steam_링크']];
+  for (const c of Object.keys(STS_W)) {
+    const history = stsHist.filter(h => h.results?.[c]?.rank).map(h => h.results[c].rank);
+    const current = latest.results?.[c]?.rank ?? '—';
+    const best    = history.length ? Math.min(...history) : '—';
+    const avg     = history.length ? (history.reduce((a,b)=>a+b,0)/history.length).toFixed(1) : '—';
+    const cc      = STS_CC[c] || '';
+    const link    = cc ? `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}` : '—';
+    rows.push([c, current, best, avg, STS_W[c]||'—', link]);
+  }
+  const bom = '\uFEFF';
+  const csv = bom + rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `crimson_desert_steam_ranks_${ts}.csv`; a.click();
+}
 
 init();
 </script>
