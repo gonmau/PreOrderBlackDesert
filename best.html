@@ -387,7 +387,16 @@
 <div class="container">
   <header>
     <div class="logo"><h1><span>CRIMSON</span> DESERT</h1></div>
-    <div id="update-time">—</div>
+    <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+      <!-- 펄어비스 주가 -->
+      <div id="pa-stock" style="display:flex;align-items:center;gap:8px;background:#111;border:1px solid #333;border-radius:8px;padding:6px 14px;cursor:pointer" onclick="fetchStock()" title="클릭하여 새로고침">
+        <span style="font-size:11px;color:#aaa;letter-spacing:1px;font-weight:700">263750</span>
+        <span id="pa-price" style="font-family:'Cinzel',serif;font-size:18px;color:#f1c40f">—</span>
+        <span id="pa-change" style="font-size:12px;font-weight:700">—</span>
+        <span style="font-size:10px;color:#555">KRX</span>
+      </div>
+      <div id="update-time">—</div>
+    </div>
   </header>
 
   <div class="stats">
@@ -402,7 +411,27 @@
       <div class="val" id="stat-worst-val">—</div>
       <div class="sub" id="stat-worst-name">...</div>
     </div>
-    <div class="card"><div class="lbl">Active Countries</div><div class="val" id="stat-count">—</div></div>
+    <div class="card">
+      <div class="lbl">순위권 진입 국가</div>
+      <div id="stat-rank-breakdown" style="display:flex;flex-direction:column;gap:5px;margin-top:4px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px">🥇 <span style="color:#FFD700">#1</span></span>
+          <span id="stat-cnt-1" style="font-family:'Cinzel',serif;font-size:20px;color:#FFD700">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px">🥈 <span style="color:#C0C0C0">#2~3</span></span>
+          <span id="stat-cnt-3" style="font-family:'Cinzel',serif;font-size:20px;color:#C0C0C0">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px">🏅 <span style="color:#cd7f32">#4~10</span></span>
+          <span id="stat-cnt-10" style="font-family:'Cinzel',serif;font-size:20px;color:#cd7f32">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #333;padding-top:5px;margin-top:2px">
+          <span style="font-size:12px;color:var(--text-sub)">#11+ / 전체</span>
+          <span id="stat-cnt-rest" style="font-size:13px;color:var(--text-sub)">— / —</span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="top10-section">
@@ -473,14 +502,30 @@
         <div class="steam-ts-stat-diff" id="sts-best-date"></div>
       </div>
       <div class="steam-ts-stat-box">
-        <div class="steam-ts-stat-label">추적 국가</div>
-        <div class="steam-ts-stat-value" id="sts-countries">—</div>
-        <div class="steam-ts-stat-diff">개국</div>
-      </div>
-      <div class="steam-ts-stat-box">
         <div class="steam-ts-stat-label">총 기록 수</div>
         <div class="steam-ts-stat-value" id="sts-count">—</div>
-        <div class="steam-ts-stat-diff">개</div>
+        <div class="steam-ts-stat-diff" id="sts-countries-sub">—개국 추적</div>
+      </div>
+      <div class="steam-ts-stat-box">
+        <div class="steam-ts-stat-label">순위권 진입 국가</div>
+        <div id="sts-rank-breakdown" style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:12px">🥇 <span style="color:#FFD700">#1</span></span>
+            <span id="sts-cnt-1"  style="font-family:'Cinzel',serif;font-size:18px;color:#FFD700">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:12px">🥈 <span style="color:#C0C0C0">#2~3</span></span>
+            <span id="sts-cnt-3"  style="font-family:'Cinzel',serif;font-size:18px;color:#C0C0C0">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:12px">🏅 <span style="color:#cd7f32">#4~10</span></span>
+            <span id="sts-cnt-10" style="font-family:'Cinzel',serif;font-size:18px;color:#cd7f32">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #333;padding-top:4px;margin-top:2px">
+            <span style="font-size:11px;color:#666">#11+ / 전체</span>
+            <span id="sts-cnt-rest" style="font-size:12px;color:#666">— / —</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -710,6 +755,7 @@ async function init() {
 
   render();
   loadSteamTopSellerData();
+  fetchStock();
 }
 
 function getRank(entry, country) {
@@ -756,7 +802,16 @@ function render() {
   document.getElementById('stat-best-name').innerText = (FLAGS[best.n] || '') + ' ' + best.n;
   document.getElementById('stat-worst-val').innerText = worst.r === 0 ? '—' : worst.r + '위';
   document.getElementById('stat-worst-name').innerText = worst.n ? (FLAGS[worst.n] || '') + ' ' + worst.n : '...';
-  document.getElementById('stat-count').innerText = list.filter(x => x.rank < 999).length + '개국';
+  // 순위별 국가 수 집계
+  const cnt1   = list.filter(x => x.rank === 1).length;
+  const cnt23  = list.filter(x => x.rank >= 2 && x.rank <= 3).length;
+  const cnt410 = list.filter(x => x.rank >= 4 && x.rank <= 10).length;
+  const cntRest= list.filter(x => x.rank >= 11 && x.rank < 999).length;
+  const cntAll = list.filter(x => x.rank < 999).length;
+  document.getElementById('stat-cnt-1').innerText    = cnt1;
+  document.getElementById('stat-cnt-3').innerText    = cnt23;
+  document.getElementById('stat-cnt-10').innerText   = cnt410;
+  document.getElementById('stat-cnt-rest').innerText = cntRest + '개 / ' + cntAll + '개국';
 
   const t10Grid = document.getElementById('top10-grid');
   t10Grid.innerHTML = '';
@@ -1132,7 +1187,8 @@ function renderSTS() {
 
   document.getElementById('sts-avg').textContent = la ? '#' + la.toFixed(1) : '—';
   document.getElementById('sts-count').textContent = stsHist.length;
-  document.getElementById('sts-countries').textContent = Object.keys(lat.results || {}).length;
+  const stsTotalCountries = Object.keys(lat.results || {}).length;
+  document.getElementById('sts-countries-sub').textContent = stsTotalCountries + '개국 추적';
 
   const el = document.getElementById('sts-avg-diff');
   if (pa !== null && la !== null) {
@@ -1239,6 +1295,16 @@ function renderStsGrid(lat, prv) {
     document.getElementById('sts-cs-worst-name').textContent = worst[0] + ' #' + worst[1].rank;
     document.getElementById('sts-cs-found').textContent = ranked.length;
     document.getElementById('sts-cs-found-sub').textContent = '/ ' + s.length + '개국 추적';
+
+    // 상단 순위별 분포 업데이트
+    const _cnt1   = ranked.filter(([,d]) => d.rank === 1).length;
+    const _cnt23  = ranked.filter(([,d]) => d.rank >= 2 && d.rank <= 3).length;
+    const _cnt410 = ranked.filter(([,d]) => d.rank >= 4 && d.rank <= 10).length;
+    const _cntRest= ranked.filter(([,d]) => d.rank >= 11).length;
+    document.getElementById('sts-cnt-1').textContent    = _cnt1;
+    document.getElementById('sts-cnt-3').textContent    = _cnt23;
+    document.getElementById('sts-cnt-10').textContent   = _cnt410;
+    document.getElementById('sts-cnt-rest').textContent = _cntRest + '개 / ' + ranked.length + '개국';
   }
 
   g.innerHTML = s.map(([n, d]) => {
@@ -1401,6 +1467,33 @@ function downloadSteamCSV() {
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = `crimson_desert_steam_ranks_${ts}.csv`; a.click();
+}
+
+/* ── 펄어비스 주가 ── */
+async function fetchStock() {
+  const priceEl  = document.getElementById('pa-price');
+  const changeEl = document.getElementById('pa-change');
+  const boxEl    = document.getElementById('pa-stock');
+  priceEl.textContent = '…';
+  try {
+    // Yahoo Finance 비공식 v8 API (CORS 우회용 프록시)
+    const url = 'https://query1.finance.yahoo.com/v8/finance/chart/263750.KQ?interval=1d&range=2d';
+    const res = await fetch(url);
+    const json = await res.json();
+    const meta = json.chart.result[0].meta;
+    const price  = meta.regularMarketPrice;
+    const prev   = meta.previousClose || meta.chartPreviousClose;
+    const diff   = price - prev;
+    const pct    = (diff / prev * 100);
+    priceEl.textContent  = price.toLocaleString() + '원';
+    changeEl.textContent = (diff >= 0 ? '▲' : '▼') + Math.abs(diff).toLocaleString() + ' (' + Math.abs(pct).toFixed(2) + '%)';
+    changeEl.style.color = diff >= 0 ? '#2ecc71' : '#ff4757';
+    boxEl.title = `펄어비스 (263750) | 직전종가: ${prev.toLocaleString()}원 | 클릭하여 새로고침`;
+  } catch(e) {
+    priceEl.textContent  = '—';
+    changeEl.textContent = '로드 실패';
+    changeEl.style.color = '#666';
+  }
 }
 
 init();
