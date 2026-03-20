@@ -852,39 +852,51 @@ function renderMainChart() {
 }
 
 function showCountryChart(countryName) {
-  document.getElementById('chartModal').style.display = 'flex';
+  const modal = document.getElementById('chartModal');
+  modal.style.display = 'flex';
   document.getElementById('modalTitle').innerText = `${FLAGS[countryName] || ''} ${countryName} History`;
   twemoji.parse(document.getElementById('modalTitle'), { folder: 'svg', ext: '.svg' });
   if (countryChart) { countryChart.destroy(); countryChart = null; }
-  const countryData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName) })).filter(d => d.y !== 999);
-  requestAnimationFrame(() => {
-  const ctx = document.getElementById('countryChart').getContext('2d');
-  countryChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      datasets: [{
-        label: countryName,
-        data: countryData,
-        borderColor: '#ff4757', borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, tension: 0.2, fill: false
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      scales: {
-        x: {
-          type: 'time',
-          time: {
-            tooltipFormat: 'MM/dd HH:mm',
-            displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' }
+  const countryData = historyData
+    .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName) }))
+    .filter(d => d.y !== 999);
+
+  function drawCountryChart() {
+    const canvas = document.getElementById('countryChart');
+    const container = canvas.parentElement;
+    // 캔버스 크기를 컨테이너에 명시적으로 맞춤 (responsive 계산 전에 확보)
+    canvas.width  = container.offsetWidth  || 700;
+    canvas.height = container.offsetHeight || 400;
+    const ctx = canvas.getContext('2d');
+    countryChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        datasets: [{
+          label: countryName,
+          data: countryData,
+          borderColor: '#ff4757', borderWidth: 2,
+          pointRadius: countryData.length > 100 ? 0 : 2,
+          pointHoverRadius: 5, tension: 0.2, fill: false
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: {
+            type: 'time',
+            time: { tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' } },
+            grid: { color: '#333' },
+            ticks: { color: '#fff', maxRotation: 45, autoSkip: true, maxTicksLimit: 10 }
           },
-          grid: { color: '#333' },
-          ticks: { color: '#fff', maxRotation: 45, autoSkip: true, maxTicksLimit: 10 }
+          y: { reverse: true, min: 1, grid: { color: '#333' }, ticks: { color: '#fff' } }
         },
-        y: { reverse: true, min: 1, grid: { color: '#333' }, ticks: { color: '#fff' } }
+        plugins: { legend: { display: false } }
       }
-    }
-  });
-  }); // end requestAnimationFrame
+    });
+  }
+
+  // display:flex 후 layout이 완료될 때까지 대기 (double-rAF가 single보다 안정적)
+  requestAnimationFrame(() => requestAnimationFrame(drawCountryChart));
 }
 
 function closeModal() { document.getElementById('chartModal').style.display = 'none'; }
