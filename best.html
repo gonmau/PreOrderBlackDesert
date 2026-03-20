@@ -855,9 +855,10 @@ function showCountryChart(countryName) {
   document.getElementById('chartModal').style.display = 'flex';
   document.getElementById('modalTitle').innerText = `${FLAGS[countryName] || ''} ${countryName} History`;
   twemoji.parse(document.getElementById('modalTitle'), { folder: 'svg', ext: '.svg' });
-  const ctx = document.getElementById('countryChart').getContext('2d');
-  if (countryChart) countryChart.destroy();
+  if (countryChart) { countryChart.destroy(); countryChart = null; }
   const countryData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName) })).filter(d => d.y !== 999);
+  requestAnimationFrame(() => {
+  const ctx = document.getElementById('countryChart').getContext('2d');
   countryChart = new Chart(ctx, {
     type: 'line',
     data: {
@@ -883,6 +884,7 @@ function showCountryChart(countryName) {
       }
     }
   });
+  }); // end requestAnimationFrame
 }
 
 function closeModal() { document.getElementById('chartModal').style.display = 'none'; }
