@@ -1477,46 +1477,52 @@ async function fetchStock() {
   priceEl.textContent = '…';
   changeEl.textContent = '';
 
-  // 여러 엔드포인트 순서대로 시도
-  const endpoints = [
-    // 1) corsproxy.io 경유 Yahoo Finance
-    () => fetch('https://corsproxy.io/?url=' + encodeURIComponent('https://query2.finance.yahoo.com/v8/finance/chart/263750.KQ?interval=1d&range=5d'))
-          .then(r => r.json()).then(j => {
-            const meta = j.chart.result[0].meta;
-            return { price: meta.regularMarketPrice, prev: meta.previousClose || meta.chartPreviousClose };
-          }),
-    // 2) allorigins 경유 Yahoo Finance
-    () => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://query2.finance.yahoo.com/v8/finance/chart/263750.KQ?interval=1d&range=5d'))
-          .then(r => r.json()).then(j => {
-            const meta = JSON.parse(j.contents).chart.result[0].meta;
-            return { price: meta.regularMarketPrice, prev: meta.previousClose || meta.chartPreviousClose };
-          }),
-    // 3) Yahoo Finance v7 quote (다른 경로)
-    () => fetch('https://corsproxy.io/?url=' + encodeURIComponent('https://query1.finance.yahoo.com/v7/finance/quote?symbols=263750.KQ'))
-          .then(r => r.json()).then(j => {
-            const q = j.quoteResponse.result[0];
-            return { price: q.regularMarketPrice, prev: q.regularMarketPreviousClose };
-          }),
+  // 네이버 증권 모바일 API — 실시간 시세 (한국 주식에 가장 정확)
+  const naverUrl = 'https://m.stock.naver.com/api/stock/263750/basic';
+  const proxies = [
+    u => fetch('https://corsproxy.io/?url=' + encodeURIComponent(u)).then(r => r.json()),
+    u => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(u)).then(r => r.json()).then(j => JSON.parse(j.contents)),
   ];
 
-  for (const tryFn of endpoints) {
+  for (const proxy of proxies) {
     try {
-      const { price, prev } = await tryFn();
+      const j = await proxy(naverUrl);
+      // 네이버 API 응답 필드
+      const price   = parseInt((j.closePrice || j.stockEndPrice || '').replace(/,/g, ''), 10);
+      const diffRaw = j.compareToPreviousClosePrice || j.stockDiff || '0';
+      const diff    = parseInt(String(diffRaw).replace(/,/g, ''), 10);
+      const pct     = parseFloat(j.fluctuationsRatio || j.stockDiffRate || '0');
+      const status  = j.marketStatus || '';  // OPEN / CLOSE / AFTER_HOURS
+
       if (!price) continue;
-      const diff = price - prev;
-      const pct  = diff / prev * 100;
+
       priceEl.textContent  = price.toLocaleString() + '원';
-      changeEl.textContent = (diff >= 0 ? '▲' : '▼') + Math.abs(diff).toLocaleString()
-                           + ' (' + Math.abs(pct).toFixed(2) + '%)';
+      const sign = diff >= 0 ? '▲' : '▼';
+      changeEl.textContent = sign + Math.abs(diff).toLocaleString() + ' (' + Math.abs(pct).toFixed(2) + '%)';
       changeEl.style.color = diff >= 0 ? '#2ecc71' : '#ff4757';
-      boxEl.title = '펄어비스 (263750) | 직전종가 ' + prev.toLocaleString() + '원 | 클릭하여 새로고침';
+
+      const statusLabel = status === 'OPEN' ? '장중' : status === 'AFTER_HOURS' ? '시간외' : '장마감';
+      boxEl.title = '펄어비스 (263750) · ' + statusLabel + ' | 클릭하여 새로고침';
+
+      // 장 상태 뱃지
+      let badge = document.getElementById('pa-status');
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.id = 'pa-status';
+        badge.style.cssText = 'font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700;letter-spacing:0.5px';
+        boxEl.appendChild(badge);
+      }
+      if (status === 'OPEN') {
+        badge.textContent = 'LIVE'; badge.style.background = 'rgba(46,204,113,0.2)'; badge.style.color = '#2ecc71';
+      } else {
+        badge.textContent = statusLabel; badge.style.background = 'rgba(255,255,255,0.07)'; badge.style.color = '#666';
+      }
       return;
-    } catch(e) { /* 다음 엔드포인트로 */ }
+    } catch(e) { /* 다음 프록시 */ }
   }
 
-  // 전부 실패 시 Naver Finance 링크로 대체
-  priceEl.textContent  = '—';
-  changeEl.innerHTML   = '<a href="https://finance.naver.com/item/main.nhn?code=263750" target="_blank" style="color:#4a9eff;font-size:11px">네이버 확인 ↗</a>';
+  priceEl.textContent = '—';
+  changeEl.innerHTML  = '<a href="https://finance.naver.com/item/main.nhn?code=263750" target="_blank" style="color:#4a9eff;font-size:11px">네이버 확인 ↗</a>';
 }
 
 init();
