@@ -402,6 +402,13 @@
     </div>
   </header>
 
+  <!-- PS Store 섹션 접기/펼치기 헤더 -->
+  <div class="sts-collapsible-header" onclick="stToggle('ps-main-body', this)" style="margin-bottom:12px">
+    <span class="sts-collapsible-title">🎮 PS Store 순위 현황</span>
+    <button class="sts-collapse-btn">▼ 펼치기</button>
+  </div>
+  <div class="sts-collapsible-body collapsed" id="ps-main-body">
+
   <div class="stats">
     <div class="card"><div class="lbl">Weighted Average</div><div class="val" id="stat-avg">—</div></div>
     <div class="card">
@@ -478,6 +485,9 @@
       <tbody id="table-body"></tbody>
     </table>
   </div>
+
+  </div><!-- /ps-main-body -->
+
   <!-- Steam Top Seller Section -->
   <div class="steam-ts-section" id="steam-ts-section">
     <div class="steam-ts-header">
@@ -1480,52 +1490,54 @@ async function fetchStock() {
   priceEl.textContent = '…';
   changeEl.textContent = '';
 
-  // 네이버 증권 모바일 API — 실시간 시세 (한국 주식에 가장 정확)
   const naverUrl = 'https://m.stock.naver.com/api/stock/263750/basic';
-  const proxies = [
-    u => fetch('https://corsproxy.io/?url=' + encodeURIComponent(u)).then(r => r.json()),
-    u => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(u)).then(r => r.json()).then(j => JSON.parse(j.contents)),
+
+  // 4개 프록시 순서대로 시도
+  const tries = [
+    () => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(naverUrl))
+            .then(r => { if(!r.ok) throw 0; return r.json(); }),
+    () => fetch('https://corsproxy.io/?url=' + encodeURIComponent(naverUrl))
+            .then(r => { if(!r.ok) throw 0; return r.json(); }),
+    () => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(naverUrl))
+            .then(r => r.json()).then(j => JSON.parse(j.contents)),
+    () => fetch('https://thingproxy.freeboard.io/fetch/' + naverUrl)
+            .then(r => { if(!r.ok) throw 0; return r.json(); }),
   ];
 
-  for (const proxy of proxies) {
+  for (const tryFn of tries) {
     try {
-      const j = await proxy(naverUrl);
-      // 네이버 API 응답 필드
-      const price   = parseInt((j.closePrice || j.stockEndPrice || '').replace(/,/g, ''), 10);
-      const diffRaw = j.compareToPreviousClosePrice || j.stockDiff || '0';
-      const diff    = parseInt(String(diffRaw).replace(/,/g, ''), 10);
-      const pct     = parseFloat(j.fluctuationsRatio || j.stockDiffRate || '0');
-      const status  = j.marketStatus || '';  // OPEN / CLOSE / AFTER_HOURS
-
-      if (!price) continue;
+      const j = await Promise.race([tryFn(), new Promise((_,rj) => setTimeout(() => rj('timeout'), 5000))]);
+      const price = parseInt((j.closePrice || j.stockEndPrice || '').replace(/,/g,''), 10);
+      if (!price || isNaN(price)) continue;
+      const diff = parseInt(String(j.compareToPreviousClosePrice || '0').replace(/,/g,''), 10);
+      const pct  = parseFloat(j.fluctuationsRatio || '0');
+      const sign = diff >= 0 ? '▲' : '▼';
 
       priceEl.textContent  = price.toLocaleString() + '원';
-      const sign = diff >= 0 ? '▲' : '▼';
       changeEl.textContent = sign + Math.abs(diff).toLocaleString() + ' (' + Math.abs(pct).toFixed(2) + '%)';
       changeEl.style.color = diff >= 0 ? '#2ecc71' : '#ff4757';
 
-      const statusLabel = status === 'OPEN' ? '장중' : status === 'AFTER_HOURS' ? '시간외' : '장마감';
-      boxEl.title = '펄어비스 (263750) · ' + statusLabel + ' | 클릭하여 새로고침';
-
-      // 장 상태 뱃지
+      const status = j.marketStatus || '';
       let badge = document.getElementById('pa-status');
       if (!badge) {
         badge = document.createElement('span');
         badge.id = 'pa-status';
-        badge.style.cssText = 'font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700;letter-spacing:0.5px';
-        boxEl.appendChild(badge);
+        badge.style.cssText = 'font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:2px';
+        boxEl.insertBefore(badge, boxEl.querySelector('span:last-child'));
       }
       if (status === 'OPEN') {
         badge.textContent = 'LIVE'; badge.style.background = 'rgba(46,204,113,0.2)'; badge.style.color = '#2ecc71';
       } else {
-        badge.textContent = statusLabel; badge.style.background = 'rgba(255,255,255,0.07)'; badge.style.color = '#666';
+        const lb = status === 'AFTER_HOURS' ? '시간외' : '종가';
+        badge.textContent = lb; badge.style.background = 'rgba(255,255,255,0.06)'; badge.style.color = '#555';
       }
+      boxEl.title = '펄어비스 (263750) | 클릭하여 새로고침';
       return;
     } catch(e) { /* 다음 프록시 */ }
   }
 
   priceEl.textContent = '—';
-  changeEl.innerHTML  = '<a href="https://finance.naver.com/item/main.nhn?code=263750" target="_blank" style="color:#4a9eff;font-size:11px">네이버 확인 ↗</a>';
+  changeEl.innerHTML  = '<a href="https://finance.naver.com/item/main.nhn?code=263750" target="_blank" style="color:#4a9eff;font-size:11px;text-decoration:none">네이버↗</a>';
 }
 
 init();
