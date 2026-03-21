@@ -420,7 +420,67 @@
   .sts-legend-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
   @media (max-width: 480px) { .sts-slot { width: 18px; height: 24px; } .sts-slot .slot-h { font-size: 7px; } }
   @media (max-width: 600px) { .steam-ts-country-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
-  /* ─── GitHub Dispatch Buttons ─── */
+  /* ─── Sticky Nav Bar ─── */
+  .nav-bar {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 45px; /* header 높이만큼 */
+    z-index: 49;
+    background: rgba(8,8,8,0.96);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid #1e1e1e;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .nav-group {
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 0 16px;
+  }
+  .nav-group::-webkit-scrollbar { display: none; }
+  .nav-group-label {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 0 10px 0 2px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    border-right: 1px solid #222;
+    margin-right: 8px;
+  }
+  .nav-group.ps-nav  { border-bottom: 1px solid #1a1a1a; }
+  .nav-group.ps-nav .nav-group-label  { color: #ff4757; }
+  .nav-group.steam-nav .nav-group-label { color: #4a9eff; }
+  .nav-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 11px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #555;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .nav-tab:hover { color: #aaa; }
+  .nav-tab.active.ps-tab    { color: #ff4757; border-bottom-color: #ff4757; }
+  .nav-tab.active.steam-tab { color: #4a9eff; border-bottom-color: #4a9eff; }
+  @media (max-width: 600px) {
+    .nav-tab { padding: 6px 8px; font-size: 10px; }
+    .nav-group-label { font-size: 8px; }
+    .nav-bar { top: 42px; }
+  }
   .gh-dispatch-wrap {
     display: flex;
     align-items: center;
@@ -696,6 +756,26 @@
     </div>
   </div>
 </header>
+
+<div class="nav-bar" id="nav-bar">
+  <div class="nav-group ps-nav">
+    <span class="nav-group-label">PS</span>
+    <span class="nav-tab ps-tab active" data-target="ps-main-body"    onclick="navTo('ps-main-body',this)">📊 요약</span>
+    <span class="nav-tab ps-tab"        data-target="ps-top10-body"   onclick="navTo('ps-top10-body',this)">🏆 리더보드</span>
+    <span class="nav-tab ps-tab"        data-target="ps-sched-body"   onclick="navTo('ps-sched-body',this)">⏱ 스케줄</span>
+    <span class="nav-tab ps-tab"        data-target="ps-chart-body"   onclick="navTo('ps-chart-body',this)">📈 차트</span>
+    <span class="nav-tab ps-tab"        data-target="ps-heatmap-body" onclick="navTo('ps-heatmap-body',this)">🔥 히트맵</span>
+    <span class="nav-tab ps-tab"        data-target="ps-table-body"   onclick="navTo('ps-table-body',this)">🌍 국가별</span>
+  </div>
+  <div class="nav-group steam-nav">
+    <span class="nav-group-label">Steam</span>
+    <span class="nav-tab steam-tab"     data-target="steam-ts-section"  onclick="navTo('steam-ts-section',this)">📊 요약</span>
+    <span class="nav-tab steam-tab"     data-target="sts-chart-body"    onclick="navTo('sts-chart-body',this)">📈 차트</span>
+    <span class="nav-tab steam-tab"     data-target="sts-sched-body"    onclick="navTo('sts-sched-body',this)">⏱ 스케줄</span>
+    <span class="nav-tab steam-tab"     data-target="sts-heatmap-body"  onclick="navTo('sts-heatmap-body',this)">🔥 히트맵</span>
+    <span class="nav-tab steam-tab"     data-target="sts-countries-body" onclick="navTo('sts-countries-body',this)">🌍 국가별</span>
+  </div>
+</div>
 
 <div class="container" style="padding-top:20px">
 
@@ -1538,6 +1618,82 @@ function renderSchedule() {
   `;
 }
 /* ───────────────────────────────────────────────────────────────────── */
+
+/* ── Nav Bar ── */
+function navTo(targetId, tabEl) {
+  const el = document.getElementById(targetId);
+  if (!el) return;
+
+  // PS sub-sections: 부모 ps-main-body도 먼저 열기
+  const psSubIds = ['ps-top10-body','ps-sched-body','ps-chart-body','ps-heatmap-body','ps-table-body'];
+  if (psSubIds.includes(targetId)) {
+    const mainBody = document.getElementById('ps-main-body');
+    if (mainBody && mainBody.classList.contains('collapsed')) {
+      mainBody.classList.remove('collapsed');
+    }
+  }
+  // Steam sub-sections: steam-ts-section은 항상 보이지만 내부 collapsed 해제
+  const steamSubIds = ['sts-chart-body','sts-sched-body','sts-heatmap-body','sts-countries-body'];
+  if (steamSubIds.includes(targetId)) {
+    if (el.classList.contains('collapsed')) el.classList.remove('collapsed');
+  }
+  // ps-main-body 자체 클릭 시 펼치기
+  if (targetId === 'ps-main-body') {
+    if (el.classList.contains('collapsed')) el.classList.remove('collapsed');
+  }
+  // steam-ts-section은 항상 visible
+
+  // 스크롤: nav bar 높이 감안
+  const navH = (document.getElementById('nav-bar')?.offsetHeight || 80) +
+               (document.querySelector('header')?.offsetHeight || 45) + 8;
+  const top = el.getBoundingClientRect().top + window.scrollY - navH;
+  window.scrollTo({ top, behavior: 'smooth' });
+
+  // 탭 active 처리
+  setActiveTab(tabEl);
+
+  // 차트 리사이즈
+  requestAnimationFrame(() => {
+    if (targetId === 'ps-chart-body'  && mainChart) mainChart.resize();
+    if (targetId === 'sts-chart-body' && stsCI) stsCI.resize();
+  });
+}
+
+function setActiveTab(tabEl) {
+  if (!tabEl) return;
+  const isPsTab = tabEl.classList.contains('ps-tab');
+  document.querySelectorAll(isPsTab ? '.ps-tab' : '.steam-tab')
+    .forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+}
+
+// 스크롤 시 현재 보이는 섹션에 맞춰 탭 자동 하이라이트
+const _navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    const id = entry.target.id;
+    const tab = document.querySelector(`.nav-tab[data-target="${id}"]`);
+    if (tab) setActiveTab(tab);
+  });
+}, { rootMargin: '-50% 0px -40% 0px' });
+
+window.addEventListener('DOMContentLoaded', () => {
+  // nav-bar top = header 실제 높이
+  const header = document.querySelector('header');
+  const navBar = document.getElementById('nav-bar');
+  if (header && navBar) {
+    const setTop = () => { navBar.style.top = header.offsetHeight + 'px'; };
+    setTop();
+    new ResizeObserver(setTop).observe(header);
+  }
+
+  ['ps-main-body','ps-top10-body','ps-sched-body','ps-chart-body','ps-heatmap-body','ps-table-body',
+   'steam-ts-section','sts-chart-body','sts-sched-body','sts-heatmap-body','sts-countries-body']
+  .forEach(id => {
+    const el = document.getElementById(id);
+    if (el) _navObserver.observe(el);
+  });
+});
 
 /* ── stToggle: collapsible helper ── */
 function stToggle(bodyId, headerEl) {
