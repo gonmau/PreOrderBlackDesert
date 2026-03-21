@@ -151,7 +151,7 @@
   .steam-header { color: var(--steam); background: rgba(74,158,255,0.05); }
   .dual-col .stats        { padding: 12px; gap: 8px; margin-bottom: 0; }
   .dual-col .card         { padding: 12px 14px; }
-  .dual-col .card .val    { font-size: 22px; }
+  .dual-col .card .val    { font-size: 24px; }
   .dual-col .sts-sched-wrap   { padding: 12px; }
   .dual-col .chart-section    { border: none; border-radius: 0; margin-bottom: 0; padding: 12px; height: 100%; }
   .dual-col .steam-ts-chart-box { border: none; border-radius: 0; height: 100%; }
@@ -169,7 +169,7 @@
       min-height: 300px;
     }
     .dual-col .stats { grid-template-columns: repeat(2, 1fr); }
-    .dual-col .card .val { font-size: 20px; }
+    .dual-col .card .val { font-size: 22px; }
   }
 
   /* ══ 국가별 테이블형 행 ════════════════════════════════════════ */
@@ -202,12 +202,12 @@
   .ct-row:hover { background: var(--bg-3); }
   .ct-bar { height: 100%; min-height: 30px; border-radius: 0 2px 2px 0; }
   .ct-flag { font-size: 15px; text-align: center; }
-  .ct-name { font-size: 12px; font-weight: 700; color: var(--tx-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ct-name { font-size: 13px; font-weight: 700; color: var(--tx-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ct-meta { font-size: 10px; color: var(--tx-4); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ct-chg  { font-size: 10px; font-weight: 800; text-align: center; }
   .ct-chg.up   { color: var(--up); }
   .ct-chg.down { color: var(--down); }
-  .ct-rank { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 900; text-align: right; }
+  .ct-rank { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 900; text-align: right; }
   .ct-link { font-size: 11px; color: var(--tx-4); text-decoration: none; text-align: center; }
   .ct-link:hover { color: var(--tx-2); }
   @media (max-width: 500px) {
@@ -230,6 +230,9 @@
     overflow-x: auto; scrollbar-width: none;
     -ms-overflow-style: none;
     padding: 0 16px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
   }
   .nav-group::-webkit-scrollbar { display: none; }
   .nav-group-label {
@@ -242,7 +245,7 @@
   .nav-group-label.steam-lbl { color: var(--steam); }
   .nav-tab {
     display: inline-flex; align-items: center; gap: 4px;
-    padding: 8px 10px; font-size: 11px; font-weight: 700;
+    padding: 9px 12px; font-size: 13px; font-weight: 700;
     color: var(--tx-4); cursor: pointer; white-space: nowrap;
     border-bottom: 2px solid transparent;
     transition: color var(--trans), border-color var(--trans);
@@ -265,9 +268,9 @@
     padding: 18px 20px; border-radius: var(--radius);
     border-left: 3px solid var(--blood);
   }
-  .card .lbl { font-size: 10px; color: var(--tx-3); margin-bottom: 6px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+  .card .lbl { font-size: 11px; color: var(--tx-3); margin-bottom: 6px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
   .card .val { font-family: 'Cinzel', serif; font-size: 26px; color: var(--gold); }
-  .card .sub { font-size: 13px; margin-top: 4px; color: var(--tx-2); }
+  .card .sub { font-size: 14px; margin-top: 4px; color: var(--tx-2); }
   @media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } }
 
   /* ══ Top10 리더보드 ══════════════════════════════════════════ */
@@ -278,7 +281,7 @@
     cursor: pointer; border: 1px solid transparent; transition: border-color var(--trans), background var(--trans);
   }
   .top10-item:hover { border-color: var(--gold); background: var(--bg-4); }
-  .top10-item .n { font-size: 12px; color: var(--tx-3); display: block; }
+  .top10-item .n { font-size: 13px; color: var(--tx-3); display: block; }
   .top10-item .r { font-size: 17px; font-weight: 700; color: var(--tx-1); }
   img.emoji { height: 1.3em; width: 1.3em; vertical-align: -0.2em; margin-right: 6px; display: inline-block; }
   .top10-item img.emoji { height: 1.1em; width: 1.1em; margin-right: 3px; }
@@ -330,8 +333,8 @@
   }
 
   /* ══ 모달 ════════════════════════════════════════════════════ */
-  .modal { display: none; position: fixed; z-index: 100; inset: 0; background: rgba(0,0,0,0.88); align-items: center; justify-content: center; }
-  .modal-content { background: var(--bg-2); width: 90%; max-width: 800px; padding: 28px; border-radius: var(--radius); border: 1px solid var(--bd-hi); position: relative; }
+  .modal { display: none; position: fixed; z-index: 100; inset: 0; background: rgba(0,0,0,0.88); align-items: center; justify-content: center; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .modal-content { background: var(--bg-2); width: 90%; max-width: 800px; padding: 28px; border-radius: var(--radius); border: 1px solid var(--bd-hi); position: relative; margin: auto; }
   .close-btn { position: absolute; top: 14px; right: 18px; font-size: 26px; color: var(--tx-3); cursor: pointer; }
   .close-btn:hover { color: var(--tx-1); }
 
@@ -370,8 +373,8 @@
   .hm-bar.same { background: var(--bd); }
   .hm-rank { display: none; } /* 순위는 그룹 헤더에 표시 */
   .hm-info { flex:1; padding: 5px 5px 5px 8px; min-width: 0; }
-  .hm-name { font-size: 12px; font-weight: 700; color: var(--tx-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; }
-  .hm-name .hm-flag { font-size: 14px; flex-shrink: 0; }
+  .hm-name { font-size: 13px; font-weight: 700; color: var(--tx-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; }
+  .hm-name .hm-flag { font-size: 15px; flex-shrink: 0; }
   .hm-meta { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
   .hm-best { font-size: 9px; color: var(--gold); font-weight: 700; white-space: nowrap; }
   .hm-change { font-size: 10px; font-weight: 800; white-space: nowrap; }
@@ -578,9 +581,9 @@
   @media (max-width: 600px) { .steam-ts-country-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
 
   /* Steam 모달 */
-  .steam-ts-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 150; align-items: center; justify-content: center; }
+  .steam-ts-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 150; align-items: center; justify-content: center; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; }
   .steam-ts-modal-overlay.open { display: flex; }
-  .steam-ts-modal { background: var(--bg-2); border: 1px solid var(--bd-hi); border-radius: var(--radius); padding: 24px; width: min(480px,92vw); max-height: 80vh; overflow-y: auto; }
+  .steam-ts-modal { background: var(--bg-2); border: 1px solid var(--bd-hi); border-radius: var(--radius); padding: 24px; width: min(480px,92vw); max-height: 85vh; overflow-y: auto; margin: auto; }
   .steam-ts-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .steam-ts-modal-title { font-size: 15px; font-weight: 800; color: var(--tx-1); }
   .steam-ts-modal-close { background: none; border: none; color: var(--tx-3); font-size: 20px; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
@@ -625,12 +628,12 @@
   .ct-row:hover { background: var(--bg-3); }
   .ct-bar { align-self: stretch; border-radius: 0 2px 2px 0; min-height: 34px; }
   .ct-flag { font-size: 15px; text-align: center; overflow: hidden; }
-  .ct-name { font-size: 12px; font-weight: 700; color: var(--tx-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ct-name { font-size: 13px; font-weight: 700; color: var(--tx-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ct-meta { font-size: 10px; color: var(--tx-3); text-align: right; white-space: nowrap; }
   .ct-chg  { font-size: 10px; font-weight: 800; text-align: center; }
   .ct-chg.up   { color: var(--up); }
   .ct-chg.down { color: var(--down); }
-  .ct-rank { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 900; text-align: right; }
+  .ct-rank { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 900; text-align: right; }
   .ct-link { font-size: 11px; color: var(--tx-4); text-decoration: none; text-align: center; }
   .ct-link:hover { color: var(--tx-2); }
   /* 접기/펼치기 */
@@ -658,6 +661,23 @@
     .ct-table-header,
     .ct-row { grid-template-columns: 3px 18px 1fr 0 0 0 38px 18px; gap: 4px; }
     .ct-meta, .ct-chg { overflow: hidden; width: 0; padding: 0; }
+  }
+
+  /* ══ 모바일 가로보기 ══════════════════════════════════════════ */
+  @media (max-height: 500px) and (orientation: landscape) {
+    header { padding: 4px 0; }
+    header h1 { font-size: 16px !important; }
+    .gh-dispatch-btn { font-size: 10px; padding: 3px 6px; }
+    #pa-stock { padding: 4px 8px !important; }
+    #pa-price { font-size: 14px !important; }
+    .dual-wrap { grid-template-columns: 1fr 1fr; }
+    .dual-col { height: calc(100vh - var(--col-offset, 100px)); min-height: 200px; }
+    .dual-col-header { padding: 6px 12px; font-size: 11px; }
+    .dual-col .card .val { font-size: 18px !important; }
+    .modal-content { padding: 12px; margin: 4px auto; }
+    .modal-content > div[style*="height"] { height: min(240px, 40vh) !important; }
+    .steam-ts-modal { padding: 12px; max-height: 90vh; }
+    .steam-ts-modal-chart-inner { height: 150px !important; }
   }
 </style>
 </head>
@@ -973,7 +993,7 @@
   <div class="modal-content">
     <span class="close-btn" onclick="closeModal()">&times;</span>
     <h2 id="modalTitle" style="margin-bottom:20px; font-family:'Cinzel'; color:var(--gold);">Country Trend</h2>
-    <div style="height:400px;"><canvas id="countryChart"></canvas></div>
+    <div style="height:min(400px,50vh);"><canvas id="countryChart"></canvas></div>
   </div>
 </div>
 
