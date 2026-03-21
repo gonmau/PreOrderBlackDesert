@@ -1033,31 +1033,42 @@
   <div id="sec-sales" class="tab-section">
     <div class="dual-wrap">
       <div class="dual-col ps-col" style="flex:1">
-        <div class="dual-col-header ps-header">💰 플랫폼별 일별 판매량 추정
-          <span style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0">출시일(3/19) 200만 기준 추정치</span>
+        <div class="dual-col-header ps-header">💰 플랫폼별 판매량 추정
+          <span style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0">보수적 추정 모델 · 출시일 3/20 07:00 KST</span>
         </div>
         <div class="dual-col-body" style="padding:12px">
-          <!-- 설정 컨트롤 -->
+          <!-- 모델 설명 -->
+          <div style="background:var(--bg-3);border:1px solid var(--bd);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--tx-4);line-height:1.7">
+            <b style="color:var(--tx-2)">📌 모델 근거</b><br>
+            • 출시 ~24h 내 공식 200만 "sold through" 발표 (사전판매 ~36만 포함)<br>
+            • 환불 요인: Intel Arc 미지원, 혼합 평가(Steam 69%), Xbox 앱 오류 → 보수적 12% 적용<br>
+            • 플랫폼 비율: PS5 콘솔 중심 타이틀 + 아시아 비중 높아 PS 우세 추정<br>
+            • Xbox 비율 고정 12% · 일 자연 감소율 18% · 순위 탄성 0.45 (보수적)
+          </div>
+          <!-- 컨트롤 -->
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
-            <label style="font-size:12px;color:var(--tx-3)">출시 1일차 총 판매량:
+            <label style="font-size:12px;color:var(--tx-3)">발표 판매량:
               <input id="sales-day1-total" type="number" value="2000000" step="100000"
-                style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:110px;margin-left:6px"
-                oninput="renderSalesChart()">
+                style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:110px;margin-left:6px">
             </label>
-            <label style="font-size:12px;color:var(--tx-3)">PS 비율:
-              <input id="sales-ps-ratio" type="number" value="65" min="1" max="99" step="1"
-                style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:60px;margin-left:6px">
-              <span style="color:var(--tx-4)">% / Steam <span id="sales-steam-ratio-lbl">35</span>%
+            <label style="font-size:12px;color:var(--tx-3)">환불율(%):
+              <input id="sales-refund-pct" type="number" value="12" min="0" max="40" step="1"
+                style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:55px;margin-left:6px">
             </label>
-            <button onclick="renderSalesChart()" style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:4px 12px;color:var(--tx-2);font-size:12px;cursor:pointer">재계산</button>
+            <label style="font-size:12px;color:var(--tx-3)">PS5(%):
+              <input id="sales-ps-ratio" type="number" value="55" min="1" max="86" step="1"
+                style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:55px;margin-left:6px">
+              <span style="color:var(--tx-4);font-size:11px"> Steam <span id="sales-steam-ratio-lbl">33</span>% / Xbox 12%</span>
+            </label>
+            <button onclick="renderSalesChart()" style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:5px 14px;color:var(--tx-2);font-size:13px;cursor:pointer;font-weight:700">재계산</button>
           </div>
           <!-- 요약 카드 -->
-          <div id="sales-summary-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px"></div>
+          <div id="sales-summary-cards" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px"></div>
           <!-- 일별 차트 -->
-          <div style="font-size:11px;color:var(--tx-4);margin-bottom:4px;font-weight:700;letter-spacing:1px;text-transform:uppercase">일별 판매량 추정</div>
+          <div style="font-size:11px;color:var(--tx-4);margin-bottom:4px;font-weight:800;letter-spacing:1px;text-transform:uppercase">📊 일별 판매량 추정 (누적 막대)</div>
           <div style="height:220px;margin-bottom:16px"><canvas id="salesDailyChart"></canvas></div>
           <!-- 누적 차트 -->
-          <div style="font-size:11px;color:var(--tx-4);margin-bottom:4px;font-weight:700;letter-spacing:1px;text-transform:uppercase">누적 판매량 추정</div>
+          <div style="font-size:11px;color:var(--tx-4);margin-bottom:4px;font-weight:800;letter-spacing:1px;text-transform:uppercase">📈 누적 판매량 추정</div>
           <div style="height:220px"><canvas id="salesCumChart"></canvas></div>
         </div>
       </div>
@@ -1994,13 +2005,44 @@ function closePsLinksPopover() {
    - 누적: 각 플랫폼 + 합산
 ═══════════════════════════════════════════════════════════════ */
 
-const LAUNCH_DATE = new Date('2026-03-19T00:00:00+09:00');
+/* ═══════════════════════════════════════════════════════════════
+   판매량 추정 엔진 (보수적 모델)
+   ─────────────────────────────────────────────────────────────
+   [알려진 사실]
+   - 출시일: 2026-03-20 KST 07:00
+   - Pearl Abyss 공식 발표: 출시 ~24시간 내 200만 판매 돌파
+   - Steam 사전 판매 (Alinea Analytics): 출시 전 약 363,000장
+   - Steam 출시 당일 최대 동접: 239,000명
+   - 리뷰: Steam 69% 긍정 (Mixed), 환불 요인 다수 (Intel Arc 미지원,
+     컨트롤 논란, Xbox 앱 오류 등)
+
+   [플랫폼 비율 추정 근거]
+   - Steam 사전 판매 363K / 총 2M → Steam 비율 최소 18%
+   - 대형 AAA 통상: PS5 45~55%, PC 30~40%, Xbox 10~20%
+   - Pearl Abyss 특성상 아시아·콘솔 비중 높아 PS 비중 높게 설정
+   - 기본값: PS5 55%, Steam 33%, Xbox 12%
+
+   [2M 수치 보수적 해석]
+   - "sold through" = 사전 판매 포함 (Steam 363K 이미 포함)
+   - 환불 추정: 10~15% (Intel Arc 1%, 혼합 원인 환불 추가)
+   - 순 판매량 보정: 입력값 × (1 - 환불율)
+
+   [일별 감소 모델]
+   - Day 0(출시 당일): 전체 판매의 큰 비중 (통상 AAA 첫날 25~35%)
+   - 2일차 이후: 순위 기반 감소율 적용
+     daily_d = day0 × decay_factor^d × (baseRank/rank_d)^0.45
+   - decay_factor = 0.82 (일 18% 자연 감소, 보수적)
+   - 지수 0.45: 순위↑ 판매 증가 탄성 낮게 설정 (0.65보다 보수적)
+   - 데이터 없는 날: 전날 × 0.82 (자연 감소만)
+═══════════════════════════════════════════════════════════════ */
+
+const LAUNCH_DATE = new Date('2026-03-20T07:00:00+09:00');
 let salesDailyCI = null, salesCumCI = null;
 
 function getDayIndex(ts) {
   const d = new Date(ts);
   const diff = d - LAUNCH_DATE;
-  return Math.floor(diff / 86400000); // 0=출시일
+  return Math.floor(diff / 86400000);
 }
 
 function fmtSales(n) {
@@ -2010,115 +2052,122 @@ function fmtSales(n) {
 }
 
 function renderSalesChart() {
-  const total1  = parseInt(document.getElementById('sales-day1-total').value) || 2000000;
-  const psRatio = parseInt(document.getElementById('sales-ps-ratio').value) || 65;
-  const stRatio = 100 - psRatio;
+  const totalAnn   = parseInt(document.getElementById('sales-day1-total').value) || 2000000;
+  const refundPct  = parseFloat(document.getElementById('sales-refund-pct').value) || 12;
+  const psRatio    = parseInt(document.getElementById('sales-ps-ratio').value) || 55;
+  const stRatio    = 100 - psRatio - 12; // Xbox 고정 12%
+  const xbRatio    = 12;
   const lbl = document.getElementById('sales-steam-ratio-lbl');
   if (lbl) lbl.textContent = stRatio;
+  // 환불 적용 순 판매량
+  const netTotal = Math.round(totalAnn * (1 - refundPct / 100));
+  const psDay0 = netTotal * psRatio / 100;
+  const stDay0 = netTotal * stRatio / 100;
+  const xbDay0 = netTotal * xbRatio / 100;
 
-  const psDay1 = total1 * psRatio / 100;
-  const stDay1 = total1 * stRatio / 100;
-
-  // ── PS 일별 순위 집계 (일 단위 평균) ──
+  // ── PS 일별 순위 집계 ──
   const psByDay = {};
   historyData.forEach(h => {
     const di = getDayIndex(h.timestamp);
     if (di < 0) return;
     const avg = h.averages?.combined;
-    if (avg == null || avg >= 999) return;
+    if (avg == null || avg >= 50) return; // 50위 밖은 제외
     if (!psByDay[di]) psByDay[di] = { sum: 0, cnt: 0 };
-    psByDay[di].sum += avg;
-    psByDay[di].cnt++;
+    psByDay[di].sum += avg; psByDay[di].cnt++;
   });
   const psDayAvg = {};
   Object.entries(psByDay).forEach(([d, v]) => { psDayAvg[parseInt(d)] = v.sum / v.cnt; });
 
-  // ── Steam 일별 순위 집계 ──
+  // ── Steam 일별 순위 집계 (상위 20위 이내만) ──
   const stByDay = {};
   stsHist.forEach(h => {
     const di = getDayIndex(h.timestamp);
     if (di < 0) return;
     let tw = 0, ts = 0;
     for (const [n, d] of Object.entries(h.results || {})) {
-      const r = d?.rank; if (!r || r > 30) continue;
+      const r = d?.rank; if (!r || r > 20) continue;
       const w = STS_W[n] || 1; ts += r * w; tw += w;
     }
     if (!tw) return;
     const avg = ts / tw;
     if (!stByDay[di]) stByDay[di] = { sum: 0, cnt: 0 };
-    stByDay[di].sum += avg;
-    stByDay[di].cnt++;
+    stByDay[di].sum += avg; stByDay[di].cnt++;
   });
   const stDayAvg = {};
   Object.entries(stByDay).forEach(([d, v]) => { stDayAvg[parseInt(d)] = v.sum / v.cnt; });
 
-  // ── 날짜 범위 결정 ──
+  // ── 날짜 범위 ──
   const allDays = new Set([...Object.keys(psDayAvg), ...Object.keys(stDayAvg)].map(Number));
-  if (!allDays.size) return;
+  if (!allDays.size) { console.warn('No sales data available'); return; }
   const maxDay = Math.max(...allDays);
   const days = Array.from({ length: maxDay + 1 }, (_, i) => i);
 
-  // ── 기준 순위 (1일차 또는 최초 데이터) ──
-  const psBase = psDayAvg[0] || psDayAvg[Math.min(...Object.keys(psDayAvg).map(Number))] || 18;
-  const stBase = stDayAvg[0] || stDayAvg[Math.min(...Object.keys(stDayAvg).map(Number))] || 14;
-  const DECAY = 0.65; // 순위→판매 변환 지수
+  // ── 기준 순위 (0일차 또는 첫 데이터) ──
+  const psKeys = Object.keys(psDayAvg).map(Number).sort((a,b)=>a-b);
+  const stKeys = Object.keys(stDayAvg).map(Number).sort((a,b)=>a-b);
+  const psBase = psDayAvg[psKeys[0]] || 3;
+  const stBase = stDayAvg[stKeys[0]] || 2;
+  const DECAY_DAILY = 0.82; // 일 자연 감소율
+  const RANK_EXP = 0.45;    // 순위 탄성 지수 (보수적)
 
-  // ── 일별 판매량 계산 ──
-  const psDaily = [], stDaily = [], totDaily = [];
-  const psLabels = [];
+  // ── 일별 판매 계산 ──
+  const psDaily = [], stDaily = [], xbDaily = [], totDaily = [];
+  const labels = [];
+  let psLastRank = psBase, stLastRank = stBase;
 
   days.forEach(di => {
     const date = new Date(LAUNCH_DATE.getTime() + di * 86400000);
-    psLabels.push(`${date.getMonth()+1}/${date.getDate()}`);
+    labels.push(`${date.getMonth()+1}/${date.getDate()}`);
 
-    let ps, st;
+    let ps, st, xb;
     if (di === 0) {
-      ps = psDay1;
-      st = stDay1;
+      ps = psDay0; st = stDay0; xb = xbDay0;
     } else {
-      const psR = psDayAvg[di] || null;
-      const stR = stDayAvg[di] || null;
-      // 데이터 없는 날은 선형 보간 또는 마지막 값으로 추정
-      const psReff = psR || (psDayAvg[di-1] ? psDayAvg[di-1] * 1.05 : psBase * (1 + di * 0.1));
-      const stReff = stR || (stDayAvg[di-1] ? stDayAvg[di-1] * 1.05 : stBase * (1 + di * 0.1));
-      ps = psDay1 * Math.pow(psBase / psReff, DECAY);
-      st = stDay1 * Math.pow(stBase / stReff, DECAY);
+      // 순위 가져오기 (없으면 전날 순위 × 1.08 = 자연 하락 가정)
+      const psR = psDayAvg[di] || (psLastRank * 1.08);
+      const stR = stDayAvg[di] || (stLastRank * 1.08);
+      psLastRank = psR; stLastRank = stR;
+      // 기본 감소 × 순위 보정
+      const dayDecay = Math.pow(DECAY_DAILY, di);
+      ps = psDay0 * dayDecay * Math.pow(psBase / psR, RANK_EXP);
+      st = stDay0 * dayDecay * Math.pow(stBase / stR, RANK_EXP);
+      xb = xbDay0 * Math.pow(DECAY_DAILY, di); // Xbox 순위 데이터 없어 자연 감소만
     }
     ps = Math.max(0, Math.round(ps));
     st = Math.max(0, Math.round(st));
-    psDaily.push(ps);
-    stDaily.push(st);
-    totDaily.push(ps + st);
+    xb = Math.max(0, Math.round(xb));
+    psDaily.push(ps); stDaily.push(st); xbDaily.push(xb);
+    totDaily.push(ps + st + xb);
   });
 
-  // ── 누적 계산 ──
-  const psCum = [], stCum = [], totCum = [];
-  let pAcc = 0, sAcc = 0;
+  // ── 누적 ──
+  const psCum = [], stCum = [], xbCum = [], totCum = [];
+  let pA = 0, sA = 0, xA = 0;
   psDaily.forEach((p, i) => {
-    pAcc += p; sAcc += stDaily[i];
-    psCum.push(pAcc);
-    stCum.push(sAcc);
-    totCum.push(pAcc + sAcc);
+    pA += p; sA += stDaily[i]; xA += xbDaily[i];
+    psCum.push(pA); stCum.push(sA); xbCum.push(xA); totCum.push(pA + sA + xA);
   });
 
-  const totalEstimate = totCum[totCum.length - 1] || 0;
-  const psTotal  = psCum[psCum.length - 1] || 0;
-  const stTotal  = stCum[stCum.length - 1] || 0;
+  const psTotal = psCum[psCum.length-1] || 0;
+  const stTotal = stCum[stCum.length-1] || 0;
+  const xbTotal = xbCum[xbCum.length-1] || 0;
+  const totalEst = totCum[totCum.length-1] || 0;
 
   // ── 요약 카드 ──
   const cards = document.getElementById('sales-summary-cards');
   if (cards) cards.innerHTML = [
-    { label: '🎮 PS Store 누적', val: fmtSales(psTotal),   color: 'var(--blood)' },
-    { label: '🖥 Steam 누적',    val: fmtSales(stTotal),   color: 'var(--steam)' },
-    { label: '📦 전체 누적 추정', val: fmtSales(totalEstimate), color: 'var(--gold)' },
-  ].map(({ label, val, color }) => `
-    <div style="background:var(--bg-2);border:1px solid var(--bd);border-left:3px solid ${color};border-radius:var(--radius);padding:12px">
-      <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">${label}</div>
-      <div style="font-family:'Cinzel',serif;font-size:22px;color:${color};font-weight:900">${val}</div>
+    { label: '📦 전체 누적 (순)', val: fmtSales(totalEst), sub: `환불 ${refundPct}% 적용`, color: 'var(--gold)' },
+    { label: '🎮 PS5 누적',        val: fmtSales(psTotal),   sub: `${psRatio}% 비중`,       color: 'var(--blood)' },
+    { label: '🖥 Steam 누적',      val: fmtSales(stTotal),   sub: `${stRatio}% 비중`,       color: 'var(--steam)' },
+    { label: '🎮 Xbox 누적',       val: fmtSales(xbTotal),   sub: `12% 비중`,               color: '#107C10' },
+  ].map(({ label, val, sub, color }) => `
+    <div style="background:var(--bg-2);border:1px solid var(--bd);border-left:3px solid ${color};border-radius:var(--radius);padding:10px 12px">
+      <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">${label}</div>
+      <div style="font-family:'Cinzel',serif;font-size:20px;color:${color};font-weight:900">${val}</div>
+      <div style="font-size:10px;color:var(--tx-4);margin-top:2px">${sub}</div>
     </div>`).join('');
 
-  // ── 차트 공통 옵션 ──
-  const chartDefaults = {
+  const chartOpts = {
     responsive: true, maintainAspectRatio: false,
     layout: { padding: { top: 8 } },
     scales: {
@@ -2126,40 +2175,40 @@ function renderSalesChart() {
       y: { ticks: { color: '#aaa', font: { size: 11 }, callback: v => fmtSales(v) }, grid: { color: '#1e1e1e' } }
     },
     plugins: {
-      legend: { labels: { color: '#ccc', font: { size: 12 }, boxWidth: 14 } },
+      legend: { labels: { color: '#ccc', font: { size: 12 }, boxWidth: 12 } },
       tooltip: { callbacks: { label: c => ' ' + c.dataset.label + ': ' + fmtSales(c.parsed.y) } }
     }
   };
 
-  // ── 일별 차트 ──
   const ctx1 = document.getElementById('salesDailyChart').getContext('2d');
   if (salesDailyCI) salesDailyCI.destroy();
   salesDailyCI = new Chart(ctx1, {
     type: 'bar',
     data: {
-      labels: psLabels,
+      labels,
       datasets: [
-        { label: 'PS Store', data: psDaily, backgroundColor: 'rgba(255,71,87,0.7)', borderColor: 'rgba(255,71,87,1)', borderWidth: 1 },
-        { label: 'Steam',    data: stDaily, backgroundColor: 'rgba(74,158,255,0.7)', borderColor: 'rgba(74,158,255,1)', borderWidth: 1 },
+        { label: 'PS5',   data: psDaily, backgroundColor: 'rgba(255,71,87,0.75)',  borderColor: '#ff4757', borderWidth: 1, stack: 'a' },
+        { label: 'Steam', data: stDaily, backgroundColor: 'rgba(74,158,255,0.75)', borderColor: '#4a9eff', borderWidth: 1, stack: 'a' },
+        { label: 'Xbox',  data: xbDaily, backgroundColor: 'rgba(16,124,16,0.75)',  borderColor: '#107C10', borderWidth: 1, stack: 'a' },
       ]
     },
-    options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: false } } }
+    options: { ...chartOpts, scales: { ...chartOpts.scales, x: { ...chartOpts.scales.x, stacked: true }, y: { ...chartOpts.scales.y, stacked: true } } }
   });
 
-  // ── 누적 차트 ──
   const ctx2 = document.getElementById('salesCumChart').getContext('2d');
   if (salesCumCI) salesCumCI.destroy();
   salesCumCI = new Chart(ctx2, {
     type: 'line',
     data: {
-      labels: psLabels,
+      labels,
       datasets: [
-        { label: 'PS Store 누적', data: psCum, borderColor: '#ff4757', backgroundColor: 'rgba(255,71,87,0.08)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
-        { label: 'Steam 누적',   data: stCum, borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.08)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
-        { label: '전체 누적',    data: totCum, borderColor: '#f1c40f', backgroundColor: 'transparent', borderWidth: 2.5, fill: false, tension: 0.3, pointRadius: 0, borderDash: [4,3] },
+        { label: '전체',  data: totCum, borderColor: '#f1c40f', backgroundColor: 'transparent', borderWidth: 2.5, borderDash: [5,3], fill: false, tension: 0.3, pointRadius: 0 },
+        { label: 'PS5',   data: psCum,  borderColor: '#ff4757', backgroundColor: 'rgba(255,71,87,0.06)',  borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
+        { label: 'Steam', data: stCum,  borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.06)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
+        { label: 'Xbox',  data: xbCum,  borderColor: '#107C10', backgroundColor: 'rgba(16,124,16,0.06)',  borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
       ]
     },
-    options: chartDefaults
+    options: chartOpts
   });
 }
 
