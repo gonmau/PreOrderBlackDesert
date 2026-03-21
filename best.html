@@ -958,7 +958,7 @@ function renderMainChart() {
             maxTicksLimit: 12
           }
         },
-        y: { reverse: true, grid: { color: '#222' }, ticks: { color: '#fff' } }
+        y: { reverse: true, grid: { color: '#222' }, ticks: { color: '#fff', padding: 8, callback: v => '#' + v } }
       },
       plugins: { legend: { display: false } }
     }
@@ -1002,7 +1002,7 @@ function showCountryChart(countryName) {
             grid: { color: '#333' },
             ticks: { color: '#fff', maxRotation: 45, autoSkip: true, maxTicksLimit: 10 }
           },
-          y: { reverse: true, min: 1, grid: { color: '#333' }, ticks: { color: '#fff' } }
+          y: { reverse: true, min: 1, grid: { color: '#333' }, ticks: { color: '#fff', padding: 8, callback: v => '#' + v } }
         },
         plugins: { legend: { display: false } }
       }
@@ -1337,7 +1337,7 @@ function renderSTS() {
     options: { responsive: true, maintainAspectRatio: false,
       scales: {
         x: { type: 'time', time: { unit: 'day', tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' } }, ticks: { color: '#fff', maxTicksLimit: 8 }, grid: { color: '#222' } },
-        y: { reverse: true, min: 1, ticks: { color: '#fff', stepSize: 1, callback: v => '#' + v }, grid: { color: '#222' } }
+        y: { reverse: true, min: 1, ticks: { color: '#fff', stepSize: 1, callback: v => '#' + v, padding: 8 }, grid: { color: '#222' } }
       },
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '순위 #' + c.parsed.y } } }
     },
@@ -1438,7 +1438,7 @@ function openStsModal(n) {
       options: { responsive: true, maintainAspectRatio: false,
         scales: {
           x: { type:'time', time:{ unit: h.length>48?'day':'hour', displayFormats:{hour:'M/d HH:mm',day:'M/d'}}, ticks:{color:'#fff',maxTicksLimit:7,maxRotation:30,font:{size:10}}, grid:{color:'#222'} },
-          y: { reverse:true, min:1, ticks:{color:'#fff',stepSize:1,callback:v=>'#'+v,font:{size:11}}, grid:{color:'#222'} }
+          y: { reverse:true, min:1, ticks:{color:'#fff',stepSize:1,callback:v=>'#'+v,font:{size:11},padding:8}, grid:{color:'#222'} }
         },
         plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>'순위: #'+c.parsed.y}} }
       }
