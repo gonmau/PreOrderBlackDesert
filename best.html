@@ -420,6 +420,12 @@
   .sts-legend-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
   @media (max-width: 480px) { .sts-slot { width: 18px; height: 24px; } .sts-slot .slot-h { font-size: 7px; } }
   @media (max-width: 600px) { .steam-ts-country-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
+  /* ─── Tab Sections ─── */
+  .tab-section { display: none; padding-top: 16px; }
+  .tab-section.active-section { display: block; }
+  .nav-group-label.ps-lbl    { color: #ff4757; }
+  .nav-group-label.steam-lbl { color: #4a9eff; }
+
   /* ─── Sticky Nav Bar ─── */
   .nav-bar {
     position: -webkit-sticky;
@@ -758,22 +764,20 @@
 </header>
 
 <div class="nav-bar" id="nav-bar">
-  <div class="nav-group ps-nav">
-    <span class="nav-group-label">PS</span>
-    <span class="nav-tab ps-tab active" data-target="ps-main-body"    onclick="navTo('ps-main-body',this)">📊 요약</span>
-    <span class="nav-tab ps-tab"        data-target="ps-top10-body"   onclick="navTo('ps-top10-body',this)">🏆 리더보드</span>
-    <span class="nav-tab ps-tab"        data-target="ps-sched-body"   onclick="navTo('ps-sched-body',this)">⏱ 스케줄</span>
-    <span class="nav-tab ps-tab"        data-target="ps-chart-body"   onclick="navTo('ps-chart-body',this)">📈 차트</span>
-    <span class="nav-tab ps-tab"        data-target="ps-heatmap-body" onclick="navTo('ps-heatmap-body',this)">🔥 히트맵</span>
-    <span class="nav-tab ps-tab"        data-target="ps-table-body"   onclick="navTo('ps-table-body',this)">🌍 국가별</span>
-  </div>
-  <div class="nav-group steam-nav">
-    <span class="nav-group-label">Steam</span>
-    <span class="nav-tab steam-tab"     data-target="steam-ts-section"  onclick="navTo('steam-ts-section',this)">📊 요약</span>
-    <span class="nav-tab steam-tab"     data-target="sts-chart-body"    onclick="navTo('sts-chart-body',this)">📈 차트</span>
-    <span class="nav-tab steam-tab"     data-target="sts-sched-body"    onclick="navTo('sts-sched-body',this)">⏱ 스케줄</span>
-    <span class="nav-tab steam-tab"     data-target="sts-heatmap-body"  onclick="navTo('sts-heatmap-body',this)">🔥 히트맵</span>
-    <span class="nav-tab steam-tab"     data-target="sts-countries-body" onclick="navTo('sts-countries-body',this)">🌍 국가별</span>
+  <div class="nav-group">
+    <span class="nav-group-label ps-lbl">PS</span>
+    <span class="nav-tab ps-tab active" data-section="sec-ps-summary"  onclick="switchTab(this)">📊 요약</span>
+    <span class="nav-tab ps-tab"        data-section="sec-ps-top10"    onclick="switchTab(this)">🏆 리더보드</span>
+    <span class="nav-tab ps-tab"        data-section="sec-ps-sched"    onclick="switchTab(this)">⏱ 스케줄</span>
+    <span class="nav-tab ps-tab"        data-section="sec-ps-chart"    onclick="switchTab(this)">📈 차트</span>
+    <span class="nav-tab ps-tab"        data-section="sec-ps-heatmap"  onclick="switchTab(this)">🔥 히트맵</span>
+    <span class="nav-tab ps-tab"        data-section="sec-ps-table"    onclick="switchTab(this)">🌍 국가별</span>
+    <span class="nav-group-label steam-lbl" style="margin-left:8px;border-left:1px solid #222;padding-left:12px">Steam</span>
+    <span class="nav-tab steam-tab"     data-section="sec-sts-summary" onclick="switchTab(this)">📊 요약</span>
+    <span class="nav-tab steam-tab"     data-section="sec-sts-chart"   onclick="switchTab(this)">📈 차트</span>
+    <span class="nav-tab steam-tab"     data-section="sec-sts-sched"   onclick="switchTab(this)">⏱ 스케줄</span>
+    <span class="nav-tab steam-tab"     data-section="sec-sts-heatmap" onclick="switchTab(this)">🔥 히트맵</span>
+    <span class="nav-tab steam-tab"     data-section="sec-sts-table"   onclick="switchTab(this)">🌍 국가별</span>
   </div>
 </div>
 
@@ -794,15 +798,9 @@
     </div>
   </div>
 
-  <!-- PS Store 섹션 접기/펼치기 헤더 -->
-  <!-- PS Store 최상위 헤더 (항상 표시) -->
-  <div class="sts-collapsible-header" onclick="stToggle('ps-main-body', this)" style="margin-bottom:12px">
-    <span class="sts-collapsible-title">🎮 PS Store 순위 현황</span>
-    <button class="sts-collapse-btn">▲ 접기</button>
-  </div>
-  <div class="sts-collapsible-body" id="ps-main-body">
-
-    <!-- ① 스탯 카드 — 기본 펼침 -->
+  <!-- 탭 섹션 컨테이너 -->
+  <div id="sec-ps-summary" class="tab-section active-section">
+    <!-- PS 요약 스탯 카드 -->
     <div class="stats" style="margin-bottom:12px">
       <div class="card"><div class="lbl">Weighted Average</div><div class="val" id="stat-avg">—</div></div>
       <div class="card">
@@ -838,23 +836,14 @@
       </div>
     </div>
 
-    <!-- ② Market Leaders — 기본 접힘 -->
-    <div class="sts-collapsible-header" onclick="stToggle('ps-top10-body', this)" style="margin-bottom:8px">
-      <span class="sts-collapsible-title">🏆 Market Leaders (Top 10 Weight)</span>
-      <button class="sts-collapse-btn">▼ 펼치기</button>
+  </div><!-- /sec-ps-summary -->
+  <div id="sec-ps-top10" class="tab-section">
+    <div class="top10-section" style="margin-bottom:0">
+      <div class="top10-grid" id="top10-grid"></div>
     </div>
-    <div class="sts-collapsible-body collapsed" id="ps-top10-body" style="margin-bottom:12px">
-      <div class="top10-section" style="margin-bottom:0">
-        <div class="top10-grid" id="top10-grid"></div>
-      </div>
-    </div>
+  </div><!-- /sec-ps-top10 -->
 
-    <!-- ③ 트래커 스케줄 — 기본 접힘 -->
-    <div class="sts-collapsible-header" onclick="stToggle('ps-sched-body', this)" style="margin-bottom:8px">
-      <span class="sts-collapsible-title">⏱ 트래커 스케줄</span>
-      <button class="sts-collapse-btn">▼ 펼치기</button>
-    </div>
-    <div class="sts-collapsible-body collapsed" id="ps-sched-body" style="margin-bottom:12px">
+  <div id="sec-ps-sched" class="tab-section">
       <div class="sts-sched-wrap">
         <div class="sts-sched-legend">
           <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>자동 실행</span>
@@ -866,21 +855,12 @@
       </div>
     </div>
 
-    <!-- ④ 평균 순위 히스토리 차트 — 기본 접힘 -->
-    <div class="sts-collapsible-header" onclick="stToggle('ps-chart-body', this)" style="margin-bottom:8px">
-      <span class="sts-collapsible-title">📈 평균 순위 히스토리</span>
-      <button class="sts-collapse-btn">▼ 펼치기</button>
-    </div>
-    <div class="sts-collapsible-body collapsed" id="ps-chart-body" style="margin-bottom:12px">
-      <div class="chart-section"><canvas id="mainChart"></canvas></div>
-    </div>
+  </div><!-- /sec-ps-sched -->
+  <div id="sec-ps-chart" class="tab-section">
+    <div class="chart-section"><canvas id="mainChart"></canvas></div>
+  </div><!-- /sec-ps-chart -->
 
-    <!-- ⑤ 순위 히트맵 -->
-    <div class="sts-collapsible-header" onclick="stToggle('ps-heatmap-body', this)" style="margin-bottom:8px">
-      <span class="sts-collapsible-title">🔥 순위 히트맵</span>
-      <button class="sts-collapse-btn">▼ 펼치기</button>
-    </div>
-    <div class="sts-collapsible-body collapsed" id="ps-heatmap-body" style="margin-bottom:12px">
+  <div id="sec-ps-heatmap" class="tab-section">
       <div style="padding:12px 4px 4px">
         <div class="heatmap-legend">
           <span><i class="hm-legend-bar" style="background:#2ecc71"></i> 순위 상승</span>
@@ -892,12 +872,8 @@
       </div>
     </div>
 
-    <!-- ⑥ 국가별 테이블 — 기본 접힘 -->
-    <div class="sts-collapsible-header" onclick="stToggle('ps-table-body', this)" style="margin-bottom:8px">
-      <span class="sts-collapsible-title">🌍 국가별 현황</span>
-      <button class="sts-collapse-btn">▼ 펼치기</button>
-    </div>
-    <div class="sts-collapsible-body collapsed" id="ps-table-body" style="margin-bottom:12px">
+  </div><!-- /sec-ps-heatmap -->
+  <div id="sec-ps-table" class="tab-section">
       <div class="table-toolbar">
         <button class="csv-btn" onclick="downloadCSV()">📥 CSV 다운로드 (현재순위 정렬)</button>
       </div>
@@ -919,12 +895,12 @@
       </div>
     </div>
 
-  </div><!-- /ps-main-body -->
+  </div><!-- /sec-ps-table -->
 
-  <!-- Steam Top Seller Section -->
-  <div class="steam-ts-section" id="steam-ts-section">
-    <div class="steam-ts-header">
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+  <!-- Steam 섹션 -->
+  <div id="sec-sts-summary" class="tab-section">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div style="display:flex;align-items:center;gap:12px">
         <div class="steam-ts-title">📊 Steam Top Seller 순위</div>
         <button class="steam-ts-dl-btn" onclick="downloadSteamCSV()">📥 Steam CSV</button>
       </div>
@@ -975,21 +951,12 @@
       </div>
     </div>
 
-    <!-- 평균 순위 히스토리 (접기/펼치기) -->
-    <div class="sts-collapsible-header" onclick="stToggle('sts-chart-body', this)">
-      <span class="sts-collapsible-title">📈 평균 순위 히스토리</span>
-      <button class="sts-collapse-btn">▼ 펼치기</button>
-    </div>
-    <div class="sts-collapsible-body collapsed" id="sts-chart-body">
-      <div class="steam-ts-chart-box"><div class="steam-ts-chart-inner"><canvas id="stsChart"></canvas></div></div>
-    </div>
+  </div><!-- /sec-sts-summary -->
+  <div id="sec-sts-chart" class="tab-section">
+    <div class="steam-ts-chart-box"><div class="steam-ts-chart-inner"><canvas id="stsChart"></canvas></div></div>
+  </div><!-- /sec-sts-chart -->
 
-    <!-- 트래커 스케줄 (접기/펼치기) -->
-    <div class="sts-collapsible-header" onclick="stToggle('sts-sched-body', this)">
-      <span class="sts-collapsible-title">⏱ 트래커 스케줄<span id="sts-sched-cron" style="font-size:0.6rem;color:#555;font-weight:400;margin-left:8px;letter-spacing:0"></span></span>
-      <button class="sts-collapse-btn">▼ 펼치기</button>
-    </div>
-    <div class="sts-collapsible-body collapsed" id="sts-sched-body">
+  <div id="sec-sts-sched" class="tab-section">
       <div class="sts-sched-wrap">
         <div class="sts-sched-legend">
           <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>자동 실행</span>
@@ -1001,12 +968,8 @@
       </div>
     </div>
 
-    <!-- 순위 히트맵 -->
-    <div class="sts-collapsible-header" onclick="stToggle('sts-heatmap-body', this)" style="margin-bottom:8px">
-      <span class="sts-collapsible-title" style="color:#4a9eff">🔥 순위 히트맵</span>
-      <button class="sts-collapse-btn">▼ 펼치기</button>
-    </div>
-    <div class="sts-collapsible-body collapsed" id="sts-heatmap-body" style="margin-bottom:12px">
+  </div><!-- /sec-sts-sched -->
+  <div id="sec-sts-heatmap" class="tab-section">
       <div style="padding:12px 4px 4px">
         <div class="heatmap-legend">
           <span><i class="hm-legend-bar" style="background:#2ecc71"></i> 순위 상승</span>
@@ -1018,12 +981,8 @@
       </div>
     </div>
 
-    <!-- 국가별 현황 (접기/펼치기) -->
-    <div class="sts-collapsible-header" onclick="stToggle('sts-countries-body', this)">
-      <span class="sts-collapsible-title">🌍 국가별 현황</span>
-      <button class="sts-collapse-btn">▼ 펼치기</button>
-    </div>
-    <div class="sts-collapsible-body collapsed" id="sts-countries-body">
+  </div><!-- /sec-sts-heatmap -->
+  <div id="sec-sts-table" class="tab-section">
       <div class="sts-country-summary-row steam-ts-stats-row" id="sts-country-summary-row" style="display:none;margin-bottom:12px">
         <div class="steam-ts-stat-box">
           <div class="steam-ts-stat-label">📊 가중 평균</div>
@@ -1048,9 +1007,9 @@
       </div>
       <div class="steam-ts-country-grid" id="sts-country-grid"></div>
     </div>
-  </div>
+  </div><!-- /sec-sts-table -->
 
-</div>
+</div><!-- /container -->
 
 <!-- Steam TS 국가 상세 모달 -->
 <div class="steam-ts-modal-overlay" id="sts-modal" onclick="closeStsModal(event)">
@@ -1619,81 +1578,33 @@ function renderSchedule() {
 }
 /* ───────────────────────────────────────────────────────────────────── */
 
-/* ── Nav Bar ── */
-function navTo(targetId, tabEl) {
-  const el = document.getElementById(targetId);
-  if (!el) return;
+/* ── Nav Tab Switch ── */
+function switchTab(tabEl) {
+  const secId = tabEl.dataset.section;
+  if (!secId) return;
 
-  // PS sub-sections: 부모 ps-main-body도 먼저 열기
-  const psSubIds = ['ps-top10-body','ps-sched-body','ps-chart-body','ps-heatmap-body','ps-table-body'];
-  if (psSubIds.includes(targetId)) {
-    const mainBody = document.getElementById('ps-main-body');
-    if (mainBody && mainBody.classList.contains('collapsed')) {
-      mainBody.classList.remove('collapsed');
-    }
-  }
-  // Steam sub-sections: steam-ts-section은 항상 보이지만 내부 collapsed 해제
-  const steamSubIds = ['sts-chart-body','sts-sched-body','sts-heatmap-body','sts-countries-body'];
-  if (steamSubIds.includes(targetId)) {
-    if (el.classList.contains('collapsed')) el.classList.remove('collapsed');
-  }
-  // ps-main-body 자체 클릭 시 펼치기
-  if (targetId === 'ps-main-body') {
-    if (el.classList.contains('collapsed')) el.classList.remove('collapsed');
-  }
-  // steam-ts-section은 항상 visible
+  // 모든 섹션 숨기기
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active-section'));
+  // 해당 섹션만 표시
+  const sec = document.getElementById(secId);
+  if (sec) sec.classList.add('active-section');
 
-  // 스크롤: nav bar 높이 감안
-  const navH = (document.getElementById('nav-bar')?.offsetHeight || 80) +
-               (document.querySelector('header')?.offsetHeight || 45) + 8;
-  const top = el.getBoundingClientRect().top + window.scrollY - navH;
-  window.scrollTo({ top, behavior: 'smooth' });
-
-  // 탭 active 처리
-  setActiveTab(tabEl);
-
-  // 차트 리사이즈
-  requestAnimationFrame(() => {
-    if (targetId === 'ps-chart-body'  && mainChart) mainChart.resize();
-    if (targetId === 'sts-chart-body' && stsCI) stsCI.resize();
-  });
-}
-
-function setActiveTab(tabEl) {
-  if (!tabEl) return;
+  // 탭 active 상태
   const isPsTab = tabEl.classList.contains('ps-tab');
-  document.querySelectorAll(isPsTab ? '.ps-tab' : '.steam-tab')
-    .forEach(t => t.classList.remove('active'));
+  document.querySelectorAll(isPsTab ? '.ps-tab' : '.steam-tab').forEach(t => t.classList.remove('active'));
   tabEl.classList.add('active');
+
+  // 차트 리사이즈 (숨겨졌다 보이면 크기 0이 됨)
+  requestAnimationFrame(() => {
+    if (secId === 'sec-ps-chart'   && mainChart) mainChart.resize();
+    if (secId === 'sec-sts-chart'  && stsCI) stsCI.resize();
+  });
+
+  // 스크롤 최상단
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// 스크롤 시 현재 보이는 섹션에 맞춰 탭 자동 하이라이트
-const _navObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (!entry.isIntersecting) return;
-    const id = entry.target.id;
-    const tab = document.querySelector(`.nav-tab[data-target="${id}"]`);
-    if (tab) setActiveTab(tab);
-  });
-}, { rootMargin: '-50% 0px -40% 0px' });
-
-window.addEventListener('DOMContentLoaded', () => {
-  // nav-bar top = header 실제 높이
-  const header = document.querySelector('header');
-  const navBar = document.getElementById('nav-bar');
-  if (header && navBar) {
-    const setTop = () => { navBar.style.top = header.offsetHeight + 'px'; };
-    setTop();
-    new ResizeObserver(setTop).observe(header);
-  }
-
-  ['ps-main-body','ps-top10-body','ps-sched-body','ps-chart-body','ps-heatmap-body','ps-table-body',
-   'steam-ts-section','sts-chart-body','sts-sched-body','sts-heatmap-body','sts-countries-body']
-  .forEach(id => {
-    const el = document.getElementById(id);
-    if (el) _navObserver.observe(el);
-  });
-});
+/* ── stToggle: collapsible helper ── */
 
 /* ── stToggle: collapsible helper ── */
 function stToggle(bodyId, headerEl) {
@@ -2485,7 +2396,17 @@ function showPagesStatus(state) {
   badge.style.color = s.color;
 }
 
-window.addEventListener('DOMContentLoaded', updateGhStatusDot);
+window.addEventListener('DOMContentLoaded', () => {
+  updateGhStatusDot();
+  // nav-bar top = header 실제 높이
+  const header = document.querySelector('header');
+  const navBar = document.getElementById('nav-bar');
+  if (header && navBar) {
+    const setTop = () => { navBar.style.top = header.offsetHeight + 'px'; };
+    setTop();
+    new ResizeObserver(setTop).observe(header);
+  }
+});
 
 /* ── 펄어비스 주가 ── */
 async function fetchStock() {
