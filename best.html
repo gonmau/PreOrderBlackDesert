@@ -1741,7 +1741,6 @@ function renderSTS() {
     plugins: [labelPlugin]
   });
 
-  renderStsGrid(lat, prv);
   renderStsTable(lat, prv);
   renderStsHeatmap(lat, prv);
   renderStsLeaderboard(lat);
@@ -1846,6 +1845,135 @@ function renderPsHeatmap(list) {
     </div>`;
   }).join('');
 
+  twemoji.parse(g, { folder: 'svg', ext: '.svg' });
+}
+
+/* ── Steam Grid (legacy hidden container) ── */
+function renderStsGrid(lat, prv) {
+  // sts-table-body, sts-cnt, best/worst 업데이트 실행
+  renderStsTable(lat, prv);
+}
+
+/* ── Steam 국가별 테이블 ── */
+function renderStsTable(lat, prv) {
+  const container = document.getElementById('sts-table-body');
+  if (!container || !lat || !lat.results) return;
+  const entries = Object.entries(lat.results).map(([n,d]) => {
+    const r = d?.rank??null, pr = prv?.results?.[n]?.rank??null;
+    const ch = r&&pr?pr-r:0;
+    const histRanks = stsHist.map(h=>h.results?.[n]?.rank).filter(v=>v!=null);
+    const best = histRanks.length?Math.min(...histRanks):null;
+    const avg  = histRanks.length?histRanks.reduce((a,b)=>a+b,0)/histRanks.length:null;
+    return {name:n, rank:r, change:ch, best, avg, w:STS_W[n]||1};
+  }).sort((a,b)=>{
+    const ar=a.rank??99999, br=b.rank??99999;
+    return ar!==br?ar-br:b.w-a.w;
+  });
+
+  // 순위별 분포 업데이트
+  const ranked = entries.filter(d=>d.rank!=null);
+  const _cnt1   = ranked.filter(d=>d.rank===1).length;
+  const _cnt23  = ranked.filter(d=>d.rank>=2&&d.rank<=3).length;
+  const _cnt410 = ranked.filter(d=>d.rank>=4&&d.rank<=10).length;
+  const _cntRest= ranked.filter(d=>d.rank>=11).length;
+  const setT = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  setT('sts-cnt-1',  _cnt1);
+  setT('sts-cnt-3',  _cnt23);
+  setT('sts-cnt-10', _cnt410);
+  setT('sts-cnt-rest', _cntRest+'개 / '+ranked.length+'개국');
+  // 1위 국가명
+  const stsRank1Names = ranked.filter(d=>d.rank===1).map(d=>d.name);
+  const stsNamesEl = document.getElementById('sts-cnt-1-names');
+  if (stsNamesEl) stsNamesEl.innerHTML = stsRank1Names.map(n=>`<span class="rank1-tag">${STS_F[n]||''} ${n}</span>`).join('');
+  // 최고/최하 순위 카드
+  if (ranked.length) {
+    const stsBest  = ranked.reduce((a,b)=>a.rank<b.rank?a:b);
+    const stsWorst = ranked.reduce((a,b)=>a.rank>b.rank?a:b);
+    setT('sts-best-rank-val',  stsBest.rank+'위');
+    setT('sts-best-rank-name', (STS_F[stsBest.name]||'')+' '+stsBest.name);
+    setT('sts-worst-rank-val', stsWorst.rank+'위');
+    setT('sts-worst-rank-name',(STS_F[stsWorst.name]||'')+' '+stsWorst.name);
+  }
+
+  // 그룹화
+  const groups = {};
+  entries.forEach(d=>{
+    const k = d.rank?d.rank+'위':'순위 밖';
+    if (!groups[k]) groups[k]={rank:d.rank||9999,items:[]};
+    groups[k].items.push(d);
+  });
+  const tableHdr = `<div class="ct-table-header">
+    <span></span><span></span><span>국가</span>
+    <span style="text-align:right">최고</span>
+    <span style="text-align:right">평균</span>
+    <span style="text-align:center">변동</span>
+    <span style="text-align:right">순위</span>
+    <span></span>
+  </div>`;
+  container.innerHTML = Object.entries(groups).map(([label,{rank,items}])=>{
+    const lc = rank===1?'g1':rank<=3?'g2':rank<=10?'g3':rank<999?'g10':'gout';
+    const barColor = rank===1?'var(--gold)':rank<=3?'#c0c0c0':rank<=10?'#cd7f32':rank<999?'var(--steam)':'var(--bd)';
+    const rankColor = rank===1?'var(--gold)':rank<=3?'#c0c0c0':rank<=10?'#cd7f32':rank<999?'var(--steam)':'var(--tx-4)';
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+    const groupId = 'sts-tbl-grp-'+rank;
+    const rows = items.map(d=>{
+      const cc = STS_CC[d.name]||'us';
+      const bestStr = d.best?d.best+'위':'—';
+      const avgStr  = d.avg?d.avg.toFixed(1)+'위':'—';
+      const chgCls  = d.change>0?'up':d.change<0?'down':'';
+      const chgTxt  = d.change>0?'▲'+d.change:d.change<0?'▼'+Math.abs(d.change):'—';
+      const rankTxt = d.rank?d.rank+'위':'—';
+      const flagImg = `<img src="https://flagcdn.com/w40/${cc}.png" alt="${d.name}" style="width:18px;height:13px;object-fit:cover;border-radius:2px">`;
+      const storeUrl = `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`;
+      return `<div class="ct-row" onclick="openStsModal('${d.name}')">
+        <span class="ct-bar" style="background:${barColor}"></span>
+        <span class="ct-flag">${flagImg}</span>
+        <span class="ct-name">${d.name}</span>
+        <span class="ct-meta">${bestStr}</span>
+        <span class="ct-meta">${avgStr}</span>
+        <span class="ct-chg ${chgCls}">${chgTxt}</span>
+        <span class="ct-rank" style="color:${rankColor}">${rankTxt}</span>
+        <a class="ct-link" href="${storeUrl}" target="_blank" onclick="event.stopPropagation()">🔗</a>
+      </div>`;
+    }).join('');
+    return `<div>
+      <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
+        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}</span>
+        <span class="rank-group-count">${items.length}개국</span>
+        <span class="rank-group-arrow open" id="${groupId}-arrow">▼</span>
+      </div>
+      <div class="rank-group-body" id="${groupId}">${tableHdr}${rows}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Steam 리더보드 ── */
+function renderStsLeaderboard(lat) {
+  const g = document.getElementById('lb-sts-container');
+  if (!g || !lat || !lat.results) return;
+  const sorted = Object.keys(STS_W)
+    .map(n => ({ name: n, rank: lat.results[n]?.rank ?? null, w: STS_W[n] || 1 }))
+    .sort((a, b) => {
+      if (a.rank && b.rank) return a.rank !== b.rank ? a.rank - b.rank : b.w - a.w;
+      if (a.rank) return -1; if (b.rank) return 1;
+      return b.w - a.w;
+    });
+  const groups = {};
+  sorted.forEach(d => {
+    const k = d.rank ? d.rank + '위' : '순위 밖';
+    if (!groups[k]) groups[k] = { rank: d.rank || 9999, names: [] };
+    groups[k].names.push(d.name);
+  });
+  g.innerHTML = Object.entries(groups).map(([label, { rank, names }]) => {
+    const lc = rank===1?'g1':rank<=3?'g2':rank<=10?'g3':rank<999?'g10':'gout';
+    const tc = rank===1?'tier-1':rank<=3?'tier-2':rank<=10?'tier-3':rank<999?'tier-10':'tier-out';
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+    const cardsHtml = names.map(n => {
+      const flag = STS_F[n] || '';
+      return `<div class="top10-item ${tc}" onclick="openStsModal('${n}')"><span class="n">${flag} ${n}</span><span class="r">${rank>=9999?'—':rank+'위'}</span></div>`;
+    }).join('');
+    return `<div class="lb-group"><div class="lb-group-label ${lc}">${medal} ${label} <span class="rank-group-count">${names.length}개국</span></div><div class="top10-grid" style="padding:8px">${cardsHtml}</div></div>`;
+  }).join('');
   twemoji.parse(g, { folder: 'svg', ext: '.svg' });
 }
 
