@@ -1650,6 +1650,86 @@ function stsAvg(h) {
   return tw > 0 ? Math.round(ts / tw * 10) / 10 : null;
 }
 
+function renderSteamSchedule() {
+  const container = document.getElementById('sts-sched-days');
+  const summaryEl = document.getElementById('sts-sched-summary');
+  if (!container || !summaryEl) return;
+
+  const nowUtc = new Date(), KST_OFFSET = 9 * 3600000;
+  const nowKst = new Date(nowUtc.getTime() + KST_OFFSET);
+  let intervalMin = 30;
+  if (stsSched && stsSched.interval_min) intervalMin = stsSched.interval_min;
+
+  const stamps = stsHist.map(h => new Date(h.timestamp).getTime());
+  const toleranceMs = Math.min(intervalMin * 0.4, 18) * 60000;
+
+  const todayKstMidnight = new Date(Date.UTC(nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()) - KST_OFFSET);
+  const days = [
+    { label: '어제', date: new Date(todayKstMidnight.getTime() - 86400000), isToday: false },
+    { label: '오늘', date: todayKstMidnight, isToday: true },
+  ];
+  const slotsPerDay = Math.floor(24 * 60 / intervalMin);
+  let totalSlots = 0, okSlots = 0, missSlots = 0;
+  container.innerHTML = '';
+
+  days.forEach(({ label, date, isToday }) => {
+    const kstDay = new Date(date.getTime() + KST_OFFSET);
+    const mm = kstDay.getUTCMonth() + 1, dd = kstDay.getUTCDate();
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'sts-sched-day-label';
+    labelDiv.innerHTML = `<span class="day-badge${isToday ? ' today' : ''}">${label}</span>${mm}/${dd}`;
+    container.appendChild(labelDiv);
+
+    const grid = document.createElement('div');
+    grid.className = 'sts-sched-grid';
+    for (let i = 0; i < slotsPerDay; i++) {
+      const slotMs = date.getTime() + i * intervalMin * 60000;
+      const slotKst = new Date(slotMs + KST_OFFSET);
+      const hhmm = `${String(slotKst.getUTCHours()).padStart(2,'0')}:${String(slotKst.getUTCMinutes()).padStart(2,'0')}`;
+      const isFuture = slotMs > nowUtc.getTime() + toleranceMs;
+      const isNow = Math.abs(slotMs - nowUtc.getTime()) <= toleranceMs;
+      let status = 'miss', actualTime = '';
+      if (isFuture) { status = 'fut'; }
+      else {
+        const found = stamps.find(s => Math.abs(s - slotMs) <= toleranceMs);
+        if (found) {
+          status = 'ok'; okSlots++; totalSlots++;
+          const ft = new Date(found + KST_OFFSET);
+          actualTime = `${String(ft.getUTCHours()).padStart(2,'0')}:${String(ft.getUTCMinutes()).padStart(2,'0')}`;
+        } else { missSlots++; totalSlots++; }
+      }
+      const isManual = status === 'ok' && (() => {
+        const found = stamps.find(s => Math.abs(s - slotMs) <= toleranceMs);
+        if (!found) return false;
+        const ft = new Date(found + KST_OFFSET);
+        return ft.getUTCMinutes() > 5 && ft.getUTCMinutes() < 55;
+      })();
+      const slot = document.createElement('div');
+      slot.className = `sts-slot ${status}${isNow ? ' now' : ''}${isManual ? ' manual' : ''}`;
+      slot.title = status === 'ok' ? `${mm}/${dd} ${hhmm} → 실행 ${actualTime}` :
+                   status === 'fut' ? `${mm}/${dd} ${hhmm} (예정)` : `${mm}/${dd} ${hhmm} — 누락`;
+      slot.innerHTML = `<span class="slot-h">${hhmm}</span><span class="slot-i">${status==='ok'?'✓':status==='fut'?'·':'✗'}</span>`;
+      grid.appendChild(slot);
+    }
+    container.appendChild(grid);
+  });
+
+  function getNextRunLabel() {
+    const nowMs = nowUtc.getTime(), step = intervalMin * 60000;
+    const next = Math.ceil((nowMs + 1000) / step) * step;
+    const nextKst = new Date(next + KST_OFFSET);
+    const diffMin = Math.round((next - nowMs) / 60000);
+    const hhmm = `${String(nextKst.getUTCHours()).padStart(2,'0')}:${String(nextKst.getUTCMinutes()).padStart(2,'0')}`;
+    return diffMin <= 60 ? `${hhmm} KST (${diffMin}분 후)` : `${hhmm} KST`;
+  }
+  const rate = totalSlots > 0 ? Math.round(okSlots / totalSlots * 100) : 100;
+  summaryEl.innerHTML = `
+    <div class="ss"><span class="sv">${okSlots}</span><span class="sl">실행 완료</span></div>
+    <div class="ss"><span class="sv" style="color:${missSlots>0?'var(--down)':'var(--up)'}">${missSlots}</span><span class="sl">누락</span></div>
+    <div class="ss"><span class="sv">${rate}%</span><span class="sl">성공률 (2일)</span></div>
+    <div class="sts-next-badge"><span class="sts-pulse"></span>다음: ${getNextRunLabel()}</div>`;
+}
+
 function renderSTS() {
   if (!stsHist.length) return;
   const v = stsHist.filter(h => stsAvg(h) !== null);
