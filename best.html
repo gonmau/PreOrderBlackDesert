@@ -738,34 +738,32 @@
             <div class="val" id="stat-worst-val">—</div>
             <div class="sub" id="stat-worst-name">...</div>
           </div>
-          <div class="card" style="grid-column:1/-1">
-            <div class="lbl">순위권 진입 국가</div>
-            <div style="display:grid;grid-template-columns:auto 1fr;gap:8px;margin-top:8px">
-              <!-- 좌: 카운트 -->
-              <div style="display:flex;flex-direction:column;gap:6px;min-width:80px">
-                <div style="display:flex;justify-content:space-between;gap:8px">
-                  <span style="font-size:12px">🥇 <span style="color:#FFD700">#1</span></span>
-                  <span id="stat-cnt-1" style="font-family:'Cinzel',serif;font-size:16px;color:#FFD700">—</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;gap:8px">
-                  <span style="font-size:12px">🥈 <span style="color:#C0C0C0">#2~3</span></span>
-                  <span id="stat-cnt-3" style="font-family:'Cinzel',serif;font-size:16px;color:#C0C0C0">—</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;gap:8px">
-                  <span style="font-size:12px">🏅 <span style="color:#cd7f32">#4~10</span></span>
-                  <span id="stat-cnt-10" style="font-family:'Cinzel',serif;font-size:16px;color:#cd7f32">—</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--bd);padding-top:4px">
-                  <span style="font-size:10px;color:var(--tx-3)">#11+</span>
-                  <span id="stat-cnt-rest" style="font-size:11px;color:var(--tx-3)">— / —</span>
-                </div>
+          <!-- 순위별 국가 수 카드 (상단) -->
+          <div class="card">
+            <div class="lbl">순위권 진입</div>
+            <div style="display:flex;flex-direction:column;gap:5px;margin-top:4px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:11px">🥇 <span style="color:#FFD700">#1</span></span>
+                <span id="stat-cnt-1" style="font-family:'Cinzel',serif;font-size:16px;color:#FFD700">—</span>
               </div>
-              <!-- 우: 1위 국가 그리드 -->
-              <div style="border-left:1px solid var(--bd);padding-left:8px">
-                <div style="font-size:9px;color:var(--tx-4);margin-bottom:5px;letter-spacing:1px">🥇 1위 국가</div>
-                <div class="rank1-countries" id="stat-cnt-1-names" style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px"></div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:11px">🥈 <span style="color:#C0C0C0">#2~3</span></span>
+                <span id="stat-cnt-3" style="font-family:'Cinzel',serif;font-size:16px;color:#C0C0C0">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:11px">🏅 <span style="color:#cd7f32">#4~10</span></span>
+                <span id="stat-cnt-10" style="font-family:'Cinzel',serif;font-size:16px;color:#cd7f32">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--bd);padding-top:4px;margin-top:2px">
+                <span style="font-size:10px;color:var(--tx-3)">#11+ / 전체</span>
+                <span id="stat-cnt-rest" style="font-size:11px;color:var(--tx-3)">— / —</span>
               </div>
             </div>
+          </div>
+          <!-- 1위 국가 목록 (하단) -->
+          <div class="card" style="grid-column:1/-1">
+            <div class="lbl" style="margin-bottom:6px">🥇 1위 국가</div>
+            <div class="rank1-countries" id="stat-cnt-1-names" style="display:flex;flex-wrap:wrap;gap:4px"></div>
           </div>
         </div>
       </div></div><!-- /dual-col-body -->
@@ -793,32 +791,32 @@
             <div class="val" id="sts-worst-rank-val" style="color:var(--down)">—</div>
             <div class="sub" id="sts-worst-rank-name">...</div>
           </div>
-          <div class="card" style="border-left-color:var(--steam);grid-column:1/-1">
-            <div class="lbl">순위권 진입 국가</div>
-            <div style="display:grid;grid-template-columns:auto 1fr;gap:8px;margin-top:8px">
-              <div style="display:flex;flex-direction:column;gap:6px;min-width:80px">
-                <div style="display:flex;justify-content:space-between;gap:8px">
-                  <span style="font-size:12px">🥇 <span style="color:#FFD700">#1</span></span>
-                  <span id="sts-cnt-1" style="font-family:'Cinzel',serif;font-size:16px;color:#FFD700">—</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;gap:8px">
-                  <span style="font-size:12px">🥈 <span style="color:#C0C0C0">#2~3</span></span>
-                  <span id="sts-cnt-3" style="font-family:'Cinzel',serif;font-size:16px;color:#C0C0C0">—</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;gap:8px">
-                  <span style="font-size:12px">🏅 <span style="color:#cd7f32">#4~10</span></span>
-                  <span id="sts-cnt-10" style="font-family:'Cinzel',serif;font-size:16px;color:#cd7f32">—</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--bd);padding-top:4px">
-                  <span style="font-size:10px;color:var(--tx-3)">#11+</span>
-                  <span id="sts-cnt-rest" style="font-size:11px;color:var(--tx-3)">— / —</span>
-                </div>
+          <!-- 순위별 국가 수 카드 (상단) -->
+          <div class="card" style="border-left-color:var(--steam)">
+            <div class="lbl">순위권 진입</div>
+            <div style="display:flex;flex-direction:column;gap:5px;margin-top:4px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:11px">🥇 <span style="color:#FFD700">#1</span></span>
+                <span id="sts-cnt-1" style="font-family:'Cinzel',serif;font-size:16px;color:#FFD700">—</span>
               </div>
-              <div style="border-left:1px solid var(--bd);padding-left:8px">
-                <div style="font-size:9px;color:var(--tx-4);margin-bottom:5px;letter-spacing:1px">🥇 1위 국가</div>
-                <div class="rank1-countries" id="sts-cnt-1-names" style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px"></div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:11px">🥈 <span style="color:#C0C0C0">#2~3</span></span>
+                <span id="sts-cnt-3" style="font-family:'Cinzel',serif;font-size:16px;color:#C0C0C0">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:11px">🏅 <span style="color:#cd7f32">#4~10</span></span>
+                <span id="sts-cnt-10" style="font-family:'Cinzel',serif;font-size:16px;color:#cd7f32">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--bd);padding-top:4px;margin-top:2px">
+                <span style="font-size:10px;color:var(--tx-3)">#11+ / 전체</span>
+                <span id="sts-cnt-rest" style="font-size:11px;color:var(--tx-3)">— / —</span>
               </div>
             </div>
+          </div>
+          <!-- 1위 국가 목록 (하단) -->
+          <div class="card" style="border-left-color:var(--steam);grid-column:1/-1">
+            <div class="lbl" style="margin-bottom:6px">🥇 1위 국가</div>
+            <div class="rank1-countries" id="sts-cnt-1-names" style="display:flex;flex-wrap:wrap;gap:4px"></div>
           </div>
         </div>
       </div></div><!-- /dual-col-body -->
@@ -1182,15 +1180,29 @@ function render() {
   document.getElementById('stat-best-name').innerText = (FLAGS[best.n] || '') + ' ' + best.n;
   document.getElementById('stat-worst-val').innerText = worst.r === 0 ? '—' : worst.r + '위';
   document.getElementById('stat-worst-name').innerText = worst.n ? (FLAGS[worst.n] || '') + ' ' + worst.n : '...';
-  // 순위별 국가 수 집계
+  // 순위별 국가 수 집계 + 증감
   const cnt1   = list.filter(x => x.rank === 1).length;
   const cnt23  = list.filter(x => x.rank >= 2 && x.rank <= 3).length;
   const cnt410 = list.filter(x => x.rank >= 4 && x.rank <= 10).length;
   const cntRest= list.filter(x => x.rank >= 11 && x.rank < 999).length;
   const cntAll = list.filter(x => x.rank < 999).length;
-  document.getElementById('stat-cnt-1').innerText    = cnt1;
-  document.getElementById('stat-cnt-3').innerText    = cnt23;
-  document.getElementById('stat-cnt-10').innerText   = cnt410;
+
+  function makeChgBadge(items) {
+    const up = items.filter(x => x.change > 0).length;
+    const dn = items.filter(x => x.change < 0).length;
+    if (!up && !dn) return '';
+    return `<span style="font-size:9px;display:inline-flex;gap:3px;margin-left:4px;vertical-align:middle">
+      ${up ? `<span style="color:var(--up);font-weight:800">▲${up}</span>` : ''}
+      ${dn ? `<span style="color:var(--down);font-weight:800">▼${dn}</span>` : ''}
+    </span>`;
+  }
+  const g1items  = list.filter(x => x.rank === 1);
+  const g23items = list.filter(x => x.rank >= 2 && x.rank <= 3);
+  const g10items = list.filter(x => x.rank >= 4 && x.rank <= 10);
+
+  document.getElementById('stat-cnt-1').innerHTML  = cnt1  + makeChgBadge(g1items);
+  document.getElementById('stat-cnt-3').innerHTML  = cnt23 + makeChgBadge(g23items);
+  document.getElementById('stat-cnt-10').innerHTML = cnt410+ makeChgBadge(g10items);
   document.getElementById('stat-cnt-rest').innerText = cntRest + '개 / ' + cntAll + '개국';
   // 1위 국가명
   const rank1Countries = list.filter(x => x.rank === 1).map(x => x.name);
@@ -1214,12 +1226,38 @@ function render() {
       if (!psGroups[k]) psGroups[k] = { rank, names: [] };
       psGroups[k].names.push(name);
     });
+    // 변동 계산을 위해 name→change 맵 생성
+    const psChangeMap = {};
+    list.forEach(d => { psChangeMap[d.name] = d.change || 0; });
+
     lbPs.innerHTML = Object.entries(psGroups).map(([label, { rank, names }]) => {
       const lc = rank === 1 ? 'g1' : rank <= 3 ? 'g2' : rank <= 10 ? 'g3' : rank < 999 ? 'g10' : 'gout';
       const tc = rank === 1 ? 'tier-1' : rank <= 3 ? 'tier-2' : rank <= 10 ? 'tier-3' : rank < 999 ? 'tier-10' : 'tier-out';
       const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
-      const cardsHtml = names.map(n => `<div class="top10-item ${tc}" onclick="showCountryChart('${n}')"><span class="n">${FLAGS[n]||''} ${n}</span><span class="r">${rank >= 9999 ? '—' : rank + '위'}</span></div>`).join('');
-      return `<div class="lb-group"><div class="lb-group-label ${lc}">${medal} ${label} <span class="rank-group-count">${names.length}개국</span></div><div class="top10-grid" style="padding:8px">${cardsHtml}</div></div>`;
+      const groupId = 'ps-lb-grp-' + rank;
+      const upCnt   = names.filter(n => (psChangeMap[n]||0) > 0).length;
+      const downCnt = names.filter(n => (psChangeMap[n]||0) < 0).length;
+      const chgBadge = upCnt > 0 || downCnt > 0
+        ? `<span style="font-size:9px;margin-left:6px;display:inline-flex;gap:4px">
+             ${upCnt   > 0 ? `<span style="color:var(--up);font-weight:800">▲${upCnt}</span>` : ''}
+             ${downCnt > 0 ? `<span style="color:var(--down);font-weight:800">▼${downCnt}</span>` : ''}
+           </span>` : '';
+      const cardsHtml = names.map(n => {
+        const ch = psChangeMap[n] || 0;
+        const chTxt = ch > 0 ? `<span style="font-size:9px;color:var(--up);font-weight:800">▲${ch}</span>`
+                    : ch < 0 ? `<span style="font-size:9px;color:var(--down);font-weight:800">▼${Math.abs(ch)}</span>` : '';
+        return `<div class="top10-item ${tc}" onclick="showCountryChart('${n}')"><span class="n">${FLAGS[n]||''} ${n}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank >= 9999 ? '—' : rank + '위'}${chTxt}</span></div>`;
+      }).join('');
+      return `<div>
+        <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
+          <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}${chgBadge}</span>
+          <span class="rank-group-count">${names.length}개국</span>
+          <span class="rank-group-arrow" id="${groupId}-arrow">▼</span>
+        </div>
+        <div class="rank-group-body collapsed" id="${groupId}">
+          <div class="top10-grid" style="padding:8px">${cardsHtml}</div>
+        </div>
+      </div>`;
     }).join('');
     twemoji.parse(lbPs, { folder: 'svg', ext: '.svg' });
   }
@@ -1827,7 +1865,7 @@ function renderSTS() {
 
   renderStsTable(lat, prv);
   renderStsHeatmap(lat, prv);
-  renderStsLeaderboard(lat);
+  renderStsLeaderboard(lat, prv);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1967,10 +2005,24 @@ function renderStsTable(lat, prv) {
   const _cnt23  = ranked.filter(d=>d.rank>=2&&d.rank<=3).length;
   const _cnt410 = ranked.filter(d=>d.rank>=4&&d.rank<=10).length;
   const _cntRest= ranked.filter(d=>d.rank>=11).length;
+
+  function makeStsChgBadge(items) {
+    const up = items.filter(x => x.change > 0).length;
+    const dn = items.filter(x => x.change < 0).length;
+    if (!up && !dn) return '';
+    return `<span style="font-size:9px;display:inline-flex;gap:3px;margin-left:4px;vertical-align:middle">
+      ${up ? `<span style="color:var(--up);font-weight:800">▲${up}</span>` : ''}
+      ${dn ? `<span style="color:var(--down);font-weight:800">▼${dn}</span>` : ''}
+    </span>`;
+  }
+  const setTH = (id, num, items) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = num + makeStsChgBadge(items);
+  };
+  setTH('sts-cnt-1',  _cnt1,  ranked.filter(d=>d.rank===1));
+  setTH('sts-cnt-3',  _cnt23, ranked.filter(d=>d.rank>=2&&d.rank<=3));
+  setTH('sts-cnt-10', _cnt410,ranked.filter(d=>d.rank>=4&&d.rank<=10));
   const setT = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
-  setT('sts-cnt-1',  _cnt1);
-  setT('sts-cnt-3',  _cnt23);
-  setT('sts-cnt-10', _cnt410);
   setT('sts-cnt-rest', _cntRest+'개 / '+ranked.length+'개국');
   // 1위 국가명
   const stsRank1Names = ranked.filter(d=>d.rank===1).map(d=>d.name);
@@ -2049,9 +2101,16 @@ function renderStsTable(lat, prv) {
 }
 
 /* ── Steam 리더보드 ── */
-function renderStsLeaderboard(lat) {
+function renderStsLeaderboard(lat, prv) {
   const g = document.getElementById('lb-sts-container');
   if (!g || !lat || !lat.results) return;
+  // 변동 계산
+  const stsChangeMap = {};
+  Object.keys(STS_W).forEach(n => {
+    const r  = lat.results[n]?.rank ?? null;
+    const pr = prv?.results?.[n]?.rank ?? null;
+    stsChangeMap[n] = (r && pr) ? pr - r : 0;
+  });
   const sorted = Object.keys(STS_W)
     .map(n => ({ name: n, rank: lat.results[n]?.rank ?? null, w: STS_W[n] || 1 }))
     .sort((a, b) => {
@@ -2069,11 +2128,31 @@ function renderStsLeaderboard(lat) {
     const lc = rank===1?'g1':rank<=3?'g2':rank<=10?'g3':rank<999?'g10':'gout';
     const tc = rank===1?'tier-1':rank<=3?'tier-2':rank<=10?'tier-3':rank<999?'tier-10':'tier-out';
     const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+    const groupId = 'sts-lb-grp-' + rank;
+    const upCnt   = names.filter(n => (stsChangeMap[n]||0) > 0).length;
+    const downCnt = names.filter(n => (stsChangeMap[n]||0) < 0).length;
+    const chgBadge = upCnt > 0 || downCnt > 0
+      ? `<span style="font-size:9px;margin-left:6px;display:inline-flex;gap:4px">
+           ${upCnt   > 0 ? `<span style="color:var(--up);font-weight:800">▲${upCnt}</span>` : ''}
+           ${downCnt > 0 ? `<span style="color:var(--down);font-weight:800">▼${downCnt}</span>` : ''}
+         </span>` : '';
     const cardsHtml = names.map(n => {
       const flag = STS_F[n] || '';
-      return `<div class="top10-item ${tc}" onclick="openStsModal('${n}')"><span class="n">${flag} ${n}</span><span class="r">${rank>=9999?'—':rank+'위'}</span></div>`;
+      const ch = stsChangeMap[n] || 0;
+      const chTxt = ch > 0 ? `<span style="font-size:9px;color:var(--up);font-weight:800">▲${ch}</span>`
+                  : ch < 0 ? `<span style="font-size:9px;color:var(--down);font-weight:800">▼${Math.abs(ch)}</span>` : '';
+      return `<div class="top10-item ${tc}" onclick="openStsModal('${n}')"><span class="n">${flag} ${n}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank>=9999?'—':rank+'위'}${chTxt}</span></div>`;
     }).join('');
-    return `<div class="lb-group"><div class="lb-group-label ${lc}">${medal} ${label} <span class="rank-group-count">${names.length}개국</span></div><div class="top10-grid" style="padding:8px">${cardsHtml}</div></div>`;
+    return `<div>
+      <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
+        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}${chgBadge}</span>
+        <span class="rank-group-count">${names.length}개국</span>
+        <span class="rank-group-arrow" id="${groupId}-arrow">▼</span>
+      </div>
+      <div class="rank-group-body collapsed" id="${groupId}">
+        <div class="top10-grid" style="padding:8px">${cardsHtml}</div>
+      </div>
+    </div>`;
   }).join('');
   twemoji.parse(g, { folder: 'svg', ext: '.svg' });
 }
