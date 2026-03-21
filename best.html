@@ -449,6 +449,24 @@
   .schedule-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 8px; }
   #schedule-grid { display: block; }
   .sts-sched-wrap { padding: 8px 0 4px; }
+  /* Steam 스케줄 그리드 */
+  .sts-sched-day-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--tx-4); margin: 8px 0 5px; display: flex; align-items: center; gap: 6px; }
+  .day-badge { background: var(--bg-3); border: 1px solid var(--bd); border-radius: 3px; padding: 1px 7px; font-size: 9px; color: var(--tx-2); letter-spacing: 0.5px; }
+  .day-badge.today { border-color: rgba(241,196,15,0.4); color: var(--gold); background: rgba(241,196,15,0.07); }
+  .sts-sched-grid { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 10px; }
+  .sts-slot { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 52px; min-height: 38px; border-radius: 5px; border: 1px solid var(--bd); background: var(--bg-2); cursor: default; transition: border-color var(--trans); padding: 3px 2px; gap: 2px; }
+  .slot-h { font-size: 9px; color: var(--tx-3); letter-spacing: 0.3px; font-weight: 600; }
+  .slot-i { font-size: 12px; font-weight: 700; }
+  .sts-slot.ok  { border-color: rgba(46,204,113,0.5); background: rgba(46,204,113,0.07); }
+  .sts-slot.ok .slot-i  { color: #2ecc71; }
+  .sts-slot.ok .slot-h  { color: #2ecc71; opacity: 0.8; }
+  .sts-slot.miss { border-color: rgba(231,76,60,0.35); background: rgba(231,76,60,0.04); }
+  .sts-slot.miss .slot-i { color: #e74c3c; }
+  .sts-slot.fut { opacity: 0.35; }
+  .sts-slot.fut .slot-i { color: var(--tx-4); }
+  .sts-slot.now { border-color: rgba(241,196,15,0.6) !important; box-shadow: 0 0 6px rgba(241,196,15,0.2); }
+  .sts-slot.manual { border-color: rgba(241,196,15,0.4); }
+  .sts-slot.manual .slot-i { color: var(--gold); }
   .sts-legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
   .sts-sched-legend { display: flex; gap: 10px; font-size: 11px; color: var(--tx-4); margin-bottom: 8px; flex-wrap: wrap; }
   .sts-sched-legend span { display: flex; align-items: center; gap: 4px; }
