@@ -2043,6 +2043,9 @@ const GH_WF_STEAM = 'steam_topseller_tracker.yml';
 function ghGetToken()    { return localStorage.getItem('gh_token') || ''; }
 function ghSetToken(v)   { localStorage.setItem('gh_token', v); }
 
+// 폴링 타이머 관리
+const _ghPollers = { ps: null, steam: null };
+
 function updateGhStatusDot() {
   const btn = document.getElementById('gh-token-status');
   if (!btn) return;
@@ -2066,6 +2069,89 @@ function saveGhSettings() {
   showDispatchToast('✅ Token이 저장되었습니다', '#2ecc71');
 }
 
+function setRunBtn(type, state, extra) {
+  const btn   = document.getElementById(type === 'ps' ? 'btn-dispatch-ps' : 'btn-dispatch-steam');
+  const label = type === 'ps' ? 'PS' : 'Steam';
+  const states = {
+    idle:      { icon: '▶',  text: `${label} 실행`,  disabled: false },
+    waiting:   { icon: '⏳', text: '대기 중…',       disabled: true  },
+    running:   { icon: '↻',  text: '실행 중…',       disabled: true, spin: true },
+    success:   { icon: '✓',  text: '완료',           disabled: false },
+    failure:   { icon: '✗',  text: '실패',           disabled: false },
+    cancelled: { icon: '—',  text: '취소됨',         disabled: false },
+  };
+  const s = states[state] || states.idle;
+  const iconHtml = s.spin
+    ? `<span class="spin">${s.icon}</span>`
+    : `<span class="btn-icon">${s.icon}</span>`;
+  btn.innerHTML = `${iconHtml} ${s.text}`;
+  btn.disabled  = s.disabled;
+  // 완료/실패 후 3초 뒤 idle 복원
+  if (state === 'success' || state === 'failure' || state === 'cancelled') {
+    clearTimeout(btn._resetTimer);
+    btn._resetTimer = setTimeout(() => { clearPoller(type); setRunBtn(type, 'idle'); }, 4000);
+  }
+}
+
+async function pollRunStatus(type, wf, since) {
+  const token = ghGetToken();
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+  let attempts = 0;
+  const MAX = 60; // 최대 5분 (5초×60)
+
+  setRunBtn(type, 'waiting');
+
+  const poll = async () => {
+    attempts++;
+    if (attempts > MAX) {
+      setRunBtn(type, 'idle');
+      return;
+    }
+    try {
+      const r = await fetch(
+        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${wf}/runs?per_page=5&created=>=${since}`,
+        { headers }
+      );
+      if (!r.ok) { setRunBtn(type, 'idle'); return; }
+      const data = await r.json();
+      const run  = data.workflow_runs?.[0];
+      if (!run) {
+        // 아직 run이 안 만들어짐 — 재시도
+        _ghPollers[type] = setTimeout(poll, 3000);
+        return;
+      }
+      const { status, conclusion } = run;
+      const runUrl = run.html_url;
+
+      if (status === 'queued' || status === 'waiting') {
+        setRunBtn(type, 'waiting');
+        _ghPollers[type] = setTimeout(poll, 3000);
+      } else if (status === 'in_progress') {
+        setRunBtn(type, 'running');
+        _ghPollers[type] = setTimeout(poll, 5000);
+      } else {
+        // completed
+        if (conclusion === 'success') {
+          setRunBtn(type, 'success');
+          showDispatchToast(`✅ ${type === 'ps' ? 'PS' : 'Steam'} 완료!`, '#2ecc71');
+        } else if (conclusion === 'failure') {
+          setRunBtn(type, 'failure');
+          showDispatchToast(`❌ ${type === 'ps' ? 'PS' : 'Steam'} 실패 — <a href="${runUrl}" target="_blank">로그 보기</a>`, '#e74c3c');
+        } else {
+          setRunBtn(type, 'cancelled');
+        }
+      }
+    } catch(e) {
+      setRunBtn(type, 'idle');
+    }
+  };
+  _ghPollers[type] = setTimeout(poll, 4000); // dispatch 후 4초 뒤 첫 폴링
+}
+
 async function dispatchWorkflow(type) {
   const token = ghGetToken();
   if (!token) {
@@ -2073,13 +2159,14 @@ async function dispatchWorkflow(type) {
     showDispatchToast('⚙ 먼저 GitHub Token을 입력해주세요', '#f1c40f');
     return;
   }
+  // 이미 폴링 중이면 무시
+  if (_ghPollers[type]) return;
 
   const wf    = type === 'ps' ? GH_WF_PS : GH_WF_STEAM;
-  const btnId = type === 'ps' ? 'btn-dispatch-ps' : 'btn-dispatch-steam';
   const label = type === 'ps' ? 'PS' : 'Steam';
-  const btn   = document.getElementById(btnId);
-  btn.disabled = true;
-  btn.innerHTML = `<span class="spin">↻</span> 실행 중...`;
+  const since = new Date(Date.now() - 5000).toISOString().slice(0, 19) + 'Z'; // 지금 기준
+
+  setRunBtn(type, 'waiting');
 
   try {
     const res = await fetch(
@@ -2096,16 +2183,16 @@ async function dispatchWorkflow(type) {
       }
     );
     if (res.status === 204) {
-      showDispatchToast(`✅ ${label} 트래커 실행 요청 완료`, '#2ecc71');
+      showDispatchToast(`🚀 ${label} 실행 요청됨`, '#4a9eff');
+      pollRunStatus(type, wf, since);
     } else {
       const err = await res.json().catch(() => ({}));
       showDispatchToast(`❌ 실패 (${res.status}): ${err.message || '알 수 없는 오류'}`, '#e74c3c');
+      setRunBtn(type, 'idle');
     }
   } catch(e) {
     showDispatchToast(`❌ 네트워크 오류: ${e.message}`, '#e74c3c');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = `<span class="btn-icon">▶</span> ${label} 실행`;
+    setRunBtn(type, 'idle');
   }
 }
 
@@ -2114,16 +2201,22 @@ function showDispatchToast(msg, color) {
   if (!t) {
     t = document.createElement('div');
     t.id = 'gh-toast';
-    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;z-index:300;transition:opacity 0.4s;pointer-events:none;white-space:nowrap';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;z-index:300;transition:opacity 0.4s;white-space:nowrap';
     document.body.appendChild(t);
   }
-  t.textContent = msg;
+  t.innerHTML = msg;
   t.style.background = color + '22';
   t.style.border = `1px solid ${color}66`;
   t.style.color = color;
   t.style.opacity = '1';
+  t.style.pointerEvents = msg.includes('<a') ? 'auto' : 'none';
   clearTimeout(t._timer);
-  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 3000);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; t.style.pointerEvents = 'none'; }, 5000);
+}
+
+// 폴링 타이머 정리 (setRunBtn idle 복원 시)
+function clearPoller(type) {
+  if (_ghPollers[type]) { clearTimeout(_ghPollers[type]); _ghPollers[type] = null; }
 }
 
 window.addEventListener('DOMContentLoaded', updateGhStatusDot);
