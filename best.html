@@ -1695,6 +1695,44 @@ function stsAvg(h) {
   return tw > 0 ? Math.round(ts / tw * 10) / 10 : null;
 }
 
+/* ── Steam 국가 모달 ── */
+function openStsModal(n) {
+  const m = document.getElementById('sts-modal');
+  if (!m) return;
+  const cc = STS_CC[n] || 'us';
+  const flagImg = `<img src="https://flagcdn.com/w40/${cc}.png" alt="${n}" style="width:32px;height:22px;object-fit:cover;border-radius:2px;display:inline-block;vertical-align:middle">`;
+  document.getElementById('sts-modal-title').innerHTML = flagImg + ' ' + n;
+  document.getElementById('sts-modal-link').href = 'https://store.steampowered.com/charts/topselling/' + cc.toUpperCase();
+  const h = stsHist.filter(x => x.results && x.results[n] && x.results[n].rank).map(x => ({ t: new Date(x.timestamp), r: x.results[n].rank }));
+  if (!h.length) {
+    ['sts-modal-current','sts-modal-best','sts-modal-avg'].forEach(id => document.getElementById(id).textContent = '—');
+  } else {
+    const cur = h[h.length-1].r, best = Math.min(...h.map(x=>x.r)), avg = Math.round(h.reduce((s,x)=>s+x.r,0)/h.length*10)/10;
+    document.getElementById('sts-modal-current').textContent = cur + '위';
+    document.getElementById('sts-modal-best').textContent    = best + '위';
+    document.getElementById('sts-modal-avg').textContent     = avg + '위';
+    const c2 = document.getElementById('stsModalChart').getContext('2d');
+    if (stsMCI) stsMCI.destroy();
+    const ptR2 = h.length > 60 ? 0 : h.length > 20 ? 2 : 3;
+    stsMCI = new Chart(c2, {
+      type: 'line',
+      data: { labels: h.map(x=>x.t), datasets: [{ label: '순위', data: h.map(x=>x.r), borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.1)', borderWidth: 2, pointRadius: ptR2, pointHoverRadius: ptR2+2, fill: true, tension: 0.3, spanGaps: true }] },
+      options: { responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { type:'time', time:{ unit: h.length>48?'day':'hour', displayFormats:{hour:'M/d HH:mm',day:'M/d'}}, ticks:{color:'#fff',maxTicksLimit:7,maxRotation:30,font:{size:10}}, grid:{color:'#222'} },
+          y: { reverse:true, suggestedMin:0, ticks:{color:'#fff',stepSize:1,callback:v=>v>0?v+'위':'',font:{size:11},padding:8}, grid:{color:'#222'} }
+        },
+        plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>c.parsed.y+'위'}} }
+      }
+    });
+  }
+  m.classList.add('open'); document.body.style.overflow = 'hidden';
+}
+
+function closeStsModal(e) { if (e.target === document.getElementById('sts-modal')) closeStsModalDirect(); }
+function closeStsModalDirect() { document.getElementById('sts-modal').classList.remove('open'); document.body.style.overflow = ''; if (stsMCI) { stsMCI.destroy(); stsMCI = null; } }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeStsModalDirect(); closeModal(); } });
+
 function renderSteamSchedule() {
   const container = document.getElementById('sts-sched-days');
   const summaryEl = document.getElementById('sts-sched-summary');
