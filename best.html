@@ -545,16 +545,16 @@
     <div class="dual-panel">
       <!-- PS 좌측 -->
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store</div>
+        <div class="dual-col-header ps-header">🎮 PS Store <span id="ps-data-time" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="stats">
-          <div class="card"><div class="lbl">Weighted Average</div><div class="val" id="stat-avg">—</div></div>
+          <div class="card"><div class="lbl">가중 평균</div><div class="val" id="stat-avg">—</div></div>
           <div class="card">
-            <div class="lbl">Best Rank</div>
+            <div class="lbl">최고 순위</div>
             <div class="val" id="stat-best-val">—</div>
             <div class="sub" id="stat-best-name">...</div>
           </div>
           <div class="card">
-            <div class="lbl">Worst Rank</div>
+            <div class="lbl">최하 순위</div>
             <div class="val" id="stat-worst-val">—</div>
             <div class="sub" id="stat-worst-name">...</div>
           </div>
@@ -583,13 +583,7 @@
       </div>
       <!-- Steam 우측 -->
       <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header">
-          🖥 Steam
-          <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
-            <button class="steam-ts-dl-btn" style="font-size:10px;padding:3px 8px" onclick="downloadSteamCSV()">📥 CSV</button>
-            <a class="steam-ts-link" style="font-size:10px;padding:3px 8px" href="https://store.steampowered.com/charts/topselling/KR" target="_blank">🔗 Charts</a>
-          </div>
-        </div>
+        <div class="dual-col-header steam-header">🖥 Steam <span id="sts-data-time" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="stats">
           <div class="card" style="border-left-color:var(--steam)" id="sts-global-box">
             <div class="lbl">가중 평균</div>
@@ -642,11 +636,11 @@
   <div id="sec-leaderboard" class="tab-section">
     <div class="dual-panel">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store</div>
+        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="top10-grid" id="top10-grid"></div>
       </div>
       <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header">🖥 Steam</div>
+        <div class="dual-col-header steam-header">🖥 Steam <span class="sts-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="top10-grid" id="sts-top10-grid"></div>
       </div>
     </div>
@@ -656,7 +650,7 @@
   <div id="sec-sched" class="tab-section">
     <div class="dual-panel">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store</div>
+        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="sts-sched-wrap">
           <div class="sts-sched-legend">
             <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>자동 실행</span>
@@ -686,11 +680,11 @@
   <div id="sec-chart" class="tab-section">
     <div class="dual-panel dual-panel-chart">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store</div>
+        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="chart-section" style="height:300px;margin-bottom:0"><canvas id="mainChart"></canvas></div>
       </div>
       <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header">🖥 Steam</div>
+        <div class="dual-col-header steam-header">🖥 Steam <span class="sts-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="steam-ts-chart-box" style="height:300px;padding:12px">
           <div style="height:100%"><canvas id="stsChart"></canvas></div>
         </div>
@@ -702,7 +696,7 @@
   <div id="sec-heatmap" class="tab-section">
     <div class="dual-panel">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store</div>
+        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="heatmap-legend">
           <span><i class="hm-legend-bar" style="background:var(--up)"></i> 상승</span>
           <span><i class="hm-legend-bar" style="background:var(--down)"></i> 하락</span>
@@ -712,7 +706,7 @@
         <div class="heatmap-grid" id="ps-heatmap-grid"></div>
       </div>
       <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header">🖥 Steam</div>
+        <div class="dual-col-header steam-header">🖥 Steam <span class="sts-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="heatmap-legend">
           <span><i class="hm-legend-bar" style="background:var(--up)"></i> 상승</span>
           <span><i class="hm-legend-bar" style="background:var(--down)"></i> 하락</span>
@@ -729,7 +723,8 @@
     <div class="dual-panel">
       <div class="dual-col ps-col">
         <div class="dual-col-header ps-header">🎮 PS Store
-          <button class="csv-btn" style="margin-left:auto;font-size:10px;padding:4px 10px" onclick="downloadCSV()">📥 CSV</button>
+          <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span>
+          <button class="csv-btn" style="font-size:10px;padding:4px 10px;margin-left:8px" onclick="downloadCSV()">📥 CSV</button>
         </div>
         <div class="table-wrapper">
           <table>
@@ -750,7 +745,8 @@
       </div>
       <div class="dual-col steam-col">
         <div class="dual-col-header steam-header">🖥 Steam
-          <button class="steam-ts-dl-btn" style="margin-left:auto;font-size:10px;padding:4px 10px" onclick="downloadSteamCSV()">📥 CSV</button>
+          <span class="sts-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span>
+          <button class="steam-ts-dl-btn" style="font-size:10px;padding:4px 10px;margin-left:8px" onclick="downloadSteamCSV()">📥 CSV</button>
         </div>
         <div id="sts-country-summary-row" style="display:none;margin-bottom:10px">
           <div class="steam-ts-stats-row">
@@ -963,7 +959,11 @@ function render() {
   const curr = historyData[historyData.length - 1];
   const prev = historyData.length > 1 ? historyData[historyData.length - 2] : null;
 
-  document.getElementById('update-time').innerText = `LAST SNAPSHOT: ${curr.timestamp.split('.')[0].replace('T', ' ')}`;
+  const tsStr = curr.timestamp.split('.')[0].replace('T', ' ');
+  document.getElementById('update-time').innerText = `LAST SNAPSHOT: ${tsStr}`;
+  // PS 타임스탬프 뱃지 전체 업데이트
+  const psTs = curr.timestamp.split('.')[0].replace('T', ' ').slice(5); // MM-DD HH:mm
+  document.querySelectorAll('.ps-ts-badge, #ps-data-time').forEach(el => el.textContent = psTs);
   document.getElementById('stat-avg').innerText = curr.averages.combined.toFixed(1) + '위';
 
   let list = [];
@@ -1437,6 +1437,9 @@ function renderSTS() {
   const la = stsAvg(lat), pa = prv ? stsAvg(prv) : null;
 
   document.getElementById('sts-avg').textContent = la ? '#' + la.toFixed(1) : '—';
+  // Steam 타임스탬프 뱃지 전체 업데이트
+  const stsTs = lat.timestamp ? lat.timestamp.split('.')[0].replace('T', ' ').slice(5) : '';
+  document.querySelectorAll('.sts-ts-badge, #sts-data-time').forEach(el => el.textContent = stsTs);
   document.getElementById('sts-count').textContent = stsHist.length;
   const stsTotalCountries = Object.keys(lat.results || {}).length;
   document.getElementById('sts-countries-sub').textContent = stsTotalCountries + '개국 추적';
