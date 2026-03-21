@@ -1004,14 +1004,31 @@ function render() {
 
   const t10Grid = document.getElementById('top10-grid');
   t10Grid.innerHTML = '';
-  Object.keys(WEIGHTS).forEach(name => {
-    const r = getRank(curr, name);
+  // Steam 추적 국가(29개)를 PS 순위 기준으로 정렬해서 표시
+  const psLeaderSorted = Object.keys(STS_W)
+    .map(name => ({ name, rank: getRank(curr, name) }))
+    .sort((a, b) => {
+      if (a.rank < 999 && b.rank < 999) return a.rank !== b.rank ? a.rank - b.rank : (STS_W[b.name]||0) - (STS_W[a.name]||0);
+      if (a.rank < 999) return -1; if (b.rank < 999) return 1;
+      return (STS_W[b.name]||0) - (STS_W[a.name]||0);
+    });
+  psLeaderSorted.forEach(({ name, rank }) => {
     const div = document.createElement('div');
     div.className = 'top10-item';
     div.onclick = () => showCountryChart(name);
-    div.innerHTML = `<span class="n">${FLAGS[name] || ''} ${name}</span><span class="r">${r === 999 ? '—' : r + '위'}</span>`;
+    div.innerHTML = `<span class="n">${FLAGS[name] || ''} ${name}</span><span class="r" style="${rank >= 999 ? 'color:var(--tx-4)' : ''}">${rank >= 999 ? '—' : rank + '위'}</span>`;
     t10Grid.appendChild(div);
   });
+
+  // Steam 국가별 탭에서 PS 순위 순서를 참조할 수 있도록 저장
+  window._psRankOrder = list
+    .slice()
+    .sort((a, b) => {
+      const ar = a.rank >= 999 ? 99999 : a.rank;
+      const br = b.rank >= 999 ? 99999 : b.rank;
+      return ar !== br ? ar - br : (b.weight || 0) - (a.weight || 0);
+    })
+    .map(d => d.name);
 
   // 정렬 로직 (rank/best/avg에서 999는 항상 마지막)
   list.sort((a, b) => {
@@ -1615,9 +1632,13 @@ function renderStsHeatmap(lat, prv) {
   });
 
   // 정렬: 현재순위 asc → 가중치 desc → 미발견 마지막
+  const psOrder = window._psRankOrder || [];
   entries.sort((a, b) => {
-    const ar = a.rank ?? 99999;
-    const br = b.rank ?? 99999;
+    const ia = psOrder.indexOf(a.name), ib = psOrder.indexOf(b.name);
+    if (ia !== -1 && ib !== -1) return ia - ib;
+    if (ia !== -1) return -1;
+    if (ib !== -1) return 1;
+    const ar = a.rank ?? 99999, br = b.rank ?? 99999;
     if (ar !== br) return ar - br;
     return (b.weight || 0) - (a.weight || 0);
   });
@@ -1688,11 +1709,22 @@ function renderStsLeaderboard(lat) {
 function renderStsGrid(lat, prv) {
   const g = document.getElementById('sts-country-grid');
   if (!g || !lat.results) return;
+
+  // PS 순위 순서 참조 (없으면 Steam 자체 순위로 fallback)
+  const psOrder = window._psRankOrder || [];
+
   const s = Object.entries(lat.results).sort((a, b) => {
-    const ra = a[1] && a[1].rank, rb = b[1] && b[1].rank;
-    if (ra && rb) return ra !== rb ? ra - rb : (STS_W[b[0]]||0) - (STS_W[a[0]]||0);
+    const [na] = a, [nb] = b;
+    const ia = psOrder.indexOf(na), ib = psOrder.indexOf(nb);
+    // PS 순서에 있는 국가끼리 → PS 순서대로
+    if (ia !== -1 && ib !== -1) return ia - ib;
+    if (ia !== -1) return -1;
+    if (ib !== -1) return 1;
+    // 둘 다 없으면 Steam 순위 기준
+    const ra = a[1]?.rank, rb = b[1]?.rank;
+    if (ra && rb) return ra !== rb ? ra - rb : (STS_W[nb]||0) - (STS_W[na]||0);
     if (ra) return -1; if (rb) return 1;
-    return (STS_W[b[0]]||0) - (STS_W[a[0]]||0);
+    return (STS_W[nb]||0) - (STS_W[na]||0);
   });
 
   const ranked = s.filter(([,d]) => d && d.rank != null);
