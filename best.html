@@ -211,9 +211,19 @@
   .ct-link { font-size: 13px; color: var(--tx-4); text-decoration: none; text-align: center; }
   .ct-link:hover { color: var(--tx-2); }
   @media (max-width: 500px) {
-    .ct-table-header,
-    .ct-row { grid-template-columns: 3px 18px 1fr 0 0 0 38px 18px; gap: 4px; }
-    .ct-meta, .ct-chg { overflow: hidden; width: 0; padding: 0; }
+    .ct-table-header { display: none; }
+    .ct-row {
+      grid-template-columns: 3px 22px 1fr auto 20px;
+      grid-template-rows: auto auto;
+      gap: 2px 6px; padding: 8px 10px 8px 0;
+    }
+    .ct-bar  { grid-row: 1 / 3; align-self: stretch; }
+    .ct-flag { grid-row: 1; grid-column: 2; }
+    .ct-name { grid-row: 1; grid-column: 3; font-size: 14px; }
+    .ct-rank { grid-row: 1; grid-column: 4; font-size: 14px; }
+    .ct-link { grid-row: 1; grid-column: 5; }
+    .ct-meta { grid-row: 2; grid-column: 3; font-size: 11px; text-align: left; white-space: nowrap; overflow: visible; width: auto; padding: 0; }
+    .ct-chg  { grid-row: 2; grid-column: 4; font-size: 11px; overflow: visible; width: auto; padding: 0; }
   }
 
   /* ══ 네비게이션 바 ════════════════════════════════════════════ */
@@ -372,8 +382,8 @@
   .hm-bar.down { background: var(--down); }
   .hm-bar.same { background: var(--bd); }
   .hm-rank { display: none; } /* 순위는 그룹 헤더에 표시 */
-  .hm-info { flex:1; padding: 5px 5px 5px 8px; min-width: 0; }
-  .hm-name { font-size: 15px; font-weight: 700; color: var(--tx-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; }
+  .hm-info { flex:1; padding: 5px 5px 5px 8px; min-width: 80px; overflow: hidden; }
+  .hm-name { font-size: 15px; font-weight: 700; color: var(--tx-1); display: flex; align-items: center; gap: 4px; white-space: nowrap; }
   .hm-name .hm-flag { font-size: 17px; flex-shrink: 0; }
   .hm-meta { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
   .hm-best { font-size: 11px; color: var(--gold); font-weight: 700; white-space: nowrap; }
@@ -390,8 +400,8 @@
     border-left: 1px solid var(--bd); transition: color var(--trans), background var(--trans);
   }
   .hm-link:hover { color: var(--tx-2); background: rgba(255,255,255,0.03); }
-  .hm-spark-wrap { flex-shrink: 0; display: flex; align-items: center; padding: 0 5px; border-left: 1px solid var(--bd); }
-  .hm-spark { width: 60px; height: 24px; display: block; overflow: visible; }
+  .hm-spark-wrap { flex-shrink: 0; display: flex; align-items: center; padding: 0 4px; border-left: 1px solid var(--bd); min-width: 0; }
+  .hm-spark { width: 52px; height: 22px; display: block; overflow: visible; }
   @media (max-width: 640px) { .heatmap-grid { grid-template-columns: 1fr; } .hm-rank { width: 42px; font-size: 15px; } }
 
   /* ══ GitHub Actions 버튼 ════════════════════════════════════ */
@@ -520,9 +530,9 @@
     display: inline-flex; align-items: center; gap: 2px;
     background: rgba(241,196,15,0.08); border: 1px solid rgba(241,196,15,0.2);
     border-radius: 4px; padding: 2px 5px;
-    font-size: 11px; color: var(--gold); font-weight: 700; white-space: nowrap;
+    font-size: 15px; color: var(--gold); font-weight: 700; white-space: nowrap;
   }
-  .rank1-tag img { width: 13px !important; height: 10px !important; vertical-align: middle; }
+  .rank1-tag img { width: 17px !important; height: 13px !important; vertical-align: middle; }
 
   .steam-ts-stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(--gap); margin-bottom: var(--gap); }
   .steam-ts-stat-box {
@@ -665,9 +675,19 @@
     .rank-group-arrow { font-size: 14px; }
   }
   @media (max-width: 500px) {
-    .ct-table-header,
-    .ct-row { grid-template-columns: 3px 18px 1fr 0 0 0 38px 18px; gap: 4px; }
-    .ct-meta, .ct-chg { overflow: hidden; width: 0; padding: 0; }
+    .ct-table-header { display: none; }
+    .ct-row {
+      grid-template-columns: 3px 22px 1fr auto 20px;
+      grid-template-rows: auto auto;
+      gap: 2px 6px; padding: 8px 10px 8px 0;
+    }
+    .ct-bar  { grid-row: 1 / 3; align-self: stretch; }
+    .ct-flag { grid-row: 1; grid-column: 2; }
+    .ct-name { grid-row: 1; grid-column: 3; font-size: 14px; }
+    .ct-rank { grid-row: 1; grid-column: 4; font-size: 14px; }
+    .ct-link { grid-row: 1; grid-column: 5; }
+    .ct-meta { grid-row: 2; grid-column: 3; font-size: 11px; text-align: left; white-space: nowrap; overflow: visible; width: auto; padding: 0; }
+    .ct-chg  { grid-row: 2; grid-column: 4; font-size: 11px; overflow: visible; width: auto; padding: 0; }
   }
 
   /* ══ 모바일 가로보기 ══════════════════════════════════════════ */
@@ -776,7 +796,7 @@
     <div class="dual-wrap">
       <!-- PS 좌측 -->
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store <span id="ps-data-time" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header ps-header">🎮 PS Store <span id="ps-data-time" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div class="stats">
           <div class="card"><div class="lbl">가중 평균</div><div class="val" id="stat-avg">—</div></div>
           <div class="card">
@@ -820,7 +840,7 @@
       </div></div><!-- /dual-col-body -->
       <!-- Steam 우측 -->
       <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header">🖥 Steam <span id="sts-data-time" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header steam-header">🖥 Steam <span id="sts-data-time" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div class="stats">
           <!-- 글로벌 순위 (숨김 - JS 표시용) -->
           <div id="sts-global-rank-box" style="display:none">
@@ -878,11 +898,11 @@
   <div id="sec-leaderboard" class="tab-section">
     <div class="dual-wrap">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div id="lb-ps-container" style="padding:8px"></div></div>
       </div>
       <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header">🖥 Steam <span class="sts-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header steam-header">🖥 Steam <span class="sts-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div id="lb-sts-container" style="padding:8px"></div></div>
       </div>
     </div>
@@ -892,7 +912,7 @@
   <div id="sec-sched" class="tab-section">
     <div class="dual-wrap">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div class="sts-sched-wrap">
           <div class="sts-sched-legend">
             <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>자동 실행</span>
@@ -922,7 +942,7 @@
   <div id="sec-chart" class="tab-section">
     <div class="dual-wrap dual-panel-chart">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body" style="display:flex;flex-direction:column">
         <div class="chart-section" style="flex:1;min-height:200px;margin-bottom:0"><canvas id="mainChart"></canvas></div>
         <div class="chart-legend">
@@ -932,7 +952,7 @@
         </div></div>
       </div>
       <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header">🖥 Steam <span class="sts-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header steam-header">🖥 Steam <span class="sts-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body" style="display:flex;flex-direction:column">
         <div class="steam-ts-chart-box" style="flex:1;min-height:200px;padding:12px">
           <div style="height:100%"><canvas id="stsChart"></canvas></div>
@@ -951,7 +971,7 @@
   <div id="sec-heatmap" class="tab-section">
     <div class="dual-wrap">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div class="heatmap-legend">
           <span><i class="hm-legend-bar" style="background:var(--up)"></i> 상승</span>
           <span><i class="hm-legend-bar" style="background:var(--down)"></i> 하락</span>
@@ -961,7 +981,7 @@
         <div class="heatmap-grid" id="ps-heatmap-grid"></div></div>
       </div>
       <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header">🖥 Steam <span class="sts-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header steam-header">🖥 Steam <span class="sts-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div class="heatmap-legend">
           <span><i class="hm-legend-bar" style="background:var(--up)"></i> 상승</span>
           <span><i class="hm-legend-bar" style="background:var(--down)"></i> 하락</span>
@@ -978,14 +998,14 @@
     <div class="dual-wrap">
       <div class="dual-col ps-col">
         <div class="dual-col-header ps-header">🎮 PS Store
-          <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span>
+          <span class="ps-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span>
           <button class="csv-btn" style="font-size:10px;padding:4px 10px;margin-left:8px" onclick="downloadCSV()">📥 CSV</button>
         </div>
         <div class="dual-col-body" id="ps-table-body"></div>
       </div>
       <div class="dual-col steam-col">
         <div class="dual-col-header steam-header">🖥 Steam
-          <span class="sts-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span>
+          <span class="sts-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span>
           <button class="steam-ts-dl-btn" style="font-size:10px;padding:4px 10px;margin-left:8px" onclick="downloadSteamCSV()">📥 CSV</button>
         </div>
         <!-- 숨김 원소들 유지 -->
