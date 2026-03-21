@@ -1289,13 +1289,20 @@ function renderPsTable(list) {
         <a class="ct-link" href="${getStoreUrl(d.name)}" target="_blank" onclick="event.stopPropagation()">🔗</a>
       </div>`;
     }).join('');
+    const upCnt   = items.filter(d => d.change > 0).length;
+    const downCnt = items.filter(d => d.change < 0).length;
+    const chgBadge = upCnt > 0 || downCnt > 0
+      ? `<span style="font-size:9px;margin-left:6px;display:inline-flex;gap:4px">
+           ${upCnt   > 0 ? `<span style="color:var(--up);font-weight:800">▲${upCnt}</span>` : ''}
+           ${downCnt > 0 ? `<span style="color:var(--down);font-weight:800">▼${downCnt}</span>` : ''}
+         </span>` : '';
     return `<div>
       <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
-        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}</span>
+        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}${chgBadge}</span>
         <span class="rank-group-count">${items.length}개국</span>
-        <span class="rank-group-arrow open" id="${groupId}-arrow">▼</span>
+        <span class="rank-group-arrow" id="${groupId}-arrow">▼</span>
       </div>
-      <div class="rank-group-body" id="${groupId}">${tableHdr}${rows}</div>
+      <div class="rank-group-body collapsed" id="${groupId}">${tableHdr}${rows}</div>
     </div>`;
   }).join('');
   twemoji.parse(container, {folder:'svg',ext:'.svg'});
@@ -1910,13 +1917,20 @@ function renderPsHeatmap(list) {
       </div>`;
     }).join('');
 
+    const upCnt   = items.filter(d => d.change > 0).length;
+    const downCnt = items.filter(d => d.change < 0).length;
+    const chgBadge = upCnt > 0 || downCnt > 0
+      ? `<span style="font-size:9px;margin-left:6px;display:inline-flex;gap:4px">
+           ${upCnt   > 0 ? `<span style="color:var(--up);font-weight:800">▲${upCnt}</span>` : ''}
+           ${downCnt > 0 ? `<span style="color:var(--down);font-weight:800">▼${downCnt}</span>` : ''}
+         </span>` : '';
     return `<div>
       <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
-        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}</span>
+        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}${chgBadge}</span>
         <span class="rank-group-count">${items.length}개국</span>
-        <span class="rank-group-arrow open" id="${groupId}-arrow">▼</span>
+        <span class="rank-group-arrow" id="${groupId}-arrow">▼</span>
       </div>
-      <div class="rank-group-body" id="${groupId}">
+      <div class="rank-group-body collapsed" id="${groupId}">
         <div class="heatmap-grid">${rowsHtml}</div>
       </div>
     </div>`;
@@ -2016,13 +2030,20 @@ function renderStsTable(lat, prv) {
         <a class="ct-link" href="${storeUrl}" target="_blank" onclick="event.stopPropagation()">🔗</a>
       </div>`;
     }).join('');
+    const upCnt   = items.filter(d => d.change > 0).length;
+    const downCnt = items.filter(d => d.change < 0).length;
+    const chgBadge = upCnt > 0 || downCnt > 0
+      ? `<span style="font-size:9px;margin-left:6px;display:inline-flex;gap:4px">
+           ${upCnt   > 0 ? `<span style="color:var(--up);font-weight:800">▲${upCnt}</span>` : ''}
+           ${downCnt > 0 ? `<span style="color:var(--down);font-weight:800">▼${downCnt}</span>` : ''}
+         </span>` : '';
     return `<div>
       <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
-        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}</span>
+        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}${chgBadge}</span>
         <span class="rank-group-count">${items.length}개국</span>
-        <span class="rank-group-arrow open" id="${groupId}-arrow">▼</span>
+        <span class="rank-group-arrow" id="${groupId}-arrow">▼</span>
       </div>
-      <div class="rank-group-body" id="${groupId}">${tableHdr}${rows}</div>
+      <div class="rank-group-body collapsed" id="${groupId}">${tableHdr}${rows}</div>
     </div>`;
   }).join('');
 }
@@ -2126,13 +2147,20 @@ function renderStsHeatmap(lat, prv) {
       </div>`;
     }).join('');
 
+    const upCnt   = items.filter(d => d.change > 0).length;
+    const downCnt = items.filter(d => d.change < 0).length;
+    const chgBadge = upCnt > 0 || downCnt > 0
+      ? `<span style="font-size:9px;margin-left:6px;display:inline-flex;gap:4px">
+           ${upCnt   > 0 ? `<span style="color:var(--up);font-weight:800">▲${upCnt}</span>` : ''}
+           ${downCnt > 0 ? `<span style="color:var(--down);font-weight:800">▼${downCnt}</span>` : ''}
+         </span>` : '';
     return `<div>
       <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
-        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}</span>
+        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}${chgBadge}</span>
         <span class="rank-group-count">${items.length}개국</span>
-        <span class="rank-group-arrow open" id="${groupId}-arrow">▼</span>
+        <span class="rank-group-arrow" id="${groupId}-arrow">▼</span>
       </div>
-      <div class="rank-group-body" id="${groupId}">
+      <div class="rank-group-body collapsed" id="${groupId}">
         <div class="heatmap-grid">${rowsHtml}</div>
       </div>
     </div>`;
