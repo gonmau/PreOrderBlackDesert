@@ -141,10 +141,13 @@ def parse_cron_to_kst_slots(cron_expr: str) -> list[int]:
         return []
     hour_field = parts[1]
     utc_hours = []
-    for token in hour_field.split(","):
-        token = token.strip()
-        if token.isdigit():
-            utc_hours.append(int(token))
+    if hour_field == '*':
+        utc_hours = list(range(24))
+    else:
+        for token in hour_field.split(","):
+            token = token.strip()
+            if token.isdigit():
+                utc_hours.append(int(token))
     kst_hours = sorted(set((h + 9) % 24 for h in utc_hours))
     return kst_hours
 
