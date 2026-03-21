@@ -781,8 +781,10 @@ const FLAGS = {
 };
 
 let historyData = [];
-let scheduleSlots = [];  // fallback: 빈 배열이면 런타임에서 매시간으로 처리
-                         // JSON의 schedule.slots_kst 로드 시 자동 갱신됨
+let scheduleSlots = [  // fallback: JSON schedule 없을 시 KST 09~19시 사용
+  {hour:9},{hour:10},{hour:11},{hour:12},{hour:13},{hour:14},{hour:15},{hour:16},{hour:17},{hour:18},{hour:19}
+];
+// JSON의 schedule.slots_kst 로드 시 자동 갱신됨
 // 기본 정렬을 현재순위(rank) 기준으로, 오름차순(true) 설정
 let sortKey = 'rank'; let sortAsc = true; 
 let mainChart = null; let countryChart = null;

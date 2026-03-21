@@ -146,7 +146,11 @@ def parse_cron_to_kst_slots(cron_expr: str) -> list[int]:
     else:
         for token in hour_field.split(","):
             token = token.strip()
-            if token.isdigit():
+            if '-' in token:
+                a, b = token.split('-', 1)
+                if a.isdigit() and b.isdigit():
+                    utc_hours.extend(range(int(a), int(b) + 1))
+            elif token.isdigit():
                 utc_hours.append(int(token))
     kst_hours = sorted(set((h + 9) % 24 for h in utc_hours))
     return kst_hours
