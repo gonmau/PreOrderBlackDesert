@@ -943,6 +943,7 @@ function renderMainChart() {
     },
     options: {
       responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 24, right: 16 } },
       scales: {
         x: {
           type: 'time',
@@ -1324,9 +1325,12 @@ function renderSTS() {
         const px = x.getPixelForValue(lbs[idx]), py = y.getPixelForValue(val);
         const text = `${label}: #${val.toFixed(1)}`;
         const offsetY = label === '최저' ? 18 : -14;
-        c.save(); c.font='bold 10px sans-serif'; c.textAlign='center'; c.textBaseline='middle';
-        c.strokeStyle='rgba(0,0,0,0.9)'; c.lineWidth=3; c.strokeText(text, px, py+offsetY);
-        c.fillStyle=color; c.fillText(text, px, py+offsetY); c.restore();
+        // 시작: 왼쪽 끝 → 오른쪽 정렬 방지, 현재: 오른쪽 끝 → 왼쪽으로 붙임
+        const align = label === '시작' ? 'left' : label === '현재' ? 'right' : 'center';
+        const offsetX = label === '시작' ? 6 : label === '현재' ? -6 : 0;
+        c.save(); c.font='bold 10px sans-serif'; c.textAlign=align; c.textBaseline='middle';
+        c.strokeStyle='rgba(0,0,0,0.9)'; c.lineWidth=3; c.strokeText(text, px+offsetX, py+offsetY);
+        c.fillStyle=color; c.fillText(text, px+offsetX, py+offsetY); c.restore();
       });
     }
   };
@@ -1335,6 +1339,7 @@ function renderSTS() {
     type: 'line',
     data: { labels: lbs, datasets: [{ label: '평균', data: dv, borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.1)', borderWidth: 2, pointRadius: ptR, pointBackgroundColor: ptC, pointBorderColor: ptC, fill: true, tension: 0.3 }] },
     options: { responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 24, right: 16 } },
       scales: {
         x: { type: 'time', time: { unit: 'day', tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' } }, ticks: { color: '#fff', maxTicksLimit: 8 }, grid: { color: '#222' } },
         y: { reverse: true, min: 1, ticks: { color: '#fff', stepSize: 1, callback: v => '#' + v, padding: 8 }, grid: { color: '#222' } }
