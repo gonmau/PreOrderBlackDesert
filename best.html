@@ -369,7 +369,10 @@
   .heatmap-legend { display: flex; gap: 12px; font-size: 13px; color: var(--tx-4); margin-bottom: 8px; flex-wrap: wrap; align-items: center; }
   .heatmap-legend span { display: flex; align-items: center; gap: 4px; }
   .hm-legend-bar { width: 4px; height: 13px; border-radius: 2px; display: inline-block; }
-  .heatmap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+  /* 바깥: 순위 그룹들을 세로로 배치 */
+  .heatmap-grid { display: flex; flex-direction: column; gap: 0; }
+  /* 안쪽: 각 그룹 내 카드들을 2열로 배치 */
+  .hm-cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; padding: 6px; }
   .hm-row {
     display: flex; align-items: center;
     background: var(--bg-2); border: 1px solid var(--bd);
@@ -2089,7 +2092,7 @@ function renderPsHeatmap(list) {
         <span class="rank-group-arrow" id="${groupId}-arrow">▼</span>
       </div>
       <div class="rank-group-body collapsed" id="${groupId}">
-        <div class="heatmap-grid">${rowsHtml}</div>
+        <div class="hm-cards-grid">${rowsHtml}</div>
       </div>
     </div>`;
   }).join('');
@@ -2360,7 +2363,7 @@ function renderStsHeatmap(lat, prv) {
         <span class="rank-group-arrow" id="${groupId}-arrow">▼</span>
       </div>
       <div class="rank-group-body collapsed" id="${groupId}">
-        <div class="heatmap-grid">${rowsHtml}</div>
+        <div class="hm-cards-grid">${rowsHtml}</div>
       </div>
     </div>`;
   }).join('');
