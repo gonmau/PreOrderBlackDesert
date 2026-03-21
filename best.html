@@ -374,35 +374,42 @@
     display: flex; align-items: center;
     background: var(--bg-2); border: 1px solid var(--bd);
     border-radius: var(--radius); overflow: hidden;
-    cursor: pointer; transition: border-color var(--trans); min-height: 44px;
+    cursor: pointer; transition: border-color var(--trans); min-height: 40px;
   }
   .hm-row:hover { border-color: var(--bd-hi); }
   .hm-bar { width: 4px; align-self: stretch; flex-shrink: 0; }
   .hm-bar.up   { background: var(--up); }
   .hm-bar.down { background: var(--down); }
   .hm-bar.same { background: var(--bd); }
-  .hm-rank { display: none; } /* 순위는 그룹 헤더에 표시 */
-  .hm-info { flex:1; padding: 5px 5px 5px 8px; min-width: 80px; overflow: hidden; }
-  .hm-name { font-size: 15px; font-weight: 700; color: var(--tx-1); display: flex; align-items: center; gap: 4px; white-space: nowrap; }
-  .hm-name .hm-flag { font-size: 17px; flex-shrink: 0; }
-  .hm-meta { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
-  .hm-best { font-size: 11px; color: var(--gold); font-weight: 700; white-space: nowrap; }
-  .hm-change { font-size: 13px; font-weight: 800; white-space: nowrap; }
+  .hm-rank { display: none; }
+  .hm-info { flex:1; padding: 4px 4px 4px 6px; min-width: 0; overflow: hidden; }
+  .hm-name { font-size: 13px; font-weight: 700; color: var(--tx-1); display: flex; align-items: center; gap: 3px; overflow: hidden; }
+  .hm-name .hm-flag { font-size: 15px; flex-shrink: 0; }
+  .hm-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hm-meta { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+  .hm-best { font-size: 13px; color: var(--gold); font-weight: 700; white-space: nowrap; }
+  .hm-change { font-size: 12px; font-weight: 800; white-space: nowrap; }
   .hm-change.up   { color: var(--up); }
   .hm-change.down { color: var(--down); }
   .hm-change.same { color: var(--tx-4); }
-  .hm-w { font-size: 10px; color: var(--tx-4); margin-left: auto; white-space: nowrap; }
+  .hm-w { display: none; } /* 공간 절약 위해 숨김 */
   .hm-notfound { opacity: 0.3; }
-  .hm-notfound .hm-rank { color: var(--tx-4); font-size: 11px; }
+  .hm-spark-wrap { display: none; } /* 2열에서 스파크라인 숨김 */
   .hm-link {
-    flex-shrink: 0; padding: 0 10px; font-size: 15px; color: var(--tx-4);
+    flex-shrink: 0; padding: 0 7px; font-size: 13px; color: var(--tx-4);
     text-decoration: none; display: flex; align-items: center; align-self: stretch;
-    border-left: 1px solid var(--bd); transition: color var(--trans), background var(--trans);
+    border-left: 1px solid var(--bd); transition: color var(--trans);
   }
   .hm-link:hover { color: var(--tx-2); background: rgba(255,255,255,0.03); }
-  .hm-spark-wrap { flex-shrink: 0; display: flex; align-items: center; padding: 0 4px; border-left: 1px solid var(--bd); min-width: 0; }
-  .hm-spark { width: 52px; height: 22px; display: block; overflow: visible; }
-  @media (max-width: 640px) { .heatmap-grid { grid-template-columns: 1fr; } .hm-rank { width: 42px; font-size: 15px; } }
+  /* 모바일 세로: 1열로 넓게, 스파크라인 다시 표시 */
+  @media (max-width: 640px) and (orientation: portrait) {
+    .heatmap-grid { grid-template-columns: 1fr; }
+    .hm-spark-wrap { display: flex; align-items: center; padding: 0 4px; border-left: 1px solid var(--bd); }
+    .hm-spark { width: 52px; height: 22px; display: block; overflow: visible; }
+    .hm-name { font-size: 14px; }
+    .hm-best { font-size: 13px; }
+    .hm-w { display: block; font-size: 10px; color: var(--tx-4); margin-left: auto; }
+  }
 
   /* ══ GitHub Actions 버튼 ════════════════════════════════════ */
   .gh-dispatch-wrap { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
@@ -2052,7 +2059,7 @@ function renderPsHeatmap(list) {
         <div class="hm-bar ${barCls}"></div>
         <div class="hm-rank ${rankCls}">${rankTxt}</div>
         <div class="hm-info">
-          <div class="hm-name"><span class="hm-flag">${flag}</span>${d.name}</div>
+          <div class="hm-name"><span class="hm-flag">${flag}</span><span class="hm-name-text">${d.name}</span></div>
           <div class="hm-meta">
             ${bestTxt ? `<span class="hm-best">${bestTxt}</span>` : ''}
             <span class="hm-change ${chgCls}">${chgTxt}</span>
@@ -2323,7 +2330,7 @@ function renderStsHeatmap(lat, prv) {
         <div class="hm-bar ${barCls}"></div>
         <div class="hm-rank ${rankCls}">${rankTxt}</div>
         <div class="hm-info">
-          <div class="hm-name"><span class="hm-flag">${flag}</span>${d.name}</div>
+          <div class="hm-name"><span class="hm-flag">${flag}</span><span class="hm-name-text">${d.name}</span></div>
           <div class="hm-meta">
             ${bestTxt ? `<span class="hm-best">${bestTxt}</span>` : ''}
             <span class="hm-change ${chgCls}">${chgTxt}</span>
