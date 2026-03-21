@@ -207,7 +207,7 @@
   .ct-chg  { font-size: 13px; font-weight: 800; text-align: center; }
   .ct-chg.up   { color: var(--up); }
   .ct-chg.down { color: var(--down); }
-  .ct-rank { font-family: 'Cinzel', serif; font-size: 16px; font-weight: 900; text-align: right; }
+  .ct-rank { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 900; text-align: right; white-space: nowrap; }
   .ct-link { font-size: 13px; color: var(--tx-4); text-decoration: none; text-align: center; }
   .ct-link:hover { color: var(--tx-2); }
   @media (max-width: 500px) {
@@ -664,7 +664,7 @@
   .ct-chg  { font-size: 13px; font-weight: 800; text-align: center; }
   .ct-chg.up   { color: var(--up); }
   .ct-chg.down { color: var(--down); }
-  .ct-rank { font-family: 'Cinzel', serif; font-size: 16px; font-weight: 900; text-align: right; }
+  .ct-rank { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 900; text-align: right; white-space: nowrap; }
   .ct-link { font-size: 13px; color: var(--tx-4); text-decoration: none; text-align: center; }
   .ct-link:hover { color: var(--tx-2); }
   /* 접기/펼치기 */
@@ -751,6 +751,45 @@
     .sts-slot { width: 64px; min-height: 46px; }
     .rank-group-arrow { font-size: 16px; }
   }
+
+  /* ══ PS Store 링크 팝오버 ═══════════════════════════════════ */
+  .ps-links-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; color: var(--blood); opacity: 0.7;
+    padding: 2px 7px; border: 1px solid rgba(255,71,87,0.3);
+    border-radius: 4px; cursor: pointer; white-space: nowrap;
+    font-weight: 700; letter-spacing: 0; text-transform: none;
+    flex-shrink: 0; background: transparent;
+    transition: opacity 0.15s;
+    position: relative;
+  }
+  .ps-links-btn:hover { opacity: 1; }
+  .ps-links-popover {
+    display: none;
+    position: fixed;
+    background: var(--bg-2); border: 1px solid var(--bd-hi);
+    border-radius: 8px; padding: 10px; z-index: 200;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    max-width: 340px; max-height: 60vh;
+    overflow-y: auto;
+  }
+  .ps-links-popover.open { display: block; }
+  .ps-links-title { font-size: 11px; font-weight: 800; color: var(--blood); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .ps-links-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .ps-links-item {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 7px; border-radius: 5px; cursor: pointer;
+    font-size: 12px; font-weight: 700; color: var(--tx-2);
+    background: var(--bg-3); border: 1px solid var(--bd);
+    text-decoration: none; white-space: nowrap;
+    transition: background var(--trans), border-color var(--trans);
+  }
+  .ps-links-item:hover { background: var(--bg-4); border-color: var(--blood); color: var(--tx-1); }
+  .ps-links-item.rank-1  { border-color: rgba(241,196,15,0.4); }
+  .ps-links-item.rank-23 { border-color: rgba(192,192,192,0.3); }
+  .ps-links-item.rank-10 { border-color: rgba(74,158,255,0.3); }
+  #ps-links-overlay { display:none; position:fixed; inset:0; z-index:199; }
+  #ps-links-overlay.open { display:block; }
 </style>
 </head>
 <body>
@@ -817,7 +856,7 @@
     <div class="dual-wrap">
       <!-- PS 좌측 -->
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store <span id="ps-data-time" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span id="ps-data-time" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div class="stats">
           <div class="card"><div class="lbl">가중 평균</div><div class="val" id="stat-avg">—</div></div>
           <div class="card">
@@ -919,7 +958,7 @@
   <div id="sec-leaderboard" class="tab-section">
     <div class="dual-wrap">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span class="ps-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div id="lb-ps-container" style="padding:8px"></div></div>
       </div>
       <div class="dual-col steam-col">
@@ -933,7 +972,7 @@
   <div id="sec-sched" class="tab-section">
     <div class="dual-wrap">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span class="ps-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div class="sts-sched-wrap">
           <div class="sts-sched-legend">
             <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>자동 실행</span>
@@ -963,7 +1002,7 @@
   <div id="sec-chart" class="tab-section">
     <div class="dual-wrap dual-panel-chart">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span class="ps-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body" style="display:flex;flex-direction:column">
         <div class="chart-section" style="flex:1;min-height:200px;margin-bottom:0"><canvas id="mainChart"></canvas></div>
         <div class="chart-legend">
@@ -992,7 +1031,7 @@
   <div id="sec-heatmap" class="tab-section">
     <div class="dual-wrap">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span class="ps-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div class="heatmap-legend">
           <span><i class="hm-legend-bar" style="background:var(--up)"></i> 상승</span>
           <span><i class="hm-legend-bar" style="background:var(--down)"></i> 하락</span>
@@ -1236,6 +1275,38 @@ function getStoreUrl(name) {
   return `https://store.playstation.com/${locale}/pages/browse/1?conceptId=10002363`;
 }
 
+/* ── PS 순위 유지 일수 계산 ── */
+function getDaysAtRank(name, currentRank) {
+  if (currentRank >= 999) return 0;
+  // 최신에서 과거 방향으로 순위가 동일한 연속 스냅샷 수
+  let count = 0;
+  for (let i = historyData.length - 1; i >= 0; i--) {
+    const r = getRank(historyData[i], name);
+    if (r === currentRank) count++;
+    else break;
+  }
+  // 스냅샷 간격(시간) → 일수 환산
+  if (count < 2 || historyData.length < 2) return count > 0 ? 1 : 0;
+  const first = new Date(historyData[historyData.length - count].timestamp);
+  const last  = new Date(historyData[historyData.length - 1].timestamp);
+  const diffDays = (last - first) / 86400000;
+  return diffDays < 1 ? (diffDays > 0 ? 1 : 0) : Math.round(diffDays);
+}
+function getStsDaysAtRank(name, currentRank) {
+  if (!currentRank) return 0;
+  let count = 0;
+  for (let i = stsHist.length - 1; i >= 0; i--) {
+    const r = stsHist[i].results?.[name]?.rank ?? null;
+    if (r === currentRank) count++;
+    else break;
+  }
+  if (count < 2 || stsHist.length < 2) return count > 0 ? 1 : 0;
+  const first = new Date(stsHist[stsHist.length - count].timestamp);
+  const last  = new Date(stsHist[stsHist.length - 1].timestamp);
+  const diffDays = (last - first) / 86400000;
+  return diffDays < 1 ? (diffDays > 0 ? 1 : 0) : Math.round(diffDays);
+}
+
 function render() {
   const curr = historyData[historyData.length - 1];
   const prev = historyData.length > 1 ? historyData[historyData.length - 2] : null;
@@ -1265,7 +1336,8 @@ function render() {
       if (r < best.r) best = { r, n: name };
       if (r > worst.r && r < 999) worst = { r, n: name };
     }
-    list.push({ name, rank: r, change: (p === 999 || r === 999) ? 0 : p - r, weight: WEIGHTS[name] || 1.0, best: countryBest[name], avg: countryAvg[name] });
+    const daysR = getDaysAtRank(name, r);
+    list.push({ name, rank: r, change: (p === 999 || r === 999) ? 0 : p - r, weight: WEIGHTS[name] || 1.0, best: countryBest[name], avg: countryAvg[name], days: daysR });
   });
 
   document.getElementById('stat-best-val').innerText = best.r + '위';
@@ -1338,7 +1410,7 @@ function render() {
         const ch = psChangeMap[n] || 0;
         const chTxt = ch > 0 ? `<span style="font-size:9px;color:var(--up);font-weight:800">▲${ch}</span>`
                     : ch < 0 ? `<span style="font-size:9px;color:var(--down);font-weight:800">▼${Math.abs(ch)}</span>` : '';
-        return `<div class="top10-item ${tc}" onclick="showCountryChart('${n}')"><span class="n">${FLAGS[n]||''} ${n}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank >= 9999 ? '—' : rank + '위'}${chTxt}</span></div>`;
+        return `<div class="top10-item ${tc}" onclick="showCountryChart('${n}')"><span class="n">${FLAGS[n]||''} ${n}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank >= 9999 ? '—' : rank + '위' + (psChangeMap ? (() => { const d = getDaysAtRank(n, rank); return d>1?`(${d}d)`:''; })() : '')}${chTxt}</span></div>`;
       }).join('');
       return `<div>
         <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
@@ -1407,7 +1479,8 @@ function renderPsTable(list) {
       const avgStr  = d.avg ===999?'—':d.avg.toFixed(1)+'위';
       const chgCls  = d.change>0?'up':d.change<0?'down':'';
       const chgTxt  = d.change>0?'▲'+d.change:d.change<0?'▼'+Math.abs(d.change):'—';
-      const rankTxt = d.rank>=999?'—':d.rank+'위';
+      const daysCtR = getDaysAtRank(d.name, d.rank < 999 ? d.rank : 0);
+      const rankTxt = d.rank>=999?'—':d.rank+'위'+(daysCtR > 1 ? `(${daysCtR}d)` : '');
       return `<div class="ct-row" onclick="showCountryChart('${d.name}')">
         <span class="ct-bar" style="background:${barColor}"></span>
         <span class="ct-flag">${FLAGS[d.name]||''}</span>
@@ -1825,6 +1898,52 @@ function closeStsModal(e) { if (e.target === document.getElementById('sts-modal'
 function closeStsModalDirect() { document.getElementById('sts-modal').classList.remove('open'); document.body.style.overflow = ''; if (stsMCI) { stsMCI.destroy(); stsMCI = null; } }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeStsModalDirect(); closeModal(); } });
 
+
+/* ── PS Store 링크 팝오버 ── */
+function openPsLinksPopover(e) {
+  e.stopPropagation();
+  const popover = document.getElementById('ps-links-popover');
+  const overlay = document.getElementById('ps-links-overlay');
+  const grid = document.getElementById('ps-links-grid');
+
+  // 현재 순위 기반으로 나라 목록 정렬
+  const data = historyData[historyData.length - 1];
+  if (!data) return;
+
+  const countries = Object.keys(data.raw_results || {}).map(name => {
+    const r = getRank(data, name);
+    return { name, rank: r, url: getStoreUrl(name) };
+  }).sort((a, b) => {
+    const ar = a.rank >= 999 ? 9999 : a.rank;
+    const br = b.rank >= 999 ? 9999 : b.rank;
+    return ar - br;
+  });
+
+  grid.innerHTML = countries.map(({ name, rank, url }) => {
+    const flag = FLAGS[name] || '';
+    const rankCls = rank === 1 ? 'rank-1' : rank <= 3 ? 'rank-23' : rank <= 10 ? 'rank-10' : '';
+    const rankStr = rank >= 999 ? '—' : rank + '위';
+    return `<a class="ps-links-item ${rankCls}" href="${url}" target="_blank" onclick="event.stopPropagation()">
+      <span>${flag}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis">${name}</span>
+      <span style="font-size:11px;opacity:0.7">${rankStr}</span>
+    </a>`;
+  }).join('');
+
+  twemoji.parse(grid, { folder: 'svg', ext: '.svg' });
+
+  // 버튼 위치 기반으로 팝오버 위치 결정
+  const btn = e.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  popover.style.top = (rect.bottom + 6) + 'px';
+  popover.style.left = Math.max(4, rect.left - 100) + 'px';
+
+  popover.classList.add('open');
+  overlay.classList.add('open');
+}
+function closePsLinksPopover() {
+  document.getElementById('ps-links-popover').classList.remove('open');
+  document.getElementById('ps-links-overlay').classList.remove('open');
+}
 function renderSteamSchedule() {
   const container = document.getElementById('sts-sched-days');
   const summaryEl = document.getElementById('sts-sched-summary');
@@ -2057,7 +2176,8 @@ function renderPsHeatmap(list) {
     const rowsHtml = items.map(d => {
       const r = d.rank >= 999 ? null : d.rank;
       const rankCls = hmRankClass(d.rank);
-      const rankTxt = r ? r + '위' : '—';
+      const daysAtR = getDaysAtRank(d.name, r || 0);
+      const rankTxt = r ? r + '위' + (daysAtR > 1 ? `(${daysAtR}d)` : '') : '—';
       const bestTxt = (d.best && d.best < 999) ? '★' + d.best + '위' : '';
       const ch = d.change;
       const barCls = ch > 0 ? 'up' : ch < 0 ? 'down' : 'same';
@@ -2198,7 +2318,8 @@ function renderStsTable(lat, prv) {
       const avgStr  = d.avg?d.avg.toFixed(1)+'위':'—';
       const chgCls  = d.change>0?'up':d.change<0?'down':'';
       const chgTxt  = d.change>0?'▲'+d.change:d.change<0?'▼'+Math.abs(d.change):'—';
-      const rankTxt = d.rank?d.rank+'위':'—';
+      const daysStR = getStsDaysAtRank(d.name, d.rank);
+      const rankTxt = d.rank?d.rank+'위'+(daysStR > 1 ? `(${daysStR}d)` : ''):'—';
       const flagImg = `<img src="https://flagcdn.com/w40/${cc}.png" alt="${d.name}" style="width:18px;height:13px;object-fit:cover;border-radius:2px">`;
       const storeUrl = `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`;
       return `<div class="ct-row" onclick="openStsModal('${d.name}')">
@@ -2271,7 +2392,8 @@ function renderStsLeaderboard(lat, prv) {
       const ch = stsChangeMap[n] || 0;
       const chTxt = ch > 0 ? `<span style="font-size:9px;color:var(--up);font-weight:800">▲${ch}</span>`
                   : ch < 0 ? `<span style="font-size:9px;color:var(--down);font-weight:800">▼${Math.abs(ch)}</span>` : '';
-      return `<div class="top10-item ${tc}" onclick="openStsModal('${n}')"><span class="n">${flag} ${n}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank>=9999?'—':rank+'위'}${chTxt}</span></div>`;
+      const dSts = getStsDaysAtRank(n, rank<9999?rank:0);
+      return `<div class="top10-item ${tc}" onclick="openStsModal('${n}')"><span class="n">${flag} ${n}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank>=9999?'—':rank+'위'+(dSts>1?`(${dSts}d)`:'')}${chTxt}</span></div>`;
     }).join('');
     return `<div>
       <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
@@ -2327,7 +2449,8 @@ function renderStsHeatmap(lat, prv) {
     const rowsHtml = items.map(d => {
       const r = d.rank;
       const rankCls = r ? hmRankClass(r) : 'rout';
-      const rankTxt = r ? r + '위' : '—';
+      const daysAtR = getStsDaysAtRank(d.name, r);
+      const rankTxt = r ? r + '위' + (daysAtR > 1 ? `(${daysAtR}d)` : '') : '—';
       const bestTxt = d.best ? '★' + d.best + '위' : '';
       const ch = d.change;
       const barCls = ch > 0 ? 'up' : ch < 0 ? 'down' : 'same';
@@ -2721,5 +2844,13 @@ async function fetchStock() {
 
 init();
 </script>
+
+<!-- PS Store 링크 팝오버 -->
+<div id="ps-links-overlay" onclick="closePsLinksPopover()"></div>
+<div class="ps-links-popover" id="ps-links-popover">
+  <div class="ps-links-title">🎮 PS Store 링크</div>
+  <div class="ps-links-grid" id="ps-links-grid"></div>
+</div>
+
 </body>
 </html>
