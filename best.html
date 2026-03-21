@@ -99,8 +99,55 @@
   }
 
   /* ══ 탭 섹션 ══════════════════════════════════════════════════ */
-  .tab-section { display: none; padding-top: 16px; }
+  .tab-section { display: none; padding-top: 14px; }
   .tab-section.active-section { display: block; }
+
+  /* ══ 듀얼 패널 ════════════════════════════════════════════════ */
+  .dual-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+  .dual-panel-chart { align-items: stretch; }
+  .dual-col {
+    background: var(--bg-1);
+    border: 1px solid var(--bd);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .dual-col-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--bd);
+  }
+  .ps-col    { border-top: 2px solid var(--blood); }
+  .steam-col { border-top: 2px solid var(--steam); }
+  .ps-header    { color: var(--blood); background: rgba(255,71,87,0.04); }
+  .steam-header { color: var(--steam); background: rgba(74,158,255,0.04); }
+  .dual-col .stats        { padding: 12px; gap: 8px; margin-bottom: 0; }
+  .dual-col .card         { padding: 12px 14px; }
+  .dual-col .card .val    { font-size: 22px; }
+  .dual-col .top10-grid   { padding: 12px; }
+  .dual-col .sts-sched-wrap   { padding: 12px; }
+  .dual-col .chart-section    { border: none; border-radius: 0; margin-bottom: 0; padding: 12px; }
+  .dual-col .steam-ts-chart-box { border: none; border-radius: 0; }
+  .dual-col .heatmap-legend   { padding: 10px 12px 4px; }
+  .dual-col .heatmap-grid     { padding: 0 8px 10px; }
+  .dual-col .table-wrapper    { border: none; border-radius: 0; }
+  .dual-col .steam-ts-country-grid { padding: 8px; }
+  /* 모바일: 세로 스택 */
+  @media (max-width: 700px) {
+    .dual-panel { grid-template-columns: 1fr; }
+    .dual-col .stats { grid-template-columns: repeat(2, 1fr); }
+    .dual-col .card .val { font-size: 20px; }
+  }
 
   /* ══ 네비게이션 바 ════════════════════════════════════════════ */
   .nav-bar {
@@ -137,6 +184,7 @@
   .nav-tab:hover { color: var(--tx-2); }
   .nav-tab.active.ps-tab    { color: var(--blood); border-bottom-color: var(--blood); }
   .nav-tab.active.steam-tab { color: var(--steam); border-bottom-color: var(--steam); }
+  .nav-tab.active.dual-tab  { color: var(--tx-1);  border-bottom-color: var(--tx-1); }
   @media (max-width: 600px) {
     .nav-tab { padding: 7px 7px; font-size: 10px; }
     .nav-group-label { font-size: 8px; }
@@ -464,19 +512,12 @@
 
 <div class="nav-bar" id="nav-bar">
   <div class="nav-group">
-    <span class="nav-group-label ps-lbl">PS</span>
-    <span class="nav-tab ps-tab active" data-section="sec-ps-summary"  onclick="switchTab(this)">📊 요약</span>
-    <span class="nav-tab ps-tab"        data-section="sec-ps-top10"    onclick="switchTab(this)">🏆 리더보드</span>
-    <span class="nav-tab ps-tab"        data-section="sec-ps-sched"    onclick="switchTab(this)">⏱ 스케줄</span>
-    <span class="nav-tab ps-tab"        data-section="sec-ps-chart"    onclick="switchTab(this)">📈 차트</span>
-    <span class="nav-tab ps-tab"        data-section="sec-ps-heatmap"  onclick="switchTab(this)">🔥 히트맵</span>
-    <span class="nav-tab ps-tab"        data-section="sec-ps-table"    onclick="switchTab(this)">🌍 국가별</span>
-    <span class="nav-group-label steam-lbl" style="margin-left:8px;border-left:1px solid #222;padding-left:12px">Steam</span>
-    <span class="nav-tab steam-tab"     data-section="sec-sts-summary" onclick="switchTab(this)">📊 요약</span>
-    <span class="nav-tab steam-tab"     data-section="sec-sts-chart"   onclick="switchTab(this)">📈 차트</span>
-    <span class="nav-tab steam-tab"     data-section="sec-sts-sched"   onclick="switchTab(this)">⏱ 스케줄</span>
-    <span class="nav-tab steam-tab"     data-section="sec-sts-heatmap" onclick="switchTab(this)">🔥 히트맵</span>
-    <span class="nav-tab steam-tab"     data-section="sec-sts-table"   onclick="switchTab(this)">🌍 국가별</span>
+    <span class="nav-tab dual-tab active" data-section="sec-summary"    onclick="switchTab(this)">📊 요약</span>
+    <span class="nav-tab dual-tab"        data-section="sec-leaderboard" onclick="switchTab(this)">🏆 리더보드</span>
+    <span class="nav-tab dual-tab"        data-section="sec-sched"       onclick="switchTab(this)">⏱ 스케줄</span>
+    <span class="nav-tab dual-tab"        data-section="sec-chart"       onclick="switchTab(this)">📈 차트</span>
+    <span class="nav-tab dual-tab"        data-section="sec-heatmap"     onclick="switchTab(this)">🔥 히트맵</span>
+    <span class="nav-tab dual-tab"        data-section="sec-table"       onclick="switchTab(this)">🌍 국가별</span>
   </div>
 </div>
 
@@ -497,216 +538,226 @@
     </div>
   </div>
 
-  <!-- 탭 섹션 컨테이너 -->
-  <div id="sec-ps-summary" class="tab-section active-section">
-    <!-- PS 요약 스탯 카드 -->
-    <div class="stats" style="margin-bottom:12px">
-      <div class="card"><div class="lbl">Weighted Average</div><div class="val" id="stat-avg">—</div></div>
-      <div class="card">
-        <div class="lbl">Best Rank</div>
-        <div class="val" id="stat-best-val">—</div>
-        <div class="sub" id="stat-best-name">...</div>
+  <!-- 탭 섹션: 통합 듀얼 패널 -->
+
+  <!-- ① 요약 -->
+  <div id="sec-summary" class="tab-section active-section">
+    <div class="dual-panel">
+      <!-- PS 좌측 -->
+      <div class="dual-col ps-col">
+        <div class="dual-col-header ps-header">🎮 PS Store</div>
+        <div class="stats">
+          <div class="card"><div class="lbl">Weighted Average</div><div class="val" id="stat-avg">—</div></div>
+          <div class="card">
+            <div class="lbl">Best Rank</div>
+            <div class="val" id="stat-best-val">—</div>
+            <div class="sub" id="stat-best-name">...</div>
+          </div>
+          <div class="card">
+            <div class="lbl">Worst Rank</div>
+            <div class="val" id="stat-worst-val">—</div>
+            <div class="sub" id="stat-worst-name">...</div>
+          </div>
+          <div class="card">
+            <div class="lbl">순위권 진입 국가</div>
+            <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:12px">🥇 <span style="color:#FFD700">#1</span></span>
+                <span id="stat-cnt-1" style="font-family:'Cinzel',serif;font-size:18px;color:#FFD700">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:12px">🥈 <span style="color:#C0C0C0">#2~3</span></span>
+                <span id="stat-cnt-3" style="font-family:'Cinzel',serif;font-size:18px;color:#C0C0C0">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:12px">🏅 <span style="color:#cd7f32">#4~10</span></span>
+                <span id="stat-cnt-10" style="font-family:'Cinzel',serif;font-size:18px;color:#cd7f32">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--bd);padding-top:4px;margin-top:2px">
+                <span style="font-size:11px;color:var(--tx-3)">#11+ / 전체</span>
+                <span id="stat-cnt-rest" style="font-size:12px;color:var(--tx-3)">— / —</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card">
-        <div class="lbl">Worst Rank</div>
-        <div class="val" id="stat-worst-val">—</div>
-        <div class="sub" id="stat-worst-name">...</div>
-      </div>
-      <div class="card">
-        <div class="lbl">순위권 진입 국가</div>
-        <div id="stat-rank-breakdown" style="display:flex;flex-direction:column;gap:5px;margin-top:4px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:13px">🥇 <span style="color:#FFD700">#1</span></span>
-            <span id="stat-cnt-1" style="font-family:'Cinzel',serif;font-size:20px;color:#FFD700">—</span>
+      <!-- Steam 우측 -->
+      <div class="dual-col steam-col">
+        <div class="dual-col-header steam-header">
+          🖥 Steam
+          <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+            <button class="steam-ts-dl-btn" style="font-size:10px;padding:3px 8px" onclick="downloadSteamCSV()">📥 CSV</button>
+            <a class="steam-ts-link" style="font-size:10px;padding:3px 8px" href="https://store.steampowered.com/charts/topselling/KR" target="_blank">🔗 Charts</a>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:13px">🥈 <span style="color:#C0C0C0">#2~3</span></span>
-            <span id="stat-cnt-3" style="font-family:'Cinzel',serif;font-size:20px;color:#C0C0C0">—</span>
+        </div>
+        <div class="stats">
+          <div class="card" style="border-left-color:var(--steam)" id="sts-global-box-s">
+            <div class="lbl">가중 평균</div>
+            <div class="val" id="sts-avg-s" style="color:var(--steam)">—</div>
+            <div class="sub" id="sts-avg-diff-s"></div>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:13px">🏅 <span style="color:#cd7f32">#4~10</span></span>
-            <span id="stat-cnt-10" style="font-family:'Cinzel',serif;font-size:20px;color:#cd7f32">—</span>
+          <div class="card" style="border-left-color:var(--steam)">
+            <div class="lbl">최고 평균 순위</div>
+            <div class="val" id="sts-best-s" style="color:var(--steam)">—</div>
+            <div class="sub" id="sts-best-date-s"></div>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #333;padding-top:5px;margin-top:2px">
-            <span style="font-size:12px;color:var(--text-sub)">#11+ / 전체</span>
-            <span id="stat-cnt-rest" style="font-size:13px;color:var(--text-sub)">— / —</span>
+          <div class="card" style="border-left-color:var(--steam)">
+            <div class="lbl">총 기록 수</div>
+            <div class="val" id="sts-count-s" style="color:var(--steam)">—</div>
+            <div class="sub" id="sts-countries-sub-s">—개국 추적</div>
+          </div>
+          <div class="card" style="border-left-color:var(--steam)">
+            <div class="lbl">순위권 진입 국가</div>
+            <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:12px">🥇 <span style="color:#FFD700">#1</span></span>
+                <span id="sts-cnt-1" style="font-family:'Cinzel',serif;font-size:18px;color:#FFD700">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:12px">🥈 <span style="color:#C0C0C0">#2~3</span></span>
+                <span id="sts-cnt-3" style="font-family:'Cinzel',serif;font-size:18px;color:#C0C0C0">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:12px">🏅 <span style="color:#cd7f32">#4~10</span></span>
+                <span id="sts-cnt-10" style="font-family:'Cinzel',serif;font-size:18px;color:#cd7f32">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--bd);padding-top:4px;margin-top:2px">
+                <span style="font-size:11px;color:var(--tx-3)">#11+ / 전체</span>
+                <span id="sts-cnt-rest" style="font-size:12px;color:var(--tx-3)">— / —</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+  </div><!-- /sec-summary -->
 
-  </div><!-- /sec-ps-summary -->
-  <div id="sec-ps-top10" class="tab-section">
-    <div class="top10-section" style="margin-bottom:0">
-      <div class="top10-grid" id="top10-grid"></div>
-    </div>
-  </div><!-- /sec-ps-top10 -->
-
-  <div id="sec-ps-sched" class="tab-section">
-      <div class="sts-sched-wrap">
-        <div class="sts-sched-legend">
-          <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>자동 실행</span>
-          <span style="display:flex;align-items:center;gap:4px"><span class="tl-badge manual" style="font-size:8px;padding:1px 5px">수동</span>수동 실행</span>
-          <span><i class="sts-legend-dot" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1)"></i>예정</span>
-        </div>
-        <div id="schedule-grid"></div>
-        <div class="sts-sched-summary" id="schedule-summary"></div>
+  <!-- ② 리더보드 -->
+  <div id="sec-leaderboard" class="tab-section">
+    <div class="dual-panel">
+      <div class="dual-col ps-col">
+        <div class="dual-col-header ps-header">🎮 PS Store</div>
+        <div class="top10-grid" id="top10-grid"></div>
+      </div>
+      <div class="dual-col steam-col">
+        <div class="dual-col-header steam-header">🖥 Steam</div>
+        <div class="top10-grid" id="sts-top10-grid"></div>
       </div>
     </div>
+  </div><!-- /sec-leaderboard -->
 
-  </div><!-- /sec-ps-sched -->
-  <div id="sec-ps-chart" class="tab-section">
-    <div class="chart-section"><canvas id="mainChart"></canvas></div>
-  </div><!-- /sec-ps-chart -->
+  <!-- ③ 스케줄 -->
+  <div id="sec-sched" class="tab-section">
+    <div class="dual-panel">
+      <div class="dual-col ps-col">
+        <div class="dual-col-header ps-header">🎮 PS Store</div>
+        <div class="sts-sched-wrap">
+          <div class="sts-sched-legend">
+            <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>자동 실행</span>
+            <span style="display:flex;align-items:center;gap:4px"><span class="tl-badge manual" style="font-size:8px;padding:1px 5px">수동</span>수동 실행</span>
+            <span><i class="sts-legend-dot" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1)"></i>예정</span>
+          </div>
+          <div id="schedule-grid"></div>
+          <div class="sts-sched-summary" id="schedule-summary"></div>
+        </div>
+      </div>
+      <div class="dual-col steam-col">
+        <div class="dual-col-header steam-header">🖥 Steam</div>
+        <div class="sts-sched-wrap">
+          <div class="sts-sched-legend">
+            <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>자동 실행</span>
+            <span style="display:flex;align-items:center;gap:4px"><span class="tl-badge manual" style="font-size:8px;padding:1px 5px">수동</span>수동 실행</span>
+            <span><i class="sts-legend-dot" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1)"></i>예정</span>
+          </div>
+          <div id="sts-sched-days"></div>
+          <div class="sts-sched-summary" id="sts-sched-summary"></div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /sec-sched -->
 
-  <div id="sec-ps-heatmap" class="tab-section">
-      <div style="padding:12px 4px 4px">
+  <!-- ④ 차트 -->
+  <div id="sec-chart" class="tab-section">
+    <div class="dual-panel dual-panel-chart">
+      <div class="dual-col ps-col">
+        <div class="dual-col-header ps-header">🎮 PS Store</div>
+        <div class="chart-section" style="height:300px;margin-bottom:0"><canvas id="mainChart"></canvas></div>
+      </div>
+      <div class="dual-col steam-col">
+        <div class="dual-col-header steam-header">🖥 Steam</div>
+        <div class="steam-ts-chart-box" style="height:300px;padding:12px">
+          <div style="height:100%"><canvas id="stsChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /sec-chart -->
+
+  <!-- ⑤ 히트맵 -->
+  <div id="sec-heatmap" class="tab-section">
+    <div class="dual-panel">
+      <div class="dual-col ps-col">
+        <div class="dual-col-header ps-header">🎮 PS Store</div>
         <div class="heatmap-legend">
-          <span><i class="hm-legend-bar" style="background:#2ecc71"></i> 순위 상승</span>
-          <span><i class="hm-legend-bar" style="background:#e74c3c"></i> 순위 하락</span>
-          <span><i class="hm-legend-bar" style="background:#333"></i> 변동 없음</span>
-          <span style="color:#f1c40f;font-size:10px;font-weight:700">★최고순위</span>
+          <span><i class="hm-legend-bar" style="background:var(--up)"></i> 상승</span>
+          <span><i class="hm-legend-bar" style="background:var(--down)"></i> 하락</span>
+          <span><i class="hm-legend-bar" style="background:var(--bd)"></i> 변동없음</span>
+          <span style="color:var(--gold);font-size:10px;font-weight:700">★최고</span>
         </div>
         <div class="heatmap-grid" id="ps-heatmap-grid"></div>
       </div>
-    </div>
-
-  </div><!-- /sec-ps-heatmap -->
-  <div id="sec-ps-table" class="tab-section">
-      <div class="table-toolbar">
-        <button class="csv-btn" onclick="downloadCSV()">📥 CSV 다운로드 (현재순위 정렬)</button>
-      </div>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th onclick="setSort('name')">Country (PS Store Link)</th>
-              <th onclick="setSort('rank')">Current Rank</th>
-              <th onclick="setSort('best')" class="td-meta">Best Rank</th>
-              <th onclick="setSort('avg')" class="td-meta">Avg Rank</th>
-              <th onclick="setSort('change')" class="td-meta">Trend</th>
-              <th onclick="setSort('weight')" class="td-meta">Weight ↓</th>
-              <th class="td-mobile-meta" style="display:none;"></th>
-            </tr>
-          </thead>
-          <tbody id="table-body"></tbody>
-        </table>
-      </div>
-    </div>
-
-  </div><!-- /sec-ps-table -->
-
-  <!-- Steam 섹션 -->
-  <div id="sec-sts-summary" class="tab-section">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div class="steam-ts-title">📊 Steam Top Seller 순위</div>
-        <button class="steam-ts-dl-btn" onclick="downloadSteamCSV()">📥 Steam CSV</button>
-      </div>
-      <a class="steam-ts-link" href="https://store.steampowered.com/charts/topselling/KR" target="_blank">🔗 Steam Charts ↗</a>
-    </div>
-
-    <div class="steam-ts-stats-row">
-      <div class="steam-ts-stat-box" id="sts-global-box" style="display:none">
-        <div class="steam-ts-stat-label">🌍 글로벌 순위</div>
-        <div class="steam-ts-stat-value" id="sts-global-rank">—</div>
-        <div class="steam-ts-stat-diff" id="sts-global-diff"></div>
-      </div>
-      <div class="steam-ts-stat-box">
-        <div class="steam-ts-stat-label">추적 29개국 가중 평균</div>
-        <div class="steam-ts-stat-value" id="sts-avg">—</div>
-        <div class="steam-ts-stat-diff" id="sts-avg-diff"></div>
-      </div>
-      <div class="steam-ts-stat-box">
-        <div class="steam-ts-stat-label">최고 평균 순위</div>
-        <div class="steam-ts-stat-value" id="sts-best">—</div>
-        <div class="steam-ts-stat-diff" id="sts-best-date"></div>
-      </div>
-      <div class="steam-ts-stat-box">
-        <div class="steam-ts-stat-label">총 기록 수</div>
-        <div class="steam-ts-stat-value" id="sts-count">—</div>
-        <div class="steam-ts-stat-diff" id="sts-countries-sub">—개국 추적</div>
-      </div>
-      <div class="steam-ts-stat-box">
-        <div class="steam-ts-stat-label">순위권 진입 국가</div>
-        <div id="sts-rank-breakdown" style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:12px">🥇 <span style="color:#FFD700">#1</span></span>
-            <span id="sts-cnt-1"  style="font-family:'Cinzel',serif;font-size:18px;color:#FFD700">—</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:12px">🥈 <span style="color:#C0C0C0">#2~3</span></span>
-            <span id="sts-cnt-3"  style="font-family:'Cinzel',serif;font-size:18px;color:#C0C0C0">—</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:12px">🏅 <span style="color:#cd7f32">#4~10</span></span>
-            <span id="sts-cnt-10" style="font-family:'Cinzel',serif;font-size:18px;color:#cd7f32">—</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #333;padding-top:4px;margin-top:2px">
-            <span style="font-size:11px;color:#666">#11+ / 전체</span>
-            <span id="sts-cnt-rest" style="font-size:12px;color:#666">— / —</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /sec-sts-summary -->
-  <div id="sec-sts-chart" class="tab-section">
-    <div class="steam-ts-chart-box"><div class="steam-ts-chart-inner"><canvas id="stsChart"></canvas></div></div>
-  </div><!-- /sec-sts-chart -->
-
-  <div id="sec-sts-sched" class="tab-section">
-      <div class="sts-sched-wrap">
-        <div class="sts-sched-legend">
-          <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>자동 실행</span>
-          <span style="display:flex;align-items:center;gap:4px"><span class="tl-badge manual" style="font-size:8px;padding:1px 5px">수동</span>수동 실행</span>
-          <span><i class="sts-legend-dot" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1)"></i>예정</span>
-        </div>
-        <div id="sts-sched-days"></div>
-        <div class="sts-sched-summary" id="sts-sched-summary"></div>
-      </div>
-    </div>
-
-  </div><!-- /sec-sts-sched -->
-  <div id="sec-sts-heatmap" class="tab-section">
-      <div style="padding:12px 4px 4px">
+      <div class="dual-col steam-col">
+        <div class="dual-col-header steam-header">🖥 Steam</div>
         <div class="heatmap-legend">
-          <span><i class="hm-legend-bar" style="background:#2ecc71"></i> 순위 상승</span>
-          <span><i class="hm-legend-bar" style="background:#e74c3c"></i> 순위 하락</span>
-          <span><i class="hm-legend-bar" style="background:#333"></i> 변동 없음</span>
-          <span style="color:#f1c40f;font-size:10px;font-weight:700">★최고순위</span>
+          <span><i class="hm-legend-bar" style="background:var(--up)"></i> 상승</span>
+          <span><i class="hm-legend-bar" style="background:var(--down)"></i> 하락</span>
+          <span><i class="hm-legend-bar" style="background:var(--bd)"></i> 변동없음</span>
+          <span style="color:var(--gold);font-size:10px;font-weight:700">★최고</span>
         </div>
         <div class="heatmap-grid" id="sts-heatmap-grid"></div>
       </div>
     </div>
+  </div><!-- /sec-heatmap -->
 
-  </div><!-- /sec-sts-heatmap -->
-  <div id="sec-sts-table" class="tab-section">
-      <div class="sts-country-summary-row steam-ts-stats-row" id="sts-country-summary-row" style="display:none;margin-bottom:12px">
-        <div class="steam-ts-stat-box">
-          <div class="steam-ts-stat-label">📊 가중 평균</div>
-          <div class="steam-ts-stat-value" id="sts-cs-avg">—</div>
-          <div class="steam-ts-stat-diff" id="sts-cs-avg-sub"></div>
+  <!-- ⑥ 국가별 -->
+  <div id="sec-table" class="tab-section">
+    <div class="dual-panel">
+      <div class="dual-col ps-col">
+        <div class="dual-col-header ps-header">🎮 PS Store
+          <button class="csv-btn" style="margin-left:auto;font-size:10px;padding:4px 10px" onclick="downloadCSV()">📥 CSV</button>
         </div>
-        <div class="steam-ts-stat-box">
-          <div class="steam-ts-stat-label">🥇 최고 순위</div>
-          <div class="steam-ts-stat-value" id="sts-cs-best-flag" style="font-size:1.8rem;line-height:1.1">—</div>
-          <div class="steam-ts-stat-diff" id="sts-cs-best-name"></div>
-        </div>
-        <div class="steam-ts-stat-box">
-          <div class="steam-ts-stat-label">🔻 최하위 순위</div>
-          <div class="steam-ts-stat-value" id="sts-cs-worst-flag" style="font-size:1.8rem;line-height:1.1">—</div>
-          <div class="steam-ts-stat-diff" id="sts-cs-worst-name"></div>
-        </div>
-        <div class="steam-ts-stat-box">
-          <div class="steam-ts-stat-label">✅ 순위권 진입</div>
-          <div class="steam-ts-stat-value" id="sts-cs-found">—</div>
-          <div class="steam-ts-stat-diff" id="sts-cs-found-sub">/ 추적국가</div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th onclick="setSort('name')">국가</th>
+                <th onclick="setSort('rank')">순위</th>
+                <th onclick="setSort('best')" class="td-meta">최고</th>
+                <th onclick="setSort('avg')" class="td-meta">평균</th>
+                <th onclick="setSort('change')" class="td-meta">변동</th>
+                <th onclick="setSort('weight')" class="td-meta">가중치</th>
+                <th class="td-mobile-meta" style="display:none"></th>
+              </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
         </div>
       </div>
-      <div class="steam-ts-country-grid" id="sts-country-grid"></div>
+      <div class="dual-col steam-col">
+        <div class="dual-col-header steam-header">🖥 Steam
+          <button class="steam-ts-dl-btn" style="margin-left:auto;font-size:10px;padding:4px 10px" onclick="downloadSteamCSV()">📥 CSV</button>
+        </div>
+        <div id="sts-country-summary-row" style="display:none;margin-bottom:10px">
+          <div class="steam-ts-stats-row">
+            <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">가중 평균</div><div class="steam-ts-stat-value" id="sts-cs-avg">—</div><div class="steam-ts-stat-diff" id="sts-cs-avg-sub"></div></div>
+            <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">최고</div><div class="steam-ts-stat-value" id="sts-cs-best-flag" style="font-size:1.4rem;line-height:1.1">—</div><div class="steam-ts-stat-diff" id="sts-cs-best-name"></div></div>
+            <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">최하위</div><div class="steam-ts-stat-value" id="sts-cs-worst-flag" style="font-size:1.4rem;line-height:1.1">—</div><div class="steam-ts-stat-diff" id="sts-cs-worst-name"></div></div>
+            <div class="steam-ts-stat-box"><div class="steam-ts-stat-label">순위권</div><div class="steam-ts-stat-value" id="sts-cs-found">—</div><div class="steam-ts-stat-diff" id="sts-cs-found-sub">/ 추적</div></div>
+          </div>
+        </div>
+        <div class="steam-ts-country-grid" id="sts-country-grid"></div>
+      </div>
     </div>
-  </div><!-- /sec-sts-table -->
+  </div><!-- /sec-table -->
 
 </div><!-- /container -->
 
@@ -1281,25 +1332,17 @@ function renderSchedule() {
 function switchTab(tabEl) {
   const secId = tabEl.dataset.section;
   if (!secId) return;
-
-  // 모든 섹션 숨기기
   document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active-section'));
-  // 해당 섹션만 표시
   const sec = document.getElementById(secId);
   if (sec) sec.classList.add('active-section');
-
-  // 탭 active 상태
-  const isPsTab = tabEl.classList.contains('ps-tab');
-  document.querySelectorAll(isPsTab ? '.ps-tab' : '.steam-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   tabEl.classList.add('active');
-
-  // 차트 리사이즈 (숨겨졌다 보이면 크기 0이 됨)
   requestAnimationFrame(() => {
-    if (secId === 'sec-ps-chart'   && mainChart) mainChart.resize();
-    if (secId === 'sec-sts-chart'  && stsCI) stsCI.resize();
+    if (secId === 'sec-chart') {
+      if (mainChart) mainChart.resize();
+      if (stsCI) stsCI.resize();
+    }
   });
-
-  // 스크롤 최상단
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1374,6 +1417,13 @@ function renderSTS() {
   document.getElementById('sts-count').textContent = stsHist.length;
   const stsTotalCountries = Object.keys(lat.results || {}).length;
   document.getElementById('sts-countries-sub').textContent = stsTotalCountries + '개국 추적';
+  // 듀얼 패널 요약 카드 동기화
+  const avgS = document.getElementById('sts-avg-s');
+  if (avgS) avgS.textContent = la ? '#' + la.toFixed(1) : '—';
+  const cntS = document.getElementById('sts-count-s');
+  if (cntS) cntS.textContent = stsHist.length;
+  const csubS = document.getElementById('sts-countries-sub-s');
+  if (csubS) csubS.textContent = stsTotalCountries + '개국 추적';
 
   const el = document.getElementById('sts-avg-diff');
   if (pa !== null && la !== null) {
@@ -1387,6 +1437,10 @@ function renderSTS() {
   for (const h of v) { const a = stsAvg(h); if (a !== null && (best === null || a < best)) { best = a; be = h; } }
   document.getElementById('sts-best').textContent = best ? '#' + best.toFixed(1) : '—';
   if (be) document.getElementById('sts-best-date').textContent = fmtDate(be.timestamp);
+  const bestS = document.getElementById('sts-best-s');
+  if (bestS) bestS.textContent = best ? '#' + best.toFixed(1) : '—';
+  const bestDateS = document.getElementById('sts-best-date-s');
+  if (bestDateS && be) bestDateS.textContent = fmtDate(be.timestamp);
 
   // 글로벌 순위
   const globalRankLatest = stsHist.slice().reverse().find(h => h.global_rank != null);
@@ -1455,6 +1509,7 @@ function renderSTS() {
 
   renderStsGrid(lat, prv);
   renderStsHeatmap(lat, prv);
+  renderStsLeaderboard(lat);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1607,6 +1662,29 @@ function renderStsHeatmap(lat, prv) {
     </div>`;
   }).join('');
 
+  twemoji.parse(g, { folder: 'svg', ext: '.svg' });
+}
+
+function renderStsLeaderboard(lat) {
+  const g = document.getElementById('sts-top10-grid');
+  if (!g || !lat || !lat.results) return;
+  // 가중치 상위 국가만, 현재 순위 있는 것 우선 정렬
+  const sorted = Object.keys(STS_W)
+    .map(n => ({ name: n, rank: lat.results[n]?.rank ?? null, w: STS_W[n] || 1 }))
+    .sort((a, b) => {
+      if (a.rank && b.rank) return a.rank !== b.rank ? a.rank - b.rank : b.w - a.w;
+      if (a.rank) return -1; if (b.rank) return 1;
+      return b.w - a.w;
+    });
+  g.innerHTML = sorted.map(d => {
+    const flag = STS_F[d.name] || '';
+    const cc = STS_CC[d.name] || 'us';
+    const rankStr = d.rank ? '#' + d.rank : '—';
+    return `<div class="top10-item" onclick="openStsModal('${d.name}')">
+      <span class="n">${flag} ${d.name}</span>
+      <span class="r" style="${d.rank ? '' : 'color:var(--tx-4)'}">${rankStr}</span>
+    </div>`;
+  }).join('');
   twemoji.parse(g, { folder: 'svg', ext: '.svg' });
 }
 
