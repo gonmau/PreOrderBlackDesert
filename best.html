@@ -1132,9 +1132,18 @@ function renderMainChart() {
   const ctx = document.getElementById('mainChart').getContext('2d');
   if (mainChart) mainChart.destroy();
 
-  const dv = historyData.map(h => h.averages.combined).filter(v => v != null);
+  const allData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.averages.combined }))
+    .filter(d => d.y != null);
+  const dv = allData.map(d => d.y);
+  const lbs = allData.map(d => d.x);
+
   const idxFirst = 0, idxLast = dv.length - 1;
   const idxBest  = dv.reduce((bi,v,i,a) => v!==null&&(a[bi]===null||v<a[bi])?i:bi, 0);
+
+  const specialIdx = new Set([idxFirst, idxLast, idxBest]);
+  const ptR = dv.map((_,i) => specialIdx.has(i) ? 5 : 0);
+  const ptC = dv.map((_,i) => i===idxBest?'#2ecc71': i===idxLast?'#f1c40f':'#ffffff');
+
   const fmtR = v => v != null ? v.toFixed(1) + '위' : '—';
   const setL = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
   setL('ps-leg-start',   '시작 ' + fmtR(dv[idxFirst]));
@@ -1144,10 +1153,13 @@ function renderMainChart() {
   mainChart = new Chart(ctx, {
     type: 'line',
     data: {
+      labels: lbs,
       datasets: [{
         label: 'Global Weighted Avg',
-        data: historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.averages.combined })),
-        borderColor: '#f1c40f', borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, tension: 0.2, fill: false
+        data: dv,
+        borderColor: '#f1c40f', borderWidth: 2,
+        pointRadius: ptR, pointBackgroundColor: ptC, pointBorderColor: ptC,
+        pointHoverRadius: 6, tension: 0.2, fill: false
       }]
     },
     options: {
@@ -1474,7 +1486,7 @@ function stsAvg(h) {
   if (!h || !h.results) return null;
   let tw = 0, ts = 0;
   for (const [n, d] of Object.entries(h.results)) {
-    const r = d && d.rank; if (!r) continue;
+    const r = d && d.rank; if (!r || r > 20) continue;  // 20위 밖 제외
     const w = STS_W[n] || 1.0; ts += r * w; tw += w;
   }
   return tw > 0 ? Math.round(ts / tw * 10) / 10 : null;
@@ -1487,7 +1499,7 @@ function renderSTS() {
   const lat = v[v.length-1], prv = v.length >= 2 ? v[v.length-2] : null;
   const la = stsAvg(lat), pa = prv ? stsAvg(prv) : null;
 
-  document.getElementById('sts-avg').textContent = la ? '#' + la.toFixed(1) : '—';
+  document.getElementById('sts-avg').textContent = la ? la.toFixed(1) + '위' : '—';
   // Steam 타임스탬프 뱃지 전체 업데이트
   const stsTs = lat.timestamp ? lat.timestamp.split('.')[0].replace('T', ' ').slice(5) : '';
   document.querySelectorAll('.sts-ts-badge, #sts-data-time').forEach(el => el.textContent = stsTs);
@@ -1506,7 +1518,7 @@ function renderSTS() {
 
   let best = null, be = null;
   for (const h of v) { const a = stsAvg(h); if (a !== null && (best === null || a < best)) { best = a; be = h; } }
-  document.getElementById('sts-best').textContent = best ? '#' + best.toFixed(1) : '—';
+  document.getElementById('sts-best').textContent = best ? best.toFixed(1) + '위' : '—';
   if (be) document.getElementById('sts-best-date').textContent = fmtDate(be.timestamp);
 
 
@@ -1778,7 +1790,7 @@ function renderStsGrid(lat, prv) {
     const worst = ranked.reduce((a,b) => a[1].rank > b[1].rank ? a : b);
     const summaryRow = document.getElementById('sts-country-summary-row');
     if (summaryRow) summaryRow.style.display = '';
-    document.getElementById('sts-cs-avg').textContent = '#' + (Math.round(ts/tw*10)/10).toFixed(1);
+    document.getElementById('sts-cs-avg').textContent = (Math.round(ts/tw*10)/10).toFixed(1) + '위';
     document.getElementById('sts-cs-avg-sub').textContent = '가중평균 (진입 ' + ranked.length + '개국)';
     const bcc = STS_CC[best[0]]||'us';
     document.getElementById('sts-cs-best-flag').innerHTML = `<img src="https://flagcdn.com/w40/${bcc}.png" style="width:36px;height:26px;object-fit:cover;border-radius:3px"> ${STS_F[best[0]]||''}`;
