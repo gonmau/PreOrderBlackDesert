@@ -103,7 +103,6 @@
   .tab-section.active-section { display: block; }
 
   /* ══ 듀얼 패널 ════════════════════════════════════════════════ */
-  :root { --col-hdr-top: 0px; }
   .dual-panel {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -111,23 +110,16 @@
     align-items: start;
   }
   .dual-panel-chart { align-items: stretch; }
+  /* dual-col: 헤더 고정 + 내부 스크롤 (PC & 모바일 공통) */
   .dual-col {
     background: var(--bg-1);
     border: 1px solid var(--bd);
     border-radius: var(--radius);
-    overflow: hidden;
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - 130px);
+    height: calc(100vh - var(--col-offset, 120px));
+    min-height: 300px;
   }
-  .dual-col-body {
-    flex: 1;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
-  .dual-col-body::-webkit-scrollbar { width: 4px; }
-  .dual-col-body::-webkit-scrollbar-track { background: transparent; }
-  .dual-col-body::-webkit-scrollbar-thumb { background: var(--bd-hi); border-radius: 2px; }
   .dual-col-header {
     display: flex;
     align-items: center;
@@ -139,34 +131,34 @@
     text-transform: uppercase;
     border-bottom: 1px solid var(--bd);
     flex-shrink: 0;
+    background: inherit;
   }
+  .dual-col-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  .dual-col-body::-webkit-scrollbar { width: 4px; }
+  .dual-col-body::-webkit-scrollbar-track { background: transparent; }
+  .dual-col-body::-webkit-scrollbar-thumb { background: var(--bd-hi); border-radius: 2px; }
   .ps-col    { border-top: 2px solid var(--blood); }
   .steam-col { border-top: 2px solid var(--steam); }
-  .ps-header    { color: var(--blood); background: rgba(255,71,87,0.04); }
-  .steam-header { color: var(--steam); background: rgba(74,158,255,0.04); }
+  .ps-header    { color: var(--blood); background: rgba(255,71,87,0.05); }
+  .steam-header { color: var(--steam); background: rgba(74,158,255,0.05); }
   .dual-col .stats        { padding: 12px; gap: 8px; margin-bottom: 0; }
   .dual-col .card         { padding: 12px 14px; }
   .dual-col .card .val    { font-size: 22px; }
-  .dual-col .top10-grid   { padding: 12px; }
   .dual-col .sts-sched-wrap   { padding: 12px; }
   .dual-col .chart-section    { border: none; border-radius: 0; margin-bottom: 0; padding: 12px; }
   .dual-col .steam-ts-chart-box { border: none; border-radius: 0; }
   .dual-col .heatmap-legend   { padding: 10px 12px 4px; }
   .dual-col .heatmap-grid     { padding: 0 8px 10px; }
-  .dual-col .table-wrapper    { border: none; border-radius: 0; }
-  .dual-col .steam-ts-country-grid { padding: 8px; }
-  /* 모바일: 세로 스택, 페이지 스크롤 */
+  /* 모바일 */
   @media (max-width: 700px) {
     .dual-panel { grid-template-columns: 1fr; }
-    .dual-col { max-height: none; overflow: visible; }
-    .dual-col-body { overflow-y: visible; overflow: visible; }
     .dual-col .stats { grid-template-columns: repeat(2, 1fr); }
     .dual-col .card .val { font-size: 20px; }
-    /* 모바일에서 헤더 sticky top = header+nav 높이 */
-    .dual-col-header[style*="position:sticky"],
-    [style*="position:sticky"][style*="flex-shrink:0"] {
-      top: var(--col-hdr-top) !important;
-    }
   }
 
   /* ══ 네비게이션 바 ════════════════════════════════════════════ */
@@ -597,7 +589,7 @@
     <div class="dual-panel">
       <!-- PS 좌측 -->
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header" style="position:sticky;top:var(--col-hdr-top);z-index:5;flex-shrink:0">🎮 PS Store <span id="ps-data-time" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header ps-header">🎮 PS Store <span id="ps-data-time" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="stats">
           <div class="card"><div class="lbl">가중 평균</div><div class="val" id="stat-avg">—</div></div>
           <div class="card">
@@ -636,7 +628,7 @@
       </div>
       <!-- Steam 우측 -->
       <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header" style="position:sticky;top:var(--col-hdr-top);z-index:5;flex-shrink:0">🖥 Steam <span id="sts-data-time" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header steam-header">🖥 Steam <span id="sts-data-time" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="stats">
           <!-- 글로벌 순위 (숨김 - JS 표시용) -->
           <div id="sts-global-rank-box" style="display:none">
@@ -689,11 +681,11 @@
   <div id="sec-leaderboard" class="tab-section">
     <div class="dual-panel">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header" style="position:sticky;top:var(--col-hdr-top);z-index:5;flex-shrink:0">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div id="lb-ps-container" style="padding:8px"></div></div>
       </div>
       <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header" style="position:sticky;top:var(--col-hdr-top);z-index:5;flex-shrink:0">🖥 Steam <span class="sts-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header steam-header">🖥 Steam <span class="sts-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div id="lb-sts-container" style="padding:8px"></div></div>
       </div>
     </div>
@@ -703,7 +695,7 @@
   <div id="sec-sched" class="tab-section">
     <div class="dual-panel">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header" style="position:sticky;top:var(--col-hdr-top);z-index:5;flex-shrink:0">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div class="sts-sched-wrap">
           <div class="sts-sched-legend">
             <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>자동 실행</span>
@@ -715,7 +707,7 @@
         </div></div>
       </div>
       <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header" style="position:sticky;top:var(--col-hdr-top);z-index:5;flex-shrink:0">🖥 Steam <span id="sts-sched-cron" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:4px;letter-spacing:0;text-transform:none"></span></div>
+        <div class="dual-col-header steam-header">🖥 Steam <span id="sts-sched-cron" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:4px;letter-spacing:0;text-transform:none"></span></div>
         <div class="sts-sched-wrap">
           <div class="sts-sched-legend">
             <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>자동 실행</span>
@@ -733,7 +725,7 @@
   <div id="sec-chart" class="tab-section">
     <div class="dual-panel dual-panel-chart">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header" style="position:sticky;top:var(--col-hdr-top);z-index:5;flex-shrink:0">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="chart-section" style="height:280px;margin-bottom:0"><canvas id="mainChart"></canvas></div>
         <div class="chart-legend">
           <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="ps-leg-start">시작 —</span></div>
@@ -742,7 +734,7 @@
         </div>
       </div>
       <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header" style="position:sticky;top:var(--col-hdr-top);z-index:5;flex-shrink:0">🖥 Steam <span class="sts-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header steam-header">🖥 Steam <span class="sts-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="steam-ts-chart-box" style="height:280px;padding:12px">
           <div style="height:100%"><canvas id="stsChart"></canvas></div>
         </div>
@@ -760,7 +752,7 @@
   <div id="sec-heatmap" class="tab-section">
     <div class="dual-panel">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header" style="position:sticky;top:var(--col-hdr-top);z-index:5;flex-shrink:0">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div class="heatmap-legend">
           <span><i class="hm-legend-bar" style="background:var(--up)"></i> 상승</span>
           <span><i class="hm-legend-bar" style="background:var(--down)"></i> 하락</span>
@@ -770,7 +762,7 @@
         <div class="heatmap-grid" id="ps-heatmap-grid"></div></div>
       </div>
       <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header" style="position:sticky;top:var(--col-hdr-top);z-index:5;flex-shrink:0">🖥 Steam <span class="sts-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-header steam-header">🖥 Steam <span class="sts-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div class="heatmap-legend">
           <span><i class="hm-legend-bar" style="background:var(--up)"></i> 상승</span>
           <span><i class="hm-legend-bar" style="background:var(--down)"></i> 하락</span>
@@ -786,14 +778,14 @@
   <div id="sec-table" class="tab-section">
     <div class="dual-panel">
       <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header" style="position:sticky;top:var(--col-hdr-top);z-index:5;flex-shrink:0">🎮 PS Store
+        <div class="dual-col-header ps-header">🎮 PS Store
           <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span>
           <button class="csv-btn" style="font-size:10px;padding:4px 10px;margin-left:8px" onclick="downloadCSV()">📥 CSV</button>
         </div>
         <div class="dual-col-body" id="ps-table-body"></div>
       </div>
       <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header" style="position:sticky;top:var(--col-hdr-top);z-index:5;flex-shrink:0">🖥 Steam
+        <div class="dual-col-header steam-header">🖥 Steam
           <span class="sts-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span>
           <button class="steam-ts-dl-btn" style="font-size:10px;padding:4px 10px;margin-left:8px" onclick="downloadSteamCSV()">📥 CSV</button>
         </div>
@@ -1072,11 +1064,11 @@ function render() {
       psGroups[k].names.push(name);
     });
     lbPs.innerHTML = Object.entries(psGroups).map(([label, { rank, names }]) => {
-      const tc = rank === 1 ? 't1' : rank <= 3 ? 't2' : rank <= 10 ? 't3' : rank < 999 ? 't10' : '';
       const lc = rank === 1 ? 'g1' : rank <= 3 ? 'g2' : rank <= 10 ? 'g3' : rank < 999 ? 'g10' : 'gout';
+      const tc = rank === 1 ? 'tier-1' : rank <= 3 ? 'tier-2' : rank <= 10 ? 'tier-3' : rank < 999 ? 'tier-10' : 'tier-out';
       const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
-      const tagsHtml = names.map(n => `<span class="lb-tag ${tc}" onclick="showCountryChart('${n}')">${FLAGS[n]||''} ${n}</span>`).join('');
-      return `<div class="lb-group"><div class="lb-group-label ${lc}">${medal} ${label} <span class="rank-group-count">${names.length}개국</span></div><div class="lb-countries">${tagsHtml}</div></div>`;
+      const cardsHtml = names.map(n => `<div class="top10-item ${tc}" onclick="showCountryChart('${n}')"><span class="n">${FLAGS[n]||''} ${n}</span><span class="r">${rank >= 9999 ? '—' : rank + '위'}</span></div>`).join('');
+      return `<div class="lb-group"><div class="lb-group-label ${lc}">${medal} ${label} <span class="rank-group-count">${names.length}개국</span></div><div class="top10-grid" style="padding:8px">${cardsHtml}</div></div>`;
     }).join('');
     twemoji.parse(lbPs, { folder: 'svg', ext: '.svg' });
   }
@@ -1105,54 +1097,50 @@ function render() {
 function renderPsTable(list) {
   const container = document.getElementById('ps-table-body');
   if (!container) return;
-
-  // 순위 기준 정렬
-  const sorted = [...list].sort((a, b) => {
+  const sorted = [...list].sort((a,b) => {
     const ar = a.rank >= 999 ? 99999 : a.rank;
     const br = b.rank >= 999 ? 99999 : b.rank;
-    return ar !== br ? ar - br : (b.weight || 0) - (a.weight || 0);
+    return ar !== br ? ar - br : (b.weight||0) - (a.weight||0);
   });
-
-  // 순위별 그룹
   const groups = {};
   sorted.forEach(d => {
     const k = d.rank >= 999 ? '순위 밖' : d.rank + '위';
     if (!groups[k]) groups[k] = { rank: d.rank >= 999 ? 9999 : d.rank, items: [] };
     groups[k].items.push(d);
   });
-
-  container.innerHTML = Object.entries(groups).map(([label, { rank, items }]) => {
-    const lc = rank === 1 ? 'g1' : rank <= 3 ? 'g2' : rank <= 10 ? 'g3' : rank < 999 ? 'g10' : 'gout';
-    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
-    const rowsHtml = items.map(d => {
-      const bestStr = d.best === 999 ? '—' : d.best + '위';
-      const avgStr  = d.avg  === 999 ? '—' : d.avg.toFixed(1) + '위';
-      const chgCls  = d.change > 0 ? 'up' : d.change < 0 ? 'down' : '';
-      const chgTxt  = d.change > 0 ? '▲'+d.change : d.change < 0 ? '▼'+Math.abs(d.change) : '';
-      const rankCls = rank === 1 ? 'r1' : rank <= 3 ? 'r2' : rank <= 10 ? 'r3' : rank < 999 ? 'r10' : 'rout';
-      return `<div class="sts-country-row ${rankCls}" onclick="showCountryChart('${d.name}')">
-        <span class="flag" style="font-size:18px">${FLAGS[d.name]||''}</span>
-        <div class="sts-row-name">${d.name}</div>
-        <span style="font-size:10px;color:var(--tx-3);margin-right:4px">최고 ${bestStr}</span>
-        <span style="font-size:10px;color:var(--tx-3);margin-right:6px">평균 ${avgStr}</span>
-        ${chgTxt ? `<span class="sts-row-diff ${chgCls}">${chgTxt}</span>` : ''}
-        <span class="sts-row-rank ${rankCls}">${rank >= 999 ? '—' : rank + '위'}</span>
-        <a class="sts-row-link" href="${getStoreUrl(d.name)}" target="_blank" onclick="event.stopPropagation()">🔗</a>
+  container.innerHTML = Object.entries(groups).map(([label, {rank, items}]) => {
+    const lc = rank===1?'g1':rank<=3?'g2':rank<=10?'g3':rank<999?'g10':'gout';
+    const barColor = rank===1?'var(--gold)':rank<=3?'#c0c0c0':rank<=10?'#cd7f32':rank<999?'var(--steam)':'var(--bd)';
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+    const groupId = 'ps-grp-'+rank;
+    const rows = items.map(d => {
+      const bestStr = d.best===999 ? '—' : d.best+'위';
+      const avgStr  = d.avg ===999 ? '—' : d.avg.toFixed(1)+'위';
+      const chgCls  = d.change>0?'up':d.change<0?'down':'';
+      const chgTxt  = d.change>0?'▲'+d.change:d.change<0?'▼'+Math.abs(d.change):'';
+      const rankTxt = d.rank>=999 ? '—' : d.rank+'위';
+      const rankColor = rank===1?'var(--gold)':rank<=3?'#c0c0c0':rank<=10?'#cd7f32':rank<999?'var(--steam)':'var(--tx-4)';
+      return `<div class="ct-row" onclick="showCountryChart('${d.name}')">
+        <span class="ct-bar" style="background:${barColor}"></span>
+        <span class="ct-flag">${FLAGS[d.name]||''}</span>
+        <span class="ct-name">${d.name}</span>
+        <span class="ct-meta">최고 ${bestStr}</span>
+        <span class="ct-meta">평균 ${avgStr}</span>
+        ${chgTxt?`<span class="ct-chg ${chgCls}">${chgTxt}</span>`:'<span class="ct-chg"></span>'}
+        <span class="ct-rank" style="color:${rankColor}">${rankTxt}</span>
+        <a class="ct-link" href="${getStoreUrl(d.name)}" target="_blank" onclick="event.stopPropagation()">🔗</a>
       </div>`;
     }).join('');
-
-    const groupId = 'ps-grp-' + rank;
     return `<div>
       <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
-        <span class="rank-group-label lb-group-label ${lc}">${medal} ${label}</span>
+        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}</span>
         <span class="rank-group-count">${items.length}개국</span>
         <span class="rank-group-arrow open" id="${groupId}-arrow">▼</span>
       </div>
-      <div class="rank-group-body" id="${groupId}">${rowsHtml}</div>
+      <div class="rank-group-body" id="${groupId}">${rows}</div>
     </div>`;
   }).join('');
-
-  twemoji.parse(container, { folder: 'svg', ext: '.svg' });
+  twemoji.parse(container, {folder:'svg',ext:'.svg'});
 }
 
 function toggleRankGroup(id) {
@@ -1776,59 +1764,57 @@ function renderStsHeatmap(lat, prv) {
 function renderStsTable(lat, prv) {
   const container = document.getElementById('sts-table-body');
   if (!container || !lat || !lat.results) return;
-
-  const entries = Object.entries(lat.results).map(([n, d]) => {
+  const entries = Object.entries(lat.results).map(([n,d]) => {
     const r = d?.rank ?? null;
     const pr = prv?.results?.[n]?.rank ?? null;
-    const ch = r && pr ? pr - r : 0;
-    const histRanks = stsHist.map(h => h.results?.[n]?.rank).filter(v => v != null);
+    const ch = r&&pr ? pr-r : 0;
+    const histRanks = stsHist.map(h=>h.results?.[n]?.rank).filter(v=>v!=null);
     const best = histRanks.length ? Math.min(...histRanks) : null;
-    const avg  = histRanks.length ? (histRanks.reduce((a,b)=>a+b,0)/histRanks.length) : null;
-    return { name: n, rank: r, change: ch, best, avg, w: STS_W[n] || 1 };
-  }).sort((a, b) => {
-    const ar = a.rank ?? 99999, br = b.rank ?? 99999;
-    return ar !== br ? ar - br : b.w - a.w;
+    const avg  = histRanks.length ? histRanks.reduce((a,b)=>a+b,0)/histRanks.length : null;
+    return {name:n, rank:r, change:ch, best, avg, w:STS_W[n]||1};
+  }).sort((a,b) => {
+    const ar = a.rank??99999, br = b.rank??99999;
+    return ar!==br ? ar-br : b.w-a.w;
   });
-
-  // 순위별 그룹
   const groups = {};
   entries.forEach(d => {
-    const k = d.rank ? d.rank + '위' : '순위 밖';
-    if (!groups[k]) groups[k] = { rank: d.rank || 9999, items: [] };
+    const k = d.rank ? d.rank+'위' : '순위 밖';
+    if (!groups[k]) groups[k] = {rank:d.rank||9999, items:[]};
     groups[k].items.push(d);
   });
-
-  container.innerHTML = Object.entries(groups).map(([label, { rank, items }]) => {
-    const lc = rank === 1 ? 'g1' : rank <= 3 ? 'g2' : rank <= 10 ? 'g3' : rank < 999 ? 'g10' : 'gout';
-    const rankCls = rank === 1 ? 'r1' : rank <= 3 ? 'r2' : rank <= 10 ? 'r3' : rank < 999 ? 'r10' : 'rout';
-    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
-    const rowsHtml = items.map(d => {
-      const cc = STS_CC[d.name] || 'us';
-      const flagImg = `<img src="https://flagcdn.com/w40/${cc}.png" alt="${d.name}" style="width:22px;height:16px;object-fit:cover;border-radius:2px;flex-shrink:0">`;
-      const bestStr = d.best ? d.best + '위' : '—';
-      const avgStr  = d.avg  ? d.avg.toFixed(1) + '위' : '—';
-      const chgCls  = d.change > 0 ? 'up' : d.change < 0 ? 'down' : '';
-      const chgTxt  = d.change > 0 ? '▲'+d.change : d.change < 0 ? '▼'+Math.abs(d.change) : '';
+  container.innerHTML = Object.entries(groups).map(([label, {rank, items}]) => {
+    const lc = rank===1?'g1':rank<=3?'g2':rank<=10?'g3':rank<999?'g10':'gout';
+    const barColor = rank===1?'var(--gold)':rank<=3?'#c0c0c0':rank<=10?'#cd7f32':rank<999?'var(--steam)':'var(--bd)';
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+    const groupId = 'sts-grp-'+rank;
+    const rows = items.map(d => {
+      const cc = STS_CC[d.name]||'us';
+      const bestStr = d.best ? d.best+'위' : '—';
+      const avgStr  = d.avg  ? d.avg.toFixed(1)+'위' : '—';
+      const chgCls  = d.change>0?'up':d.change<0?'down':'';
+      const chgTxt  = d.change>0?'▲'+d.change:d.change<0?'▼'+Math.abs(d.change):'';
+      const rankTxt = d.rank ? d.rank+'위' : '—';
+      const rankColor = rank===1?'var(--gold)':rank<=3?'#c0c0c0':rank<=10?'#cd7f32':rank<999?'var(--steam)':'var(--tx-4)';
+      const flagImg = `<img src="https://flagcdn.com/w40/${cc}.png" alt="${d.name}" style="width:20px;height:14px;object-fit:cover;border-radius:2px">`;
       const storeUrl = `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`;
-      return `<div class="sts-country-row ${rankCls}" onclick="openStsModal('${d.name}')">
-        ${flagImg}
-        <div class="sts-row-name">${d.name}</div>
-        <span style="font-size:10px;color:var(--tx-3);margin-right:4px">최고 ${bestStr}</span>
-        <span style="font-size:10px;color:var(--tx-3);margin-right:6px">평균 ${avgStr}</span>
-        ${chgTxt ? `<span class="sts-row-diff ${chgCls}">${chgTxt}</span>` : ''}
-        <span class="sts-row-rank ${rankCls}">${d.rank ? d.rank + '위' : '—'}</span>
-        <a class="sts-row-link" href="${storeUrl}" target="_blank" onclick="event.stopPropagation()">🔗</a>
+      return `<div class="ct-row" onclick="openStsModal('${d.name}')">
+        <span class="ct-bar" style="background:${barColor}"></span>
+        <span class="ct-flag">${flagImg}</span>
+        <span class="ct-name">${d.name}</span>
+        <span class="ct-meta">최고 ${bestStr}</span>
+        <span class="ct-meta">평균 ${avgStr}</span>
+        ${chgTxt?`<span class="ct-chg ${chgCls}">${chgTxt}</span>`:'<span class="ct-chg"></span>'}
+        <span class="ct-rank" style="color:${rankColor}">${rankTxt}</span>
+        <a class="ct-link" href="${storeUrl}" target="_blank" onclick="event.stopPropagation()">🔗</a>
       </div>`;
     }).join('');
-
-    const groupId = 'sts-grp-' + rank;
     return `<div>
       <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
-        <span class="rank-group-label lb-group-label ${lc}">${medal} ${label}</span>
+        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}</span>
         <span class="rank-group-count">${items.length}개국</span>
         <span class="rank-group-arrow open" id="${groupId}-arrow">▼</span>
       </div>
-      <div class="rank-group-body" id="${groupId}">${rowsHtml}</div>
+      <div class="rank-group-body" id="${groupId}">${rows}</div>
     </div>`;
   }).join('');
 }
@@ -1850,14 +1836,14 @@ function renderStsLeaderboard(lat) {
     groups[k].names.push(d.name);
   });
   g.innerHTML = Object.entries(groups).map(([label, { rank, names }]) => {
-    const tc = rank === 1 ? 't1' : rank <= 3 ? 't2' : rank <= 10 ? 't3' : rank < 999 ? 't10' : '';
     const lc = rank === 1 ? 'g1' : rank <= 3 ? 'g2' : rank <= 10 ? 'g3' : rank < 999 ? 'g10' : 'gout';
+    const tc = rank === 1 ? 'tier-1' : rank <= 3 ? 'tier-2' : rank <= 10 ? 'tier-3' : rank < 999 ? 'tier-10' : 'tier-out';
     const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
-    const tagsHtml = names.map(n => {
+    const cardsHtml = names.map(n => {
       const flag = STS_F[n] || '';
-      return `<span class="lb-tag ${tc}" onclick="openStsModal('${n}')">${flag} ${n}</span>`;
+      return `<div class="top10-item ${tc}" onclick="openStsModal('${n}')"><span class="n">${flag} ${n}</span><span class="r">${rank >= 9999 ? '—' : rank + '위'}</span></div>`;
     }).join('');
-    return `<div class="lb-group"><div class="lb-group-label ${lc}">${medal} ${label} <span class="rank-group-count">${names.length}개국</span></div><div class="lb-countries">${tagsHtml}</div></div>`;
+    return `<div class="lb-group"><div class="lb-group-label ${lc}">${medal} ${label} <span class="rank-group-count">${names.length}개국</span></div><div class="top10-grid" style="padding:8px">${cardsHtml}</div></div>`;
   }).join('');
   twemoji.parse(g, { folder: 'svg', ext: '.svg' });
 }
@@ -2381,16 +2367,16 @@ window.addEventListener('DOMContentLoaded', () => {
   const header = document.querySelector('header');
   const navBar = document.getElementById('nav-bar');
   if (header && navBar) {
-    const setTop = () => {
+    const setOffset = () => {
       const navTop = header.offsetHeight;
       navBar.style.top = navTop + 'px';
-      // 모바일에서 dual-col-header sticky top = header + navBar 높이
-      const totalTop = navTop + navBar.offsetHeight;
-      document.documentElement.style.setProperty('--col-hdr-top', totalTop + 'px');
+      // dual-col 높이 = 뷰포트 - header - navBar - 여백(20px padding*2)
+      const offset = navTop + navBar.offsetHeight + 40;
+      document.documentElement.style.setProperty('--col-offset', offset + 'px');
     };
-    setTop();
-    new ResizeObserver(setTop).observe(header);
-    new ResizeObserver(setTop).observe(navBar);
+    setOffset();
+    new ResizeObserver(setOffset).observe(header);
+    new ResizeObserver(setOffset).observe(navBar);
   }
 });
 
