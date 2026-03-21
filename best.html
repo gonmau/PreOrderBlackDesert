@@ -368,16 +368,10 @@
   .hm-bar.up   { background: var(--up); }
   .hm-bar.down { background: var(--down); }
   .hm-bar.same { background: var(--bd); }
-  .hm-rank { width: 46px; text-align: center; flex-shrink: 0; font-family: 'Cinzel', serif; font-size: 15px; font-weight: 900; padding: 0 5px; }
-  .hm-rank.r1   { color: var(--gold); }
-  .hm-rank.r2   { color: #c0c0c0; }
-  .hm-rank.r3   { color: #cd7f32; }
-  .hm-rank.r10  { color: var(--steam); }
-  .hm-rank.r30  { color: #e67e22; }
-  .hm-rank.rout { color: var(--tx-4); font-size: 11px; }
-  .hm-info { flex:1; padding: 5px 5px 5px 3px; min-width: 0; }
-  .hm-name { font-size: 12px; font-weight: 700; color: var(--tx-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 3px; }
-  .hm-name .hm-flag { font-size: 12px; }
+  .hm-rank { display: none; } /* 순위는 그룹 헤더에 표시 */
+  .hm-info { flex:1; padding: 5px 5px 5px 8px; min-width: 0; }
+  .hm-name { font-size: 12px; font-weight: 700; color: var(--tx-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; }
+  .hm-name .hm-flag { font-size: 14px; flex-shrink: 0; }
   .hm-meta { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
   .hm-best { font-size: 9px; color: var(--gold); font-weight: 700; white-space: nowrap; }
   .hm-change { font-size: 10px; font-weight: 800; white-space: nowrap; }
@@ -499,6 +493,16 @@
     width: 8px; height: 8px; border-radius: 50%;
     flex-shrink: 0;
   }
+  /* rank1-tag */
+  .rank1-countries { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
+  .rank1-tag {
+    display: inline-flex; align-items: center; gap: 2px;
+    background: rgba(241,196,15,0.08); border: 1px solid rgba(241,196,15,0.2);
+    border-radius: 4px; padding: 2px 5px;
+    font-size: 9px; color: var(--gold); font-weight: 700; white-space: nowrap;
+  }
+  .rank1-tag img { width: 13px !important; height: 10px !important; vertical-align: middle; }
+
   .steam-ts-stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(--gap); margin-bottom: var(--gap); }
   .steam-ts-stat-box {
     background: var(--bg-2); border: 1px solid var(--bd);
@@ -1574,6 +1578,98 @@ function renderSchedule() {
 /* ───────────────────────────────────────────────────────────────────── */
 
 /* ── Nav Tab Switch ── */
+function renderSteamSchedule() {
+  const container = document.getElementById('sts-sched-days');
+  const summaryEl = document.getElementById('sts-sched-summary');
+  if (!container || !summaryEl) return;
+
+  const nowUtc = new Date(), KST_OFFSET = 9 * 3600000;
+  const nowKst = new Date(nowUtc.getTime() + KST_OFFSET);
+  let intervalMin = 30;
+  if (stsSched && stsSched.type === 'interval') intervalMin = stsSched.interval_min || 30;
+  else if (stsSched && stsSched.slots_kst) intervalMin = 60;
+
+  const stamps = stsHist.map(h => new Date(h.timestamp).getTime());
+  const toleranceMs = Math.min(intervalMin * 0.4, 18) * 60000;
+
+  const todayKstMidnight = new Date(Date.UTC(nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()) - KST_OFFSET);
+  const days = [
+    { label: '어제', date: new Date(todayKstMidnight.getTime() - 86400000), isToday: false },
+    { label: '오늘', date: todayKstMidnight, isToday: true },
+  ];
+
+  let totalSlots = 0, okSlots = 0, missSlots = 0;
+  container.innerHTML = '';
+
+  days.forEach(({ label, date, isToday }) => {
+    const kstDay = new Date(date.getTime() + KST_OFFSET);
+    const mm = kstDay.getUTCMonth() + 1, dd = kstDay.getUTCDate();
+
+    // 슬롯 목록 생성
+    const slotList = [];
+    const slotsPerDay = Math.floor(24 * 60 / intervalMin);
+    for (let i = 0; i < slotsPerDay; i++) {
+      slotList.push(date.getTime() + i * intervalMin * 60000);
+    }
+
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'sts-sched-day-label';
+    labelDiv.innerHTML = `<span class="day-badge${isToday ? ' today' : ''}">${label}</span>${mm}/${dd}`;
+    container.appendChild(labelDiv);
+
+    const grid = document.createElement('div');
+    grid.className = 'sts-sched-grid';
+
+    slotList.forEach(slotMs => {
+      const slotKst = new Date(slotMs + KST_OFFSET);
+      const hhmm = `${String(slotKst.getUTCHours()).padStart(2,'0')}:${String(slotKst.getUTCMinutes()).padStart(2,'0')}`;
+      const isFuture = slotMs > nowUtc.getTime() + toleranceMs;
+      const isNow = Math.abs(slotMs - nowUtc.getTime()) <= toleranceMs;
+
+      let status = 'miss', actualTime = '';
+      if (isFuture) { status = 'fut'; }
+      else {
+        const found = stamps.find(s => Math.abs(s - slotMs) <= toleranceMs);
+        if (found) {
+          status = 'ok'; okSlots++; totalSlots++;
+          const ft = new Date(found + KST_OFFSET);
+          actualTime = `${String(ft.getUTCHours()).padStart(2,'0')}:${String(ft.getUTCMinutes()).padStart(2,'0')}`;
+        } else { missSlots++; totalSlots++; }
+      }
+
+      const isManual = status === 'ok' && (() => {
+        const found = stamps.find(s => Math.abs(s - slotMs) <= toleranceMs);
+        return found && Math.abs(found - slotMs) > toleranceMs * 0.5;
+      })();
+
+      const slot = document.createElement('div');
+      slot.className = `sts-slot ${status}${isNow ? ' now' : ''}${isManual ? ' manual' : ''}`;
+      const tip = status === 'ok' ? `${mm}/${dd} ${hhmm} → 실행 ${actualTime}` :
+                  status === 'fut' ? `${mm}/${dd} ${hhmm} (예정)` : `${mm}/${dd} ${hhmm} — 누락`;
+      slot.title = tip;
+      slot.innerHTML = `<span class="slot-h">${hhmm}</span><span class="slot-i">${status==='ok'?'✓':status==='fut'?'·':'✗'}</span>`;
+      grid.appendChild(slot);
+    });
+    container.appendChild(grid);
+  });
+
+  function getNextRunLabel() {
+    const nowMs = nowUtc.getTime(), slotMs = intervalMin * 60000;
+    const nextSlotMs = Math.ceil((nowMs + 1000) / slotMs) * slotMs;
+    const nextKst = new Date(nextSlotMs + KST_OFFSET);
+    const diffMin = Math.round((nextSlotMs - nowMs) / 60000);
+    const hhmm = `${String(nextKst.getUTCHours()).padStart(2,'0')}:${String(nextKst.getUTCMinutes()).padStart(2,'0')}`;
+    return diffMin <= 60 ? `${hhmm} KST (${diffMin}분 후)` : `${hhmm} KST`;
+  }
+  const rate = totalSlots > 0 ? Math.round(okSlots / totalSlots * 100) : 100;
+  summaryEl.innerHTML = `
+    <div class="ss"><span class="sv">${okSlots}</span><span class="sl">실행 완료</span></div>
+    <div class="ss"><span class="sv" style="color:${missSlots>0?'var(--down)':'var(--up)'}">${missSlots}</span><span class="sl">누락</span></div>
+    <div class="ss"><span class="sv">${rate}%</span><span class="sl">성공률 (2일)</span></div>
+    <div class="sts-next-badge"><span class="sts-pulse"></span>다음: ${getNextRunLabel()}</div>`;
+}
+
+
 function switchTab(tabEl) {
   const secId = tabEl.dataset.section;
   if (!secId) return;
@@ -1884,7 +1980,10 @@ function renderStsTable(lat, prv) {
   // 1위 국가명
   const stsRank1Names = ranked.filter(d=>d.rank===1).map(d=>d.name);
   const stsNamesEl = document.getElementById('sts-cnt-1-names');
-  if (stsNamesEl) stsNamesEl.innerHTML = stsRank1Names.map(n=>`<span class="rank1-tag">${STS_F[n]||''} ${n}</span>`).join('');
+  if (stsNamesEl) {
+    stsNamesEl.innerHTML = stsRank1Names.map(n=>`<span class="rank1-tag">${STS_F[n]||''} ${n}</span>`).join('');
+    twemoji.parse(stsNamesEl, { folder: 'svg', ext: '.svg' });
+  }
   // 최고/최하 순위 카드
   if (ranked.length) {
     const stsBest  = ranked.reduce((a,b)=>a.rank<b.rank?a:b);
