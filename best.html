@@ -22,7 +22,7 @@
   .flag, .top10-item .n, .country-link .flag { font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Twemoji Mozilla', sans-serif; font-style: normal; }
   .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
 
-  header { border-bottom: 2px solid var(--blood); padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end; }
+  header { border-bottom: 2px solid var(--blood); padding: 10px 0; margin-bottom: 0; display: block; position: sticky; top: 0; z-index: 50; background: rgba(0,0,0,0.94); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
   .logo h1 { font-family: 'Cinzel', serif; font-size: 32px; color: #fff; }
   .logo h1 span { color: var(--blood); }
   #update-time { font-size: 14px; color: var(--gold); font-weight: 700; }
@@ -652,8 +652,8 @@
 </head>
 <body>
 
-<div class="container">
-  <header>
+<header>
+  <div class="container" style="display:flex;justify-content:space-between;align-items:center;padding-top:0;padding-bottom:0;max-width:1400px">
     <div class="logo"><h1><span>CRIMSON</span> DESERT</h1></div>
     <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
       <!-- GitHub Actions 수동 실행 버튼 -->
@@ -676,7 +676,10 @@
       </div>
       <div id="update-time">—</div>
     </div>
-  </header>
+  </div>
+</header>
+
+<div class="container" style="padding-top:20px">
 
   <!-- GitHub Token 설정 모달 -->
   <div class="gh-modal-bg" id="gh-modal">
