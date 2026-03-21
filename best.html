@@ -402,6 +402,113 @@
   .sts-legend-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
   @media (max-width: 480px) { .sts-slot { width: 18px; height: 24px; } .sts-slot .slot-h { font-size: 7px; } }
   @media (max-width: 600px) { .steam-ts-country-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
+  /* ─── Rank Heatmap ─── */
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+  }
+  .hm-row {
+    display: flex;
+    align-items: center;
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    min-height: 44px;
+  }
+  .hm-row:hover { border-color: #444; }
+  .hm-bar {
+    width: 4px;
+    align-self: stretch;
+    flex-shrink: 0;
+  }
+  .hm-bar.up   { background: #2ecc71; }
+  .hm-bar.down { background: #e74c3c; }
+  .hm-bar.same { background: #333; }
+  .hm-rank {
+    width: 48px;
+    text-align: center;
+    flex-shrink: 0;
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-weight: 900;
+    padding: 0 6px;
+  }
+  .hm-rank.r1   { color: #f1c40f; }
+  .hm-rank.r2   { color: #c0c0c0; }
+  .hm-rank.r3   { color: #cd7f32; }
+  .hm-rank.r10  { color: #4a9eff; }
+  .hm-rank.r30  { color: #e67e22; }
+  .hm-rank.rout { color: #555; font-size: 12px; }
+  .hm-info {
+    flex: 1;
+    padding: 6px 6px 6px 4px;
+    min-width: 0;
+  }
+  .hm-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #ddd;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .hm-name .hm-flag { font-size: 13px; }
+  .hm-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+    flex-wrap: nowrap;
+  }
+  .hm-best {
+    font-size: 9px;
+    color: #f1c40f;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .hm-change {
+    font-size: 10px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  .hm-change.up   { color: #2ecc71; }
+  .hm-change.down { color: #e74c3c; }
+  .hm-change.same { color: #555; }
+  .hm-w {
+    font-size: 8px;
+    color: #555;
+    margin-left: auto;
+    white-space: nowrap;
+  }
+  .hm-notfound { opacity: 0.35; }
+  .hm-notfound .hm-rank { color: #444; font-size: 11px; }
+  .heatmap-legend {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .heatmap-legend span { display: flex; align-items: center; gap: 4px; }
+  .hm-legend-bar {
+    width: 4px;
+    height: 14px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+  @media (max-width: 640px) {
+    .heatmap-grid { grid-template-columns: 1fr; }
+    .hm-rank { width: 40px; font-size: 14px; }
+  }
 </style>
 </head>
 <body>
@@ -502,7 +609,24 @@
       <div class="chart-section"><canvas id="mainChart"></canvas></div>
     </div>
 
-    <!-- ⑤ 국가별 테이블 — 기본 접힘 -->
+    <!-- ⑤ 순위 히트맵 -->
+    <div class="sts-collapsible-header" onclick="stToggle('ps-heatmap-body', this)" style="margin-bottom:8px">
+      <span class="sts-collapsible-title">🔥 순위 히트맵</span>
+      <button class="sts-collapse-btn">▼ 펼치기</button>
+    </div>
+    <div class="sts-collapsible-body collapsed" id="ps-heatmap-body" style="margin-bottom:12px">
+      <div style="padding:12px 4px 4px">
+        <div class="heatmap-legend">
+          <span><i class="hm-legend-bar" style="background:#2ecc71"></i> 순위 상승</span>
+          <span><i class="hm-legend-bar" style="background:#e74c3c"></i> 순위 하락</span>
+          <span><i class="hm-legend-bar" style="background:#333"></i> 변동 없음</span>
+          <span style="color:#f1c40f;font-size:10px;font-weight:700">★최고순위</span>
+        </div>
+        <div class="heatmap-grid" id="ps-heatmap-grid"></div>
+      </div>
+    </div>
+
+    <!-- ⑥ 국가별 테이블 — 기본 접힘 -->
     <div class="sts-collapsible-header" onclick="stToggle('ps-table-body', this)" style="margin-bottom:8px">
       <span class="sts-collapsible-title">🌍 국가별 현황</span>
       <button class="sts-collapse-btn">▼ 펼치기</button>
@@ -608,6 +732,23 @@
         </div>
         <div id="sts-sched-days"></div>
         <div class="sts-sched-summary" id="sts-sched-summary"></div>
+      </div>
+    </div>
+
+    <!-- 순위 히트맵 -->
+    <div class="sts-collapsible-header" onclick="stToggle('sts-heatmap-body', this)" style="margin-bottom:8px">
+      <span class="sts-collapsible-title" style="color:#4a9eff">🔥 순위 히트맵</span>
+      <button class="sts-collapse-btn">▼ 펼치기</button>
+    </div>
+    <div class="sts-collapsible-body collapsed" id="sts-heatmap-body" style="margin-bottom:12px">
+      <div style="padding:12px 4px 4px">
+        <div class="heatmap-legend">
+          <span><i class="hm-legend-bar" style="background:#2ecc71"></i> 순위 상승</span>
+          <span><i class="hm-legend-bar" style="background:#e74c3c"></i> 순위 하락</span>
+          <span><i class="hm-legend-bar" style="background:#333"></i> 변동 없음</span>
+          <span style="color:#f1c40f;font-size:10px;font-weight:700">★최고순위</span>
+        </div>
+        <div class="heatmap-grid" id="sts-heatmap-grid"></div>
       </div>
     </div>
 
@@ -922,6 +1063,7 @@ function render() {
 
   renderMainChart();
   renderSchedule();
+  renderPsHeatmap(list);
 
   // 모든 이모지를 Twemoji 이미지로 변환 (PC/모바일 크로스 플랫폼)
   twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
@@ -1348,6 +1490,125 @@ function renderSTS() {
   });
 
   renderStsGrid(lat, prv);
+  renderStsHeatmap(lat, prv);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RANK HEATMAP — PS & Steam
+══════════════════════════════════════════════════════════════ */
+function hmRankClass(r) {
+  if (!r || r >= 999) return 'rout';
+  if (r === 1)  return 'r1';
+  if (r <= 3)   return 'r2';
+  if (r <= 10)  return 'r10';
+  if (r <= 30)  return 'r30';
+  return 'rout';
+}
+
+function renderPsHeatmap(list) {
+  const g = document.getElementById('ps-heatmap-grid');
+  if (!g) return;
+
+  // 정렬: 현재 순위 asc → 시장 점유율 desc → 미발견 마지막
+  const sorted = [...list].sort((a, b) => {
+    const ar = a.rank >= 999 ? 99999 : a.rank;
+    const br = b.rank >= 999 ? 99999 : b.rank;
+    if (ar !== br) return ar - br;
+    return (b.weight || 0) - (a.weight || 0);
+  });
+
+  g.innerHTML = sorted.map(d => {
+    const r = d.rank >= 999 ? null : d.rank;
+    const rankCls = hmRankClass(d.rank);
+    const rankTxt = r ? r + '위' : '—';
+    const bestTxt = (d.best && d.best < 999) ? '★' + d.best + '위' : '';
+
+    // 순위 변동 (change: prev-curr, 양수=상승)
+    const ch = d.change;
+    const barCls   = ch > 0 ? 'up' : ch < 0 ? 'down' : 'same';
+    const chgCls   = ch > 0 ? 'up' : ch < 0 ? 'down' : 'same';
+    const chgTxt   = ch > 0 ? '▲' + ch : ch < 0 ? '▼' + Math.abs(ch) : '—';
+
+    const flag = FLAGS[d.name] || '';
+    const url  = getStoreUrl(d.name);
+    const rowCls = r ? '' : ' hm-notfound';
+
+    return `<div class="hm-row${rowCls}" onclick="showCountryChart('${d.name}')">
+      <div class="hm-bar ${barCls}"></div>
+      <div class="hm-rank ${rankCls}">${rankTxt}</div>
+      <div class="hm-info">
+        <div class="hm-name"><span class="hm-flag">${flag}</span>${d.name}</div>
+        <div class="hm-meta">
+          ${bestTxt ? `<span class="hm-best">${bestTxt}</span>` : ''}
+          <span class="hm-change ${chgCls}">${chgTxt}</span>
+          <span class="hm-w">W:${d.weight}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  twemoji.parse(g, { folder: 'svg', ext: '.svg' });
+}
+
+function renderStsHeatmap(lat, prv) {
+  const g = document.getElementById('sts-heatmap-grid');
+  if (!g || !lat || !lat.results) return;
+
+  // 히스토리에서 국가별 최고 순위 계산
+  const countryBest = {};
+  Object.keys(STS_W).forEach(n => {
+    const ranks = stsHist.map(h => h.results?.[n]?.rank).filter(r => r != null);
+    countryBest[n] = ranks.length ? Math.min(...ranks) : null;
+  });
+
+  const entries = Object.keys(STS_W).map(n => {
+    const curr = lat.results?.[n];
+    const prvR  = prv?.results?.[n];
+    const r    = curr?.rank ?? null;
+    const pr   = prvR?.rank ?? null;
+    const ch   = (r != null && pr != null) ? pr - r : 0;
+    return { name: n, rank: r, prev: pr, change: ch, weight: STS_W[n] || 1, best: countryBest[n] };
+  });
+
+  // 정렬: 현재순위 asc → 가중치 desc → 미발견 마지막
+  entries.sort((a, b) => {
+    const ar = a.rank ?? 99999;
+    const br = b.rank ?? 99999;
+    if (ar !== br) return ar - br;
+    return (b.weight || 0) - (a.weight || 0);
+  });
+
+  g.innerHTML = entries.map(d => {
+    const r = d.rank;
+    const rankCls = r ? hmRankClass(r) : 'rout';
+    const rankTxt = r ? '#' + r : '—';
+    const bestTxt = d.best ? '★#' + d.best : '';
+
+    const ch = d.change;
+    const barCls = ch > 0 ? 'up' : ch < 0 ? 'down' : 'same';
+    const chgCls = ch > 0 ? 'up' : ch < 0 ? 'down' : 'same';
+    const chgTxt = ch > 0 ? '▲' + ch : ch < 0 ? '▼' + Math.abs(ch) : '—';
+
+    const flag = STS_F[d.name] || '';
+    const cc   = STS_CC[d.name] || 'us';
+    const url  = `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`;
+    const rowCls = r ? '' : ' hm-notfound';
+
+    return `<div class="hm-row${rowCls}" onclick="openStsModal('${d.name}')">
+      <div class="hm-bar ${barCls}"></div>
+      <div class="hm-rank ${rankCls}">${rankTxt}</div>
+      <div class="hm-info">
+        <div class="hm-name"><span class="hm-flag">${flag}</span>${d.name}</div>
+        <div class="hm-meta">
+          ${bestTxt ? `<span class="hm-best">${bestTxt}</span>` : ''}
+          <span class="hm-change ${chgCls}">${chgTxt}</span>
+          <span class="hm-w">W:${d.weight}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  twemoji.parse(g, { folder: 'svg', ext: '.svg' });
 }
 
 function renderStsGrid(lat, prv) {
