@@ -593,9 +593,10 @@
           <div class="card">
             <div class="lbl">순위권 진입 국가</div>
             <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <span style="font-size:12px">🥇 <span style="color:#FFD700">#1</span></span>
-                <span id="stat-cnt-1" style="font-family:'Cinzel',serif;font-size:18px;color:#FFD700">—</span>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                <span style="font-size:12px;white-space:nowrap">🥇 <span style="color:#FFD700">#1</span></span>
+                <span id="stat-cnt-1-names" style="font-size:9px;color:var(--tx-3);flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+                <span id="stat-cnt-1" style="font-family:'Cinzel',serif;font-size:18px;color:#FFD700;flex-shrink:0">—</span>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center">
                 <span style="font-size:12px">🥈 <span style="color:#C0C0C0">#2~3</span></span>
@@ -617,33 +618,33 @@
       <div class="dual-col steam-col">
         <div class="dual-col-header steam-header">🖥 Steam <span id="sts-data-time" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="stats">
-          <div class="card" style="border-left-color:var(--steam)" id="sts-global-box">
+          <!-- 글로벌 순위 (숨김 - JS 표시용) -->
+          <div id="sts-global-rank-box" style="display:none">
+            <div id="sts-global-rank"></div><div id="sts-global-diff"></div>
+          </div>
+          <!-- 숨김 유지 원소들 (JS 참조용) -->
+          <div style="display:none"><span id="sts-avg-diff"></span><span id="sts-best-date"></span><span id="sts-count"></span><span id="sts-countries-sub"></span><span id="sts-best"></span></div>
+          <div class="card" style="border-left-color:var(--steam)">
             <div class="lbl">가중 평균</div>
             <div class="val" id="sts-avg" style="color:var(--steam)">—</div>
-            <div class="sub" id="sts-avg-diff"></div>
-          </div>
-          <!-- 글로벌 순위 (숨김 상태로 유지, JS가 표시) -->
-          <div class="card" style="border-left-color:var(--steam);display:none" id="sts-global-rank-box">
-            <div class="lbl">🌍 글로벌 순위</div>
-            <div class="val" id="sts-global-rank" style="color:var(--steam)">—</div>
-            <div class="sub" id="sts-global-diff"></div>
           </div>
           <div class="card" style="border-left-color:var(--steam)">
-            <div class="lbl">최고 평균 순위</div>
-            <div class="val" id="sts-best" style="color:var(--steam)">—</div>
-            <div class="sub" id="sts-best-date"></div>
+            <div class="lbl">최고 순위</div>
+            <div class="val" id="sts-best-rank-val" style="color:var(--gold)">—</div>
+            <div class="sub" id="sts-best-rank-name">...</div>
           </div>
           <div class="card" style="border-left-color:var(--steam)">
-            <div class="lbl">총 기록 수</div>
-            <div class="val" id="sts-count" style="color:var(--steam)">—</div>
-            <div class="sub" id="sts-countries-sub">—개국 추적</div>
+            <div class="lbl">최하 순위</div>
+            <div class="val" id="sts-worst-rank-val" style="color:var(--down)">—</div>
+            <div class="sub" id="sts-worst-rank-name">...</div>
           </div>
           <div class="card" style="border-left-color:var(--steam)">
             <div class="lbl">순위권 진입 국가</div>
             <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <span style="font-size:12px">🥇 <span style="color:#FFD700">#1</span></span>
-                <span id="sts-cnt-1" style="font-family:'Cinzel',serif;font-size:18px;color:#FFD700">—</span>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                <span style="font-size:12px;white-space:nowrap">🥇 <span style="color:#FFD700">#1</span></span>
+                <span id="sts-cnt-1-names" style="font-size:9px;color:var(--tx-3);flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+                <span id="sts-cnt-1" style="font-family:'Cinzel',serif;font-size:18px;color:#FFD700;flex-shrink:0">—</span>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center">
                 <span style="font-size:12px">🥈 <span style="color:#C0C0C0">#2~3</span></span>
@@ -1044,6 +1045,10 @@ function render() {
   document.getElementById('stat-cnt-3').innerText    = cnt23;
   document.getElementById('stat-cnt-10').innerText   = cnt410;
   document.getElementById('stat-cnt-rest').innerText = cntRest + '개 / ' + cntAll + '개국';
+  // 1위 국가명
+  const rank1Countries = list.filter(x => x.rank === 1).map(x => (FLAGS[x.name]||'') + x.name);
+  const namesEl = document.getElementById('stat-cnt-1-names');
+  if (namesEl) namesEl.textContent = rank1Countries.slice(0,8).join(' ');
 
   const t10Grid = document.getElementById('top10-grid');
   t10Grid.innerHTML = '';
@@ -1793,6 +1798,24 @@ function renderStsGrid(lat, prv) {
     document.getElementById('sts-cnt-3').textContent    = _cnt23;
     document.getElementById('sts-cnt-10').textContent   = _cnt410;
     document.getElementById('sts-cnt-rest').textContent = _cntRest + '개 / ' + ranked.length + '개국';
+    // 1위 국가명
+    const stsRank1Names = ranked.filter(([,d]) => d.rank === 1).map(([n]) => (STS_F[n]||'') + n);
+    const stsNamesEl = document.getElementById('sts-cnt-1-names');
+    if (stsNamesEl) stsNamesEl.textContent = stsRank1Names.slice(0,8).join(' ');
+    // 최고/최하 순위 카드
+    const stsRanks = ranked.map(([n,d]) => ({ name: n, rank: d.rank }));
+    if (stsRanks.length) {
+      const stsBest  = stsRanks.reduce((a,b) => a.rank < b.rank ? a : b);
+      const stsWorst = stsRanks.reduce((a,b) => a.rank > b.rank ? a : b);
+      const setBestEl  = document.getElementById('sts-best-rank-val');
+      const setBestN   = document.getElementById('sts-best-rank-name');
+      const setWorstEl = document.getElementById('sts-worst-rank-val');
+      const setWorstN  = document.getElementById('sts-worst-rank-name');
+      if (setBestEl)  setBestEl.textContent  = stsBest.rank + '위';
+      if (setBestN)   setBestN.textContent   = (STS_F[stsBest.name]||'') + ' ' + stsBest.name;
+      if (setWorstEl) setWorstEl.textContent = stsWorst.rank + '위';
+      if (setWorstN)  setWorstN.textContent  = (STS_F[stsWorst.name]||'') + ' ' + stsWorst.name;
+    }
   }
 
   g.innerHTML = s.map(([n, d]) => {
