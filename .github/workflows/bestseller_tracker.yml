@@ -2,7 +2,7 @@ name: 플스전체 Bestseller Tracker
 
 on:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 0-10 * * *'
   workflow_dispatch:
 
 permissions:
