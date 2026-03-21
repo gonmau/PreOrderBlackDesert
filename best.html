@@ -399,7 +399,39 @@
   .sts-pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: stsPulse 1.6s ease-in-out infinite; }
   @keyframes stsPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.6)} }
 
-  /* ══ Steam Top Seller ═════════════════════════════════════════ */
+  /* ══ 순위 티어별 카드 스타일 ══════════════════════════════════ */
+  .top10-item .r { font-size: 17px; font-weight: 700; color: var(--tx-1); }
+  .top10-item.tier-1  { border-color: rgba(241,196,15,0.5); background: rgba(241,196,15,0.06); }
+  .top10-item.tier-1 .r { color: #f1c40f; }
+  .top10-item.tier-2  { border-color: rgba(192,192,192,0.35); background: rgba(192,192,192,0.04); }
+  .top10-item.tier-2 .r { color: #c0c0c0; }
+  .top10-item.tier-3  { border-color: rgba(205,127,50,0.35); background: rgba(205,127,50,0.04); }
+  .top10-item.tier-3 .r { color: #cd7f32; }
+  .top10-item.tier-10 { border-color: rgba(74,158,255,0.3); }
+  .top10-item.tier-10 .r { color: var(--steam); }
+  .top10-item.tier-out { opacity: 0.45; }
+  .top10-item.tier-out .r { color: var(--tx-4); }
+
+  /* ══ 차트 레전드 ═══════════════════════════════════════════════ */
+  .chart-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 8px 16px 10px;
+    border-top: 1px solid var(--bd);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--tx-3);
+  }
+  .chart-legend-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
   .steam-ts-stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(--gap); margin-bottom: var(--gap); }
   .steam-ts-stat-box {
     background: var(--bg-2); border: 1px solid var(--bd);
@@ -681,12 +713,23 @@
     <div class="dual-panel dual-panel-chart">
       <div class="dual-col ps-col">
         <div class="dual-col-header ps-header">🎮 PS Store <span class="ps-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
-        <div class="chart-section" style="height:300px;margin-bottom:0"><canvas id="mainChart"></canvas></div>
+        <div class="chart-section" style="height:280px;margin-bottom:0"><canvas id="mainChart"></canvas></div>
+        <div class="chart-legend">
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="ps-leg-start">시작 —</span></div>
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="ps-leg-best">최고 —</span></div>
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="ps-leg-current">현재 —</span></div>
+        </div>
       </div>
       <div class="dual-col steam-col">
         <div class="dual-col-header steam-header">🖥 Steam <span class="sts-ts-badge" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
-        <div class="steam-ts-chart-box" style="height:300px;padding:12px">
+        <div class="steam-ts-chart-box" style="height:280px;padding:12px">
           <div style="height:100%"><canvas id="stsChart"></canvas></div>
+        </div>
+        <div class="chart-legend">
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sts-leg-start">시작 —</span></div>
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sts-leg-best">최고 —</span></div>
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="sts-leg-current">현재 —</span></div>
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#e74c3c"></span><span id="sts-leg-worst">최저 —</span></div>
         </div>
       </div>
     </div>
@@ -1014,7 +1057,8 @@ function render() {
     });
   psLeaderSorted.forEach(({ name, rank }) => {
     const div = document.createElement('div');
-    div.className = 'top10-item';
+    const tier = rank === 1 ? 'tier-1' : rank <= 3 ? 'tier-2' : rank <= 10 ? 'tier-3' : rank < 999 ? 'tier-10' : 'tier-out';
+    div.className = 'top10-item ' + tier;
     div.onclick = () => showCountryChart(name);
     div.innerHTML = `<span class="n">${FLAGS[name] || ''} ${name}</span><span class="r" style="${rank >= 999 ? 'color:var(--tx-4)' : ''}">${rank >= 999 ? '—' : rank + '위'}</span>`;
     t10Grid.appendChild(div);
@@ -1082,6 +1126,16 @@ function render() {
 function renderMainChart() {
   const ctx = document.getElementById('mainChart').getContext('2d');
   if (mainChart) mainChart.destroy();
+
+  const dv = historyData.map(h => h.averages.combined).filter(v => v != null);
+  const idxFirst = 0, idxLast = dv.length - 1;
+  const idxBest  = dv.reduce((bi,v,i,a) => v!==null&&(a[bi]===null||v<a[bi])?i:bi, 0);
+  const fmtR = v => v != null ? v.toFixed(1) + '위' : '—';
+  const setL = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+  setL('ps-leg-start',   '시작 ' + fmtR(dv[idxFirst]));
+  setL('ps-leg-best',    '최고 ' + fmtR(dv[idxBest]));
+  setL('ps-leg-current', '현재 ' + fmtR(dv[idxLast]));
+
   mainChart = new Chart(ctx, {
     type: 'line',
     data: {
@@ -1093,25 +1147,17 @@ function renderMainChart() {
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      layout: { padding: { top: 24, right: 16 } },
+      layout: { padding: { top: 10, right: 10 } },
       scales: {
         x: {
           type: 'time',
-          time: {
-            tooltipFormat: 'MM/dd HH:mm',
-            displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' }
-          },
+          time: { tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' } },
           grid: { color: '#222' },
-          ticks: {
-            color: '#fff',
-            maxRotation: 45,
-            autoSkip: true,
-            maxTicksLimit: 12
-          }
+          ticks: { color: '#fff', maxRotation: 45, autoSkip: true, maxTicksLimit: 12 }
         },
-        y: { reverse: true, suggestedMin: 0, grid: { color: '#222' }, ticks: { color: '#fff', padding: 8, callback: v => v > 0 ? '#' + v : '' } }
+        y: { reverse: true, suggestedMin: 0, grid: { color: '#222' }, ticks: { color: '#fff', padding: 8, callback: v => v > 0 ? v + '위' : '' } }
       },
-      plugins: { legend: { display: false } }
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y + '위' } } }
     }
   });
 }
@@ -1153,7 +1199,7 @@ function showCountryChart(countryName) {
             grid: { color: '#333' },
             ticks: { color: '#fff', maxRotation: 45, autoSkip: true, maxTicksLimit: 10 }
           },
-          y: { reverse: true, suggestedMin: 0, grid: { color: '#333' }, ticks: { color: '#fff', padding: 8, callback: v => v > 0 ? '#' + v : '' } }
+          y: { reverse: true, suggestedMin: 0, grid: { color: '#333' }, ticks: { color: '#fff', padding: 8, callback: v => v > 0 ? v + '위' : '' } }
         },
         plugins: { legend: { display: false } }
       }
@@ -1491,24 +1537,17 @@ function renderSTS() {
   const labelPlugin = {
     id: 'stsLabel',
     afterDatasetsDraw(chart) {
-      const {ctx:c, scales:{x,y}} = chart;
-      const ds = chart.data.datasets[0].data;
-      [{idx:idxFirst,label:'시작',color:'#fff'},{idx:idxLast,label:'현재',color:'#f1c40f'},
-       {idx:idxBest,label:'최고',color:'#2ecc71'},{idx:idxWorst,label:'최저',color:'#e74c3c'}]
-      .forEach(({idx,label,color}) => {
-        const val = ds[idx]; if (val == null) return;
-        const px = x.getPixelForValue(lbs[idx]), py = y.getPixelForValue(val);
-        const text = `${label}: #${val.toFixed(1)}`;
-        const offsetY = label === '최저' ? 18 : -14;
-        // 시작: 왼쪽 끝 → 오른쪽 정렬 방지, 현재: 오른쪽 끝 → 왼쪽으로 붙임
-        const align = label === '시작' ? 'left' : label === '현재' ? 'right' : 'center';
-        const offsetX = label === '시작' ? 6 : label === '현재' ? -6 : 0;
-        c.save(); c.font='bold 10px sans-serif'; c.textAlign=align; c.textBaseline='middle';
-        c.strokeStyle='rgba(0,0,0,0.9)'; c.lineWidth=3; c.strokeText(text, px+offsetX, py+offsetY);
-        c.fillStyle=color; c.fillText(text, px+offsetX, py+offsetY); c.restore();
-      });
+      // 인라인 텍스트 제거 — 레전드로 대체됨
     }
   };
+
+  // 레전드 업데이트
+  const fmtR = v => v != null ? v.toFixed(1) + '위' : '—';
+  const setL = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+  setL('sts-leg-start',   '시작 ' + fmtR(dv[idxFirst]));
+  setL('sts-leg-best',    '최고 ' + fmtR(dv[idxBest]));
+  setL('sts-leg-current', '현재 ' + fmtR(dv[idxLast]));
+  setL('sts-leg-worst',   '최저 ' + fmtR(dv[idxWorst]));
 
   stsCI = new Chart(ctx, {
     type: 'line',
@@ -1517,9 +1556,9 @@ function renderSTS() {
       layout: { padding: { top: 24, right: 16 } },
       scales: {
         x: { type: 'time', time: { unit: 'day', tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' } }, ticks: { color: '#fff', maxTicksLimit: 8 }, grid: { color: '#222' } },
-        y: { reverse: true, suggestedMin: 0, ticks: { color: '#fff', stepSize: 1, callback: v => v > 0 ? '#' + v : '', padding: 8 }, grid: { color: '#222' } }
+        y: { reverse: true, suggestedMin: 0, ticks: { color: '#fff', stepSize: 1, callback: v => v > 0 ? v + '위' : '', padding: 8 }, grid: { color: '#222' } }
       },
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '순위 #' + c.parsed.y } } }
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y + '위' } } }
     },
     plugins: [labelPlugin]
   });
@@ -1634,13 +1673,8 @@ function renderStsHeatmap(lat, prv) {
     return { name: n, rank: r, prev: pr, change: ch, weight: STS_W[n] || 1, best: countryBest[n] };
   });
 
-  // 정렬: 현재순위 asc → 가중치 desc → 미발견 마지막
-  const psOrder = window._psRankOrder || [];
+  // 정렬: Steam 현재순위 asc → 동일순위 내 가중치 desc → 미발견 마지막
   entries.sort((a, b) => {
-    const ia = psOrder.indexOf(a.name), ib = psOrder.indexOf(b.name);
-    if (ia !== -1 && ib !== -1) return ia - ib;
-    if (ia !== -1) return -1;
-    if (ib !== -1) return 1;
     const ar = a.rank ?? 99999, br = b.rank ?? 99999;
     if (ar !== br) return ar - br;
     return (b.weight || 0) - (a.weight || 0);
@@ -1649,8 +1683,8 @@ function renderStsHeatmap(lat, prv) {
   g.innerHTML = entries.map(d => {
     const r = d.rank;
     const rankCls = r ? hmRankClass(r) : 'rout';
-    const rankTxt = r ? '#' + r : '—';
-    const bestTxt = d.best ? '★#' + d.best : '';
+    const rankTxt = r ? r + '위' : '—';
+    const bestTxt = d.best ? '★' + d.best + '위' : '';
 
     const ch = d.change;
     const barCls = ch > 0 ? 'up' : ch < 0 ? 'down' : 'same';
@@ -1700,8 +1734,9 @@ function renderStsLeaderboard(lat) {
   g.innerHTML = sorted.map(d => {
     const flag = STS_F[d.name] || '';
     const cc = STS_CC[d.name] || 'us';
-    const rankStr = d.rank ? '#' + d.rank : '—';
-    return `<div class="top10-item" onclick="openStsModal('${d.name}')">
+    const rankStr = d.rank ? d.rank + '위' : '—';
+    const tier = d.rank === 1 ? 'tier-1' : d.rank <= 3 ? 'tier-2' : d.rank <= 10 ? 'tier-3' : d.rank ? 'tier-10' : 'tier-out';
+    return `<div class="top10-item ${tier}" onclick="openStsModal('${d.name}')">
       <span class="n">${flag} ${d.name}</span>
       <span class="r" style="${d.rank ? '' : 'color:var(--tx-4)'}">${rankStr}</span>
     </div>`;
@@ -1761,7 +1796,7 @@ function renderStsGrid(lat, prv) {
   }
 
   g.innerHTML = s.map(([n, d]) => {
-    const r = d && d.rank, rs = r ? '#' + r : '—';
+    const r = d && d.rank, rs = r ? r + '위' : '—';
     const cc = STS_CC[n] || 'us';
     const flagImg = `<img src="https://flagcdn.com/w40/${cc}.png" alt="${n}" style="width:28px;height:20px;object-fit:cover;border-radius:2px;display:block;flex-shrink:0">`;
     let dh = '';
@@ -1811,7 +1846,7 @@ function openStsModal(n) {
       options: { responsive: true, maintainAspectRatio: false,
         scales: {
           x: { type:'time', time:{ unit: h.length>48?'day':'hour', displayFormats:{hour:'M/d HH:mm',day:'M/d'}}, ticks:{color:'#fff',maxTicksLimit:7,maxRotation:30,font:{size:10}}, grid:{color:'#222'} },
-          y: { reverse:true, suggestedMin:0, ticks:{color:'#fff',stepSize:1,callback:v=>v>0?'#'+v:'',font:{size:11},padding:8}, grid:{color:'#222'} }
+          y: { reverse:true, suggestedMin:0, ticks:{color:'#fff',stepSize:1,callback:v=>v>0?v+'위':'',font:{size:11},padding:8}, grid:{color:'#222'} }
         },
         plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>'순위: #'+c.parsed.y}} }
       }
