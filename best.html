@@ -1462,153 +1462,22 @@ function downloadCSV() {
 const TOLERANCE_MIN = 90; // ±90분 허용
 
 function renderSchedule() {
-  const nowUtcMs = Date.now();
-  const kstOffset = 9 * 60 * 60 * 1000;
-  const DAYS = ['일','월','화','수','목','금','토'];
-
-  // ── 타임스탬프 목록 (UTC ms, 내림차순) ──
-  const allStamps = historyData
-    .map(h => new Date(h.timestamp).getTime())
-    .filter(t => !isNaN(t))
-    .sort((a, b) => b - a);
-
-  // 현재 이전 최근 3개 (오래된 순으로 표시하기 위해 reverse)
-  const past3 = allStamps.filter(t => t <= nowUtcMs).slice(0, 3).reverse();
-
-  // ── 다음 예정 3개 계산 ──
-  // 매시간(슬롯 24개 또는 빈 배열)이면 다음 정각 기준, 그 외엔 슬롯 기반
-  function getNextScheduledTimes(count) {
-    const result = [];
-    const isHourly = scheduleSlots.length === 0 || scheduleSlots.length >= 12;
-    if (isHourly) {
-      // 다음 정각부터 count개
-      const next = new Date(nowUtcMs);
-      next.setUTCMinutes(0, 0, 0);
-      next.setTime(next.getTime() + 3600000);
-      for (let i = 0; i < count; i++) {
-        result.push(next.getTime());
-        next.setTime(next.getTime() + 3600000);
-      }
-    } else {
-      // 날짜×슬롯 순서로 iterate
-      const slotHours = scheduleSlots.map(s => s.hour).sort((a,b) => a-b);
-      const dayStart = new Date(nowUtcMs);
-      dayStart.setUTCHours(0, 0, 0, 0);
-      // KST 자정 → UTC 자정 - 9h
-      const kstDayStart = new Date(dayStart.getTime() - kstOffset);
-      for (let di = 0; di < 14 && result.length < count; di++) {
-        for (const h of slotHours) {
-          const slotUtcMs = kstDayStart.getTime() + di * 86400000 + h * 3600000;
-          if (slotUtcMs > nowUtcMs) {
-            result.push(slotUtcMs);
-            if (result.length >= count) break;
-          }
-        }
-      }
-    }
-    return result;
-  }
-  const next3 = getNextScheduledTimes(3);
-
-  // ── 수동 실행 감지 (스케줄 슬롯과 ±25분 이상 차이나면 수동) ──
-  function isManual(utcMs) {
-    const kst = new Date(utcMs + kstOffset);
-    const m = kst.getUTCMinutes();
-    const minOff = Math.min(m, 60 - m); // 정각에서 몇 분 떨어졌나
-    if (scheduleSlots.length === 0 || scheduleSlots.length >= 12) {
-      return minOff > 25; // 매시간 스케줄 → 정각 ±25분 초과면 수동
-    }
-    const kstH = kst.getUTCHours();
-    return !scheduleSlots.some(s => s.hour === kstH && minOff <= 25);
-  }
-
-  // ── 시각 포맷 ──
-  function fmtKst(utcMs) {
-    const kst = new Date(utcMs + kstOffset);
-    const M = kst.getUTCMonth() + 1;
-    const D = kst.getUTCDate();
-    const dow = DAYS[kst.getUTCDay()];
-    const HH = String(kst.getUTCHours()).padStart(2, '0');
-    const mm = String(kst.getUTCMinutes()).padStart(2, '0');
-    return `${M}/${D}(${dow}) ${HH}:${mm}`;
-  }
-
-  // ── 타이틀 cron 반영 ──
-  const titleEl = document.querySelector('.schedule-title');
-  if (titleEl) {
-    const cronStr = window._scheduleCron
-      ? ` <span style="color:#555;font-size:11px;font-weight:400">${window._scheduleCron}</span>` : '';
-    titleEl.innerHTML = `⏱ Tracker Schedule${cronStr}`;
-  }
-
-  // ── 타임라인 HTML 생성 ──
-  let html = '<div class="run-timeline">';
-
-  // 직전 3개
-  html += '<div class="tl-section-label">최근 실행</div>';
-  if (past3.length === 0) {
-    html += '<div class="tl-empty">아직 실행 기록 없음</div>';
-  } else {
-    past3.forEach(ts => {
-      const manual = isManual(ts);
-      html += `<div class="tl-item tl-past">
-        <span class="tl-icon">✓</span>
-        <span class="tl-time">${fmtKst(ts)} KST</span>
-        ${manual ? '<span class="tl-badge manual">수동</span>' : ''}
-      </div>`;
-    });
-  }
-
-  // NOW 구분선
-  html += '<div class="tl-now-line"><span>NOW</span></div>';
-
-  // 다음 예정 3개
-  html += '<div class="tl-section-label">다음 예정</div>';
-  next3.forEach(ts => {
-    html += `<div class="tl-item tl-future">
-      <span class="tl-icon">·</span>
-      <span class="tl-time">${fmtKst(ts)} KST</span>
-    </div>`;
-  });
-
-  html += '</div>';
-  document.getElementById('schedule-grid').innerHTML = html;
-
-  // ── 하단 summary ──
-  const nextMs = next3[0];
-  let nextBadge = '';
-  if (nextMs) {
-    const diffMin = Math.round((nextMs - nowUtcMs) / 60000);
-    const h = Math.floor(diffMin / 60), m = diffMin % 60;
-    const kst = new Date(nextMs + kstOffset);
-    const HH = String(kst.getUTCHours()).padStart(2,'0');
-    const label = `${HH}:00 KST (${h > 0 ? h + '시간 ' : ''}${m}분 후)`;
-    nextBadge = `<div class="sts-next-badge"><span class="sts-pulse"></span>다음: ${label}</div>`;
-  }
-  const lastTs = allStamps[0];
-  const lastLabel = lastTs ? fmtKst(lastTs) : '-';
-  document.getElementById('schedule-summary').innerHTML = `
-    <div class="ss"><span class="sv">${allStamps.length}</span><span class="sl">총 실행</span></div>
-    <div class="ss"><span class="sv" style="font-size:13px;font-family:'Rajdhani',sans-serif">${lastLabel}</span><span class="sl">마지막 실행</span></div>
-    ${nextBadge}
-  `;
-}
-/* ───────────────────────────────────────────────────────────────────── */
-
-/* ── Nav Tab Switch ── */
-function renderSteamSchedule() {
-  const container = document.getElementById('sts-sched-days');
-  const summaryEl = document.getElementById('sts-sched-summary');
+  const container = document.getElementById('schedule-grid');
+  const summaryEl = document.getElementById('schedule-summary');
   if (!container || !summaryEl) return;
 
   const nowUtc = new Date(), KST_OFFSET = 9 * 3600000;
   const nowKst = new Date(nowUtc.getTime() + KST_OFFSET);
-  let intervalMin = 30;
-  if (stsSched && stsSched.type === 'interval') intervalMin = stsSched.interval_min || 30;
-  else if (stsSched && stsSched.slots_kst) intervalMin = 60;
 
-  const stamps = stsHist.map(h => new Date(h.timestamp).getTime());
-  const toleranceMs = Math.min(intervalMin * 0.4, 18) * 60000;
+  // 슬롯 간격 결정 (scheduleSlots 기반)
+  let intervalMin = 60;
+  if (scheduleSlots && scheduleSlots.length > 0) {
+    // slots_kst가 있으면 1시간 간격
+    intervalMin = 60;
+  }
+
+  const stamps = historyData.map(h => new Date(h.timestamp).getTime()).filter(t => !isNaN(t));
+  const toleranceMs = 25 * 60000; // ±25분
 
   const todayKstMidnight = new Date(Date.UTC(nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()) - KST_OFFSET);
   const days = [
@@ -1616,19 +1485,17 @@ function renderSteamSchedule() {
     { label: '오늘', date: todayKstMidnight, isToday: true },
   ];
 
+  // scheduleSlots에서 활성 시간대 추출 (없으면 0~23 전체)
+  const activeHours = scheduleSlots && scheduleSlots.length > 0
+    ? scheduleSlots.map(s => typeof s === 'object' ? s.hour : s)
+    : Array.from({length: 24}, (_, i) => i);
+
   let totalSlots = 0, okSlots = 0, missSlots = 0;
   container.innerHTML = '';
 
   days.forEach(({ label, date, isToday }) => {
     const kstDay = new Date(date.getTime() + KST_OFFSET);
     const mm = kstDay.getUTCMonth() + 1, dd = kstDay.getUTCDate();
-
-    // 슬롯 목록 생성
-    const slotList = [];
-    const slotsPerDay = Math.floor(24 * 60 / intervalMin);
-    for (let i = 0; i < slotsPerDay; i++) {
-      slotList.push(date.getTime() + i * intervalMin * 60000);
-    }
 
     const labelDiv = document.createElement('div');
     labelDiv.className = 'sts-sched-day-label';
@@ -1638,9 +1505,11 @@ function renderSteamSchedule() {
     const grid = document.createElement('div');
     grid.className = 'sts-sched-grid';
 
-    slotList.forEach(slotMs => {
+    // 해당 날짜의 슬롯 생성 (활성 시간대만)
+    activeHours.forEach(h => {
+      const slotMs = date.getTime() + h * 3600000;
       const slotKst = new Date(slotMs + KST_OFFSET);
-      const hhmm = `${String(slotKst.getUTCHours()).padStart(2,'0')}:${String(slotKst.getUTCMinutes()).padStart(2,'0')}`;
+      const hhmm = `${String(slotKst.getUTCHours()).padStart(2,'0')}:00`;
       const isFuture = slotMs > nowUtc.getTime() + toleranceMs;
       const isNow = Math.abs(slotMs - nowUtc.getTime()) <= toleranceMs;
 
@@ -1655,15 +1524,19 @@ function renderSteamSchedule() {
         } else { missSlots++; totalSlots++; }
       }
 
+      // 수동 감지: 실제 실행 시각이 슬롯 정각에서 5분 이상 차이
       const isManual = status === 'ok' && (() => {
         const found = stamps.find(s => Math.abs(s - slotMs) <= toleranceMs);
-        return found && Math.abs(found - slotMs) > toleranceMs * 0.5;
+        if (!found) return false;
+        const ft = new Date(found + KST_OFFSET);
+        return ft.getUTCMinutes() > 5;
       })();
 
       const slot = document.createElement('div');
       slot.className = `sts-slot ${status}${isNow ? ' now' : ''}${isManual ? ' manual' : ''}`;
-      const tip = status === 'ok' ? `${mm}/${dd} ${hhmm} → 실행 ${actualTime}` :
-                  status === 'fut' ? `${mm}/${dd} ${hhmm} (예정)` : `${mm}/${dd} ${hhmm} — 누락`;
+      const tip = status === 'ok' ? `${mm}/${dd} ${hhmm} → 실행 ${actualTime}`
+                : status === 'fut' ? `${mm}/${dd} ${hhmm} (예정)`
+                : `${mm}/${dd} ${hhmm} — 누락`;
       slot.title = tip;
       slot.innerHTML = `<span class="slot-h">${hhmm}</span><span class="slot-i">${status==='ok'?'✓':status==='fut'?'·':'✗'}</span>`;
       grid.appendChild(slot);
@@ -1672,13 +1545,24 @@ function renderSteamSchedule() {
   });
 
   function getNextRunLabel() {
-    const nowMs = nowUtc.getTime(), slotMs = intervalMin * 60000;
-    const nextSlotMs = Math.ceil((nowMs + 1000) / slotMs) * slotMs;
-    const nextKst = new Date(nextSlotMs + KST_OFFSET);
-    const diffMin = Math.round((nextSlotMs - nowMs) / 60000);
-    const hhmm = `${String(nextKst.getUTCHours()).padStart(2,'0')}:${String(nextKst.getUTCMinutes()).padStart(2,'0')}`;
-    return diffMin <= 60 ? `${hhmm} KST (${diffMin}분 후)` : `${hhmm} KST`;
+    const nowMs = nowUtc.getTime();
+    let best = null;
+    for (let di = 0; di < 7; di++) {
+      const dayBase = todayKstMidnight.getTime() + di * 86400000;
+      for (const h of activeHours) {
+        const slotMs = dayBase + h * 3600000;
+        if (slotMs > nowMs + toleranceMs) { best = slotMs; break; }
+      }
+      if (best) break;
+    }
+    if (!best) return '—';
+    const nextKst = new Date(best + KST_OFFSET);
+    const diffMin = Math.round((best - nowMs) / 60000);
+    const h = Math.floor(diffMin / 60), m = diffMin % 60;
+    const hhmm = `${String(nextKst.getUTCHours()).padStart(2,'0')}:00`;
+    return h > 0 ? `${hhmm} KST (${h}시간 ${m}분 후)` : `${hhmm} KST (${m}분 후)`;
   }
+
   const rate = totalSlots > 0 ? Math.round(okSlots / totalSlots * 100) : 100;
   summaryEl.innerHTML = `
     <div class="ss"><span class="sv">${okSlots}</span><span class="sl">실행 완료</span></div>
@@ -1686,7 +1570,6 @@ function renderSteamSchedule() {
     <div class="ss"><span class="sv">${rate}%</span><span class="sl">성공률 (2일)</span></div>
     <div class="sts-next-badge"><span class="sts-pulse"></span>다음: ${getNextRunLabel()}</div>`;
 }
-
 
 function switchTab(tabEl) {
   const secId = tabEl.dataset.section;
