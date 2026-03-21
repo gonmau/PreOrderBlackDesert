@@ -664,6 +664,7 @@
         <button class="gh-dispatch-btn steam" id="btn-dispatch-steam" onclick="dispatchWorkflow('steam')" title="Steam 트래커 즉시 실행">
           <span class="btn-icon">▶</span> Steam 실행
         </button>
+        <button class="gh-token-btn" id="btn-refresh-data" onclick="refreshData()" title="데이터 새로고침">🔄</button>
         <button class="gh-token-btn" onclick="openGhModal()" id="gh-token-status" title="GitHub 설정">⚙</button>
       </div>
       <!-- 펄어비스 주가 -->
@@ -1092,30 +1093,42 @@ let scheduleSlots = [  // fallback: JSON schedule 없을 시 KST 09~19시 사용
 let sortKey = 'rank'; let sortAsc = true; 
 let mainChart = null; let countryChart = null;
 
-async function init() {
+async function loadPsData() {
   const res = await fetch('./bestseller_history.json?t=' + Date.now());
   const payload = await res.json();
-
-  // 신규 포맷: {"schedule": {...}, "history": [...]}
-  // 구버전 포맷: 리스트 그대로
   if (Array.isArray(payload)) {
     historyData = payload;
   } else {
     historyData = payload.history || [];
-    // schedule.slots_kst 가 있으면 하드코딩 대신 사용
     if (payload.schedule && Array.isArray(payload.schedule.slots_kst)) {
       scheduleSlots = payload.schedule.slots_kst.map(h => ({
         hour: h,
         label: h < 12 ? 'AM' : 'PM'
       }));
       window._scheduleCron = payload.schedule.cron || '';
-      console.log('[Schedule] yml에서 로드:', payload.schedule.cron, '→ KST slots:', payload.schedule.slots_kst);
     }
   }
-
   render();
+}
+
+async function init() {
+  await loadPsData();
   loadSteamTopSellerData();
   fetchStock();
+}
+
+async function refreshData(silent) {
+  const btn = document.getElementById('btn-refresh-data');
+  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+  try {
+    await loadPsData();
+    await loadSteamTopSellerData();
+    if (!silent) showDispatchToast('🔄 데이터 갱신 완료', '#4a9eff');
+  } catch(e) {
+    if (!silent) showDispatchToast('❌ 갱신 실패', '#e74c3c');
+  } finally {
+    if (btn) { btn.textContent = '🔄'; btn.disabled = false; }
+  }
 }
 
 function getRank(entry, country) {
@@ -2137,7 +2150,8 @@ async function pollRunStatus(type, wf, since) {
         // completed
         if (conclusion === 'success') {
           setRunBtn(type, 'success');
-          showDispatchToast(`✅ ${type === 'ps' ? 'PS' : 'Steam'} 완료!`, '#2ecc71');
+          showDispatchToast(`✅ ${type === 'ps' ? 'PS' : 'Steam'} 완료! Pages 배포 대기 중…`, '#2ecc71');
+          pollPagesDeployment(Date.now());
         } else if (conclusion === 'failure') {
           setRunBtn(type, 'failure');
           showDispatchToast(`❌ ${type === 'ps' ? 'PS' : 'Steam'} 실패 — <a href="${runUrl}" target="_blank">로그 보기</a>`, '#e74c3c');
@@ -2217,6 +2231,81 @@ function showDispatchToast(msg, color) {
 // 폴링 타이머 정리 (setRunBtn idle 복원 시)
 function clearPoller(type) {
   if (_ghPollers[type]) { clearTimeout(_ghPollers[type]); _ghPollers[type] = null; }
+}
+
+/* ── GitHub Pages 배포 완료 감지 ── */
+let _pagesPoller = null;
+
+async function pollPagesDeployment(since) {
+  const token = ghGetToken();
+  if (!token) return;
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+
+  // Pages 배포 상태 배지 표시
+  showPagesStatus('deploying');
+
+  let attempts = 0;
+  const MAX = 40; // 최대 ~3분
+
+  const poll = async () => {
+    attempts++;
+    if (attempts > MAX) { showPagesStatus(null); return; }
+    try {
+      // 최신 Pages 배포 목록 조회
+      const r = await fetch(
+        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/pages/builds/latest`,
+        { headers }
+      );
+      if (!r.ok) { _pagesPoller = setTimeout(poll, 5000); return; }
+      const build = await r.json();
+      const status = build.status; // 'queued' | 'building' | 'built' | 'errored'
+      const updatedAt = new Date(build.updated_at).getTime();
+
+      if (status === 'built' && updatedAt >= since) {
+        showPagesStatus('done');
+        showDispatchToast('🌐 Pages 배포 완료 — 데이터 갱신 중…', '#2ecc71');
+        setTimeout(async () => {
+          await refreshData(true);
+          showDispatchToast('✅ 대시보드 갱신 완료!', '#2ecc71');
+          setTimeout(() => showPagesStatus(null), 4000);
+        }, 1500);
+      } else if (status === 'errored') {
+        showPagesStatus('error');
+        showDispatchToast('❌ Pages 배포 실패', '#e74c3c');
+      } else {
+        _pagesPoller = setTimeout(poll, 5000);
+      }
+    } catch(e) {
+      _pagesPoller = setTimeout(poll, 6000);
+    }
+  };
+  _pagesPoller = setTimeout(poll, 8000); // Actions 완료 후 8초 뒤 시작
+}
+
+function showPagesStatus(state) {
+  let badge = document.getElementById('gh-pages-badge');
+  if (!state) { if (badge) badge.remove(); return; }
+  if (!badge) {
+    badge = document.createElement('div');
+    badge.id = 'gh-pages-badge';
+    badge.style.cssText = 'display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:0.5px';
+    const wrap = document.querySelector('.gh-dispatch-wrap');
+    if (wrap) wrap.appendChild(badge);
+  }
+  const states = {
+    deploying: { text: '🌐 배포 중…', bg: 'rgba(74,158,255,0.12)', border: 'rgba(74,158,255,0.35)', color: '#4a9eff' },
+    done:      { text: '🌐 배포 완료', bg: 'rgba(46,204,113,0.12)', border: 'rgba(46,204,113,0.35)', color: '#2ecc71' },
+    error:     { text: '🌐 배포 실패', bg: 'rgba(231,76,60,0.12)',  border: 'rgba(231,76,60,0.35)',  color: '#e74c3c' },
+  };
+  const s = states[state];
+  badge.textContent = s.text;
+  badge.style.background = s.bg;
+  badge.style.border = `1px solid ${s.border}`;
+  badge.style.color = s.color;
 }
 
 window.addEventListener('DOMContentLoaded', updateGhStatusDot);
