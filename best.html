@@ -603,10 +603,9 @@
     <div class="sts-collapsible-body collapsed" id="sts-sched-body">
       <div class="sts-sched-wrap">
         <div class="sts-sched-legend">
-          <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>실행됨</span>
-          <span><i class="sts-legend-dot" style="background:rgba(255,71,87,0.15);border:1px solid rgba(255,71,87,0.3)"></i>누락</span>
+          <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>자동 실행</span>
+          <span style="display:flex;align-items:center;gap:4px"><span class="tl-badge manual" style="font-size:8px;padding:1px 5px">수동</span>수동 실행</span>
           <span><i class="sts-legend-dot" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1)"></i>예정</span>
-          <span><i class="sts-legend-dot" style="background:transparent;border:1px solid rgba(241,196,15,0.7);box-shadow:0 0 4px rgba(241,196,15,0.2)"></i>현재 슬롯</span>
         </div>
         <div id="sts-sched-days"></div>
         <div class="sts-sched-summary" id="sts-sched-summary"></div>
@@ -1463,73 +1462,93 @@ function renderSteamSchedule() {
   const summaryEl = document.getElementById('sts-sched-summary');
   if (!container || !summaryEl) return;
 
-  const nowUtc = new Date(), KST_OFFSET = 9*3600*1000;
-  const nowKst = new Date(nowUtc.getTime() + KST_OFFSET);
+  const nowUtcMs = Date.now();
+  const KST_OFFSET = 9 * 3600 * 1000;
+  const DAYS = ['일','월','화','수','목','금','토'];
+
   let intervalMin = 30;
   if (stsSched && stsSched.type === 'interval') intervalMin = stsSched.interval_min || 30;
+  const intervalMs = intervalMin * 60 * 1000;
 
-  const stamps = stsHist.map(h => new Date(h.timestamp).getTime());
-  const toleranceMs = Math.min(intervalMin * 0.4, 18) * 60 * 1000;
+  // 타임스탬프 목록 (내림차순)
+  const allStamps = stsHist
+    .map(h => new Date(h.timestamp).getTime())
+    .filter(t => !isNaN(t))
+    .sort((a, b) => b - a);
 
-  const todayKstMidnight = new Date(Date.UTC(nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()) - KST_OFFSET);
-  const days = [
-    { label: '어제', date: new Date(todayKstMidnight.getTime() - 86400000), isToday: false },
-    { label: '오늘', date: todayKstMidnight, isToday: true },
-  ];
-  const slotsPerDay = Math.floor(24*60/intervalMin);
-  let totalSlots=0, okSlots=0, missSlots=0;
-  container.innerHTML = '';
+  // 직전 3개 (오래된 순)
+  const past3 = allStamps.filter(t => t <= nowUtcMs).slice(0, 3).reverse();
 
-  days.forEach(({ label, date, isToday }) => {
-    const kstDay = new Date(date.getTime() + KST_OFFSET);
-    const mm = kstDay.getUTCMonth()+1, dd = kstDay.getUTCDate();
-    const labelDiv = document.createElement('div');
-    labelDiv.className = 'sts-sched-day-label';
-    labelDiv.innerHTML = `<span class="day-badge${isToday?' today':''}">${label}</span>${mm}/${dd}`;
-    container.appendChild(labelDiv);
-
-    const grid = document.createElement('div');
-    grid.className = 'sts-sched-grid';
-    for (let i = 0; i < slotsPerDay; i++) {
-      const slotMs = date.getTime() + (i * intervalMin * 60 * 1000);
-      const slotKst = new Date(slotMs + KST_OFFSET);
-      const hhmm = `${String(slotKst.getUTCHours()).padStart(2,'0')}:${String(slotKst.getUTCMinutes()).padStart(2,'0')}`;
-      const isFuture = slotMs > nowUtc.getTime() + toleranceMs;
-      const isNow = Math.abs(slotMs - nowUtc.getTime()) <= toleranceMs;
-      let status = 'miss', actualTime = '';
-      if (isFuture) { status = 'fut'; }
-      else {
-        const found = stamps.find(s => Math.abs(s - slotMs) <= toleranceMs);
-        if (found) {
-          status = 'ok'; okSlots++; totalSlots++;
-          const ft = new Date(found + KST_OFFSET);
-          actualTime = `${String(ft.getUTCHours()).padStart(2,'0')}:${String(ft.getUTCMinutes()).padStart(2,'0')}`;
-        } else { missSlots++; totalSlots++; }
-      }
-      const slot = document.createElement('div');
-      slot.className = `sts-slot ${status}${isNow?' now':''}`;
-      const tip = status==='ok' ? `${mm}/${dd} ${hhmm} → 실행 ${actualTime}` : status==='fut' ? `${mm}/${dd} ${hhmm} (예정)` : `${mm}/${dd} ${hhmm} — 누락`;
-      slot.title = tip;
-      slot.innerHTML = `<span class="slot-h">${hhmm}</span><span class="slot-i">${status==='ok'?'✓':status==='fut'?'·':'✗'}</span>`;
-      grid.appendChild(slot);
-    }
-    container.appendChild(grid);
-  });
-
-  function getNextRunLabel() {
-    const nowMs = nowUtc.getTime(), slotMs = intervalMin*60*1000;
-    const nextSlotMs = Math.ceil((nowMs+1000)/slotMs)*slotMs;
-    const nextKst = new Date(nextSlotMs + KST_OFFSET);
-    const diffMin = Math.round((nextSlotMs - nowMs)/60000);
-    const hhmm = `${String(nextKst.getUTCHours()).padStart(2,'0')}:${String(nextKst.getUTCMinutes()).padStart(2,'0')}`;
-    return diffMin <= 60 ? `${hhmm} KST (${diffMin}분 후)` : `${hhmm} KST`;
+  // 다음 예정 3개
+  function getNextScheduledTimes(count) {
+    const result = [];
+    const next = Math.ceil((nowUtcMs + 1000) / intervalMs) * intervalMs;
+    for (let i = 0; i < count; i++) result.push(next + i * intervalMs);
+    return result;
   }
-  const rate = totalSlots > 0 ? Math.round(okSlots/totalSlots*100) : 100;
+  const next3 = getNextScheduledTimes(3);
+
+  // 수동 감지: 30분 경계(XX:00/XX:30)에서 ±5분 초과면 수동
+  function isManual(utcMs) {
+    const off = utcMs % intervalMs;
+    const minOff = Math.min(off, intervalMs - off);
+    return minOff > 5 * 60 * 1000;
+  }
+
+  function fmtKst(utcMs) {
+    const kst = new Date(utcMs + KST_OFFSET);
+    const M = kst.getUTCMonth() + 1, D = kst.getUTCDate();
+    const dow = DAYS[kst.getUTCDay()];
+    const HH = String(kst.getUTCHours()).padStart(2,'0');
+    const mm = String(kst.getUTCMinutes()).padStart(2,'0');
+    return `${M}/${D}(${dow}) ${HH}:${mm}`;
+  }
+
+  const cronEl = document.getElementById('sts-sched-cron');
+  if (cronEl && stsSched && stsSched.cron) cronEl.textContent = stsSched.cron;
+
+  let html = '<div class="run-timeline">';
+
+  html += '<div class="tl-section-label">최근 실행</div>';
+  if (past3.length === 0) {
+    html += '<div class="tl-empty">아직 실행 기록 없음</div>';
+  } else {
+    past3.forEach(ts => {
+      const manual = isManual(ts);
+      html += `<div class="tl-item tl-past">
+        <span class="tl-icon">✓</span>
+        <span class="tl-time">${fmtKst(ts)} KST</span>
+        ${manual ? '<span class="tl-badge manual">수동</span>' : ''}
+      </div>`;
+    });
+  }
+
+  html += '<div class="tl-now-line"><span>NOW</span></div>';
+  html += '<div class="tl-section-label">다음 예정</div>';
+  next3.forEach(ts => {
+    html += `<div class="tl-item tl-future">
+      <span class="tl-icon">·</span>
+      <span class="tl-time">${fmtKst(ts)} KST</span>
+    </div>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+
+  const nextMs = next3[0];
+  let nextBadge = '';
+  if (nextMs) {
+    const diffMin = Math.round((nextMs - nowUtcMs) / 60000);
+    const kst = new Date(nextMs + KST_OFFSET);
+    const HH = String(kst.getUTCHours()).padStart(2,'0');
+    const mm2 = String(kst.getUTCMinutes()).padStart(2,'0');
+    nextBadge = `<div class="sts-next-badge"><span class="sts-pulse"></span>다음: ${HH}:${mm2} KST (${diffMin}분 후)</div>`;
+  }
+  const lastTs = allStamps[0];
+  const lastLabel = lastTs ? fmtKst(lastTs) : '-';
   summaryEl.innerHTML = `
-    <div class="ss"><span class="sv">${okSlots}</span><span class="sl">실행 완료</span></div>
-    <div class="ss"><span class="sv" style="color:${missSlots>0?'var(--down)':'var(--up)'}">${missSlots}</span><span class="sl">누락</span></div>
-    <div class="ss"><span class="sv">${rate}%</span><span class="sl">성공률 (2일)</span></div>
-    <div class="sts-next-badge"><span class="sts-pulse"></span>다음: ${getNextRunLabel()}</div>`;
+    <div class="ss"><span class="sv">${allStamps.length}</span><span class="sl">총 실행</span></div>
+    <div class="ss"><span class="sv" style="font-size:13px;font-family:'Rajdhani',sans-serif">${lastLabel}</span><span class="sl">마지막 실행</span></div>
+    ${nextBadge}`;
 }
 
 /* ── Steam CSV download ── */
