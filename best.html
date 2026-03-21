@@ -502,6 +502,19 @@
     transition: color 0.15s, background 0.15s;
   }
   .hm-link:hover { color: #aaa; background: rgba(255,255,255,0.04); }
+  .hm-spark-wrap {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    border-left: 1px solid #1a1a1a;
+  }
+  .hm-spark {
+    width: 64px;
+    height: 24px;
+    display: block;
+    overflow: visible;
+  }
   .heatmap-legend {
     display: flex;
     gap: 12px;
@@ -1518,6 +1531,27 @@ function hmRankClass(r) {
   return 'rout';
 }
 
+function makeSparkline(ranks, color) {
+  // ranks: 시간순 배열, null/999 제외
+  const vals = ranks.filter(r => r != null && r < 999);
+  if (vals.length < 2) return '';
+  const W = 64, H = 24, PAD = 2;
+  const minR = Math.min(...vals), maxR = Math.max(...vals);
+  const range = maxR - minR || 1;
+  // y는 순위가 낮을수록(1위) 위로 → 반전
+  const toX = (i) => PAD + (i / (vals.length - 1)) * (W - PAD * 2);
+  const toY = (r) => PAD + ((r - minR) / range) * (H - PAD * 2);
+  // 순위 반전: 1위=상단
+  const pts = vals.map((r, i) => `${toX(i).toFixed(1)},${toY(r).toFixed(1)}`).join(' ');
+  // 현재값 점
+  const cx = toX(vals.length - 1).toFixed(1);
+  const cy = toY(vals[vals.length - 1]).toFixed(1);
+  return `<svg class="hm-spark" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round" opacity="0.7"/>
+    <circle cx="${cx}" cy="${cy}" r="2" fill="${color}" opacity="0.9"/>
+  </svg>`;
+}
+
 function renderPsHeatmap(list) {
   const g = document.getElementById('ps-heatmap-grid');
   if (!g) return;
@@ -1546,6 +1580,11 @@ function renderPsHeatmap(list) {
     const url  = getStoreUrl(d.name);
     const rowCls = r ? '' : ' hm-notfound';
 
+    // 스파크라인
+    const sparkColor = ch > 0 ? '#2ecc71' : ch < 0 ? '#e74c3c' : '#4a9eff';
+    const histRanks = historyData.map(h => getRank(h, d.name)).filter(v => v < 999);
+    const spark = makeSparkline(histRanks, sparkColor);
+
     return `<div class="hm-row${rowCls}" onclick="showCountryChart('${d.name}')">
       <div class="hm-bar ${barCls}"></div>
       <div class="hm-rank ${rankCls}">${rankTxt}</div>
@@ -1557,6 +1596,7 @@ function renderPsHeatmap(list) {
           <span class="hm-w">W:${d.weight}</span>
         </div>
       </div>
+      ${spark ? `<div class="hm-spark-wrap">${spark}</div>` : ''}
       <a class="hm-link" href="${url}" target="_blank" onclick="event.stopPropagation()" title="PS Store">🔗</a>
     </div>`;
   }).join('');
@@ -1608,6 +1648,11 @@ function renderStsHeatmap(lat, prv) {
     const url  = `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`;
     const rowCls = r ? '' : ' hm-notfound';
 
+    // 스파크라인
+    const sparkColor = ch > 0 ? '#2ecc71' : ch < 0 ? '#e74c3c' : '#4a9eff';
+    const histRanks = stsHist.map(h => h.results?.[d.name]?.rank ?? null);
+    const spark = makeSparkline(histRanks, sparkColor);
+
     return `<div class="hm-row${rowCls}" onclick="openStsModal('${d.name}')">
       <div class="hm-bar ${barCls}"></div>
       <div class="hm-rank ${rankCls}">${rankTxt}</div>
@@ -1619,6 +1664,7 @@ function renderStsHeatmap(lat, prv) {
           <span class="hm-w">W:${d.weight}</span>
         </div>
       </div>
+      ${spark ? `<div class="hm-spark-wrap">${spark}</div>` : ''}
       <a class="hm-link" href="${url}" target="_blank" onclick="event.stopPropagation()" title="Steam Store">🔗</a>
     </div>`;
   }).join('');
