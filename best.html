@@ -410,6 +410,13 @@
   @media (max-width: 480px) and (orientation: portrait) {
     .heatmap-grid { grid-template-columns: 1fr; }
   }
+  /* 모바일 가로보기: dual-col이 절반 너비라 카드 1열로 */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .hm-cards-grid { grid-template-columns: 1fr; }
+    .hm-name { font-size: 12px; }
+    .hm-spark { width: 36px; height: 16px; }
+    .hm-link { padding: 0 5px; }
+  }
   /* 모바일 전반 (700px 이하): 폰트 살짝 줄여 2열 내 여유 확보 */
   @media (max-width: 700px) {
     .hm-name { font-size: 12px; }
