@@ -827,6 +827,7 @@
     <span class="nav-tab dual-tab"        data-section="sec-leaderboard" onclick="switchTab(this)">🏆 리더보드</span>
     <span class="nav-tab dual-tab"        data-section="sec-sched"       onclick="switchTab(this)">⏱ 스케줄</span>
     <span class="nav-tab dual-tab"        data-section="sec-chart"       onclick="switchTab(this)">📈 차트</span>
+    <span class="nav-tab dual-tab"        data-section="sec-sales"       onclick="switchTab(this)">💰 판매량</span>
     <span class="nav-tab dual-tab"        data-section="sec-heatmap"     onclick="switchTab(this)">🔥 히트맵</span>
     <span class="nav-tab dual-tab"        data-section="sec-table"       onclick="switchTab(this)">🌍 국가별</span>
   </div>
@@ -1026,6 +1027,42 @@
       </div>
     </div>
   </div><!-- /sec-chart -->
+
+
+  <!-- 💰 판매량 추정 -->
+  <div id="sec-sales" class="tab-section">
+    <div class="dual-wrap">
+      <div class="dual-col ps-col" style="flex:1">
+        <div class="dual-col-header ps-header">💰 플랫폼별 일별 판매량 추정
+          <span style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0">출시일(3/19) 200만 기준 추정치</span>
+        </div>
+        <div class="dual-col-body" style="padding:12px">
+          <!-- 설정 컨트롤 -->
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+            <label style="font-size:12px;color:var(--tx-3)">출시 1일차 총 판매량:
+              <input id="sales-day1-total" type="number" value="2000000" step="100000"
+                style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:110px;margin-left:6px"
+                oninput="renderSalesChart()">
+            </label>
+            <label style="font-size:12px;color:var(--tx-3)">PS 비율:
+              <input id="sales-ps-ratio" type="number" value="65" min="1" max="99" step="1"
+                style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:60px;margin-left:6px">
+              <span style="color:var(--tx-4)">% / Steam <span id="sales-steam-ratio-lbl">35</span>%
+            </label>
+            <button onclick="renderSalesChart()" style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:4px 12px;color:var(--tx-2);font-size:12px;cursor:pointer">재계산</button>
+          </div>
+          <!-- 요약 카드 -->
+          <div id="sales-summary-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px"></div>
+          <!-- 일별 차트 -->
+          <div style="font-size:11px;color:var(--tx-4);margin-bottom:4px;font-weight:700;letter-spacing:1px;text-transform:uppercase">일별 판매량 추정</div>
+          <div style="height:220px;margin-bottom:16px"><canvas id="salesDailyChart"></canvas></div>
+          <!-- 누적 차트 -->
+          <div style="font-size:11px;color:var(--tx-4);margin-bottom:4px;font-weight:700;letter-spacing:1px;text-transform:uppercase">누적 판매량 추정</div>
+          <div style="height:220px"><canvas id="salesCumChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /sec-sales -->
 
   <!-- ⑤ 히트맵 -->
   <div id="sec-heatmap" class="tab-section">
@@ -1795,6 +1832,9 @@ function switchTab(tabEl) {
         if (mainChart) mainChart.resize();
         if (stsCI) stsCI.resize();
       }
+      if (secId === 'sec-sales') {
+        renderSalesChart();
+      }
     }, 50);
   });
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1944,6 +1984,185 @@ function closePsLinksPopover() {
   document.getElementById('ps-links-popover').classList.remove('open');
   document.getElementById('ps-links-overlay').classList.remove('open');
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   판매량 추정 엔진
+   - 출시일: 2026-03-19 (KST)
+   - 1일차: 입력값(기본 200만)을 PS/Steam 비율로 분배
+   - 2일차~: 가중 평균 순위 변화 비율로 추정
+     daily[d] = day1_sales * (rank_day1 / rank_d) ^ 0.65
+   - 누적: 각 플랫폼 + 합산
+═══════════════════════════════════════════════════════════════ */
+
+const LAUNCH_DATE = new Date('2026-03-19T00:00:00+09:00');
+let salesDailyCI = null, salesCumCI = null;
+
+function getDayIndex(ts) {
+  const d = new Date(ts);
+  const diff = d - LAUNCH_DATE;
+  return Math.floor(diff / 86400000); // 0=출시일
+}
+
+function fmtSales(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(2) + 'M';
+  if (n >= 1000)    return (n/1000).toFixed(1) + 'K';
+  return Math.round(n).toLocaleString();
+}
+
+function renderSalesChart() {
+  const total1  = parseInt(document.getElementById('sales-day1-total').value) || 2000000;
+  const psRatio = parseInt(document.getElementById('sales-ps-ratio').value) || 65;
+  const stRatio = 100 - psRatio;
+  const lbl = document.getElementById('sales-steam-ratio-lbl');
+  if (lbl) lbl.textContent = stRatio;
+
+  const psDay1 = total1 * psRatio / 100;
+  const stDay1 = total1 * stRatio / 100;
+
+  // ── PS 일별 순위 집계 (일 단위 평균) ──
+  const psByDay = {};
+  historyData.forEach(h => {
+    const di = getDayIndex(h.timestamp);
+    if (di < 0) return;
+    const avg = h.averages?.combined;
+    if (avg == null || avg >= 999) return;
+    if (!psByDay[di]) psByDay[di] = { sum: 0, cnt: 0 };
+    psByDay[di].sum += avg;
+    psByDay[di].cnt++;
+  });
+  const psDayAvg = {};
+  Object.entries(psByDay).forEach(([d, v]) => { psDayAvg[parseInt(d)] = v.sum / v.cnt; });
+
+  // ── Steam 일별 순위 집계 ──
+  const stByDay = {};
+  stsHist.forEach(h => {
+    const di = getDayIndex(h.timestamp);
+    if (di < 0) return;
+    let tw = 0, ts = 0;
+    for (const [n, d] of Object.entries(h.results || {})) {
+      const r = d?.rank; if (!r || r > 30) continue;
+      const w = STS_W[n] || 1; ts += r * w; tw += w;
+    }
+    if (!tw) return;
+    const avg = ts / tw;
+    if (!stByDay[di]) stByDay[di] = { sum: 0, cnt: 0 };
+    stByDay[di].sum += avg;
+    stByDay[di].cnt++;
+  });
+  const stDayAvg = {};
+  Object.entries(stByDay).forEach(([d, v]) => { stDayAvg[parseInt(d)] = v.sum / v.cnt; });
+
+  // ── 날짜 범위 결정 ──
+  const allDays = new Set([...Object.keys(psDayAvg), ...Object.keys(stDayAvg)].map(Number));
+  if (!allDays.size) return;
+  const maxDay = Math.max(...allDays);
+  const days = Array.from({ length: maxDay + 1 }, (_, i) => i);
+
+  // ── 기준 순위 (1일차 또는 최초 데이터) ──
+  const psBase = psDayAvg[0] || psDayAvg[Math.min(...Object.keys(psDayAvg).map(Number))] || 18;
+  const stBase = stDayAvg[0] || stDayAvg[Math.min(...Object.keys(stDayAvg).map(Number))] || 14;
+  const DECAY = 0.65; // 순위→판매 변환 지수
+
+  // ── 일별 판매량 계산 ──
+  const psDaily = [], stDaily = [], totDaily = [];
+  const psLabels = [];
+
+  days.forEach(di => {
+    const date = new Date(LAUNCH_DATE.getTime() + di * 86400000);
+    psLabels.push(`${date.getMonth()+1}/${date.getDate()}`);
+
+    let ps, st;
+    if (di === 0) {
+      ps = psDay1;
+      st = stDay1;
+    } else {
+      const psR = psDayAvg[di] || null;
+      const stR = stDayAvg[di] || null;
+      // 데이터 없는 날은 선형 보간 또는 마지막 값으로 추정
+      const psReff = psR || (psDayAvg[di-1] ? psDayAvg[di-1] * 1.05 : psBase * (1 + di * 0.1));
+      const stReff = stR || (stDayAvg[di-1] ? stDayAvg[di-1] * 1.05 : stBase * (1 + di * 0.1));
+      ps = psDay1 * Math.pow(psBase / psReff, DECAY);
+      st = stDay1 * Math.pow(stBase / stReff, DECAY);
+    }
+    ps = Math.max(0, Math.round(ps));
+    st = Math.max(0, Math.round(st));
+    psDaily.push(ps);
+    stDaily.push(st);
+    totDaily.push(ps + st);
+  });
+
+  // ── 누적 계산 ──
+  const psCum = [], stCum = [], totCum = [];
+  let pAcc = 0, sAcc = 0;
+  psDaily.forEach((p, i) => {
+    pAcc += p; sAcc += stDaily[i];
+    psCum.push(pAcc);
+    stCum.push(sAcc);
+    totCum.push(pAcc + sAcc);
+  });
+
+  const totalEstimate = totCum[totCum.length - 1] || 0;
+  const psTotal  = psCum[psCum.length - 1] || 0;
+  const stTotal  = stCum[stCum.length - 1] || 0;
+
+  // ── 요약 카드 ──
+  const cards = document.getElementById('sales-summary-cards');
+  if (cards) cards.innerHTML = [
+    { label: '🎮 PS Store 누적', val: fmtSales(psTotal),   color: 'var(--blood)' },
+    { label: '🖥 Steam 누적',    val: fmtSales(stTotal),   color: 'var(--steam)' },
+    { label: '📦 전체 누적 추정', val: fmtSales(totalEstimate), color: 'var(--gold)' },
+  ].map(({ label, val, color }) => `
+    <div style="background:var(--bg-2);border:1px solid var(--bd);border-left:3px solid ${color};border-radius:var(--radius);padding:12px">
+      <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">${label}</div>
+      <div style="font-family:'Cinzel',serif;font-size:22px;color:${color};font-weight:900">${val}</div>
+    </div>`).join('');
+
+  // ── 차트 공통 옵션 ──
+  const chartDefaults = {
+    responsive: true, maintainAspectRatio: false,
+    layout: { padding: { top: 8 } },
+    scales: {
+      x: { ticks: { color: '#aaa', maxTicksLimit: 10, font: { size: 11 } }, grid: { color: '#1e1e1e' } },
+      y: { ticks: { color: '#aaa', font: { size: 11 }, callback: v => fmtSales(v) }, grid: { color: '#1e1e1e' } }
+    },
+    plugins: {
+      legend: { labels: { color: '#ccc', font: { size: 12 }, boxWidth: 14 } },
+      tooltip: { callbacks: { label: c => ' ' + c.dataset.label + ': ' + fmtSales(c.parsed.y) } }
+    }
+  };
+
+  // ── 일별 차트 ──
+  const ctx1 = document.getElementById('salesDailyChart').getContext('2d');
+  if (salesDailyCI) salesDailyCI.destroy();
+  salesDailyCI = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: psLabels,
+      datasets: [
+        { label: 'PS Store', data: psDaily, backgroundColor: 'rgba(255,71,87,0.7)', borderColor: 'rgba(255,71,87,1)', borderWidth: 1 },
+        { label: 'Steam',    data: stDaily, backgroundColor: 'rgba(74,158,255,0.7)', borderColor: 'rgba(74,158,255,1)', borderWidth: 1 },
+      ]
+    },
+    options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: false } } }
+  });
+
+  // ── 누적 차트 ──
+  const ctx2 = document.getElementById('salesCumChart').getContext('2d');
+  if (salesCumCI) salesCumCI.destroy();
+  salesCumCI = new Chart(ctx2, {
+    type: 'line',
+    data: {
+      labels: psLabels,
+      datasets: [
+        { label: 'PS Store 누적', data: psCum, borderColor: '#ff4757', backgroundColor: 'rgba(255,71,87,0.08)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
+        { label: 'Steam 누적',   data: stCum, borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.08)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
+        { label: '전체 누적',    data: totCum, borderColor: '#f1c40f', backgroundColor: 'transparent', borderWidth: 2.5, fill: false, tension: 0.3, pointRadius: 0, borderDash: [4,3] },
+      ]
+    },
+    options: chartDefaults
+  });
+}
+
 function renderSteamSchedule() {
   const container = document.getElementById('sts-sched-days');
   const summaryEl = document.getElementById('sts-sched-summary');
