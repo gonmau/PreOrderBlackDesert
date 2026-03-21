@@ -127,7 +127,7 @@
     align-items: center;
     gap: 8px;
     padding: 9px 14px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 800;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -151,7 +151,7 @@
   .steam-header { color: var(--steam); background: rgba(74,158,255,0.05); }
   .dual-col .stats        { padding: 12px; gap: 8px; margin-bottom: 0; }
   .dual-col .card         { padding: 12px 14px; }
-  .dual-col .card .val    { font-size: 24px; }
+  .dual-col .card .val    { font-size: 26px; }
   .dual-col .sts-sched-wrap   { padding: 12px; }
   .dual-col .chart-section    { border: none; border-radius: 0; margin-bottom: 0; padding: 12px; height: 100%; }
   .dual-col .steam-ts-chart-box { border: none; border-radius: 0; height: 100%; }
@@ -203,8 +203,8 @@
   .ct-bar { height: 100%; min-height: 30px; border-radius: 0 2px 2px 0; }
   .ct-flag { font-size: 15px; text-align: center; }
   .ct-name { font-size: 13px; font-weight: 700; color: var(--tx-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ct-meta { font-size: 10px; color: var(--tx-4); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ct-chg  { font-size: 10px; font-weight: 800; text-align: center; }
+  .ct-meta { font-size: 11px; color: var(--tx-4); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ct-chg  { font-size: 11px; font-weight: 800; text-align: center; }
   .ct-chg.up   { color: var(--up); }
   .ct-chg.down { color: var(--down); }
   .ct-rank { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 900; text-align: right; }
@@ -256,7 +256,7 @@
   .nav-tab.active.steam-tab { color: var(--steam); border-bottom-color: var(--steam); }
   .nav-tab.active.dual-tab  { color: var(--tx-1);  border-bottom-color: var(--tx-1); }
   @media (max-width: 600px) {
-    .nav-tab { padding: 7px 7px; font-size: 10px; }
+    .nav-tab { padding: 7px 8px; font-size: 12px; }
     .nav-group-label { font-size: 8px; }
     .nav-bar { top: 40px; }
   }
@@ -268,9 +268,9 @@
     padding: 18px 20px; border-radius: var(--radius);
     border-left: 3px solid var(--blood);
   }
-  .card .lbl { font-size: 11px; color: var(--tx-3); margin-bottom: 6px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
-  .card .val { font-family: 'Cinzel', serif; font-size: 26px; color: var(--gold); }
-  .card .sub { font-size: 14px; margin-top: 4px; color: var(--tx-2); }
+  .card .lbl { font-size: 12px; color: var(--tx-3); margin-bottom: 6px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+  .card .val { font-family: 'Cinzel', serif; font-size: 28px; color: var(--gold); }
+  .card .sub { font-size: 15px; margin-top: 4px; color: var(--tx-2); }
   @media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } }
 
   /* ══ Top10 리더보드 ══════════════════════════════════════════ */
@@ -376,12 +376,12 @@
   .hm-name { font-size: 13px; font-weight: 700; color: var(--tx-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; }
   .hm-name .hm-flag { font-size: 15px; flex-shrink: 0; }
   .hm-meta { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
-  .hm-best { font-size: 9px; color: var(--gold); font-weight: 700; white-space: nowrap; }
-  .hm-change { font-size: 10px; font-weight: 800; white-space: nowrap; }
+  .hm-best { font-size: 10px; color: var(--gold); font-weight: 700; white-space: nowrap; }
+  .hm-change { font-size: 11px; font-weight: 800; white-space: nowrap; }
   .hm-change.up   { color: var(--up); }
   .hm-change.down { color: var(--down); }
   .hm-change.same { color: var(--tx-4); }
-  .hm-w { font-size: 8px; color: var(--tx-4); margin-left: auto; white-space: nowrap; }
+  .hm-w { font-size: 9px; color: var(--tx-4); margin-left: auto; white-space: nowrap; }
   .hm-notfound { opacity: 0.3; }
   .hm-notfound .hm-rank { color: var(--tx-4); font-size: 10px; }
   .hm-link {
@@ -458,8 +458,8 @@
   .day-badge.today { border-color: rgba(241,196,15,0.4); color: var(--gold); background: rgba(241,196,15,0.07); }
   .sts-sched-grid { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 10px; }
   .sts-slot { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 52px; min-height: 38px; border-radius: 5px; border: 1px solid var(--bd); background: var(--bg-2); cursor: default; transition: border-color var(--trans); padding: 3px 2px; gap: 2px; }
-  .slot-h { font-size: 9px; color: var(--tx-3); letter-spacing: 0.3px; font-weight: 600; }
-  .slot-i { font-size: 12px; font-weight: 700; }
+  .slot-h { font-size: 10px; color: var(--tx-3); letter-spacing: 0.3px; font-weight: 600; }
+  .slot-i { font-size: 13px; font-weight: 700; }
   .sts-slot.ok  { border-color: rgba(46,204,113,0.5); background: rgba(46,204,113,0.07); }
   .sts-slot.ok .slot-i  { color: #2ecc71; }
   .sts-slot.ok .slot-h  { color: #2ecc71; opacity: 0.8; }
@@ -473,10 +473,10 @@
   .sts-legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
   .sts-sched-legend { display: flex; gap: 10px; font-size: 11px; color: var(--tx-4); margin-bottom: 8px; flex-wrap: wrap; }
   .sts-sched-legend span { display: flex; align-items: center; gap: 4px; }
-  .sts-sched-summary { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid var(--bd); font-size: 11px; color: var(--tx-3); }
+  .sts-sched-summary { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid var(--bd); font-size: 12px; color: var(--tx-3); }
   .sts-sched-summary .ss { display: flex; flex-direction: column; gap: 1px; }
-  .sts-sched-summary .sv { font-size: 15px; color: var(--tx-1); font-weight: 700; }
-  .sts-sched-summary .sl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--tx-4); }
+  .sts-sched-summary .sv { font-size: 17px; color: var(--tx-1); font-weight: 700; }
+  .sts-sched-summary .sl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--tx-4); }
   .sts-next-badge { margin-left: auto; display: flex; align-items: center; gap: 5px; background: rgba(241,196,15,0.07); border: 1px solid rgba(241,196,15,0.2); border-radius: var(--radius); padding: 3px 9px; font-size: 11px; color: var(--gold); font-weight: 700; white-space: nowrap; }
   .sts-pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: stsPulse 1.6s ease-in-out infinite; }
   @keyframes stsPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.6)} }
@@ -520,7 +520,7 @@
     display: inline-flex; align-items: center; gap: 2px;
     background: rgba(241,196,15,0.08); border: 1px solid rgba(241,196,15,0.2);
     border-radius: 4px; padding: 2px 5px;
-    font-size: 9px; color: var(--gold); font-weight: 700; white-space: nowrap;
+    font-size: 10px; color: var(--gold); font-weight: 700; white-space: nowrap;
   }
   .rank1-tag img { width: 13px !important; height: 10px !important; vertical-align: middle; }
 
@@ -630,7 +630,7 @@
   .ct-flag { font-size: 15px; text-align: center; overflow: hidden; }
   .ct-name { font-size: 13px; font-weight: 700; color: var(--tx-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ct-meta { font-size: 10px; color: var(--tx-3); text-align: right; white-space: nowrap; }
-  .ct-chg  { font-size: 10px; font-weight: 800; text-align: center; }
+  .ct-chg  { font-size: 11px; font-weight: 800; text-align: center; }
   .ct-chg.up   { color: var(--up); }
   .ct-chg.down { color: var(--down); }
   .ct-rank { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 900; text-align: right; }
@@ -638,25 +638,32 @@
   .ct-link:hover { color: var(--tx-2); }
   /* 접기/펼치기 */
   .rank-group-header {
-    display: flex; align-items: center; gap: 8px;
-    padding: 8px 12px; cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px; cursor: pointer;
     border-bottom: 1px solid var(--bd); border-top: 1px solid var(--bd);
     transition: background var(--trans); margin-top: 2px;
     background: var(--bg-2);
   }
   .rank-group-header:hover { background: var(--bg-3); }
-  .rank-group-count { font-size: 10px; color: var(--tx-3); }
-  .rank-group-arrow { font-size: 10px; color: var(--tx-4); transition: transform 0.2s; margin-left: auto; }
+  .rank-group-count { font-size: 13px; font-weight: 700; color: var(--tx-3); }
+  .rank-group-arrow { font-size: 13px; color: var(--tx-4); transition: transform 0.2s; margin-left: auto; }
   .rank-group-arrow.open { transform: rotate(180deg); }
   .rank-group-body { overflow: hidden; transition: max-height 0.3s ease; }
   .rank-group-body.collapsed { max-height: 0 !important; }
-  /* 리더보드 그룹 */
-  .lb-group-label { font-size: 11px; font-weight: 800; }
+  /* 리더보드/히트맵/국가별 그룹 레이블 */
+  .lb-group-label { font-size: 15px; font-weight: 800; }
   .lb-group-label.g1  { color: #f1c40f; }
   .lb-group-label.g2  { color: #c0c0c0; }
   .lb-group-label.g3  { color: #cd7f32; }
   .lb-group-label.g10 { color: var(--steam); }
   .lb-group-label.gout { color: var(--tx-4); }
+  /* 모바일 */
+  @media (max-width: 700px) {
+    .rank-group-header { padding: 10px 12px; }
+    .lb-group-label { font-size: 14px; }
+    .rank-group-count { font-size: 12px; }
+    .rank-group-arrow { font-size: 12px; }
+  }
   @media (max-width: 500px) {
     .ct-table-header,
     .ct-row { grid-template-columns: 3px 18px 1fr 0 0 0 38px 18px; gap: 4px; }
@@ -678,6 +685,30 @@
     .modal-content > div[style*="height"] { height: min(240px, 40vh) !important; }
     .steam-ts-modal { padding: 12px; max-height: 90vh; }
     .steam-ts-modal-chart-inner { height: 150px !important; }
+  }
+
+  /* ══ PC 전용 (768px+) ═══════════════════════════════════════ */
+  @media (min-width: 768px) {
+    .nav-tab { font-size: 14px; padding: 10px 14px; }
+    .card .lbl { font-size: 12px; }
+    .card .val { font-size: 30px; }
+    .card .sub { font-size: 15px; }
+    .dual-col .card .val { font-size: 28px; }
+    .dual-col-header { font-size: 14px; padding: 11px 16px; }
+    .lb-group-label { font-size: 16px; }
+    .rank-group-count { font-size: 14px; }
+    .rank-group-header { padding: 12px 16px; }
+    .ct-name { font-size: 14px; }
+    .ct-meta { font-size: 12px; }
+    .ct-rank { font-size: 15px; }
+    .hm-name { font-size: 14px; }
+    .top10-item .n { font-size: 14px; }
+    .top10-item .r { font-size: 16px; }
+    .sts-sched-summary .sv { font-size: 20px; }
+    .slot-h { font-size: 11px; }
+    .slot-i { font-size: 15px; }
+    .sts-slot { width: 58px; min-height: 42px; }
+    .rank-group-arrow { font-size: 14px; }
   }
 </style>
 </head>
