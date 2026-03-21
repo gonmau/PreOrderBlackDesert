@@ -18,14 +18,32 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { overflow-y: auto; }
   body { background: var(--dark); color: var(--text-main); font-family: 'Rajdhani', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Twemoji Mozilla', sans-serif; }
   .flag, .top10-item .n, .country-link .flag { font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Twemoji Mozilla', sans-serif; font-style: normal; }
   .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
 
-  header { border-bottom: 2px solid var(--blood); padding: 10px 0; margin-bottom: 0; display: block; position: sticky; top: 0; z-index: 50; background: rgba(0,0,0,0.94); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  header { border-bottom: 2px solid var(--blood); padding: 10px 0; margin-bottom: 0; display: block; position: -webkit-sticky; position: sticky; top: 0; z-index: 50; background: rgba(0,0,0,0.94); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
   .logo h1 { font-family: 'Cinzel', serif; font-size: 32px; color: #fff; }
   .logo h1 span { color: var(--blood); }
   #update-time { font-size: 14px; color: var(--gold); font-weight: 700; }
+
+  /* 모바일 헤더 압축 */
+  @media (max-width: 768px) {
+    .logo h1 { font-size: 20px; }
+    #update-time { display: none; }
+    .gh-dispatch-btn { font-size: 11px; padding: 4px 8px; }
+    #pa-stock { padding: 4px 10px; }
+    #pa-stock span:first-child, #pa-stock span:last-child { display: none; }
+    #pa-price { font-size: 15px; }
+    #pa-change { font-size: 11px; }
+    header .container { flex-wrap: nowrap; gap: 8px; }
+    .gh-dispatch-wrap { gap: 4px; }
+  }
+  @media (max-width: 480px) {
+    .logo h1 { font-size: 16px; }
+    .gh-dispatch-btn .btn-icon { display: none; }
+  }
 
   /* Summary Grid */
   .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
