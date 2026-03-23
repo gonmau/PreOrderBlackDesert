@@ -815,6 +815,23 @@
 
   /* 요약 차트 전용: 높이 자동, 스크롤 없이 canvas 크기 보장 */
   /* summary-chart-wrap 제거됨 - 단순 div로 교체 */
+
+  /* 요약 순위별 국가 그룹 */
+  .sum-rank-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 14px; cursor: pointer;
+    background: var(--bg-2); border-bottom: 1px solid var(--bd);
+    transition: background var(--trans); user-select: none;
+  }
+  .sum-rank-header:first-child { border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0; }
+  .sum-rank-header:hover { background: var(--bg-3); }
+  .sum-rank-label { font-size: 15px; font-weight: 800; flex: 1; }
+  .sum-rank-cnt   { font-size: 14px; font-weight: 700; color: var(--tx-3); }
+  .sum-rank-arrow { font-size: 12px; color: var(--tx-4); transition: transform 0.2s; }
+  .sum-rank-arrow.open { transform: rotate(180deg); }
+  .sum-rank-body  { overflow: hidden; transition: max-height 0.3s ease; }
+  .sum-rank-body.collapsed { max-height: 0 !important; }
+  .sum-rank-grid  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px 14px 12px; }
 </style>
 </head>
 <body>
@@ -916,10 +933,9 @@
               </div>
             </div>
           </div>
-          <!-- 1위 국가 목록 (하단) -->
-          <div class="card" style="grid-column:1/-1">
-            <div class="lbl" style="margin-bottom:6px">🥇 1위 국가</div>
-            <div class="rank1-countries" id="stat-cnt-1-names" ></div>
+          <!-- 순위별 전체 국가 목록 -->
+          <div class="card" style="grid-column:1/-1;padding:0">
+            <div id="ps-summary-rank-groups"></div>
           </div>
 
         </div>
@@ -970,10 +986,9 @@
               </div>
             </div>
           </div>
-          <!-- 1위 국가 목록 (하단) -->
-          <div class="card" style="border-left-color:var(--steam);grid-column:1/-1">
-            <div class="lbl" style="margin-bottom:6px">🥇 1위 국가</div>
-            <div class="rank1-countries" id="sts-cnt-1-names" ></div>
+          <!-- 순위별 전체 국가 목록 -->
+          <div class="card" style="border-left-color:var(--steam);grid-column:1/-1;padding:0">
+            <div id="sts-summary-rank-groups"></div>
           </div>
 
         </div>
@@ -1467,17 +1482,14 @@ function render() {
   // 1위 국가명
   const rank1Countries = list.filter(x => x.rank === 1).map(x => x.name);
   const namesEl = document.getElementById('stat-cnt-1-names');
-  if (namesEl) {
-    namesEl.innerHTML = rank1Countries.map(n => {
-      const url = getStoreUrl(n);
-      const d = getDaysAtRank(n, 1);
-      const dStr = d > 0 ? `<span style="font-size:10px;color:var(--tx-4);font-weight:400;margin-left:2px">(${d}D)</span>` : '';
-      return `<a class="rank1-tag" href="${url}" target="_blank" onclick="event.stopPropagation()">
-        <span>${FLAGS[n]||''}</span><span class="rank1-tag-name">${n}</span>${dStr}
-      </a>`;
-    }).join('');
-    twemoji.parse(namesEl, { folder: 'svg', ext: '.svg' });
-  }
+  // 요약 순위별 전체 국가 그룹 렌더
+  renderSummaryRankGroups(
+    list,
+    'ps-summary-rank-groups',
+    n => FLAGS[n] || '',
+    n => getStoreUrl(n),
+    true
+  );
 
   // 리더보드 PS - 순위별 그룹
   const lbPs = document.getElementById('lb-ps-container');
@@ -2434,6 +2446,70 @@ function renderSummaryCharts() {
   }
 }
 
+
+/* ── 요약 순위별 국가 그룹 렌더 ── */
+function renderSummaryRankGroups(list, containerId, flagFn, urlFn, isPsFlag) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const TIERS = [
+    { ranks: [1],                label: '🥇 1위',    cls: 'g1',  lc: 'color:#f1c40f' },
+    { ranks: [2,3],              label: '🥈 2~3위',  cls: 'g2',  lc: 'color:#c0c0c0' },
+    { ranks: [4,5,6,7,8,9,10],  label: '🏅 4~10위', cls: 'g3',  lc: 'color:#cd7f32' },
+    { ranks: null,               label: '📊 11위+',  cls: 'g10', lc: 'color:var(--steam)' },
+  ];
+
+  container.innerHTML = TIERS.map((tier, ti) => {
+    let items;
+    if (tier.ranks) {
+      items = list.filter(x => tier.ranks.includes(x.rank));
+    } else {
+      items = list.filter(x => x.rank >= 11 && x.rank < 999);
+    }
+    if (!items.length) return '';
+    const groupId = containerId + '-t' + ti;
+
+    const upCnt   = items.filter(x => (x.change||0) > 0).length;
+    const downCnt = items.filter(x => (x.change||0) < 0).length;
+    const chgBadge = (upCnt > 0 || downCnt > 0)
+      ? `<span style="font-size:9px;display:inline-flex;gap:3px;margin-left:5px">
+          ${upCnt   > 0 ? `<span style="color:var(--up);font-weight:800">▲${upCnt}</span>`   : ''}
+          ${downCnt > 0 ? `<span style="color:var(--down);font-weight:800">▼${downCnt}</span>` : ''}
+        </span>` : '';
+
+    const cards = items.map(x => {
+      const flag = flagFn(x.name);
+      const url  = urlFn(x.name);
+      const days = isPsFlag ? getDaysAtRank(x.name, x.rank) : getStsDaysAtRank(x.name, x.rank);
+      const dStr = days > 1 ? `<span style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:1px">(${days}D)</span>` : '';
+      const rankLbl = x.rank < 999 ? `<span style="font-size:10px;color:var(--tx-4);margin-left:auto">${x.rank}위</span>` : '';
+      return `<a class="rank1-tag" href="${url}" target="_blank" onclick="event.stopPropagation()" style="text-decoration:none">
+        <span>${flag}</span><span class="rank1-tag-name">${x.name}</span>${dStr}${rankLbl}
+      </a>`;
+    }).join('');
+
+    return `<div>
+      <div class="sum-rank-header" onclick="toggleSumGroup('${groupId}')">
+        <span class="sum-rank-label ${tier.cls}" style="${tier.lc}">${tier.label}${chgBadge}</span>
+        <span class="sum-rank-cnt">${items.length}개국</span>
+        <span class="sum-rank-arrow" id="${groupId}-arrow">▼</span>
+      </div>
+      <div class="sum-rank-body collapsed" id="${groupId}">
+        <div class="sum-rank-grid">${cards}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  twemoji.parse(container, { folder: 'svg', ext: '.svg' });
+}
+
+function toggleSumGroup(id) {
+  const body  = document.getElementById(id);
+  const arrow = document.getElementById(id + '-arrow');
+  if (!body) return;
+  body.classList.toggle('collapsed');
+  if (arrow) arrow.classList.toggle('open');
+}
 function renderSteamSchedule() {
   const container = document.getElementById('sts-sched-days');
   const summaryEl = document.getElementById('sts-sched-summary');
@@ -2769,18 +2845,19 @@ function renderStsTable(lat, prv) {
   // 1위 국가명
   const stsRank1Names = ranked.filter(d=>d.rank===1).map(d=>d.name);
   const stsNamesEl = document.getElementById('sts-cnt-1-names');
-  if (stsNamesEl) {
-    stsNamesEl.innerHTML = stsRank1Names.map(n => {
-      const cc = STS_CC[n] || 'us';
-      const url = `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`;
-      const d = getStsDaysAtRank(n, 1);
-      const dStr = d > 0 ? `<span style="font-size:10px;color:var(--tx-4);font-weight:400;margin-left:2px">(${d}D)</span>` : '';
-      return `<a class="rank1-tag" href="${url}" target="_blank" onclick="event.stopPropagation()">
-        <span>${STS_F[n]||''}</span><span class="rank1-tag-name">${n}</span>${dStr}
-      </a>`;
-    }).join('');
-    twemoji.parse(stsNamesEl, { folder: 'svg', ext: '.svg' });
-  }
+  // Steam 요약 순위별 전체 국가 그룹 렌더
+  const stsListForSum = Object.keys(STS_W).map(n => ({
+    name: n,
+    rank: lat.results?.[n]?.rank ?? 999,
+    change: (() => { const r = lat.results?.[n]?.rank; const p = prv?.results?.[n]?.rank; return (r && p) ? p - r : 0; })()
+  }));
+  renderSummaryRankGroups(
+    stsListForSum,
+    'sts-summary-rank-groups',
+    n => STS_F[n] || '',
+    n => { const cc = STS_CC[n] || 'us'; return `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`; },
+    false
+  );
   // 최고/최하 순위 카드
   if (ranked.length) {
     const stsBest  = ranked.reduce((a,b)=>a.rank<b.rank?a:b);
