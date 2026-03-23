@@ -953,6 +953,32 @@
         </div>
       </div></div><!-- /dual-col-body -->
     </div>
+    <!-- 요약 하단 차트 -->
+    <div class="dual-wrap" style="margin-top:14px">
+      <div class="dual-col ps-col">
+        <div class="dual-col-header ps-header">🎮 PS Store 추이 <span class="ps-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-body" style="padding:12px">
+          <div style="height:200px"><canvas id="summaryPsChart"></canvas></div>
+          <div class="chart-legend" style="border-top:1px solid var(--bd);padding:8px 0 0">
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sps-leg-start">시작 —</span></div>
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sps-leg-best">최고 —</span></div>
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="sps-leg-current">현재 —</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="dual-col steam-col">
+        <div class="dual-col-header steam-header">🖥 Steam 추이 <span class="sts-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-body" style="padding:12px">
+          <div style="height:200px"><canvas id="summaryStChart"></canvas></div>
+          <div class="chart-legend" style="border-top:1px solid var(--bd);padding:8px 0 0">
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sst-leg-start">시작 —</span></div>
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sst-leg-best">최고 —</span></div>
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="sst-leg-current">현재 —</span></div>
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#e74c3c"></span><span id="sst-leg-worst">최저 —</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div><!-- /sec-summary -->
 
   <!-- ② 리더보드 -->
@@ -1488,6 +1514,7 @@ function render() {
   renderPsTable(list);
 
   renderMainChart();
+  renderSummaryCharts();
   renderSchedule();
   renderPsHeatmap(list);
 
@@ -1763,8 +1790,19 @@ function renderSchedule() {
     const grid = document.createElement('div');
     grid.className = 'sts-sched-grid';
 
-    // 해당 날짜의 슬롯 생성 (활성 시간대만)
-    activeHours.forEach(h => {
+    // 오늘: 현재 시간 기준 앞뒤 2개 슬롯만
+    const hoursToRender = isToday ? (() => {
+      const nowMs2 = nowUtc.getTime();
+      const sorted = activeHours.slice().sort((a, b) => a - b);
+      // 현재 슬롯 인덱스 찾기
+      let ci = sorted.findIndex(h => date.getTime() + h * 3600000 > nowMs2 - toleranceMs);
+      if (ci === -1) ci = sorted.length;
+      const from = Math.max(0, ci - 2);
+      const to   = Math.min(sorted.length, ci + 3);
+      return sorted.slice(from, to);
+    })() : activeHours;
+
+    hoursToRender.forEach(h => {
       const slotMs = date.getTime() + h * 3600000;
       const slotKst = new Date(slotMs + KST_OFFSET);
       const hhmm = `${String(slotKst.getUTCHours()).padStart(2,'0')}:00`;
@@ -1843,8 +1881,10 @@ function switchTab(tabEl) {
         if (mainChart) mainChart.resize();
         if (stsCI) stsCI.resize();
       }
-      if (secId === 'sec-sales') {
-        renderSalesChart();
+      if (secId === 'sec-sales') { renderSalesChart(); }
+      if (secId === 'sec-summary') {
+        if (summaryPsCI) summaryPsCI.resize();
+        if (summaryStCI) summaryStCI.resize();
       }
     }, 50);
   });
@@ -2212,6 +2252,65 @@ function renderSalesChart() {
   });
 }
 
+
+/* ── 요약 섹션 미니 차트 ── */
+let summaryPsCI = null, summaryStCI = null;
+
+function renderSummaryCharts() {
+  // PS 차트
+  const psCtx = document.getElementById('summaryPsChart');
+  if (psCtx && historyData.length > 1) {
+    const allData = historyData.map(h => ({x: new Date(h.timestamp.split('.')[0]), y: h.averages?.combined})).filter(d => d.y != null);
+    const dv = allData.map(d => d.y), lbs = allData.map(d => d.x);
+    const idxFirst=0, idxLast=dv.length-1;
+    const idxBest = dv.reduce((bi,v,i,a) => v<(a[bi]??99)?i:bi, 0);
+    const ptR = dv.map((_,i) => (i===idxFirst||i===idxLast||i===idxBest)?4:0);
+    const ptC = dv.map((_,i) => i===idxBest?'#2ecc71':i===idxLast?'#f1c40f':'#fff');
+    const setL = (id,t) => { const el=document.getElementById(id); if(el) el.textContent=t; };
+    setL('sps-leg-start',   '시작 ' + (dv[idxFirst]?.toFixed(1)||'—') + '위');
+    setL('sps-leg-best',    '최고 ' + (dv[idxBest]?.toFixed(1)||'—') + '위');
+    setL('sps-leg-current', '현재 ' + (dv[idxLast]?.toFixed(1)||'—') + '위');
+    if (summaryPsCI) summaryPsCI.destroy();
+    summaryPsCI = new Chart(psCtx.getContext('2d'), {
+      type: 'line',
+      data: { labels: lbs, datasets: [{ data: dv, borderColor: '#f1c40f', backgroundColor: 'rgba(241,196,15,0.07)', borderWidth: 2, pointRadius: ptR, pointBackgroundColor: ptC, pointBorderColor: ptC, fill: true, tension: 0.2 }] },
+      options: { responsive:true, maintainAspectRatio:false, layout:{padding:{top:8}},
+        scales: { x:{type:'time',time:{displayFormats:{day:'M/d'}},ticks:{color:'#aaa',maxTicksLimit:8,font:{size:10}},grid:{color:'#1a1a1a'}},
+                  y:{reverse:true,suggestedMin:0,ticks:{color:'#aaa',font:{size:10},callback:v=>v>0?v+'위':'',padding:6},grid:{color:'#1a1a1a'}} },
+        plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>c.parsed.y+'위'}} }
+      }
+    });
+  }
+
+  // Steam 차트
+  const stCtx = document.getElementById('summaryStChart');
+  if (stCtx && stsHist.length > 1) {
+    const v = stsHist.filter(h => stsAvg(h) !== null);
+    if (!v.length) return;
+    const lbs2 = v.map(h => new Date(h.timestamp)), dv2 = v.map(h => stsAvg(h));
+    const idxFirst2=0, idxLast2=dv2.length-1;
+    const idxBest2  = dv2.reduce((bi,val,i,a) => val!==null&&(a[bi]===null||val<a[bi])?i:bi, 0);
+    const idxWorst2 = dv2.reduce((wi,val,i,a) => val!==null&&(a[wi]===null||val>a[wi])?i:wi, 0);
+    const ptR2 = dv2.map((_,i) => (i===idxFirst2||i===idxLast2||i===idxBest2||i===idxWorst2)?4:0);
+    const ptC2 = dv2.map((_,i) => i===idxBest2?'#2ecc71':i===idxWorst2?'#e74c3c':i===idxLast2?'#f1c40f':'#fff');
+    const setL2 = (id,t) => { const el=document.getElementById(id); if(el) el.textContent=t; };
+    const fmt2 = v => v!=null?v.toFixed(1)+'위':'—';
+    setL2('sst-leg-start',   '시작 '+fmt2(dv2[idxFirst2]));
+    setL2('sst-leg-best',    '최고 '+fmt2(dv2[idxBest2]));
+    setL2('sst-leg-current', '현재 '+fmt2(dv2[idxLast2]));
+    setL2('sst-leg-worst',   '최저 '+fmt2(dv2[idxWorst2]));
+    if (summaryStCI) summaryStCI.destroy();
+    summaryStCI = new Chart(stCtx.getContext('2d'), {
+      type: 'line',
+      data: { labels: lbs2, datasets: [{ data: dv2, borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.07)', borderWidth: 2, pointRadius: ptR2, pointBackgroundColor: ptC2, pointBorderColor: ptC2, fill: true, tension: 0.3 }] },
+      options: { responsive:true, maintainAspectRatio:false, layout:{padding:{top:8}},
+        scales: { x:{type:'time',time:{displayFormats:{day:'M/d'}},ticks:{color:'#aaa',maxTicksLimit:8,font:{size:10}},grid:{color:'#1a1a1a'}},
+                  y:{reverse:true,suggestedMin:0,ticks:{color:'#aaa',font:{size:10},callback:v=>v>0?v+'위':'',padding:6},grid:{color:'#1a1a1a'}} },
+        plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>c.parsed.y+'위'}} }
+      }
+    });
+  }
+}
 function renderSteamSchedule() {
   const container = document.getElementById('sts-sched-days');
   const summaryEl = document.getElementById('sts-sched-summary');
@@ -2244,8 +2343,16 @@ function renderSteamSchedule() {
 
     const grid = document.createElement('div');
     grid.className = 'sts-sched-grid';
-    for (let i = 0; i < slotsPerDay; i++) {
-      const slotMs = date.getTime() + i * intervalMin * 60000;
+    // 오늘: 현재 시간 앞뒤 2개 슬롯만
+    const nowMs2 = nowUtc.getTime();
+    const allSlotMs = Array.from({length: slotsPerDay}, (_, i) => date.getTime() + i * intervalMin * 60000);
+    const slotsToRender = isToday ? (() => {
+      let ci = allSlotMs.findIndex(ms => ms > nowMs2 - toleranceMs);
+      if (ci === -1) ci = allSlotMs.length;
+      return allSlotMs.slice(Math.max(0, ci - 2), Math.min(allSlotMs.length, ci + 3));
+    })() : allSlotMs;
+
+    for (const slotMs of slotsToRender) {
       const slotKst = new Date(slotMs + KST_OFFSET);
       const hhmm = `${String(slotKst.getUTCHours()).padStart(2,'0')}:${String(slotKst.getUTCMinutes()).padStart(2,'0')}`;
       const isFuture = slotMs > nowUtc.getTime() + toleranceMs;
