@@ -1081,10 +1081,13 @@
           <!-- 모델 설명 -->
           <div style="background:var(--bg-3);border:1px solid var(--bd);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--tx-4);line-height:1.7">
             <b style="color:var(--tx-2)">📌 모델 근거</b><br>
-            • 출시 ~24h 내 공식 200만 "sold through" 발표 (사전판매 ~36만 포함)<br>
-            • 환불 요인: Intel Arc 미지원, 혼합 평가(Steam 69%), Xbox 앱 오류 → 보수적 12% 적용<br>
-            • 플랫폼 비율: PS5 콘솔 중심 타이틀 + 아시아 비중 높아 PS 우세 추정<br>
-            • Xbox 비율 고정 12% · 일 자연 감소율 18% · 순위 탄성 0.45 (보수적)
+            • 공식 발표: 출시 ~24h 내 200만 "sold through" (사전판매 ~36만 포함) — 환불 12% 적용<br>
+            • <b style="color:var(--gold)">Steam CCU 최고: 248,530명 → CCU/소유자 비율 10~12% 적용 시 Steam 소유자 2.1~2.5M 추정</b><br>
+            • <b style="color:var(--gold)">리뷰 55,501개 → 리뷰율 2% 기준 Steam 소유자 ~2.8M 추정</b><br>
+            • SteamDB 소유자 표시(~1.1M)는 "집계 중" 초기값 — 실제보다 과소<br>
+            • 플랫폼 비율: CCU 역산 기준 Steam ~50% · PS5 ~38% · Xbox 12%<br>
+            • Day1=Day0×27% 스파이크 분리 → DECAY=0.65 (일 35% 감소) · 순위탄성 0.10<br>
+            • ⚠ 침묵 = 5M 마일스톤 대기 가능성 (Elden Ring도 5M 발표까지 16일 소요)
           </div>
           <!-- 컨트롤 -->
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
@@ -1097,7 +1100,7 @@
                 style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:55px;margin-left:6px">
             </label>
             <label style="font-size:12px;color:var(--tx-3)">PS5(%):
-              <input id="sales-ps-ratio" type="number" value="55" min="1" max="86" step="1"
+              <input id="sales-ps-ratio" type="number" value="38" min="1" max="86" step="1"
                 style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:55px;margin-left:6px">
               <span style="color:var(--tx-4);font-size:11px"> Steam <span id="sales-steam-ratio-lbl">33</span>% / Xbox 12%</span>
             </label>
