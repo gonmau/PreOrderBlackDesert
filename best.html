@@ -176,8 +176,8 @@
     /* 요약 섹션 stats만 높이 auto */
     #sec-summary .dual-col { height: auto !important; min-height: 0; }
     #sec-summary .dual-col-body { height: auto !important; overflow: visible !important; }
-    /* 차트 섹션은 별도 처리 */
-    #sec-summary .summary-chart-wrap .dual-col { height: auto !important; min-height: 280px; overflow: visible !important; }
+    /* 요약 하단 차트 모바일 1열 */
+    #sec-summary > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
   }
 
   /* ══ 국가별 테이블형 행 ════════════════════════════════════════ */
@@ -809,14 +809,7 @@
   #ps-links-overlay.open { display:block; }
 
   /* 요약 차트 전용: 높이 자동, 스크롤 없이 canvas 크기 보장 */
-  .summary-chart-wrap { height: auto !important; min-height: 0 !important; overflow: visible !important; }
-  .summary-chart-wrap .dual-col {
-    height: auto !important; min-height: 380px;
-    overflow: visible !important;
-  }
-  .summary-chart-wrap .dual-col-body {
-    overflow: visible !important; height: auto !important; flex: none;
-  }
+  /* summary-chart-wrap 제거됨 - 단순 div로 교체 */
 </style>
 </head>
 <body>
@@ -982,12 +975,13 @@
       </div></div><!-- /dual-col-body -->
     </div>
 
-    <!-- 요약 하단 전체폭 차트 (PS + Steam 나란히) -->
-    <div class="dual-wrap summary-chart-wrap" style="margin-top:14px">
-      <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">📈 PS Store 추이</div>
-        <div class="dual-col-body" style="padding:14px">
-          <div style="height:280px"><canvas id="summaryPsChart"></canvas></div>
+    <!-- 요약 하단 차트 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+      <!-- PS 차트 -->
+      <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--blood);border-radius:var(--radius)">
+        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--blood);letter-spacing:1px;border-bottom:1px solid var(--bd)">📈 PS Store 추이</div>
+        <div style="padding:14px">
+          <div style="position:relative;height:280px"><canvas id="summaryPsChart"></canvas></div>
           <div class="chart-legend" style="margin-top:8px">
             <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sps-leg-start">시작 —</span></div>
             <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sps-leg-best">최고 —</span></div>
@@ -995,10 +989,11 @@
           </div>
         </div>
       </div>
-      <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header">📈 Steam 추이</div>
-        <div class="dual-col-body" style="padding:14px">
-          <div style="height:280px"><canvas id="summaryStChart"></canvas></div>
+      <!-- Steam 차트 -->
+      <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--steam);border-radius:var(--radius)">
+        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--steam);letter-spacing:1px;border-bottom:1px solid var(--bd)">📈 Steam 추이</div>
+        <div style="padding:14px">
+          <div style="position:relative;height:280px"><canvas id="summaryStChart"></canvas></div>
           <div class="chart-legend" style="margin-top:8px">
             <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sst-leg-start">시작 —</span></div>
             <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sst-leg-best">최고 —</span></div>
@@ -2282,6 +2277,7 @@ function renderSummaryCharts() {
     setL('sps-leg-best',    '최고 ' + (dv[idxBest]?.toFixed(1)||'—') + '위');
     setL('sps-leg-current', '현재 ' + (dv[idxLast]?.toFixed(1)||'—') + '위');
     if (summaryPsCI) summaryPsCI.destroy();
+    psCtx.style.width='100%'; psCtx.style.height='280px';
     summaryPsCI = new Chart(psCtx.getContext('2d'), {
       type: 'line',
       data: { labels: lbs, datasets: [{ data: dv, borderColor: '#f1c40f', backgroundColor: 'rgba(241,196,15,0.07)', borderWidth: 2, pointRadius: ptR, pointBackgroundColor: ptC, pointBorderColor: ptC, fill: true, tension: 0.2 }] },
@@ -2311,6 +2307,7 @@ function renderSummaryCharts() {
     setL2('sst-leg-current', '현재 '+fmt2(dv2[idxLast2]));
     setL2('sst-leg-worst',   '최저 '+fmt2(dv2[idxWorst2]));
     if (summaryStCI) summaryStCI.destroy();
+    stCtx.style.width='100%'; stCtx.style.height='280px';
     summaryStCI = new Chart(stCtx.getContext('2d'), {
       type: 'line',
       data: { labels: lbs2, datasets: [{ data: dv2, borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.07)', borderWidth: 2, pointRadius: ptR2, pointBackgroundColor: ptC2, pointBorderColor: ptC2, fill: true, tension: 0.3 }] },
