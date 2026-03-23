@@ -2166,7 +2166,7 @@ function renderSalesChart() {
   const stKeys = Object.keys(stDayAvg).map(Number).sort((a,b)=>a-b);
   const psBase = psDayAvg[psKeys[0]] || 3;
   const stBase = stDayAvg[stKeys[0]] || 2;
-  const DECAY_DAILY = 0.40; // 일 60% 감소 (출시 스파이크→급감 반영)
+  const DECAY_DAILY = 0.65; // 일 35% 감소 (업계 비교: Wukong/Elden Ring 수준)
   const RANK_EXP = 0.10;    // 순위 탄성 최소화 (순위≠신규구매)
 
   // ── 일별 판매 계산 ──
@@ -2182,15 +2182,15 @@ function renderSalesChart() {
     if (di === 0) {
       ps = psDay0; st = stDay0; xb = xbDay0;
     } else {
-      // 순위 가져오기 (없으면 전날 순위 × 1.08 = 자연 하락 가정)
-      const psR = psDayAvg[di] || (psLastRank * 1.08);
-      const stR = stDayAvg[di] || (stLastRank * 1.08);
+      const psR = psDayAvg[di] || (psLastRank * 1.05);
+      const stR = stDayAvg[di] || (stLastRank * 1.05);
       psLastRank = psR; stLastRank = stR;
-      // 기본 감소 × 순위 보정
-      const dayDecay = Math.pow(DECAY_DAILY, di);
+      // Day1=Day0×27% (스파이크 분리), 이후 DECAY 누적 적용
+      const D1 = 0.27;
+      const dayDecay = di === 1 ? D1 : D1 * Math.pow(DECAY_DAILY, di - 1);
       ps = psDay0 * dayDecay * Math.pow(psBase / psR, RANK_EXP);
       st = stDay0 * dayDecay * Math.pow(stBase / stR, RANK_EXP);
-      xb = xbDay0 * Math.pow(DECAY_DAILY, di); // Xbox 순위 데이터 없어 자연 감소만
+      xb = xbDay0 * dayDecay;
     }
     ps = Math.max(0, Math.round(ps));
     st = Math.max(0, Math.round(st));
