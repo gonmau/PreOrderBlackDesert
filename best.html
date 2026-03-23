@@ -808,6 +808,11 @@
   #ps-links-overlay { display:none; position:fixed; inset:0; z-index:199; }
   #ps-links-overlay.open { display:block; }
 
+  /* 요약 섹션: dual-wrap 높이 자동 (아래 차트가 보이도록) */
+  #sec-summary > .dual-wrap { height: auto !important; min-height: 0 !important; }
+  #sec-summary > .dual-wrap .dual-col { height: auto !important; overflow: visible !important; }
+  #sec-summary > .dual-wrap .dual-col-body { height: auto !important; overflow: visible !important; }
+
   /* 요약 차트 전용: 높이 자동, 스크롤 없이 canvas 크기 보장 */
   /* summary-chart-wrap 제거됨 - 단순 div로 교체 */
 </style>
