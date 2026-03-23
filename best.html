@@ -2551,6 +2551,7 @@ function renderSummaryRankGroups(list, containerId, flagFn, urlFn, isPsFlag) {
           ${downCnt > 0 ? `<span style="color:var(--down);font-weight:800">▼${downCnt}</span>` : ''}
         </span>` : '';
 
+    items.sort((a, b) => starPriority(a.name) - starPriority(b.name));
     const cards = items.map(x => {
       const flag = flagFn(x.name);
       const url  = urlFn(x.name);
@@ -2598,6 +2599,14 @@ function starBadge(name, isPs) {
   if (inPs)
     return '<span title="PS Store 시장 Top5" style="color:#ff4757;font-size:11px;margin-left:2px">★</span>';
   return '<span title="Steam 시장 Top5" style="color:#4a9eff;font-size:11px;margin-left:2px">★</span>';
+}
+
+function starPriority(name) {
+  const inPs    = PS_MARKET_TOP5.has(name);
+  const inSteam = STEAM_MARKET_TOP5.has(name);
+  if (inPs && inSteam) return 0;  // ★★ 최우선
+  if (inPs || inSteam) return 1;  // ★
+  return 2;                        // 별 없음
 }
 function renderSteamSchedule() {
   const container = document.getElementById('sts-sched-days');
@@ -2825,6 +2834,8 @@ function renderPsHeatmap(list) {
     groups[k].items.push(d);
   });
 
+  // 그룹 내 별 우선순위 정렬
+  Object.values(groups).forEach(g => g.items.sort((a, b) => starPriority(a.name) - starPriority(b.name)));
   g.innerHTML = Object.entries(groups).map(([label, { rank, items }]) => {
     const lc = rank===1?'g1':rank<=3?'g2':rank<=10?'g3':rank<999?'g10':'gout';
     const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
@@ -2972,6 +2983,8 @@ function renderStsTable(lat, prv) {
     <span style="text-align:right">순위</span>
     <span></span>
   </div>`;
+  Object.values(groups).forEach(g => g.items.sort((a, b) => starPriority(a.name) - starPriority(b.name)));
+  Object.values(groups).forEach(g => g.items.sort((a, b) => starPriority(a.name) - starPriority(b.name)));
   container.innerHTML = Object.entries(groups).map(([label,{rank,items}])=>{
     const lc = rank===1?'g1':rank<=3?'g2':rank<=10?'g3':rank<999?'g10':'gout';
     const barColor = rank===1?'var(--gold)':rank<=3?'#c0c0c0':rank<=10?'#cd7f32':rank<999?'var(--steam)':'var(--bd)';
@@ -3041,6 +3054,8 @@ function renderStsLeaderboard(lat, prv) {
     if (!groups[k]) groups[k] = { rank: d.rank || 9999, names: [] };
     groups[k].names.push(d.name);
   });
+  // 각 그룹 내 별 우선순위 정렬
+  Object.values(groups).forEach(g => g.names.sort((a, b) => starPriority(a) - starPriority(b)));
   g.innerHTML = Object.entries(groups).map(([label, { rank, names }]) => {
     const lc = rank===1?'g1':rank<=3?'g2':rank<=10?'g3':rank<999?'g10':'gout';
     const tc = rank===1?'tier-1':rank<=3?'tier-2':rank<=10?'tier-3':rank<999?'tier-10':'tier-out';
@@ -3107,6 +3122,8 @@ function renderStsHeatmap(lat, prv) {
     groups[k].items.push(d);
   });
 
+  // 그룹 내 별 우선순위 정렬
+  Object.values(groups).forEach(g => g.items.sort((a, b) => starPriority(a.name) - starPriority(b.name)));
   g.innerHTML = Object.entries(groups).map(([label, { rank, items }]) => {
     const lc = rank===1?'g1':rank<=3?'g2':rank<=10?'g3':rank<999?'g10':'gout';
     const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
