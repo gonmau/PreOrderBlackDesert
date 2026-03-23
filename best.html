@@ -897,15 +897,6 @@
             <div class="rank1-countries" id="stat-cnt-1-names" style="display:flex;flex-wrap:wrap;gap:4px"></div>
           </div>
 
-        <!-- PS 요약 미니 차트 -->
-        <div style="border-top:1px solid var(--bd);padding:12px 12px 8px">
-          <div style="height:260px;margin-bottom:6px"><canvas id="summaryPsChart"></canvas></div>
-          <div class="chart-legend">
-            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sps-leg-start">시작 —</span></div>
-            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sps-leg-best">최고 —</span></div>
-            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="sps-leg-current">현재 —</span></div>
-          </div>
-        </div>
         </div>
       </div></div><!-- /dual-col-body -->
       <!-- Steam 우측 -->
@@ -960,18 +951,35 @@
             <div class="rank1-countries" id="sts-cnt-1-names" style="display:flex;flex-wrap:wrap;gap:4px"></div>
           </div>
 
-        <!-- Steam 요약 미니 차트 -->
-        <div style="border-top:1px solid var(--bd);padding:12px 12px 8px">
-          <div style="height:260px;margin-bottom:6px"><canvas id="summaryStChart"></canvas></div>
-          <div class="chart-legend">
+        </div>
+      </div></div><!-- /dual-col-body -->
+    </div>
+
+    <!-- 요약 하단 전체폭 차트 (PS + Steam 나란히) -->
+    <div class="dual-wrap" style="margin-top:14px">
+      <div class="dual-col ps-col">
+        <div class="dual-col-header ps-header">📈 PS Store 추이</div>
+        <div class="dual-col-body" style="padding:14px">
+          <div style="height:280px"><canvas id="summaryPsChart"></canvas></div>
+          <div class="chart-legend" style="margin-top:8px">
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sps-leg-start">시작 —</span></div>
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sps-leg-best">최고 —</span></div>
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="sps-leg-current">현재 —</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="dual-col steam-col">
+        <div class="dual-col-header steam-header">📈 Steam 추이</div>
+        <div class="dual-col-body" style="padding:14px">
+          <div style="height:280px"><canvas id="summaryStChart"></canvas></div>
+          <div class="chart-legend" style="margin-top:8px">
             <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sst-leg-start">시작 —</span></div>
             <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sst-leg-best">최고 —</span></div>
             <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="sst-leg-current">현재 —</span></div>
             <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#e74c3c"></span><span id="sst-leg-worst">최저 —</span></div>
           </div>
         </div>
-        </div>
-      </div></div><!-- /dual-col-body -->
+      </div>
     </div>
   </div><!-- /sec-summary -->
 
@@ -2450,6 +2458,7 @@ function renderSTS() {
   renderStsTable(lat, prv);
   renderStsHeatmap(lat, prv);
   renderStsLeaderboard(lat, prv);
+  renderSummaryCharts();
 }
 
 /* ══════════════════════════════════════════════════════════════
