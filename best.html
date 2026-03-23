@@ -899,7 +899,7 @@
 
         <!-- PS 요약 미니 차트 -->
         <div style="border-top:1px solid var(--bd);padding:12px 12px 8px">
-          <div style="height:180px;margin-bottom:6px"><canvas id="summaryPsChart"></canvas></div>
+          <div style="height:260px;margin-bottom:6px"><canvas id="summaryPsChart"></canvas></div>
           <div class="chart-legend">
             <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sps-leg-start">시작 —</span></div>
             <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sps-leg-best">최고 —</span></div>
@@ -962,7 +962,7 @@
 
         <!-- Steam 요약 미니 차트 -->
         <div style="border-top:1px solid var(--bd);padding:12px 12px 8px">
-          <div style="height:180px;margin-bottom:6px"><canvas id="summaryStChart"></canvas></div>
+          <div style="height:260px;margin-bottom:6px"><canvas id="summaryStChart"></canvas></div>
           <div class="chart-legend">
             <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sst-leg-start">시작 —</span></div>
             <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sst-leg-best">최고 —</span></div>
@@ -1562,9 +1562,9 @@ function toggleRankGroup(id) {
 }
 
 function renderMainChart() {
-  const ctx = document.getElementById('mainChart');
-  if (!ctx) return;
-  const ctx2d = ctx.getContext('2d');
+  const mainEl = document.getElementById('mainChart');
+  if (!mainEl) return;
+  const ctx = mainEl.getContext('2d');
   if (mainChart) mainChart.destroy();
 
   const allData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.averages.combined }))
@@ -1585,7 +1585,7 @@ function renderMainChart() {
   setL('ps-leg-best',    '최고 ' + fmtR(dv[idxBest]));
   setL('ps-leg-current', '현재 ' + fmtR(dv[idxLast]));
 
-  mainChart = new Chart(ctx2d, {
+  mainChart = new Chart(ctx, {
     type: 'line',
     data: {
       labels: lbs,
@@ -2413,48 +2413,39 @@ function renderSTS() {
     }
   }
 
-  // 히스토리 차트
+  // 히스토리 차트 (캔버스 없으면 건너뜀)
   const lbs = v.map(h => new Date(h.timestamp)), dv = v.map(h => stsAvg(h));
   const stsChartEl = document.getElementById('stsChart');
-  if (!stsChartEl) return;
-  const ctx = stsChartEl.getContext('2d');
-  if (stsCI) stsCI.destroy();
-
-  const idxFirst=0, idxLast=dv.length-1;
-  const idxBest  = dv.reduce((bi,val,i,a) => val!==null && (a[bi]===null || val<a[bi]) ? i : bi, 0);
-  const idxWorst = dv.reduce((wi,val,i,a) => val!==null && (a[wi]===null || val>a[wi]) ? i : wi, 0);
-  const specialIdx = new Set([idxFirst, idxLast, idxBest, idxWorst]);
-  const ptR = dv.map((_,i) => specialIdx.has(i) ? 5 : 0);
-  const ptC = dv.map((_,i) => i===idxBest?'#2ecc71': i===idxWorst?'#e74c3c': i===idxLast?'#f1c40f':'#ffffff');
-
-  const labelPlugin = {
-    id: 'stsLabel',
-    afterDatasetsDraw(chart) {
-      // 인라인 텍스트 제거 — 레전드로 대체됨
-    }
-  };
-
-  // 레전드 업데이트
-  const fmtR = v => v != null ? v.toFixed(1) + '위' : '—';
-  const setL = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
-  setL('sts-leg-start',   '시작 ' + fmtR(dv[idxFirst]));
-  setL('sts-leg-best',    '최고 ' + fmtR(dv[idxBest]));
-  setL('sts-leg-current', '현재 ' + fmtR(dv[idxLast]));
-  setL('sts-leg-worst',   '최저 ' + fmtR(dv[idxWorst]));
-
-  stsCI = new Chart(ctx, {
-    type: 'line',
-    data: { labels: lbs, datasets: [{ label: '평균', data: dv, borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.1)', borderWidth: 2, pointRadius: ptR, pointBackgroundColor: ptC, pointBorderColor: ptC, fill: true, tension: 0.3 }] },
-    options: { responsive: true, maintainAspectRatio: false,
-      layout: { padding: { top: 24, right: 16 } },
-      scales: {
-        x: { type: 'time', time: { unit: 'day', tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' } }, ticks: { color: '#fff', maxTicksLimit: 8 }, grid: { color: '#222' } },
-        y: { reverse: true, suggestedMin: 0, ticks: { color: '#fff', stepSize: 1, callback: v => v > 0 ? v + '위' : '', padding: 8 }, grid: { color: '#222' } }
+  if (stsChartEl) {
+    const ctx = stsChartEl.getContext('2d');
+    if (stsCI) stsCI.destroy();
+    const idxFirst=0, idxLast=dv.length-1;
+    const idxBest  = dv.reduce((bi,val,i,a) => val!==null && (a[bi]===null || val<a[bi]) ? i : bi, 0);
+    const idxWorst = dv.reduce((wi,val,i,a) => val!==null && (a[wi]===null || val>a[wi]) ? i : wi, 0);
+    const specialIdx = new Set([idxFirst, idxLast, idxBest, idxWorst]);
+    const ptR = dv.map((_,i) => specialIdx.has(i) ? 5 : 0);
+    const ptC = dv.map((_,i) => i===idxBest?'#2ecc71': i===idxWorst?'#e74c3c': i===idxLast?'#f1c40f':'#ffffff');
+    const labelPlugin = { id: 'stsLabel', afterDatasetsDraw() {} };
+    const fmtR = v => v != null ? v.toFixed(1) + '위' : '—';
+    const setL = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+    setL('sts-leg-start',   '시작 ' + fmtR(dv[idxFirst]));
+    setL('sts-leg-best',    '최고 ' + fmtR(dv[idxBest]));
+    setL('sts-leg-current', '현재 ' + fmtR(dv[idxLast]));
+    setL('sts-leg-worst',   '최저 ' + fmtR(dv[idxWorst]));
+    stsCI = new Chart(ctx, {
+      type: 'line',
+      data: { labels: lbs, datasets: [{ label: '평균', data: dv, borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.1)', borderWidth: 2, pointRadius: ptR, pointBackgroundColor: ptC, pointBorderColor: ptC, fill: true, tension: 0.3 }] },
+      options: { responsive: true, maintainAspectRatio: false,
+        layout: { padding: { top: 10, right: 10 } },
+        scales: {
+          x: { type: 'time', time: { unit: 'day', tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' } }, ticks: { color: '#fff', maxTicksLimit: 8 }, grid: { color: '#222' } },
+          y: { reverse: true, suggestedMin: 0, ticks: { color: '#fff', stepSize: 1, callback: v => v > 0 ? v + '위' : '', padding: 8 }, grid: { color: '#222' } }
+        },
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y + '위' } } }
       },
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y + '위' } } }
-    },
-    plugins: [labelPlugin]
-  });
+      plugins: [labelPlugin]
+    });
+  }
 
   renderStsTable(lat, prv);
   renderStsHeatmap(lat, prv);
