@@ -901,38 +901,26 @@
         <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span id="ps-data-time" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div class="stats">
           <div class="card"><div class="lbl">가중 평균</div><div class="val" id="stat-avg">—</div></div>
-          <div class="card">
-            <div class="lbl">최고 순위</div>
-            <div class="val" id="stat-best-val">—</div>
-            <div class="sub" id="stat-best-name">...</div>
-          </div>
-          <div class="card">
-            <div class="lbl">최하 순위</div>
-            <div class="val" id="stat-worst-val">—</div>
-            <div class="sub" id="stat-worst-name">...</div>
-          </div>
-          <!-- 순위별 국가 수 카드 (상단) -->
-          <div class="card">
-            <div class="lbl">순위권 진입</div>
-            <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <span style="font-size:14px;font-weight:800">🥇 <span style="color:#FFD700">1위</span></span>
-                <span id="stat-cnt-1" style="font-family:'Cinzel',serif;font-size:18px;color:#FFD700">—</span>
+          <!-- 최고/최하 합친 카드 -->
+          <div class="card" style="grid-column:span 1">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div>
+                <div class="lbl" style="margin-bottom:4px">최고 순위</div>
+                <div class="val" id="stat-best-val" style="font-size:22px">—</div>
+                <div class="sub" id="stat-best-name" style="font-size:13px">...</div>
               </div>
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <span style="font-size:14px;font-weight:800">🥈 <span style="color:#C0C0C0">2~3위</span></span>
-                <span id="stat-cnt-3" style="font-family:'Cinzel',serif;font-size:18px;color:#C0C0C0">—</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <span style="font-size:14px;font-weight:800">🏅 <span style="color:#cd7f32">4~10위</span></span>
-                <span id="stat-cnt-10" style="font-family:'Cinzel',serif;font-size:18px;color:#cd7f32">—</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--bd);padding-top:4px;margin-top:2px">
-                <span style="font-size:13px;color:var(--tx-3)">11위+ / 전체</span>
-                <span id="stat-cnt-rest" style="font-size:13px;color:var(--tx-3)">— / —</span>
+              <div style="border-left:1px solid var(--bd);padding-left:10px">
+                <div class="lbl" style="margin-bottom:4px">최하 순위</div>
+                <div class="val" id="stat-worst-val" style="font-size:22px;color:var(--down)">—</div>
+                <div class="sub" id="stat-worst-name" style="font-size:13px">...</div>
               </div>
             </div>
           </div>
+          <!-- 숨김 유지 (JS 참조용) -->
+          <span id="stat-cnt-1" style="display:none">0</span>
+          <span id="stat-cnt-3" style="display:none">0</span>
+          <span id="stat-cnt-10" style="display:none">0</span>
+          <span id="stat-cnt-rest" style="display:none">0</span>
           <!-- 순위별 전체 국가 목록 -->
           <div class="card" style="grid-column:1/-1;padding:0">
             <div id="ps-summary-rank-groups"></div>
@@ -954,38 +942,26 @@
             <div class="lbl">가중 평균</div>
             <div class="val" id="sts-avg" style="color:var(--steam)">—</div>
           </div>
-          <div class="card" style="border-left-color:var(--steam)">
-            <div class="lbl">최고 순위</div>
-            <div class="val" id="sts-best-rank-val" style="color:var(--gold)">—</div>
-            <div class="sub" id="sts-best-rank-name">...</div>
-          </div>
-          <div class="card" style="border-left-color:var(--steam)">
-            <div class="lbl">최하 순위</div>
-            <div class="val" id="sts-worst-rank-val" style="color:var(--down)">—</div>
-            <div class="sub" id="sts-worst-rank-name">...</div>
-          </div>
-          <!-- 순위별 국가 수 카드 (상단) -->
-          <div class="card" style="border-left-color:var(--steam)">
-            <div class="lbl">순위권 진입</div>
-            <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <span style="font-size:14px;font-weight:800">🥇 <span style="color:#FFD700">1위</span></span>
-                <span id="sts-cnt-1" style="font-family:'Cinzel',serif;font-size:18px;color:#FFD700">—</span>
+          <!-- 최고/최하 합친 카드 -->
+          <div class="card" style="border-left-color:var(--steam);grid-column:span 1">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div>
+                <div class="lbl" style="margin-bottom:4px">최고 순위</div>
+                <div class="val" id="sts-best-rank-val" style="font-size:22px;color:var(--gold)">—</div>
+                <div class="sub" id="sts-best-rank-name" style="font-size:13px">...</div>
               </div>
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <span style="font-size:14px;font-weight:800">🥈 <span style="color:#C0C0C0">2~3위</span></span>
-                <span id="sts-cnt-3" style="font-family:'Cinzel',serif;font-size:18px;color:#C0C0C0">—</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <span style="font-size:14px;font-weight:800">🏅 <span style="color:#cd7f32">4~10위</span></span>
-                <span id="sts-cnt-10" style="font-family:'Cinzel',serif;font-size:18px;color:#cd7f32">—</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--bd);padding-top:4px;margin-top:2px">
-                <span style="font-size:13px;color:var(--tx-3)">11위+ / 전체</span>
-                <span id="sts-cnt-rest" style="font-size:13px;color:var(--tx-3)">— / —</span>
+              <div style="border-left:1px solid var(--bd);padding-left:10px">
+                <div class="lbl" style="margin-bottom:4px">최하 순위</div>
+                <div class="val" id="sts-worst-rank-val" style="font-size:22px;color:var(--down)">—</div>
+                <div class="sub" id="sts-worst-rank-name" style="font-size:13px">...</div>
               </div>
             </div>
           </div>
+          <!-- 숨김 유지 (JS 참조용) -->
+          <span id="sts-cnt-1" style="display:none">0</span>
+          <span id="sts-cnt-3" style="display:none">0</span>
+          <span id="sts-cnt-10" style="display:none">0</span>
+          <span id="sts-cnt-rest" style="display:none">0</span>
           <!-- 순위별 전체 국가 목록 -->
           <div class="card" style="border-left-color:var(--steam);grid-column:1/-1;padding:0">
             <div id="sts-summary-rank-groups"></div>
