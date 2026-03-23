@@ -1511,7 +1511,7 @@ function render() {
         const ch = psChangeMap[n] || 0;
         const chTxt = ch > 0 ? `<span style="font-size:9px;color:var(--up);font-weight:800">▲${ch}</span>`
                     : ch < 0 ? `<span style="font-size:9px;color:var(--down);font-weight:800">▼${Math.abs(ch)}</span>` : '';
-        return `<div class="top10-item ${tc}" onclick="showCountryChart('${n}')"><span class="n">${FLAGS[n]||''} ${n}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank >= 9999 ? '—' : rank + '위' + (psChangeMap ? (() => { const d = getDaysAtRank(n, rank); return d>1?`(${d}d)`:''; })() : '')}${chTxt}</span></div>`;
+        return `<div class="top10-item ${tc}" onclick="showCountryChart('${n}')"><span class="n">${FLAGS[n]||''} ${n}${starBadge(n, true)}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank >= 9999 ? '—' : rank + '위' + (psChangeMap ? (() => { const d = getDaysAtRank(n, rank); return d>1?`(${d}d)`:''; })() : '')}${chTxt}</span></div>`;
       }).join('');
       return `<div>
         <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
@@ -1585,7 +1585,7 @@ function renderPsTable(list) {
       return `<div class="ct-row" onclick="showCountryChart('${d.name}')">
         <span class="ct-bar" style="background:${barColor}"></span>
         <span class="ct-flag">${FLAGS[d.name]||''}</span>
-        <span class="ct-name">${d.name}</span>
+        <span class="ct-name">${d.name}${starBadge(d.name, true)}</span>
         <span class="ct-meta">${bestStr}</span>
         <span class="ct-meta">${avgStr}</span>
         <span class="ct-chg ${chgCls}">${chgTxt}</span>
@@ -2558,7 +2558,7 @@ function renderSummaryRankGroups(list, containerId, flagFn, urlFn, isPsFlag) {
       const dStr = days > 1 ? `<span style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:1px">(${days}D)</span>` : '';
       const rankLbl = x.rank < 999 ? `<span style="font-size:10px;color:var(--tx-4);margin-left:auto">${x.rank}위</span>` : '';
       return `<a class="rank1-tag" href="${url}" target="_blank" onclick="event.stopPropagation()" style="text-decoration:none">
-        <span>${flag}</span><span class="rank1-tag-name">${x.name}</span>${dStr}${rankLbl}
+        <span>${flag}</span><span class="rank1-tag-name">${x.name}</span>${starBadge(x.name, isPsFlag)}${dStr}${rankLbl}
       </a>`;
     }).join('');
 
@@ -2583,6 +2583,21 @@ function toggleSumGroup(id) {
   if (!body) return;
   body.classList.toggle('collapsed');
   if (arrow) arrow.classList.toggle('open');
+}
+
+/* ── 시장 점유율 Top5 국가 ── */
+const PS_MARKET_TOP5    = new Set(['미국', '일본', '독일', '영국', '프랑스']);
+const STEAM_MARKET_TOP5 = new Set(['미국', '러시아', '독일', '영국', '중국']);
+
+function starBadge(name, isPs) {
+  const inPs    = PS_MARKET_TOP5.has(name);
+  const inSteam = STEAM_MARKET_TOP5.has(name);
+  if (!inPs && !inSteam) return '';
+  if (inPs && inSteam)
+    return '<span title="PS·Steam 시장 Top5" style="color:#f1c40f;font-size:11px;margin-left:2px">★★</span>';
+  if (inPs)
+    return '<span title="PS Store 시장 Top5" style="color:#ff4757;font-size:11px;margin-left:2px">★</span>';
+  return '<span title="Steam 시장 Top5" style="color:#4a9eff;font-size:11px;margin-left:2px">★</span>';
 }
 function renderSteamSchedule() {
   const container = document.getElementById('sts-sched-days');
@@ -2835,7 +2850,7 @@ function renderPsHeatmap(list) {
         <div class="hm-bar ${barCls}"></div>
         <div class="hm-rank ${rankCls}">${rankTxt}</div>
         <div class="hm-info">
-          <div class="hm-name"><span class="hm-flag">${flag}</span><span class="hm-name-text">${d.name}</span></div>
+          <div class="hm-name"><span class="hm-flag">${flag}</span><span class="hm-name-text">${d.name}</span>${starBadge(d.name, true)}</div>
           <div class="hm-meta">
             ${bestTxt ? `<span class="hm-best">${bestTxt}</span>` : ''}
             <span class="hm-change ${chgCls}">${chgTxt}</span>
@@ -2976,7 +2991,7 @@ function renderStsTable(lat, prv) {
       return `<div class="ct-row" onclick="openStsModal('${d.name}')">
         <span class="ct-bar" style="background:${barColor}"></span>
         <span class="ct-flag">${flagImg}</span>
-        <span class="ct-name">${d.name}</span>
+        <span class="ct-name">${d.name}${starBadge(d.name, false)}</span>
         <span class="ct-meta">${bestStr}</span>
         <span class="ct-meta">${avgStr}</span>
         <span class="ct-chg ${chgCls}">${chgTxt}</span>
@@ -3044,7 +3059,7 @@ function renderStsLeaderboard(lat, prv) {
       const chTxt = ch > 0 ? `<span style="font-size:9px;color:var(--up);font-weight:800">▲${ch}</span>`
                   : ch < 0 ? `<span style="font-size:9px;color:var(--down);font-weight:800">▼${Math.abs(ch)}</span>` : '';
       const dSts = getStsDaysAtRank(n, rank<9999?rank:0);
-      return `<div class="top10-item ${tc}" onclick="openStsModal('${n}')"><span class="n">${flag} ${n}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank>=9999?'—':rank+'위'+(dSts>1?`(${dSts}d)`:'')}${chTxt}</span></div>`;
+      return `<div class="top10-item ${tc}" onclick="openStsModal('${n}')"><span class="n">${flag} ${n}${starBadge(n, false)}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank>=9999?'—':rank+'위'+(dSts>1?`(${dSts}d)`:'')}${chTxt}</span></div>`;
     }).join('');
     return `<div>
       <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
@@ -3118,7 +3133,7 @@ function renderStsHeatmap(lat, prv) {
         <div class="hm-bar ${barCls}"></div>
         <div class="hm-rank ${rankCls}">${rankTxt}</div>
         <div class="hm-info">
-          <div class="hm-name"><span class="hm-flag">${flag}</span><span class="hm-name-text">${d.name}</span></div>
+          <div class="hm-name"><span class="hm-flag">${flag}</span><span class="hm-name-text">${d.name}</span>${starBadge(d.name, true)}</div>
           <div class="hm-meta">
             ${bestTxt ? `<span class="hm-best">${bestTxt}</span>` : ''}
             <span class="hm-change ${chgCls}">${chgTxt}</span>
