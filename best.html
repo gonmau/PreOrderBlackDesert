@@ -2281,16 +2281,14 @@ function renderSalesChart() {
 let summaryPsCI = null, summaryStCI = null;
 
 function renderSummaryCharts() {
-  const W = 800, H = 280; // 고정 크기 렌더링
+  const W = 800, H_TREND = 280, H_DIST = 180;
 
-  // ── PS 차트 ──
+  // ── PS 추이 차트 ──
   const psEl = document.getElementById('summaryPsChart');
   if (psEl && historyData.length > 1) {
     psEl.width  = psEl.parentElement.offsetWidth || W;
-    psEl.height = H;
-    const allData = historyData
-      .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.averages?.combined }))
-      .filter(d => d.y != null);
+    psEl.height = H_TREND;
+    const allData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.averages?.combined })).filter(d => d.y != null);
     const dv = allData.map(d => d.y), lbs = allData.map(d => d.x);
     const idxFirst = 0, idxLast = dv.length - 1;
     const idxBest  = dv.reduce((bi, v, i, a) => v < (a[bi] ?? 99) ? i : bi, 0);
@@ -2303,161 +2301,134 @@ function renderSummaryCharts() {
     if (summaryPsCI) summaryPsCI.destroy();
     summaryPsCI = new Chart(psEl.getContext('2d'), {
       type: 'line',
-      data: { labels: lbs, datasets: [{ data: dv,
-        borderColor: '#f1c40f', backgroundColor: 'rgba(241,196,15,0.08)',
-        borderWidth: 2, pointRadius: ptR, pointBackgroundColor: ptC, pointBorderColor: ptC,
-        fill: true, tension: 0.25, spanGaps: true }] },
-      options: { responsive: false, animation: false,
-        layout: { padding: { top: 10, right: 10, bottom: 4, left: 4 } },
+      data: { labels: lbs, datasets: [{ data: dv, borderColor: '#f1c40f', backgroundColor: 'rgba(241,196,15,0.08)', borderWidth: 2, pointRadius: ptR, pointBackgroundColor: ptC, pointBorderColor: ptC, fill: true, tension: 0.25, spanGaps: true }] },
+      options: { responsive: false, animation: false, layout: { padding: { top: 10, right: 10 } },
         scales: {
-          x: { type: 'time', time: { displayFormats: { day: 'M/d' } },
-               ticks: { color: '#aaa', maxTicksLimit: 8, font: { size: 11 } }, grid: { color: '#1a1a1a' } },
-          y: { reverse: true, suggestedMin: 0,
-               ticks: { color: '#aaa', font: { size: 11 }, callback: v => v > 0 ? v + '위' : '', padding: 6 },
-               grid: { color: '#1a1a1a' } }
+          x: { type: 'time', time: { displayFormats: { day: 'M/d' } }, ticks: { color: '#aaa', maxTicksLimit: 8, font: { size: 11 } }, grid: { color: '#1a1a1a' } },
+          y: { reverse: true, suggestedMin: 0, ticks: { color: '#aaa', font: { size: 11 }, callback: v => v > 0 ? v + '위' : '', padding: 6 }, grid: { color: '#1a1a1a' } }
         },
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y + '위' } } }
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y + '위' } } }
       }
     });
   }
 
-  // ── Steam 차트 ──
-  const stEl = document.getElementById('summaryStChart');
-  if (stEl && stsHist.length > 1) {
-    stEl.width  = stEl.parentElement.offsetWidth || W;
-    stEl.height = H;
-    const v = stsHist.filter(h => stsAvg(h) !== null);
-    if (!v.length) return;
-    const lbs2 = v.map(h => new Date(h.timestamp)), dv2 = v.map(h => stsAvg(h));
-    const idxFirst2 = 0, idxLast2 = dv2.length - 1;
-    const idxBest2  = dv2.reduce((bi, val, i, a) => val !== null && (a[bi] === null || val < a[bi]) ? i : bi, 0);
-    const idxWorst2 = dv2.reduce((wi, val, i, a) => val !== null && (a[wi] === null || val > a[wi]) ? i : wi, 0);
-    const ptR2 = dv2.map((_, i) => (i===idxFirst2||i===idxLast2||i===idxBest2||i===idxWorst2) ? 5 : 0);
-    const ptC2 = dv2.map((_, i) => i===idxBest2 ? '#2ecc71' : i===idxWorst2 ? '#e74c3c' : i===idxLast2 ? '#f1c40f' : '#fff');
-    const setL2 = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
-    const fmt2 = v => v != null ? v.toFixed(1) + '위' : '—';
-    setL2('sst-leg-start',   '시작 ' + fmt2(dv2[idxFirst2]));
-    setL2('sst-leg-best',    '최고 ' + fmt2(dv2[idxBest2 ]));
-    setL2('sst-leg-current', '현재 ' + fmt2(dv2[idxLast2 ]));
-    setL2('sst-leg-worst',   '최저 ' + fmt2(dv2[idxWorst2]));
-    if (summaryStCI) summaryStCI.destroy();
-    summaryStCI = new Chart(stEl.getContext('2d'), {
-      type: 'line',
-      data: { labels: lbs2, datasets: [{ data: dv2,
-        borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.08)',
-        borderWidth: 2, pointRadius: ptR2, pointBackgroundColor: ptC2, pointBorderColor: ptC2,
-        fill: true, tension: 0.3, spanGaps: true }] },
-      options: { responsive: false, animation: false,
-        layout: { padding: { top: 10, right: 10, bottom: 4, left: 4 } },
-        scales: {
-          x: { type: 'time', time: { displayFormats: { day: 'M/d' } },
-               ticks: { color: '#aaa', maxTicksLimit: 8, font: { size: 11 } }, grid: { color: '#1a1a1a' } },
-          y: { reverse: true, suggestedMin: 0,
-               ticks: { color: '#aaa', font: { size: 11 }, callback: v => v > 0 ? v + '위' : '', padding: 6 },
-               grid: { color: '#1a1a1a' } }
-        },
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y + '위' } } }
-      }
-    });
-  }
-}
-  // ── PS 일자별 순위 분포 ──
+  // ── PS 일자별 순위 분포 차트 ──
   const psDistEl = document.getElementById('psRankDistChart');
   if (psDistEl && historyData.length > 1) {
-    psDistEl.width  = psDistEl.parentElement.offsetWidth || 800;
-    psDistEl.height = 180;
-    // 날짜별 그룹핑 (KST 기준 YYYY-MM-DD)
+    psDistEl.width  = psDistEl.parentElement.offsetWidth || W;
+    psDistEl.height = H_DIST;
     const psDateMap = {};
     historyData.forEach(h => {
-      const kst = new Date(new Date(h.timestamp).getTime() + 9*3600000);
-      const dateKey = `${kst.getUTCMonth()+1}/${kst.getUTCDate()}`;
-      if (!psDateMap[dateKey]) psDateMap[dateKey] = { r1:0, r23:0, r410:0, r11:0, cnt:0 };
-      const entry = psDateMap[dateKey];
-      Object.keys(h.raw_results||{}).forEach(name => {
+      const kst = new Date(new Date(h.timestamp).getTime() + 9 * 3600000);
+      const dk = (kst.getUTCMonth() + 1) + '/' + kst.getUTCDate();
+      if (!psDateMap[dk]) psDateMap[dk] = { r1: 0, r23: 0, r410: 0, r11: 0, cnt: 0 };
+      const e = psDateMap[dk];
+      Object.keys(h.raw_results || {}).forEach(name => {
         const r = getRank(h, name);
         if (r >= 999) return;
-        if (r === 1)       entry.r1++;
-        else if (r <= 3)   entry.r23++;
-        else if (r <= 10)  entry.r410++;
-        else               entry.r11++;
+        if (r === 1) e.r1++;
+        else if (r <= 3) e.r23++;
+        else if (r <= 10) e.r410++;
+        else e.r11++;
       });
-      entry.cnt++;
+      e.cnt++;
     });
-    // 날짜별 평균으로 정규화
     const psDates = Object.keys(psDateMap);
-    const psR1   = psDates.map(d => Math.round(psDateMap[d].r1   / psDateMap[d].cnt));
-    const psR23  = psDates.map(d => Math.round(psDateMap[d].r23  / psDateMap[d].cnt));
-    const psR410 = psDates.map(d => Math.round(psDateMap[d].r410 / psDateMap[d].cnt));
-    const psR11  = psDates.map(d => Math.round(psDateMap[d].r11  / psDateMap[d].cnt));
     if (window.psDistCI) window.psDistCI.destroy();
     window.psDistCI = new Chart(psDistEl.getContext('2d'), {
       type: 'bar',
       data: { labels: psDates, datasets: [
-        { label: '1위',   data: psR1,   backgroundColor: 'rgba(241,196,15,0.85)', stack: 's' },
-        { label: '2~3위', data: psR23,  backgroundColor: 'rgba(192,192,192,0.75)', stack: 's' },
-        { label: '4~10위',data: psR410, backgroundColor: 'rgba(74,158,255,0.75)',  stack: 's' },
-        { label: '11위+', data: psR11,  backgroundColor: 'rgba(80,80,80,0.6)',     stack: 's' },
+        { label: '1위',    data: psDates.map(d => Math.round(psDateMap[d].r1   / psDateMap[d].cnt)), backgroundColor: 'rgba(241,196,15,0.85)', stack: 's' },
+        { label: '2~3위',  data: psDates.map(d => Math.round(psDateMap[d].r23  / psDateMap[d].cnt)), backgroundColor: 'rgba(192,192,192,0.75)', stack: 's' },
+        { label: '4~10위', data: psDates.map(d => Math.round(psDateMap[d].r410 / psDateMap[d].cnt)), backgroundColor: 'rgba(74,158,255,0.75)',  stack: 's' },
+        { label: '11위+',  data: psDates.map(d => Math.round(psDateMap[d].r11  / psDateMap[d].cnt)), backgroundColor: 'rgba(80,80,80,0.6)',     stack: 's' }
       ]},
       options: { responsive: false, animation: false,
         scales: {
-          x: { stacked: true, ticks: { color: '#aaa', maxTicksLimit: 10, font: { size: 10 } }, grid: { color: '#1a1a1a' } },
-          y: { stacked: true, ticks: { color: '#aaa', font: { size: 10 }, stepSize: 10 }, grid: { color: '#1a1a1a' } }
+          x: { stacked: true, ticks: { color: '#aaa', maxTicksLimit: 12, font: { size: 10 } }, grid: { color: '#1a1a1a' } },
+          y: { stacked: true, ticks: { color: '#aaa', font: { size: 10 } }, grid: { color: '#1a1a1a' } }
         },
-        plugins: { legend: { display: false }, tooltip: { mode: 'index', callbacks: {
-          label: c => ` ${c.dataset.label}: ${c.parsed.y}개국`
-        }}}
+        plugins: { legend: { display: false }, tooltip: { mode: 'index', callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}개국` } } }
       }
     });
   }
 
-  // ── Steam 일자별 순위 분포 ──
+  // ── Steam 추이 차트 ──
+  const stEl = document.getElementById('summaryStChart');
+  if (stEl && stsHist.length > 1) {
+    stEl.width  = stEl.parentElement.offsetWidth || W;
+    stEl.height = H_TREND;
+    const v = stsHist.filter(h => stsAvg(h) !== null);
+    if (v.length > 0) {
+      const lbs2 = v.map(h => new Date(h.timestamp)), dv2 = v.map(h => stsAvg(h));
+      const idxFirst2 = 0, idxLast2 = dv2.length - 1;
+      const idxBest2  = dv2.reduce((bi, val, i, a) => val !== null && (a[bi] === null || val < a[bi]) ? i : bi, 0);
+      const idxWorst2 = dv2.reduce((wi, val, i, a) => val !== null && (a[wi] === null || val > a[wi]) ? i : wi, 0);
+      const ptR2 = dv2.map((_, i) => (i===idxFirst2||i===idxLast2||i===idxBest2||i===idxWorst2) ? 5 : 0);
+      const ptC2 = dv2.map((_, i) => i===idxBest2 ? '#2ecc71' : i===idxWorst2 ? '#e74c3c' : i===idxLast2 ? '#f1c40f' : '#fff');
+      const setL2 = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+      const fmt2 = val => val != null ? val.toFixed(1) + '위' : '—';
+      setL2('sst-leg-start',   '시작 ' + fmt2(dv2[idxFirst2]));
+      setL2('sst-leg-best',    '최고 ' + fmt2(dv2[idxBest2 ]));
+      setL2('sst-leg-current', '현재 ' + fmt2(dv2[idxLast2 ]));
+      setL2('sst-leg-worst',   '최저 ' + fmt2(dv2[idxWorst2]));
+      if (summaryStCI) summaryStCI.destroy();
+      summaryStCI = new Chart(stEl.getContext('2d'), {
+        type: 'line',
+        data: { labels: lbs2, datasets: [{ data: dv2, borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.08)', borderWidth: 2, pointRadius: ptR2, pointBackgroundColor: ptC2, pointBorderColor: ptC2, fill: true, tension: 0.3, spanGaps: true }] },
+        options: { responsive: false, animation: false, layout: { padding: { top: 10, right: 10 } },
+          scales: {
+            x: { type: 'time', time: { displayFormats: { day: 'M/d' } }, ticks: { color: '#aaa', maxTicksLimit: 8, font: { size: 11 } }, grid: { color: '#1a1a1a' } },
+            y: { reverse: true, suggestedMin: 0, ticks: { color: '#aaa', font: { size: 11 }, callback: v => v > 0 ? v + '위' : '', padding: 6 }, grid: { color: '#1a1a1a' } }
+          },
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y + '위' } } }
+        }
+      });
+    }
+  }
+
+  // ── Steam 일자별 순위 분포 차트 ──
   const stsDistEl = document.getElementById('stsRankDistChart');
   if (stsDistEl && stsHist.length > 1) {
-    stsDistEl.width  = stsDistEl.parentElement.offsetWidth || 800;
-    stsDistEl.height = 180;
+    stsDistEl.width  = stsDistEl.parentElement.offsetWidth || W;
+    stsDistEl.height = H_DIST;
     const stsDateMap = {};
     stsHist.forEach(h => {
-      const kst = new Date(new Date(h.timestamp).getTime() + 9*3600000);
-      const dateKey = `${kst.getUTCMonth()+1}/${kst.getUTCDate()}`;
-      if (!stsDateMap[dateKey]) stsDateMap[dateKey] = { r1:0, r23:0, r410:0, r11:0, cnt:0 };
-      const entry = stsDateMap[dateKey];
-      Object.entries(h.results||{}).forEach(([name, d]) => {
+      const kst = new Date(new Date(h.timestamp).getTime() + 9 * 3600000);
+      const dk = (kst.getUTCMonth() + 1) + '/' + kst.getUTCDate();
+      if (!stsDateMap[dk]) stsDateMap[dk] = { r1: 0, r23: 0, r410: 0, r11: 0, cnt: 0 };
+      const e = stsDateMap[dk];
+      Object.entries(h.results || {}).forEach(([, d]) => {
         const r = d?.rank;
         if (!r) return;
-        if (r === 1)       entry.r1++;
-        else if (r <= 3)   entry.r23++;
-        else if (r <= 10)  entry.r410++;
-        else               entry.r11++;
+        if (r === 1) e.r1++;
+        else if (r <= 3) e.r23++;
+        else if (r <= 10) e.r410++;
+        else e.r11++;
       });
-      entry.cnt++;
+      e.cnt++;
     });
     const stsDates = Object.keys(stsDateMap);
-    const stsR1   = stsDates.map(d => Math.round(stsDateMap[d].r1   / stsDateMap[d].cnt));
-    const stsR23  = stsDates.map(d => Math.round(stsDateMap[d].r23  / stsDateMap[d].cnt));
-    const stsR410 = stsDates.map(d => Math.round(stsDateMap[d].r410 / stsDateMap[d].cnt));
-    const stsR11  = stsDates.map(d => Math.round(stsDateMap[d].r11  / stsDateMap[d].cnt));
     if (window.stsDistCI) window.stsDistCI.destroy();
     window.stsDistCI = new Chart(stsDistEl.getContext('2d'), {
       type: 'bar',
       data: { labels: stsDates, datasets: [
-        { label: '1위',   data: stsR1,   backgroundColor: 'rgba(241,196,15,0.85)', stack: 's' },
-        { label: '2~3위', data: stsR23,  backgroundColor: 'rgba(192,192,192,0.75)', stack: 's' },
-        { label: '4~10위',data: stsR410, backgroundColor: 'rgba(74,158,255,0.75)',  stack: 's' },
-        { label: '11위+', data: stsR11,  backgroundColor: 'rgba(80,80,80,0.6)',     stack: 's' },
+        { label: '1위',    data: stsDates.map(d => Math.round(stsDateMap[d].r1   / stsDateMap[d].cnt)), backgroundColor: 'rgba(241,196,15,0.85)', stack: 's' },
+        { label: '2~3위',  data: stsDates.map(d => Math.round(stsDateMap[d].r23  / stsDateMap[d].cnt)), backgroundColor: 'rgba(192,192,192,0.75)', stack: 's' },
+        { label: '4~10위', data: stsDates.map(d => Math.round(stsDateMap[d].r410 / stsDateMap[d].cnt)), backgroundColor: 'rgba(74,158,255,0.75)',  stack: 's' },
+        { label: '11위+',  data: stsDates.map(d => Math.round(stsDateMap[d].r11  / stsDateMap[d].cnt)), backgroundColor: 'rgba(80,80,80,0.6)',     stack: 's' }
       ]},
       options: { responsive: false, animation: false,
         scales: {
-          x: { stacked: true, ticks: { color: '#aaa', maxTicksLimit: 10, font: { size: 10 } }, grid: { color: '#1a1a1a' } },
-          y: { stacked: true, ticks: { color: '#aaa', font: { size: 10 }, stepSize: 5 }, grid: { color: '#1a1a1a' } }
+          x: { stacked: true, ticks: { color: '#aaa', maxTicksLimit: 12, font: { size: 10 } }, grid: { color: '#1a1a1a' } },
+          y: { stacked: true, ticks: { color: '#aaa', font: { size: 10 } }, grid: { color: '#1a1a1a' } }
         },
-        plugins: { legend: { display: false }, tooltip: { mode: 'index', callbacks: {
-          label: c => ` ${c.dataset.label}: ${c.parsed.y}개국`
-        }}}
+        plugins: { legend: { display: false }, tooltip: { mode: 'index', callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}개국` } } }
       }
     });
   }
-
 }
+
 function renderSteamSchedule() {
   const container = document.getElementById('sts-sched-days');
   const summaryEl = document.getElementById('sts-sched-summary');
