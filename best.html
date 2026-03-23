@@ -2236,37 +2236,42 @@ function renderSalesChart() {
   if (msEl) {
     const LAUNCH = new Date('2026-03-20T07:00:00+09:00');
     const nowMs  = Date.now();
-    const todayDay = Math.floor((nowMs - LAUNCH.getTime()) / 86400000);
+    const todayDay = Math.max(0, Math.floor((nowMs - LAUNCH.getTime()) / 86400000));
 
-    // 현재 누적 = 오늘까지의 totDaily 합산
-    const cumNow = totCum[Math.min(todayDay, totCum.length - 1)] || totalEst;
+    // 현재 누적 (실제 모델 계산값 사용)
+    const cumNow = totCum.length > 0 ? totCum[Math.min(todayDay, totCum.length - 1)] : totalEst;
 
-    // 향후 일별 판매 연장: 마지막 실데이터 이후 DECAY 적용
-    function projDailyFromDay(startDay, startVal) {
+    // 마지막 일별값 (평균 취해서 안정화)
+    const recentDailies = totDaily.slice(-3).filter(v => v > 0);
+    const lastDaily = recentDailies.length > 0
+      ? recentDailies.reduce((a,b) => a+b, 0) / recentDailies.length
+      : (totalEst * 0.01);
+
+    // 프로젝션: 현재 일별 판매에서 DECAY 적용 (최소 floor 설정)
+    const DAILY_FLOOR = 500; // 최소 하루 500장 (롱테일)
+    function projDailyFromDay() {
       const proj = [];
-      for (let d = 0; d < 365; d++) {
-        proj.push(Math.max(0, startVal * Math.pow(DECAY_DAILY, d)));
+      for (let d = 0; d < 730; d++) { // 2년치
+        proj.push(Math.max(DAILY_FLOOR, lastDaily * Math.pow(DECAY_DAILY, d)));
       }
       return proj;
     }
-
-    // 마지막 데이터 일별 값
-    const lastDaily = totDaily[totDaily.length - 1] || 1000;
-    const projDays  = projDailyFromDay(days.length, lastDaily);
+    const projDays = projDailyFromDay();
 
     function findMilestone(target) {
+      // 이미 달성 여부 확인
       if (cumNow >= target) {
-        // 이미 달성 — 과거 데이터에서 정확한 날짜 찾기
-        let c = 0;
+        // totCum에서 달성 날짜 역추적
         for (let i = 0; i < totCum.length; i++) {
-          c = totCum[i];
-          if (c >= target) {
+          if (totCum[i] >= target) {
             const dt = new Date(LAUNCH.getTime() + i * 86400000);
             return { date: dt, day: i, achieved: true };
           }
         }
+        // totCum에서 못찾으면 오늘 기준으로 이미 달성
+        return { date: new Date(nowMs), day: todayDay, achieved: true };
       }
-      // 아직 미달성 — 프로젝션으로 날짜 예측
+      // 프로젝션으로 예측
       let c = cumNow;
       for (let d = 0; d < projDays.length; d++) {
         c += projDays[d];
@@ -2275,7 +2280,7 @@ function renderSalesChart() {
           return { date: dt, day: todayDay + d + 1, achieved: false };
         }
       }
-      return null;
+      return null; // 2년 내 불가
     }
 
     const fmtDate = dt => {
