@@ -1107,7 +1107,9 @@
             <button onclick="renderSalesChart()" style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:5px 14px;color:var(--tx-2);font-size:13px;cursor:pointer;font-weight:700">재계산</button>
           </div>
           <!-- 요약 카드 -->
-          <div id="sales-summary-cards" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px"></div>
+          <div id="sales-summary-cards" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px"></div>
+          <!-- 마일스톤 예측 -->
+          <div id="sales-milestone-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px"></div>
           <!-- 일별 차트 -->
           <div style="font-size:11px;color:var(--tx-4);margin-bottom:4px;font-weight:800;letter-spacing:1px;text-transform:uppercase">📊 일별 판매량 추정 (누적 막대)</div>
           <div style="height:220px;margin-bottom:16px"><canvas id="salesDailyChart"></canvas></div>
@@ -2228,6 +2230,92 @@ function renderSalesChart() {
       <div style="font-family:'Cinzel',serif;font-size:20px;color:${color};font-weight:900">${val}</div>
       <div style="font-size:10px;color:var(--tx-4);margin-top:2px">${sub}</div>
     </div>`).join('');
+
+  // ── 마일스톤 예측 (순위 데이터 기반 동적 계산) ────────────────
+  const msEl = document.getElementById('sales-milestone-cards');
+  if (msEl) {
+    const LAUNCH = new Date('2026-03-20T07:00:00+09:00');
+    const nowMs  = Date.now();
+    const todayDay = Math.floor((nowMs - LAUNCH.getTime()) / 86400000);
+
+    // 현재 누적 = 오늘까지의 totDaily 합산
+    const cumNow = totCum[Math.min(todayDay, totCum.length - 1)] || totalEst;
+
+    // 향후 일별 판매 연장: 마지막 실데이터 이후 DECAY 적용
+    function projDailyFromDay(startDay, startVal) {
+      const proj = [];
+      for (let d = 0; d < 365; d++) {
+        proj.push(Math.max(0, startVal * Math.pow(DECAY_DAILY, d)));
+      }
+      return proj;
+    }
+
+    // 마지막 데이터 일별 값
+    const lastDaily = totDaily[totDaily.length - 1] || 1000;
+    const projDays  = projDailyFromDay(days.length, lastDaily);
+
+    function findMilestone(target) {
+      if (cumNow >= target) {
+        // 이미 달성 — 과거 데이터에서 정확한 날짜 찾기
+        let c = 0;
+        for (let i = 0; i < totCum.length; i++) {
+          c = totCum[i];
+          if (c >= target) {
+            const dt = new Date(LAUNCH.getTime() + i * 86400000);
+            return { date: dt, day: i, achieved: true };
+          }
+        }
+      }
+      // 아직 미달성 — 프로젝션으로 날짜 예측
+      let c = cumNow;
+      for (let d = 0; d < projDays.length; d++) {
+        c += projDays[d];
+        if (c >= target) {
+          const dt = new Date(nowMs + (d + 1) * 86400000);
+          return { date: dt, day: todayDay + d + 1, achieved: false };
+        }
+      }
+      return null;
+    }
+
+    const fmtDate = dt => {
+      if (!dt) return '예측불가';
+      const m = dt.getMonth() + 1, d = dt.getDate();
+      return `${m}/${d}`;
+    };
+    const fmtDiff = (dt, achieved) => {
+      if (!dt) return '';
+      const diffDays = Math.round((dt.getTime() - Date.now()) / 86400000);
+      if (achieved) return '✅ 달성';
+      if (diffDays <= 0) return '오늘';
+      if (diffDays === 1) return '내일';
+      return `D+${diffDays}`;
+    };
+
+    const m3 = findMilestone(3_000_000);
+    const m5 = findMilestone(5_000_000);
+    const m10 = findMilestone(10_000_000);
+
+    const mCards = [
+      { label: '🎯 300만 달성', target: '3M', ms: m3, color: '#2ecc71' },
+      { label: '🚀 500만 달성', target: '5M', ms: m5, color: '#f1c40f' },
+      { label: '💎 1000만 달성', target: '10M', ms: m10, color: '#e74c3c' },
+    ];
+
+    msEl.innerHTML = mCards.map(({ label, target, ms, color }) => {
+      const dateStr = ms ? fmtDate(ms.date) : '예측불가';
+      const diffStr = ms ? fmtDiff(ms.date, ms.achieved) : '현재 추세로 불가';
+      const dayStr  = ms ? `출시 ${ms.day}일차` : '';
+      const bgColor = ms?.achieved ? `rgba(46,204,113,0.08)` : `rgba(0,0,0,0)`;
+      return `<div style="background:var(--bg-2);border:1px solid var(--bd);border-left:3px solid ${color};border-radius:var(--radius);padding:10px 14px;${ms?.achieved ? 'border-color:rgba(46,204,113,0.4)' : ''}">
+        <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">${label}</div>
+        <div style="font-family:'Cinzel',serif;font-size:22px;color:${color};font-weight:900;line-height:1">${dateStr}</div>
+        <div style="font-size:11px;color:var(--tx-3);margin-top:4px">${dayStr}</div>
+        <div style="font-size:12px;font-weight:800;margin-top:3px;color:${ms?.achieved ? '#2ecc71' : 'var(--tx-2)'}">${diffStr}</div>
+      </div>`;
+    }).join('');
+  }
+
 
   const chartOpts = {
     responsive: true, maintainAspectRatio: false,
