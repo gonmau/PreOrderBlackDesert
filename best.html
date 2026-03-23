@@ -807,8 +807,13 @@
 
   /* 요약 차트 전용: 높이 자동, 스크롤 없이 canvas 크기 보장 */
   .summary-chart-wrap { height: auto !important; min-height: 0 !important; }
-  .summary-chart-wrap .dual-col { height: auto !important; min-height: 360px; }
-  .summary-chart-wrap .dual-col-body { overflow: visible !important; height: auto !important; }
+  .summary-chart-wrap .dual-col {
+    height: auto !important; min-height: 380px;
+    overflow: visible !important;
+  }
+  .summary-chart-wrap .dual-col-body {
+    overflow: visible !important; height: auto !important; flex: none;
+  }
 </style>
 </head>
 <body>
@@ -1442,8 +1447,10 @@ function render() {
   if (namesEl) {
     namesEl.innerHTML = rank1Countries.map(n => {
       const url = getStoreUrl(n);
+      const d = getDaysAtRank(n, 1);
+      const dStr = d > 0 ? `<span style="font-size:10px;color:var(--tx-4);font-weight:400;margin-left:2px">(${d}D)</span>` : '';
       return `<a class="rank1-tag" href="${url}" target="_blank" onclick="event.stopPropagation()">
-        <span>${FLAGS[n]||''}</span><span class="rank1-tag-name">${n}</span>
+        <span>${FLAGS[n]||''}</span><span class="rank1-tag-name">${n}</span>${dStr}
       </a>`;
     }).join('');
     twemoji.parse(namesEl, { folder: 'svg', ext: '.svg' });
@@ -1516,7 +1523,6 @@ function render() {
   renderPsTable(list);
 
   renderMainChart();
-  renderSummaryCharts();
   renderSchedule();
   renderPsHeatmap(list);
 
@@ -2484,7 +2490,8 @@ function renderSTS() {
   renderStsTable(lat, prv);
   renderStsHeatmap(lat, prv);
   renderStsLeaderboard(lat, prv);
-  setTimeout(renderSummaryCharts, 100);
+  // PS+Steam 데이터 모두 로드 후 차트 렌더
+  if (historyData.length > 0) setTimeout(renderSummaryCharts, 150);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -2651,8 +2658,10 @@ function renderStsTable(lat, prv) {
     stsNamesEl.innerHTML = stsRank1Names.map(n => {
       const cc = STS_CC[n] || 'us';
       const url = `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`;
+      const d = getStsDaysAtRank(n, 1);
+      const dStr = d > 0 ? `<span style="font-size:10px;color:var(--tx-4);font-weight:400;margin-left:2px">(${d}D)</span>` : '';
       return `<a class="rank1-tag" href="${url}" target="_blank" onclick="event.stopPropagation()">
-        <span>${STS_F[n]||''}</span><span class="rank1-tag-name">${n}</span>
+        <span>${STS_F[n]||''}</span><span class="rank1-tag-name">${n}</span>${dStr}
       </a>`;
     }).join('');
     twemoji.parse(stsNamesEl, { folder: 'svg', ext: '.svg' });
