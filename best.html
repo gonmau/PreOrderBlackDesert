@@ -177,7 +177,7 @@
     #sec-summary .dual-col { height: auto !important; min-height: 0; }
     #sec-summary .dual-col-body { height: auto !important; overflow: visible !important; }
     /* 차트 섹션은 별도 처리 */
-    #sec-summary .summary-chart-wrap .dual-col { height: auto !important; min-height: 280px; }
+    #sec-summary .summary-chart-wrap .dual-col { height: auto !important; min-height: 280px; overflow: visible !important; }
   }
 
   /* ══ 국가별 테이블형 행 ════════════════════════════════════════ */
@@ -734,6 +734,7 @@
     #pa-price { font-size: 16px !important; }
     .dual-wrap { grid-template-columns: 1fr 1fr; }
     .dual-col { height: calc(100vh - var(--col-offset, 100px)); min-height: 200px; }
+    .summary-chart-wrap .dual-col { height: auto !important; min-height: 280px; overflow: visible !important; }
     .dual-col-header { padding: 6px 12px; font-size: 13px; }
     .dual-col .card .val { font-size: 16px !important; }
     .modal-content { padding: 12px; margin: 4px auto; }
@@ -744,6 +745,8 @@
 
   /* ══ PC 전용 (768px+) ═══════════════════════════════════════ */
   @media (min-width: 768px) {
+    .summary-chart-wrap .dual-col { height: auto !important; overflow: visible !important; }
+    .summary-chart-wrap .dual-col-body { overflow: visible !important; height: auto !important; }
     .nav-tab { font-size: 16px; padding: 10px 14px; }
     .card .lbl { font-size: 14px; }
     .card .val { font-size: 33px; }
@@ -806,7 +809,7 @@
   #ps-links-overlay.open { display:block; }
 
   /* 요약 차트 전용: 높이 자동, 스크롤 없이 canvas 크기 보장 */
-  .summary-chart-wrap { height: auto !important; min-height: 0 !important; }
+  .summary-chart-wrap { height: auto !important; min-height: 0 !important; overflow: visible !important; }
   .summary-chart-wrap .dual-col {
     height: auto !important; min-height: 380px;
     overflow: visible !important;
