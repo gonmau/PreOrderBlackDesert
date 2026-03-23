@@ -168,11 +168,13 @@
       height: calc(100vh - var(--col-offset, 140px));
       min-height: 300px;
     }
-    .dual-col .stats { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .dual-col .stats { grid-template-columns: 1fr; gap: 6px; }
     .dual-col .card { padding: 10px 12px; }
     .dual-col .card .val { font-size: 18px; }
     .dual-col .card .lbl { font-size: 10px; margin-bottom: 3px; }
     .dual-col .card .sub { font-size: 12px; }
+    /* 최고/최하 합친 카드 내부는 2열 유지 */
+    #sec-summary .card > div[style*="grid-template-columns:1fr 1fr"] { gap: 6px; }
     /* 요약 섹션 stats만 높이 auto */
     #sec-summary .dual-col { height: auto !important; min-height: 0; }
     #sec-summary .dual-col-body { height: auto !important; overflow: visible !important; }
