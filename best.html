@@ -826,7 +826,6 @@
     <span class="nav-tab dual-tab active" data-section="sec-summary"    onclick="switchTab(this)">📊 요약</span>
     <span class="nav-tab dual-tab"        data-section="sec-leaderboard" onclick="switchTab(this)">🏆 리더보드</span>
     <span class="nav-tab dual-tab"        data-section="sec-sched"       onclick="switchTab(this)">⏱ 스케줄</span>
-    <span class="nav-tab dual-tab"        data-section="sec-chart"       onclick="switchTab(this)">📈 차트</span>
     <span class="nav-tab dual-tab"        data-section="sec-sales"       onclick="switchTab(this)">💰 판매량</span>
     <span class="nav-tab dual-tab"        data-section="sec-heatmap"     onclick="switchTab(this)">🔥 히트맵</span>
     <span class="nav-tab dual-tab"        data-section="sec-table"       onclick="switchTab(this)">🌍 국가별</span>
@@ -897,6 +896,16 @@
             <div class="lbl" style="margin-bottom:6px">🥇 1위 국가</div>
             <div class="rank1-countries" id="stat-cnt-1-names" style="display:flex;flex-wrap:wrap;gap:4px"></div>
           </div>
+
+        <!-- PS 요약 미니 차트 -->
+        <div style="border-top:1px solid var(--bd);padding:12px 12px 8px">
+          <div style="height:180px;margin-bottom:6px"><canvas id="summaryPsChart"></canvas></div>
+          <div class="chart-legend">
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sps-leg-start">시작 —</span></div>
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sps-leg-best">최고 —</span></div>
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="sps-leg-current">현재 —</span></div>
+          </div>
+        </div>
         </div>
       </div></div><!-- /dual-col-body -->
       <!-- Steam 우측 -->
@@ -950,34 +959,19 @@
             <div class="lbl" style="margin-bottom:6px">🥇 1위 국가</div>
             <div class="rank1-countries" id="sts-cnt-1-names" style="display:flex;flex-wrap:wrap;gap:4px"></div>
           </div>
-        </div>
-      </div></div><!-- /dual-col-body -->
-    </div>
-    <!-- 요약 하단 차트 -->
-    <div class="dual-wrap" style="margin-top:14px">
-      <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store 추이 <span class="ps-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
-        <div class="dual-col-body" style="padding:12px">
-          <div style="height:200px"><canvas id="summaryPsChart"></canvas></div>
-          <div class="chart-legend" style="border-top:1px solid var(--bd);padding:8px 0 0">
-            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sps-leg-start">시작 —</span></div>
-            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sps-leg-best">최고 —</span></div>
-            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="sps-leg-current">현재 —</span></div>
-          </div>
-        </div>
-      </div>
-      <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header">🖥 Steam 추이 <span class="sts-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
-        <div class="dual-col-body" style="padding:12px">
-          <div style="height:200px"><canvas id="summaryStChart"></canvas></div>
-          <div class="chart-legend" style="border-top:1px solid var(--bd);padding:8px 0 0">
+
+        <!-- Steam 요약 미니 차트 -->
+        <div style="border-top:1px solid var(--bd);padding:12px 12px 8px">
+          <div style="height:180px;margin-bottom:6px"><canvas id="summaryStChart"></canvas></div>
+          <div class="chart-legend">
             <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sst-leg-start">시작 —</span></div>
             <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sst-leg-best">최고 —</span></div>
             <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="sst-leg-current">현재 —</span></div>
             <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#e74c3c"></span><span id="sst-leg-worst">최저 —</span></div>
           </div>
         </div>
-      </div>
+        </div>
+      </div></div><!-- /dual-col-body -->
     </div>
   </div><!-- /sec-summary -->
 
@@ -1025,34 +1019,7 @@
     </div>
   </div><!-- /sec-sched -->
 
-  <!-- ④ 차트 -->
-  <div id="sec-chart" class="tab-section">
-    <div class="dual-wrap dual-panel-chart">
-      <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span class="ps-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
-        <div class="dual-col-body" style="display:flex;flex-direction:column">
-        <div class="chart-section" style="flex:1;min-height:200px;margin-bottom:0"><canvas id="mainChart"></canvas></div>
-        <div class="chart-legend">
-          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="ps-leg-start">시작 —</span></div>
-          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="ps-leg-best">최고 —</span></div>
-          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="ps-leg-current">현재 —</span></div>
-        </div></div>
-      </div>
-      <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header">🖥 Steam <a href="https://steamdb.info/app/3321460/charts/" target="_blank" style="font-size:11px;color:var(--steam);opacity:0.7;margin-left:auto;text-decoration:none;font-weight:700;letter-spacing:0;text-transform:none;flex-shrink:0;padding:2px 6px;border:1px solid rgba(74,158,255,0.3);border-radius:4px;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">SteamDB ↗</a><span class="sts-ts-badge" style="font-size:15px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
-        <div class="dual-col-body" style="display:flex;flex-direction:column">
-        <div class="steam-ts-chart-box" style="flex:1;min-height:200px;padding:12px">
-          <div style="height:100%"><canvas id="stsChart"></canvas></div>
-        </div>
-        <div class="chart-legend">
-          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sts-leg-start">시작 —</span></div>
-          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sts-leg-best">최고 —</span></div>
-          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="sts-leg-current">현재 —</span></div>
-          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#e74c3c"></span><span id="sts-leg-worst">최저 —</span></div>
-        </div></div><!-- /dual-col-body -->
-      </div>
-    </div>
-  </div><!-- /sec-chart -->
+
 
 
   <!-- 💰 판매량 추정 -->
@@ -1766,7 +1733,6 @@ function renderSchedule() {
 
   const todayKstMidnight = new Date(Date.UTC(nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()) - KST_OFFSET);
   const days = [
-    { label: '어제', date: new Date(todayKstMidnight.getTime() - 86400000), isToday: false },
     { label: '오늘', date: todayKstMidnight, isToday: true },
   ];
 
@@ -2326,7 +2292,6 @@ function renderSteamSchedule() {
 
   const todayKstMidnight = new Date(Date.UTC(nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()) - KST_OFFSET);
   const days = [
-    { label: '어제', date: new Date(todayKstMidnight.getTime() - 86400000), isToday: false },
     { label: '오늘', date: todayKstMidnight, isToday: true },
   ];
   const slotsPerDay = Math.floor(24 * 60 / intervalMin);
