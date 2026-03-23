@@ -2166,8 +2166,8 @@ function renderSalesChart() {
   const stKeys = Object.keys(stDayAvg).map(Number).sort((a,b)=>a-b);
   const psBase = psDayAvg[psKeys[0]] || 3;
   const stBase = stDayAvg[stKeys[0]] || 2;
-  const DECAY_DAILY = 0.82; // 일 자연 감소율
-  const RANK_EXP = 0.45;    // 순위 탄성 지수 (보수적)
+  const DECAY_DAILY = 0.40; // 일 60% 감소 (출시 스파이크→급감 반영)
+  const RANK_EXP = 0.10;    // 순위 탄성 최소화 (순위≠신규구매)
 
   // ── 일별 판매 계산 ──
   const psDaily = [], stDaily = [], xbDaily = [], totDaily = [];
