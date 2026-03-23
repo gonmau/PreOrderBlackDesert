@@ -1562,7 +1562,9 @@ function toggleRankGroup(id) {
 }
 
 function renderMainChart() {
-  const ctx = document.getElementById('mainChart').getContext('2d');
+  const ctx = document.getElementById('mainChart');
+  if (!ctx) return;
+  const ctx2d = ctx.getContext('2d');
   if (mainChart) mainChart.destroy();
 
   const allData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.averages.combined }))
@@ -1583,7 +1585,7 @@ function renderMainChart() {
   setL('ps-leg-best',    '최고 ' + fmtR(dv[idxBest]));
   setL('ps-leg-current', '현재 ' + fmtR(dv[idxLast]));
 
-  mainChart = new Chart(ctx, {
+  mainChart = new Chart(ctx2d, {
     type: 'line',
     data: {
       labels: lbs,
@@ -2413,7 +2415,9 @@ function renderSTS() {
 
   // 히스토리 차트
   const lbs = v.map(h => new Date(h.timestamp)), dv = v.map(h => stsAvg(h));
-  const ctx = document.getElementById('stsChart').getContext('2d');
+  const stsChartEl = document.getElementById('stsChart');
+  if (!stsChartEl) return;
+  const ctx = stsChartEl.getContext('2d');
   if (stsCI) stsCI.destroy();
 
   const idxFirst=0, idxLast=dv.length-1;
