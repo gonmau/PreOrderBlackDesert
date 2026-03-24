@@ -43,7 +43,271 @@
     --text: var(--tx-1); --surface: var(--bg-2); --surface2: var(--bg-4);
   }
 
-  /* (기존 모든 스타일은 그대로 유지 — 아래에 Top5 차트 관련 추가 스타일만 보강) */
+  /* ══ 리셋 & 기본 ══════════════════════════════════════════════ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { overflow-y: auto; }
+  body { background: var(--bg-0); color: var(--tx-1);
+    font-family: 'Rajdhani','Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','Twemoji Mozilla',sans-serif; }
+  .flag, .country-link .flag { font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif; font-style: normal; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+  /* ══ 공통 섹션 카드 ════════════════════════════════════════════ */
+  .sec-card {
+    background: var(--bg-1);
+    border: 1px solid var(--bd);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: var(--gap);
+  }
+  .sec-title {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--tx-3);
+    margin-bottom: 12px;
+  }
+
+  /* ══ 헤더 ═════════════════════════════════════════════════════ */
+  header {
+    border-bottom: 2px solid var(--blood);
+    padding: 10px 0;
+    display: block;
+    position: -webkit-sticky; position: sticky;
+    top: 0; z-index: 50;
+    background: rgba(0,0,0,0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .logo h1 { font-family: 'Cinzel', serif; font-size: 31px; color: var(--tx-1); }
+  .logo h1 span { color: var(--blood); }
+  #update-time { font-size: 14px; color: var(--tx-3); font-weight: 700; letter-spacing: 0.5px; }
+  @media (max-width: 768px) {
+    .logo h1 { font-size: 20px; }
+    #update-time { display: none; }
+    .gh-dispatch-btn { font-size: 13px; padding: 4px 8px; }
+    #pa-stock { padding: 4px 10px; }
+    #pa-stock span:first-child, #pa-stock span:last-child { display: none; }
+    #pa-price { font-size: 16px; }
+    #pa-change { font-size: 11px; }
+    header .container { flex-wrap: nowrap; gap: 6px; }
+    .gh-dispatch-wrap { gap: 4px; }
+  }
+  @media (max-width: 480px) {
+    .logo h1 { font-size: 17px; }
+    .gh-dispatch-btn .btn-icon { display: none; }
+  }
+
+  /* ══ 탭 섹션 ══════════════════════════════════════════════════ */
+  .tab-section { display: none; padding-top: 14px; }
+  .tab-section.active-section { display: block; }
+
+  /* ══ 듀얼 패널 ════════════════════════════════════════════════ */
+  /* 패널 영역: 전체 뷰포트 높이 - (header + nav + padding) */
+  .dual-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    height: calc(100vh - var(--col-offset, 140px));
+    min-height: 320px;
+  }
+  .dual-panel { display: contents; } /* 하위 호환 */
+  .dual-panel-chart .dual-wrap { align-items: stretch; }
+  .dual-col {
+    background: var(--bg-1);
+    border: 1px solid var(--bd);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* 자식이 튀어나오지 않게 */
+    min-height: 0;   /* flexbox 내 스크롤 필수 */
+  }
+  .dual-col-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--bd);
+    flex-shrink: 0;
+    background: inherit;
+  }
+  .dual-col-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    min-height: 0;
+  }
+  .dual-col-body::-webkit-scrollbar { width: 4px; }
+  .dual-col-body::-webkit-scrollbar-track { background: transparent; }
+  .dual-col-body::-webkit-scrollbar-thumb { background: var(--bd-hi); border-radius: 2px; }
+  .ps-col    { border-top: 2px solid var(--blood); }
+  .steam-col { border-top: 2px solid var(--steam); }
+  .ps-header    { color: var(--blood); background: rgba(255,71,87,0.05); }
+  .steam-header { color: var(--steam); background: rgba(74,158,255,0.05); }
+  .dual-col .stats        { padding: 12px; gap: 8px; margin-bottom: 0; }
+  .dual-col .card         { padding: 12px 14px; }
+  .dual-col .card .val    { font-size: 25px; }
+  .dual-col .sts-sched-wrap   { padding: 12px; }
+  .dual-col .chart-section    { border: none; border-radius: 0; margin-bottom: 0; padding: 12px; height: 100%; }
+  .dual-col .steam-ts-chart-box { border: none; border-radius: 0; height: 100%; }
+  .dual-col .heatmap-legend   { padding: 10px 12px 4px; }
+  .dual-col .heatmap-grid     { padding: 0 8px 10px; }
+  /* 모바일 */
+  @media (max-width: 700px) {
+    .dual-wrap {
+      grid-template-columns: 1fr;
+      height: auto;
+      min-height: 0;
+    }
+    .dual-col {
+      height: calc(100vh - var(--col-offset, 140px));
+      min-height: 300px;
+    }
+    .dual-col .stats { grid-template-columns: 1fr; gap: 6px; }
+    .dual-col .card { padding: 10px 12px; }
+    .dual-col .card .val { font-size: 18px; }
+    .dual-col .card .lbl { font-size: 10px; margin-bottom: 3px; }
+    .dual-col .card .sub { font-size: 12px; }
+    /* 최고/최하 합친 카드 내부는 2열 유지 */
+    #sec-summary .card > div[style*="grid-template-columns:1fr 1fr"] { gap: 6px; }
+    /* 요약 섹션 stats만 높이 auto */
+    #sec-summary .dual-col { height: auto !important; min-height: 0; }
+    #sec-summary .dual-col-body { height: auto !important; overflow: visible !important; }
+    /* 요약 하단 차트 모바일 1열 */
+    #sec-summary > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+  }
+
+  /* ══ 국가별 테이블형 행 ════════════════════════════════════════ */
+  .ct-table-header {
+    display: grid;
+    grid-template-columns: 3px 22px 1fr 66px 66px 36px 51px 22px;
+    gap: 6px;
+    padding: 5px 12px 5px 0;
+    background: var(--bg-3);
+    border-bottom: 2px solid var(--bd-hi);
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--tx-4);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  .ct-row {
+    display: grid;
+    grid-template-columns: 3px 22px 1fr 66px 66px 36px 51px 22px;
+    gap: 6px;
+    align-items: center;
+    padding: 7px 12px 7px 0;
+    border-bottom: 1px solid var(--bd);
+    cursor: pointer;
+    transition: background var(--trans);
+  }
+  .ct-row:hover { background: var(--bg-3); }
+  .ct-bar { height: 100%; min-height: 30px; border-radius: 0 2px 2px 0; }
+  .ct-flag { font-size: 17px; text-align: center; }
+  .ct-name { font-size: 15px; font-weight: 700; color: var(--tx-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ct-meta { font-size: 13px; color: var(--tx-4); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ct-chg  { font-size: 13px; font-weight: 800; text-align: center; }
+  .ct-chg.up   { color: var(--up); }
+  .ct-chg.down { color: var(--down); }
+  .ct-rank { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 900; text-align: right; white-space: nowrap; }
+  .ct-link { font-size: 13px; color: var(--tx-4); text-decoration: none; text-align: center; }
+  .ct-link:hover { color: var(--tx-2); }
+  @media (max-width: 500px) {
+    .ct-table-header { display: none; }
+    .ct-row {
+      grid-template-columns: 3px 22px 1fr auto 20px;
+      grid-template-rows: auto auto;
+      gap: 2px 6px; padding: 8px 10px 8px 0;
+    }
+    .ct-bar  { grid-row: 1 / 3; align-self: stretch; }
+    .ct-flag { grid-row: 1; grid-column: 2; }
+    .ct-name { grid-row: 1; grid-column: 3; font-size: 14px; }
+    .ct-rank { grid-row: 1; grid-column: 4; font-size: 14px; }
+    .ct-link { grid-row: 1; grid-column: 5; }
+    .ct-meta { grid-row: 2; grid-column: 3; font-size: 11px; text-align: left; white-space: nowrap; overflow: visible; width: auto; padding: 0; }
+    .ct-chg  { grid-row: 2; grid-column: 4; font-size: 11px; overflow: visible; width: auto; padding: 0; }
+  }
+
+  /* ══ 네비게이션 바 ════════════════════════════════════════════ */
+  .nav-bar {
+    position: -webkit-sticky; position: sticky;
+    top: 46px; z-index: 49;
+    background: rgba(5,5,5,0.97);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--bd);
+  }
+  .nav-group {
+    display: flex; align-items: center;
+    overflow-x: auto; scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 0 16px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .nav-group::-webkit-scrollbar { display: none; }
+  .nav-group-label {
+    font-size: 10px; font-weight: 800;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 0 10px 0 2px; white-space: nowrap; flex-shrink: 0;
+    border-right: 1px solid var(--bd); margin-right: 6px;
+  }
+  .nav-group-label.ps-lbl    { color: var(--blood); }
+  .nav-group-label.steam-lbl { color: var(--steam); }
+  .nav-tab {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 9px 12px; font-size: 15px; font-weight: 700;
+    color: var(--tx-4); cursor: pointer; white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: color var(--trans), border-color var(--trans);
+    flex-shrink: 0; user-select: none; -webkit-user-select: none;
+  }
+  .nav-tab:hover { color: var(--tx-2); }
+  .nav-tab.active.ps-tab    { color: var(--blood); border-bottom-color: var(--blood); }
+  .nav-tab.active.steam-tab { color: var(--steam); border-bottom-color: var(--steam); }
+  .nav-tab.active.dual-tab  { color: var(--tx-1);  border-bottom-color: var(--tx-1); }
+  @media (max-width: 600px) {
+    .nav-tab { padding: 7px 8px; font-size: 14px; }
+    .nav-group-label { font-size: 9px; }
+    .nav-bar { top: 40px; }
+  }
+
+  /* ══ 스탯 카드 그리드 ════════════════════════════════════════ */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--gap); margin-bottom: var(--gap); }
+  .card {
+    background: var(--bg-2); border: 1px solid var(--bd);
+    padding: 18px 20px; border-radius: var(--radius);
+    border-left: 3px solid var(--blood);
+  }
+  .card .lbl { font-size: 14px; color: var(--tx-3); margin-bottom: 6px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+  .card .val { font-family: 'Cinzel', serif; font-size: 31px; color: var(--gold); }
+  .card .sub { font-size: 17px; margin-top: 4px; color: var(--tx-2); }
+  @media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ══ Top10 리더보드 ══════════════════════════════════════════ */
+  .top10-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(121px, 1fr)); gap: 8px; }
+  .top10-item {
+    background: var(--bg-3); padding: 10px 8px;
+    border-radius: var(--radius); text-align: center;
+    cursor: pointer; border: 1px solid transparent; transition: border-color var(--trans), background var(--trans);
+  }
+  .top10-item:hover { border-color: var(--gold); background: var(--bg-4); }
+  .top10-item .n { font-size: 15px; color: var(--tx-3); display: block; }
+  .top10-item .r { font-size: 19px; font-weight: 700; color: var(--tx-1); }
+  img.emoji { height: 1.3em; width: 1.3em; vertical-align: -0.2em; margin-right: 6px; display: inline-block; }
+  .top10-item img.emoji { height: 1.1em; width: 1.1em; margin-right: 3px; }
+  @media (max-width: 600px) { .top10-grid { grid-template-columns: repeat(auto-fill, minmax(99px, 1fr)); } }
+
+  /* ══ 차트 ════════════════════════════════════════════════════ */
   .chart-section {
     background: var(--bg-1); border: 1px solid var(--bd);
     padding: 16px; border-radius: var(--radius);
@@ -51,30 +315,530 @@
   }
   @media (max-width: 600px) { .chart-section { height: 220px; } }
 
-  /* Top5 전용 차트 컨테이너 (기존 스타일과 완벽 일치) */
-  .top5-trend-box {
-    background: var(--bg-1);
-    border: 1px solid var(--bd);
-    border-top: 2px solid var(--blood); /* PS용 */
-    border-radius: var(--radius);
+  /* ══ 테이블 ══════════════════════════════════════════════════ */
+  .table-toolbar { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+  .csv-btn {
+    background: var(--bg-3); border: 1px solid var(--bd-hi);
+    color: var(--gold); font-family: 'Rajdhani', sans-serif;
+    font-size: 14px; font-weight: 700; padding: 6px 14px;
+    border-radius: var(--radius); cursor: pointer;
+    transition: background var(--trans);
   }
-  .steam-top5-trend-box {
-    border-top: 2px solid var(--steam);
+  .csv-btn:hover { background: rgba(241,196,15,0.12); }
+  .table-wrapper { background: var(--bg-2); border: 1px solid var(--bd); border-radius: var(--radius); overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 600px; }
+  th { background: var(--bg-3); padding: 11px 10px; text-align: left; font-size: 13px; color: var(--gold); border-bottom: 1px solid var(--bd); cursor: pointer; white-space: nowrap; letter-spacing: 0.5px; text-transform: uppercase; }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--bd); font-size: 15px; }
+  .td-mobile-meta { display: none; }
+  .country-link { color: inherit; text-decoration: none; display: flex; align-items: center; }
+  .country-link:hover { color: var(--gold); }
+  .flag { font-size: 20px; margin-right: 6px; vertical-align: middle; }
+  .rank-box { font-family: 'Cinzel', serif; font-weight: 900; display: inline-block; width: 62px; text-align: center; border-radius: var(--radius); padding: 3px 0; cursor: pointer; font-size: 16px; }
+  .trend-down { color: var(--down); font-weight: 700; }
+  @media (max-width: 640px) {
+    .table-wrapper { overflow-x: unset; background: transparent; border: none; padding: 0; }
+    table { min-width: unset; width: 100%; }
+    thead { display: none; }
+    tbody tr {
+      display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto;
+      gap: 2px 8px; background: var(--bg-2); border: 1px solid var(--bd);
+      border-radius: var(--radius); margin-bottom: 6px; padding: 10px 12px;
+    }
+    td { display: block; border: none; padding: 0; }
+    td:nth-child(1) { grid-column: 1; grid-row: 1; font-size: 15px; font-weight: 700; }
+    td:nth-child(2) { grid-column: 2; grid-row: 1/3; display: flex; align-items: center; justify-content: flex-end; }
+    td:nth-child(2) .rank-box { width: 48px; font-size: 15px; }
+    .td-meta { display: none !important; }
+    .td-mobile-meta { display: flex !important; grid-column: 1; grid-row: 2; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 3px; }
   }
-  .top5-trend-header {
-    padding: 8px 14px;
+
+  /* ══ 모달 ════════════════════════════════════════════════════ */
+  .modal { display: none; position: fixed; z-index: 100; inset: 0; background: rgba(0,0,0,0.88); align-items: center; justify-content: center; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .modal-content { background: var(--bg-2); width: 90%; max-width: 800px; padding: 28px; border-radius: var(--radius); border: 1px solid var(--bd-hi); position: relative; margin: auto; }
+  .close-btn { position: absolute; top: 14px; right: 18px; font-size: 29px; color: var(--tx-3); cursor: pointer; }
+  .close-btn:hover { color: var(--tx-1); }
+
+  /* ══ 타임라인 스케줄 ═════════════════════════════════════════ */
+  .run-timeline { display: flex; flex-direction: column; }
+  .tl-section-label { font-size: 10px; color: var(--tx-4); text-transform: uppercase; letter-spacing: 1.2px; font-weight: 800; margin-bottom: 6px; margin-top: 4px; }
+  .tl-item { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: var(--radius); margin-bottom: 4px; }
+  .tl-past { background: rgba(46,204,113,0.06); border: 1px solid rgba(46,204,113,0.18); }
+  .tl-future { background: rgba(255,255,255,0.02); border: 1px dashed var(--bd); }
+  .tl-icon { font-size: 14px; width: 16px; text-align: center; flex-shrink: 0; }
+  .tl-past .tl-icon { color: var(--up); }
+  .tl-future .tl-icon { color: var(--tx-4); }
+  .tl-time { font-size: 15px; font-weight: 700; color: var(--tx-2); flex: 1; }
+  .tl-future .tl-time { color: var(--tx-4); }
+  .tl-badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 800; letter-spacing: 0.5px; flex-shrink: 0; }
+  .tl-badge.manual { background: rgba(241,196,15,0.10); color: var(--gold); border: 1px solid rgba(241,196,15,0.25); }
+  .tl-now-line { display: flex; align-items: center; gap: 8px; margin: 8px 0 10px; color: var(--blood); font-size: 10px; font-weight: 800; letter-spacing: 2px; }
+  .tl-now-line::before, .tl-now-line::after { content:''; flex:1; height:1px; background: rgba(255,71,87,0.2); }
+  .tl-empty { font-size: 14px; color: var(--tx-4); padding: 6px 12px; }
+
+  /* ══ 히트맵 ══════════════════════════════════════════════════ */
+  .heatmap-legend { display: flex; gap: 12px; font-size: 13px; color: var(--tx-4); margin-bottom: 8px; flex-wrap: wrap; align-items: center; }
+  .heatmap-legend span { display: flex; align-items: center; gap: 4px; }
+  .hm-legend-bar { width: 4px; height: 13px; border-radius: 2px; display: inline-block; }
+  /* 바깥: 순위 그룹들을 세로로 배치 */
+  .heatmap-grid { display: flex; flex-direction: column; gap: 0; }
+  /* 안쪽: 각 그룹 내 카드들을 2열로 배치 */
+  .hm-cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; padding: 6px; }
+  .hm-row {
+    display: flex; align-items: center;
+    background: var(--bg-2); border: 1px solid var(--bd);
+    border-radius: var(--radius); overflow: hidden;
+    cursor: pointer; transition: border-color var(--trans); min-height: 44px;
+  }
+  .hm-row:hover { border-color: var(--bd-hi); }
+  .hm-bar { width: 4px; align-self: stretch; flex-shrink: 0; }
+  .hm-bar.up   { background: var(--up); }
+  .hm-bar.down { background: var(--down); }
+  .hm-bar.same { background: var(--bd); }
+  .hm-rank { display: none; }
+  .hm-info { flex: 1; padding: 5px 4px 5px 6px; min-width: 0; overflow: hidden; }
+  .hm-name { font-size: 13px; font-weight: 700; color: var(--tx-1); display: flex; align-items: center; gap: 3px; }
+  .hm-name .hm-flag { font-size: 14px; flex-shrink: 0; }
+  .hm-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hm-meta { display: flex; align-items: center; gap: 4px; margin-top: 2px; flex-wrap: nowrap; }
+  .hm-best { font-size: 12px; color: var(--gold); font-weight: 700; white-space: nowrap; }
+  .hm-change { font-size: 11px; font-weight: 800; white-space: nowrap; }
+  .hm-change.up   { color: var(--up); }
+  .hm-change.down { color: var(--down); }
+  .hm-change.same { color: var(--tx-4); }
+  .hm-w { display: none; }
+  .hm-notfound { opacity: 0.3; }
+  /* 스파크라인: 항상 표시 */
+  .hm-spark-wrap { flex-shrink: 0; display: flex; align-items: center; padding: 0 4px; border-left: 1px solid var(--bd); }
+  .hm-spark { width: 44px; height: 20px; display: block; overflow: visible; }
+  .hm-link {
+    flex-shrink: 0; padding: 0 7px; font-size: 13px; color: var(--tx-4);
+    text-decoration: none; display: flex; align-items: center; align-self: stretch;
+    border-left: 1px solid var(--bd); transition: color var(--trans);
+  }
+  .hm-link:hover { color: var(--tx-2); background: rgba(255,255,255,0.03); }
+  /* 모바일 세로 480px 이하: 1열 */
+  @media (max-width: 480px) and (orientation: portrait) {
+    .heatmap-grid { grid-template-columns: 1fr; }
+  }
+  /* 모바일 가로보기: dual-col이 절반 너비라 카드 1열로 */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .hm-cards-grid { grid-template-columns: 1fr; }
+    .hm-name { font-size: 12px; }
+    .hm-spark { width: 36px; height: 16px; }
+    .hm-link { padding: 0 5px; }
+  }
+  /* 모바일 전반 (700px 이하): 폰트 살짝 줄여 2열 내 여유 확보 */
+  @media (max-width: 700px) {
+    .hm-name { font-size: 12px; }
+    .hm-best { font-size: 11px; }
+    .hm-spark { width: 36px; height: 18px; }
+    .hm-link { padding: 0 5px; font-size: 12px; }
+  }
+
+  /* ══ GitHub Actions 버튼 ════════════════════════════════════ */
+  .gh-dispatch-wrap { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+  .gh-dispatch-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 10px; border-radius: var(--radius);
+    font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 800;
+    letter-spacing: 0.5px; cursor: pointer; border: 1px solid;
+    transition: background var(--trans); white-space: nowrap; text-transform: uppercase;
+  }
+  .gh-dispatch-btn.ps    { background: rgba(255,71,87,0.08);  border-color: rgba(255,71,87,0.35);  color: var(--blood); }
+  .gh-dispatch-btn.steam { background: rgba(74,158,255,0.08); border-color: rgba(74,158,255,0.35); color: var(--steam); }
+  .gh-dispatch-btn.ps:hover    { background: rgba(255,71,87,0.18); }
+  .gh-dispatch-btn.steam:hover { background: rgba(74,158,255,0.18); }
+  .gh-dispatch-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .gh-dispatch-btn .spin { display: inline-block; animation: ghSpin 0.7s linear infinite; }
+  @keyframes ghSpin { to { transform: rotate(360deg); } }
+  .gh-token-btn {
+    background: none; border: 1px solid var(--bd); color: var(--tx-4);
+    border-radius: var(--radius); padding: 4px 8px; font-size: 13px;
+    cursor: pointer; transition: color var(--trans), border-color var(--trans);
+  }
+  .gh-token-btn:hover { color: var(--tx-2); border-color: var(--bd-hi); }
+  .gh-status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 3px; }
+  .gh-status-dot.ok   { background: var(--up); }
+  .gh-status-dot.none { background: var(--tx-4); }
+
+  /* ══ GitHub Token 모달 ════════════════════════════════════════ */
+  .gh-modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; align-items: center; justify-content: center; }
+  .gh-modal-bg.open { display: flex; }
+  .gh-modal-box { background: var(--bg-2); border: 1px solid var(--bd-hi); border-radius: var(--radius); padding: 24px; width: 90%; max-width: 400px; position: relative; }
+  .gh-modal-title { font-size: 16px; font-weight: 800; color: var(--tx-1); margin-bottom: 6px; }
+  .gh-modal-desc  { font-size: 14px; color: var(--tx-4); margin-bottom: 14px; line-height: 1.6; }
+  .gh-modal-desc a { color: var(--steam); }
+  .gh-modal-label { font-size: 10px; color: var(--tx-4); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .gh-modal-input {
+    width: 100%; background: var(--bg-1); border: 1px solid var(--bd-hi);
+    border-radius: var(--radius); color: var(--tx-1); font-size: 15px;
+    padding: 9px 12px; margin-bottom: 10px; box-sizing: border-box; font-family: monospace;
+  }
+  .gh-modal-input:focus { outline: none; border-color: var(--tx-4); }
+  .gh-modal-save {
+    width: 100%; padding: 9px; border-radius: var(--radius);
+    background: rgba(241,196,15,0.10); border: 1px solid rgba(241,196,15,0.25);
+    color: var(--gold); font-size: 15px; font-weight: 800; cursor: pointer;
+    transition: background var(--trans);
+  }
+  .gh-modal-save:hover { background: rgba(241,196,15,0.20); }
+  .gh-modal-close { position: absolute; top: 12px; right: 14px; font-size: 22px; color: var(--tx-4); cursor: pointer; }
+  .gh-modal-close:hover { color: var(--tx-1); }
+
+  /* ══ Pages 배포 배지 ═════════════════════════════════════════ */
+  #gh-pages-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: var(--radius); font-size: 13px; font-weight: 700; letter-spacing: 0.5px; }
+
+  /* ══ 스케줄 관련 (레거시 - 미사용 but 유지) ═════════════════ */
+  .schedule-section { background: var(--bg-1); border: 1px solid var(--bd); padding: 16px 18px; border-radius: var(--radius); margin-bottom: var(--gap); }
+  .schedule-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(97px, 1fr)); gap: 8px; }
+  #schedule-grid { display: block; }
+  .sts-sched-wrap { padding: 8px 0 4px; }
+  /* Steam 스케줄 그리드 */
+  .sts-sched-day-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--tx-4); margin: 8px 0 5px; display: flex; align-items: center; gap: 6px; }
+  .day-badge { background: var(--bg-3); border: 1px solid var(--bd); border-radius: 3px; padding: 1px 7px; font-size: 10px; color: var(--tx-2); letter-spacing: 0.5px; }
+  .day-badge.today { border-color: rgba(241,196,15,0.4); color: var(--gold); background: rgba(241,196,15,0.07); }
+  .sts-sched-grid { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 10px; }
+  .sts-slot { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 57px; min-height: 42px; border-radius: 5px; border: 1px solid var(--bd); background: var(--bg-2); cursor: default; transition: border-color var(--trans); padding: 3px 2px; gap: 2px; }
+  .slot-h { font-size: 11px; color: var(--tx-3); letter-spacing: 0.3px; font-weight: 600; }
+  .slot-i { font-size: 15px; font-weight: 700; }
+  .sts-slot.ok  { border-color: rgba(46,204,113,0.5); background: rgba(46,204,113,0.07); }
+  .sts-slot.ok .slot-i  { color: #2ecc71; }
+  .sts-slot.ok .slot-h  { color: #2ecc71; opacity: 0.8; }
+  .sts-slot.miss { border-color: rgba(231,76,60,0.35); background: rgba(231,76,60,0.04); }
+  .sts-slot.miss .slot-i { color: #e74c3c; }
+  .sts-slot.fut { opacity: 0.35; }
+  .sts-slot.fut .slot-i { color: var(--tx-4); }
+  .sts-slot.now { border-color: rgba(241,196,15,0.6) !important; box-shadow: 0 0 6px rgba(241,196,15,0.2); }
+  .sts-slot.manual { border-color: rgba(241,196,15,0.4); }
+  .sts-slot.manual .slot-i { color: var(--gold); }
+  .sts-legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .sts-sched-legend { display: flex; gap: 10px; font-size: 13px; color: var(--tx-4); margin-bottom: 8px; flex-wrap: wrap; }
+  .sts-sched-legend span { display: flex; align-items: center; gap: 4px; }
+  .sts-sched-summary { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid var(--bd); font-size: 14px; color: var(--tx-3); }
+  .sts-sched-summary .ss { display: flex; flex-direction: column; gap: 1px; }
+  .sts-sched-summary .sv { font-size: 19px; color: var(--tx-1); font-weight: 700; }
+  .sts-sched-summary .sl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--tx-4); }
+  .sts-next-badge { margin-left: auto; display: flex; align-items: center; gap: 5px; background: rgba(241,196,15,0.07); border: 1px solid rgba(241,196,15,0.2); border-radius: var(--radius); padding: 3px 9px; font-size: 13px; color: var(--gold); font-weight: 700; white-space: nowrap; }
+  .sts-pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: stsPulse 1.6s ease-in-out infinite; }
+  @keyframes stsPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.6)} }
+
+  /* ══ 순위 티어별 카드 스타일 ══════════════════════════════════ */
+  .top10-item .r { font-size: 19px; font-weight: 700; color: var(--tx-1); }
+  .top10-item.tier-1  { border-color: rgba(241,196,15,0.5); background: rgba(241,196,15,0.06); }
+  .top10-item.tier-1 .r { color: #f1c40f; }
+  .top10-item.tier-2  { border-color: rgba(192,192,192,0.35); background: rgba(192,192,192,0.04); }
+  .top10-item.tier-2 .r { color: #c0c0c0; }
+  .top10-item.tier-3  { border-color: rgba(205,127,50,0.35); background: rgba(205,127,50,0.04); }
+  .top10-item.tier-3 .r { color: #cd7f32; }
+  .top10-item.tier-10 { border-color: rgba(74,158,255,0.3); }
+  .top10-item.tier-10 .r { color: var(--steam); }
+  .top10-item.tier-out { opacity: 0.45; }
+  .top10-item.tier-out .r { color: var(--tx-4); }
+
+  /* ══ 차트 레전드 ═══════════════════════════════════════════════ */
+  .chart-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 8px 16px 10px;
+    border-top: 1px solid var(--bd);
     font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--bd);
+    font-weight: 700;
   }
+  .chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--tx-3);
+  }
+  .chart-legend-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  /* rank1-tag */
+  .rank1-countries { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
+  .rank1-countries { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 4px !important; }
+  .rank1-tag {
+    display: flex; align-items: center; gap: 5px;
+    background: rgba(241,196,15,0.08); border: 1px solid rgba(241,196,15,0.2);
+    border-radius: 4px; padding: 5px 7px;
+    font-size: 13px; color: var(--gold); font-weight: 700;
+    text-decoration: none; overflow: hidden;
+    transition: background 0.15s, border-color 0.15s;
+    cursor: pointer;
+  }
+  .rank1-tag:hover { background: rgba(241,196,15,0.15); border-color: rgba(241,196,15,0.5); }
+  .rank1-tag img { width: 20px !important; height: 15px !important; vertical-align: middle; flex-shrink: 0; }
+  .rank1-tag-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+
+  .steam-ts-stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(--gap); margin-bottom: var(--gap); }
+  .steam-ts-stat-box {
+    background: var(--bg-2); border: 1px solid var(--bd);
+    border-left: 3px solid var(--steam);
+    border-radius: var(--radius); padding: 12px 14px; text-align: center;
+  }
+  .steam-ts-stat-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--tx-3); margin-bottom: 4px; font-weight: 700; }
+  .steam-ts-stat-value { font-family: 'Cinzel', serif; font-size: 1.8rem; color: var(--tx-1); line-height: 1; }
+  .steam-ts-stat-diff { font-size: 13px; margin-top: 4px; color: var(--tx-3); }
+  .steam-ts-stat-diff.up   { color: var(--up); }
+  .steam-ts-stat-diff.down { color: var(--down); }
+  .steam-ts-title { font-size: 16px; color: var(--steam); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+  .steam-ts-link {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(74,158,255,0.07); border: 1px solid rgba(74,158,255,0.25);
+    color: var(--steam); text-decoration: none; font-size: 13px; font-weight: 700;
+    padding: 5px 10px; border-radius: var(--radius); transition: background var(--trans);
+  }
+  .steam-ts-link:hover { background: rgba(74,158,255,0.15); }
+  .steam-ts-dl-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(46,204,113,0.07); border: 1px solid rgba(46,204,113,0.25);
+    color: var(--up); text-decoration: none; font-size: 13px; font-weight: 700;
+    padding: 5px 10px; border-radius: var(--radius); cursor: pointer; transition: background var(--trans);
+  }
+  .steam-ts-dl-btn:hover { background: rgba(46,204,113,0.15); }
+
+  /* Steam 국가 카드 */
+  .steam-ts-country-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 7px; margin-top: 10px; }
+  .steam-ts-country-card {
+    background: var(--bg-2); border: 1px solid var(--bd);
+    border-radius: var(--radius); padding: 10px 10px 8px;
+    cursor: pointer; transition: border-color var(--trans), background var(--trans);
+    display: flex; align-items: flex-start; gap: 8px; position: relative;
+  }
+  .steam-ts-country-card:hover { border-color: var(--steam); background: var(--bg-3); }
+  .steam-ts-country-card.rank1 { border-color: rgba(241,196,15,0.4); background: rgba(241,196,15,0.04); }
+  .steam-ts-country-card.rank2 { border-color: rgba(192,192,192,0.3); }
+  .steam-ts-country-card.rank3 { border-color: rgba(205,127,50,0.3); }
+  .steam-ts-country-info { flex: 1; min-width: 0; }
+  .steam-ts-country-name { font-size: 14px; font-weight: 700; color: var(--tx-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .steam-ts-country-rank { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 900; color: var(--tx-1); margin-top: 2px; }
+  .steam-ts-country-diff { font-size: 13px; font-weight: 800; margin-left: 4px; }
+  .steam-ts-country-diff.up   { color: var(--up); }
+  .steam-ts-country-diff.down { color: var(--down); }
+  .steam-ts-rank-badge { font-size: 10px; margin-left: 4px; vertical-align: middle; }
+  .steam-ts-weight-badge { font-size: 10px; color: var(--tx-4); }
+  .steam-ts-store-link {
+    position: absolute; top: 6px; right: 6px;
+    color: var(--tx-4); opacity: 0.5; transition: opacity var(--trans);
+    display: flex; align-items: center;
+  }
+  .steam-ts-store-link:hover { opacity: 1; }
+  .steam-ts-store-link svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
+  @media (max-width: 600px) { .steam-ts-country-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
+
+  /* Steam 모달 */
+  .steam-ts-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 150; align-items: center; justify-content: center; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; }
+  .steam-ts-modal-overlay.open { display: flex; }
+  .steam-ts-modal { background: var(--bg-2); border: 1px solid var(--bd-hi); border-radius: var(--radius); padding: 24px; width: min(480px,92vw); max-height: 85vh; overflow-y: auto; margin: auto; }
+  .steam-ts-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .steam-ts-modal-title { font-size: 17px; font-weight: 800; color: var(--tx-1); }
+  .steam-ts-modal-close { background: none; border: none; color: var(--tx-3); font-size: 22px; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+  .steam-ts-modal-close:hover { color: var(--tx-1); background: var(--bg-3); }
+  .steam-ts-modal-stats { display: flex; gap: 8px; margin-bottom: 14px; }
+  .steam-ts-modal-chart-inner { height: 220px; }
+  .steam-ts-modal-link { display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; color: var(--steam); font-size: 14px; font-weight: 700; text-decoration: none; }
+
+  /* Steam 차트 */
+  .steam-ts-chart-box { background: var(--bg-1); border: 1px solid var(--bd); border-radius: var(--radius); padding: 16px; }
+  .steam-ts-chart-inner { height: 320px; }
+  @media (max-width: 600px) { .steam-ts-chart-inner { height: 200px; } }
+
+  /* Steam 국가별 요약 행 */
+  .sts-country-summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(--gap); margin-bottom: var(--gap); }
+
+  /* Steam 스케줄 섹션 collapsible (제거됐지만 body 스타일 유지) */
+  .sts-collapsible-body { overflow: hidden; transition: max-height 0.3s ease; }
+  .sts-collapsible-body.collapsed { max-height: 0 !important; }
+
+  /* ══ 국가별 테이블 행 ═══════════════════════════════════════════ */
+  .ct-table-header,
+  .ct-row {
+    display: grid;
+    grid-template-columns: 3px 22px 1fr 60px 60px 28px 44px 22px;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px 6px 0;
+  }
+  .ct-table-header {
+    border-bottom: 2px solid var(--bd-hi);
+    font-size: 10px; color: var(--tx-4);
+    font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase;
+    padding-bottom: 5px;
+  }
+  .ct-row {
+    border-bottom: 1px solid var(--bd);
+    cursor: pointer;
+    transition: background var(--trans);
+    min-height: 34px;
+  }
+  .ct-row:hover { background: var(--bg-3); }
+  .ct-bar { align-self: stretch; border-radius: 0 2px 2px 0; min-height: 34px; }
+  .ct-flag { font-size: 17px; text-align: center; overflow: hidden; }
+  .ct-name { font-size: 15px; font-weight: 700; color: var(--tx-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ct-meta { font-size: 11px; color: var(--tx-3); text-align: right; white-space: nowrap; }
+  .ct-chg  { font-size: 13px; font-weight: 800; text-align: center; }
+  .ct-chg.up   { color: var(--up); }
+  .ct-chg.down { color: var(--down); }
+  .ct-rank { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 900; text-align: right; white-space: nowrap; }
+  .ct-link { font-size: 13px; color: var(--tx-4); text-decoration: none; text-align: center; }
+  .ct-link:hover { color: var(--tx-2); }
+  /* 접기/펼치기 */
+  .rank-group-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px; cursor: pointer;
+    border-bottom: 1px solid var(--bd); border-top: 1px solid var(--bd);
+    transition: background var(--trans); margin-top: 2px;
+    background: var(--bg-2);
+  }
+  .rank-group-header:hover { background: var(--bg-3); }
+  .rank-group-count { font-size: 15px; font-weight: 700; color: var(--tx-3); }
+  .rank-group-arrow { font-size: 15px; color: var(--tx-4); transition: transform 0.2s; margin-left: auto; }
+  .rank-group-arrow.open { transform: rotate(180deg); }
+  .rank-group-body { overflow: hidden; transition: max-height 0.3s ease; }
+  .rank-group-body.collapsed { max-height: 0 !important; }
+  /* 리더보드/히트맵/국가별 그룹 레이블 */
+  .lb-group-label { font-size: 17px; font-weight: 800; }
+  .lb-group-label.g1  { color: #f1c40f; }
+  .lb-group-label.g2  { color: #c0c0c0; }
+  .lb-group-label.g3  { color: #cd7f32; }
+  .lb-group-label.g10 { color: var(--steam); }
+  .lb-group-label.gout { color: var(--tx-4); }
+  /* 모바일 */
+  @media (max-width: 700px) {
+    .rank-group-header { padding: 10px 12px; }
+    .lb-group-label { font-size: 16px; }
+    .rank-group-count { font-size: 14px; }
+    .rank-group-arrow { font-size: 14px; }
+  }
+  @media (max-width: 500px) {
+    .ct-table-header { display: none; }
+    .ct-row {
+      grid-template-columns: 3px 22px 1fr auto 20px;
+      grid-template-rows: auto auto;
+      gap: 2px 6px; padding: 8px 10px 8px 0;
+    }
+    .ct-bar  { grid-row: 1 / 3; align-self: stretch; }
+    .ct-flag { grid-row: 1; grid-column: 2; }
+    .ct-name { grid-row: 1; grid-column: 3; font-size: 14px; }
+    .ct-rank { grid-row: 1; grid-column: 4; font-size: 14px; }
+    .ct-link { grid-row: 1; grid-column: 5; }
+    .ct-meta { grid-row: 2; grid-column: 3; font-size: 11px; text-align: left; white-space: nowrap; overflow: visible; width: auto; padding: 0; }
+    .ct-chg  { grid-row: 2; grid-column: 4; font-size: 11px; overflow: visible; width: auto; padding: 0; }
+  }
+
+  /* ══ 모바일 가로보기 ══════════════════════════════════════════ */
+  @media (max-height: 500px) and (orientation: landscape) {
+    header { padding: 4px 0; }
+    header h1 { font-size: 18px !important; }
+    .gh-dispatch-btn { font-size: 11px; padding: 3px 6px; }
+    #pa-stock { padding: 4px 8px !important; }
+    #pa-price { font-size: 16px !important; }
+    .dual-wrap { grid-template-columns: 1fr 1fr; }
+    .dual-col { height: calc(100vh - var(--col-offset, 100px)); min-height: 200px; }
+    .summary-chart-wrap .dual-col { height: auto !important; min-height: 280px; overflow: visible !important; }
+    .dual-col-header { padding: 6px 12px; font-size: 13px; }
+    .dual-col .card .val { font-size: 16px !important; }
+    .modal-content { padding: 12px; margin: 4px auto; }
+    .modal-content > div[style*="height"] { height: min(240px, 40vh) !important; }
+    .steam-ts-modal { padding: 12px; max-height: 90vh; }
+    .steam-ts-modal-chart-inner { height: 150px !important; }
+  }
+
+  /* ══ PC 전용 (768px+) ═══════════════════════════════════════ */
+  @media (min-width: 768px) {
+    .summary-chart-wrap .dual-col { height: auto !important; overflow: visible !important; }
+    .summary-chart-wrap .dual-col-body { overflow: visible !important; height: auto !important; }
+    .nav-tab { font-size: 16px; padding: 10px 14px; }
+    .card .lbl { font-size: 14px; }
+    .card .val { font-size: 33px; }
+    .card .sub { font-size: 17px; }
+    .dual-col .card .val { font-size: 27px; }
+    .dual-col-header { font-size: 16px; padding: 11px 16px; }
+    .lb-group-label { font-size: 18px; }
+    .rank-group-count { font-size: 16px; }
+    .rank-group-header { padding: 12px 16px; }
+    .ct-name { font-size: 16px; }
+    .ct-meta { font-size: 14px; }
+    .ct-rank { font-size: 17px; }
+    .hm-name { font-size: 16px; }
+    .top10-item .n { font-size: 16px; }
+    .top10-item .r { font-size: 18px; }
+    .sts-sched-summary .sv { font-size: 22px; }
+    .slot-h { font-size: 13px; }
+    .slot-i { font-size: 17px; }
+    .sts-slot { width: 64px; min-height: 46px; }
+    .rank-group-arrow { font-size: 16px; }
+  }
+
+  /* ══ PS Store 링크 팝오버 ═══════════════════════════════════ */
+  .ps-links-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 13px; color: var(--blood); opacity: 0.7;
+    padding: 2px 8px; border: 1px solid rgba(255,71,87,0.3);
+    border-radius: 4px; cursor: pointer; white-space: nowrap;
+    font-weight: 700; letter-spacing: 0; text-transform: none;
+    flex-shrink: 0; background: transparent;
+    transition: opacity 0.15s;
+    position: relative;
+  }
+  .ps-links-btn:hover { opacity: 1; }
+  .ps-links-popover {
+    display: none;
+    position: fixed;
+    background: var(--bg-2); border: 1px solid var(--bd-hi);
+    border-radius: 8px; padding: 10px; z-index: 200;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    max-width: 340px; max-height: 60vh;
+    overflow-y: auto;
+  }
+  .ps-links-popover.open { display: block; }
+  .ps-links-title { font-size: 11px; font-weight: 800; color: var(--blood); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .ps-links-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .ps-links-item {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 7px; border-radius: 5px; cursor: pointer;
+    font-size: 12px; font-weight: 700; color: var(--tx-2);
+    background: var(--bg-3); border: 1px solid var(--bd);
+    text-decoration: none; white-space: nowrap;
+    transition: background var(--trans), border-color var(--trans);
+  }
+  .ps-links-item:hover { background: var(--bg-4); border-color: var(--blood); color: var(--tx-1); }
+  .ps-links-item.rank-1  { border-color: rgba(241,196,15,0.4); }
+  .ps-links-item.rank-23 { border-color: rgba(192,192,192,0.3); }
+  .ps-links-item.rank-10 { border-color: rgba(74,158,255,0.3); }
+  #ps-links-overlay { display:none; position:fixed; inset:0; z-index:199; }
+  #ps-links-overlay.open { display:block; }
+
+  /* 요약 섹션: dual-wrap 높이 자동 (아래 차트가 보이도록) */
+  #sec-summary > .dual-wrap { height: auto !important; min-height: 0 !important; }
+  #sec-summary > .dual-wrap .dual-col { height: auto !important; overflow: visible !important; }
+  #sec-summary > .dual-wrap .dual-col-body { height: auto !important; overflow: visible !important; }
+
+  /* 요약 차트 전용: 높이 자동, 스크롤 없이 canvas 크기 보장 */
+  /* summary-chart-wrap 제거됨 - 단순 div로 교체 */
+
+  /* 요약 순위별 국가 그룹 */
+  .sum-rank-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 14px; cursor: pointer;
+    background: var(--bg-2); border-bottom: 1px solid var(--bd);
+    transition: background var(--trans); user-select: none;
+  }
+  .sum-rank-header:first-child { border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0; }
+  .sum-rank-header:hover { background: var(--bg-3); }
+  .sum-rank-label { font-size: 15px; font-weight: 800; flex: 1; }
+  .sum-rank-cnt   { font-size: 14px; font-weight: 700; color: var(--tx-3); }
+  .sum-rank-arrow { font-size: 12px; color: var(--tx-4); transition: transform 0.2s; }
+  .sum-rank-arrow.open { transform: rotate(180deg); }
+  .sum-rank-body  { overflow: hidden; transition: max-height 0.3s ease; }
+  .sum-rank-body.collapsed { max-height: 0 !important; }
+  .sum-rank-grid  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px 14px 12px; }
 </style>
 </head>
 <body>
 
 <header>
-  <!-- (기존 header 그대로 유지) -->
   <div class="container" style="display:flex;justify-content:space-between;align-items:center;padding-top:0;padding-bottom:0;max-width:1400px">
     <div class="logo"><h1><span>CRIMSON</span> DESERT</h1></div>
     <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
@@ -102,7 +866,6 @@
 </header>
 
 <div class="nav-bar" id="nav-bar">
-  <!-- (기존 nav-bar 그대로 유지) -->
   <div class="nav-group">
     <span class="nav-tab dual-tab active" data-section="sec-summary"    onclick="switchTab(this)">📊 요약</span>
     <span class="nav-tab dual-tab"        data-section="sec-leaderboard" onclick="switchTab(this)">🏆 리더보드</span>
@@ -115,18 +878,102 @@
 
 <div class="container" style="padding-top:20px">
 
-  <!-- (기존 GitHub Token 모달 그대로 유지) -->
+  <!-- GitHub Token 설정 모달 -->
+  <div class="gh-modal-bg" id="gh-modal">
+    <div class="gh-modal-box">
+      <span class="gh-modal-close" onclick="closeGhModal()">×</span>
+      <div class="gh-modal-title">⚙ GitHub Token 설정</div>
+      <div class="gh-modal-desc">
+        GitHub <a href="https://github.com/settings/tokens" target="_blank">Personal Access Token</a>을 입력하세요.<br>
+        <span style="color:#444">workflow 권한 필요 · 브라우저 로컬에만 저장됨</span>
+      </div>
+      <div class="gh-modal-label" style="margin-bottom:4px">Personal Access Token</div>
+      <input class="gh-modal-input" id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+      <button class="gh-modal-save" onclick="saveGhSettings()">저장</button>
+    </div>
+  </div>
 
   <!-- 탭 섹션: 통합 듀얼 패널 -->
 
   <!-- ① 요약 -->
   <div id="sec-summary" class="tab-section active-section">
     <div class="dual-wrap">
-      <!-- PS 좌측 / Steam 우측 stats 카드 (기존 그대로) -->
-      <!-- ... (전체 dual-wrap 내용 그대로 유지) ... -->
+      <!-- PS 좌측 -->
+      <div class="dual-col ps-col">
+        <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span id="ps-data-time" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-body"><div class="stats">
+          <div class="card"><div class="lbl">가중 평균</div><div class="val" id="stat-avg">—</div></div>
+          <!-- 최고/최하 합친 카드 -->
+          <div class="card" style="grid-column:span 1">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div>
+                <div class="lbl" style="margin-bottom:4px">최고 순위</div>
+                <div class="val" id="stat-best-val" style="font-size:22px">—</div>
+                <div class="sub" id="stat-best-name" style="font-size:13px">...</div>
+              </div>
+              <div style="border-left:1px solid var(--bd);padding-left:10px">
+                <div class="lbl" style="margin-bottom:4px">최하 순위</div>
+                <div class="val" id="stat-worst-val" style="font-size:22px;color:var(--down)">—</div>
+                <div class="sub" id="stat-worst-name" style="font-size:13px">...</div>
+              </div>
+            </div>
+          </div>
+          <!-- 숨김 유지 (JS 참조용) -->
+          <span id="stat-cnt-1" style="display:none">0</span>
+          <span id="stat-cnt-3" style="display:none">0</span>
+          <span id="stat-cnt-10" style="display:none">0</span>
+          <span id="stat-cnt-rest" style="display:none">0</span>
+          <!-- 순위별 전체 국가 목록 -->
+          <div class="card" style="grid-column:1/-1;padding:0">
+            <div id="ps-summary-rank-groups"></div>
+          </div>
+
+        </div>
+      </div></div><!-- /dual-col-body -->
+      <!-- Steam 우측 -->
+      <div class="dual-col steam-col">
+        <div class="dual-col-header steam-header">🖥 Steam <a href="https://steamdb.info/app/3321460/charts/" target="_blank" style="font-size:13px;color:var(--steam);opacity:0.7;margin-left:auto;text-decoration:none;font-weight:700;letter-spacing:0;text-transform:none;flex-shrink:0;padding:2px 6px;border:1px solid rgba(74,158,255,0.3);border-radius:4px;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">SteamDB ↗</a><span id="sts-data-time" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-body"><div class="stats">
+          <!-- 글로벌 순위 (숨김 - JS 표시용) -->
+          <div id="sts-global-rank-box" style="display:none">
+            <div id="sts-global-rank"></div><div id="sts-global-diff"></div>
+          </div>
+          <!-- 숨김 유지 원소들 (JS 참조용) -->
+          <div style="display:none"><span id="sts-avg-diff"></span><span id="sts-best-date"></span><span id="sts-count"></span><span id="sts-countries-sub"></span><span id="sts-best"></span></div>
+          <div class="card" style="border-left-color:var(--steam)">
+            <div class="lbl">가중 평균</div>
+            <div class="val" id="sts-avg" style="color:var(--steam)">—</div>
+          </div>
+          <!-- 최고/최하 합친 카드 -->
+          <div class="card" style="border-left-color:var(--steam);grid-column:span 1">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div>
+                <div class="lbl" style="margin-bottom:4px">최고 순위</div>
+                <div class="val" id="sts-best-rank-val" style="font-size:22px;color:var(--gold)">—</div>
+                <div class="sub" id="sts-best-rank-name" style="font-size:13px">...</div>
+              </div>
+              <div style="border-left:1px solid var(--bd);padding-left:10px">
+                <div class="lbl" style="margin-bottom:4px">최하 순위</div>
+                <div class="val" id="sts-worst-rank-val" style="font-size:22px;color:var(--down)">—</div>
+                <div class="sub" id="sts-worst-rank-name" style="font-size:13px">...</div>
+              </div>
+            </div>
+          </div>
+          <!-- 숨김 유지 (JS 참조용) -->
+          <span id="sts-cnt-1" style="display:none">0</span>
+          <span id="sts-cnt-3" style="display:none">0</span>
+          <span id="sts-cnt-10" style="display:none">0</span>
+          <span id="sts-cnt-rest" style="display:none">0</span>
+          <!-- 순위별 전체 국가 목록 -->
+          <div class="card" style="border-left-color:var(--steam);grid-column:1/-1;padding:0">
+            <div id="sts-summary-rank-groups"></div>
+          </div>
+
+        </div>
+      </div></div><!-- /dual-col-body -->
     </div>
 
-    <!-- 요약 하단 차트 (기존 그대로) -->
+    <!-- 요약 하단 차트 -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
       <!-- PS 차트 -->
       <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--blood);border-radius:var(--radius)">
@@ -174,196 +1021,2519 @@
         </div>
       </div>
     </div>
+  </div><!-- /sec-summary -->
 
-    <!-- ────────────────────────────────────────────────────────────────
-         ★ 새로 추가: 각 플랫폼 Top5 시장점유율 국가 일별 순위 변화 그래프
-         (기존 요약 하단 차트 바로 아래에 동일한 1fr 1fr 그리드 형태로 배치)
-         큰 틀(dual-wrap + 요약 차트 그리드) 완전 유지
-         ──────────────────────────────────────────────────────────────── -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
-      <!-- PS Top5 -->
-      <div class="top5-trend-box">
-        <div class="top5-trend-header" style="color:var(--blood)">📈 PS Store Top5 시장점유율 국가 순위 추이</div>
-        <div style="padding:14px">
-          <div style="width:100%;overflow:hidden;height:320px"><canvas id="psTop5TrendChart" style="display:block"></canvas></div>
-        </div>
+  <!-- ② 리더보드 -->
+  <div id="sec-leaderboard" class="tab-section">
+    <div class="dual-wrap">
+      <div class="dual-col ps-col">
+        <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span class="ps-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-body"><div id="lb-ps-container" style="padding:8px"></div></div>
       </div>
+      <div class="dual-col steam-col">
+        <div class="dual-col-header steam-header">🖥 Steam <a href="https://steamdb.info/app/3321460/charts/" target="_blank" style="font-size:13px;color:var(--steam);opacity:0.7;margin-left:auto;text-decoration:none;font-weight:700;letter-spacing:0;text-transform:none;flex-shrink:0;padding:2px 6px;border:1px solid rgba(74,158,255,0.3);border-radius:4px;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">SteamDB ↗</a><span class="sts-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-body"><div id="lb-sts-container" style="padding:8px"></div></div>
+      </div>
+    </div>
+  </div><!-- /sec-leaderboard -->
 
-      <!-- Steam Top5 -->
-      <div class="top5-trend-box steam-top5-trend-box">
-        <div class="top5-trend-header" style="color:var(--steam)">📈 Steam Top5 시장점유율 국가 순위 추이</div>
-        <div style="padding:14px">
-          <div style="width:100%;overflow:hidden;height:320px"><canvas id="steamTop5TrendChart" style="display:block"></canvas></div>
+  <!-- ③ 스케줄 -->
+  <div id="sec-sched" class="tab-section">
+    <div class="dual-wrap">
+      <div class="dual-col ps-col">
+        <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span class="ps-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-body"><div class="sts-sched-wrap">
+          <div class="sts-sched-legend">
+            <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>자동 실행</span>
+            <span style="display:flex;align-items:center;gap:4px"><span class="tl-badge manual" style="font-size:8px;padding:1px 5px">수동</span>수동 실행</span>
+            <span><i class="sts-legend-dot" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1)"></i>예정</span>
+          </div>
+          <div id="schedule-grid"></div>
+          <div class="sts-sched-summary" id="schedule-summary"></div>
+        </div></div>
+      </div>
+      <div class="dual-col steam-col">
+        <div class="dual-col-header steam-header">🖥 Steam <a href="https://steamdb.info/app/3321460/charts/" target="_blank" style="font-size:13px;color:var(--steam);opacity:0.7;margin-left:auto;text-decoration:none;font-weight:700;letter-spacing:0;text-transform:none;flex-shrink:0;padding:2px 6px;border:1px solid rgba(74,158,255,0.3);border-radius:4px;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">SteamDB ↗</a><span id="sts-sched-cron" style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:4px;letter-spacing:0;text-transform:none"></span></div>
+        <div class="dual-col-body"><div class="sts-sched-wrap">
+          <div class="sts-sched-legend">
+            <span><i class="sts-legend-dot" style="background:rgba(46,204,113,0.5);border:1px solid rgba(46,204,113,0.6)"></i>자동 실행</span>
+            <span style="display:flex;align-items:center;gap:4px"><span class="tl-badge manual" style="font-size:8px;padding:1px 5px">수동</span>수동 실행</span>
+            <span><i class="sts-legend-dot" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1)"></i>예정</span>
+          </div>
+          <div id="sts-sched-days"></div>
+          <div class="sts-sched-summary" id="sts-sched-summary"></div>
+        </div></div>
+      </div>
+    </div>
+  </div><!-- /sec-sched -->
+
+
+
+
+  <!-- 💰 판매량 추정 -->
+  <div id="sec-sales" class="tab-section">
+    <div class="dual-wrap">
+      <div class="dual-col ps-col" style="flex:1">
+        <div class="dual-col-header ps-header">💰 플랫폼별 판매량 추정
+          <span style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0">보수적 추정 모델 · 출시일 3/20 07:00 KST</span>
+        </div>
+        <div class="dual-col-body" style="padding:12px">
+          <!-- 모델 설명 -->
+          <div style="background:var(--bg-3);border:1px solid var(--bd);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--tx-4);line-height:1.7">
+            <b style="color:var(--tx-2)">📌 모델 근거</b><br>
+            • 공식 발표: 출시 ~24h 내 200만 "sold through" (사전판매 ~36만 포함) — 환불 12% 적용<br>
+            • <b style="color:var(--gold)">Steam CCU 최고: 248,530명 → CCU/소유자 비율 10~12% 적용 시 Steam 소유자 2.1~2.5M 추정</b><br>
+            • <b style="color:var(--gold)">리뷰 55,501개 → 리뷰율 2% 기준 Steam 소유자 ~2.8M 추정</b><br>
+            • SteamDB 소유자 표시(~1.1M)는 "집계 중" 초기값 — 실제보다 과소<br>
+            • 플랫폼 비율: CCU 역산 기준 Steam ~50% · PS5 ~38% · Xbox 12%<br>
+            • Day1=Day0×27% 스파이크 분리 → DECAY=0.65 (일 35% 감소) · 순위탄성 0.10<br>
+            • ⚠ 침묵 = 5M 마일스톤 대기 가능성 (Elden Ring도 5M 발표까지 16일 소요)
+          </div>
+          <!-- 컨트롤 -->
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+            <label style="font-size:12px;color:var(--tx-3)">발표 판매량:
+              <input id="sales-day1-total" type="number" value="2000000" step="100000"
+                style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:110px;margin-left:6px">
+            </label>
+            <label style="font-size:12px;color:var(--tx-3)">환불율(%):
+              <input id="sales-refund-pct" type="number" value="12" min="0" max="40" step="1"
+                style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:55px;margin-left:6px">
+            </label>
+            <label style="font-size:12px;color:var(--tx-3)">PS5(%):
+              <input id="sales-ps-ratio" type="number" value="38" min="1" max="86" step="1"
+                style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:55px;margin-left:6px">
+              <span style="color:var(--tx-4);font-size:11px"> Steam <span id="sales-steam-ratio-lbl">33</span>% / Xbox 12%</span>
+            </label>
+            <button onclick="renderSalesChart()" style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:5px 14px;color:var(--tx-2);font-size:13px;cursor:pointer;font-weight:700">재계산</button>
+          </div>
+          <!-- 요약 카드 -->
+          <div id="sales-summary-cards" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px"></div>
+          <!-- 마일스톤 예측 -->
+          <div id="sales-milestone-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px"></div>
+          <!-- 일별 차트 -->
+          <div style="font-size:11px;color:var(--tx-4);margin-bottom:4px;font-weight:800;letter-spacing:1px;text-transform:uppercase">📊 일별 판매량 추정 (누적 막대)</div>
+          <div style="height:220px;margin-bottom:16px"><canvas id="salesDailyChart"></canvas></div>
+          <!-- 누적 차트 -->
+          <div style="font-size:11px;color:var(--tx-4);margin-bottom:4px;font-weight:800;letter-spacing:1px;text-transform:uppercase">📈 누적 판매량 추정</div>
+          <div style="height:220px"><canvas id="salesCumChart"></canvas></div>
         </div>
       </div>
     </div>
-  </div><!-- /sec-summary -->
+  </div><!-- /sec-sales -->
 
-  <!-- (나머지 모든 탭 섹션 — 리더보드, 스케줄, 판매량, 히트맵, 국가별 — 그대로 유지) -->
-  <!-- ... (기존 코드의 모든 나머지 내용 그대로) ... -->
+  <!-- ⑤ 히트맵 -->
+  <div id="sec-heatmap" class="tab-section">
+    <div class="dual-wrap">
+      <div class="dual-col ps-col">
+        <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span class="ps-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-body"><div class="heatmap-legend">
+          <span><i class="hm-legend-bar" style="background:var(--up)"></i> 상승</span>
+          <span><i class="hm-legend-bar" style="background:var(--down)"></i> 하락</span>
+          <span><i class="hm-legend-bar" style="background:var(--bd)"></i> 변동없음</span>
+          <span style="color:var(--gold);font-size:10px;font-weight:700">★최고</span>
+        </div>
+        <div class="heatmap-grid" id="ps-heatmap-grid"></div></div>
+      </div>
+      <div class="dual-col steam-col">
+        <div class="dual-col-header steam-header">🖥 Steam <a href="https://steamdb.info/app/3321460/charts/" target="_blank" style="font-size:13px;color:var(--steam);opacity:0.7;margin-left:auto;text-decoration:none;font-weight:700;letter-spacing:0;text-transform:none;flex-shrink:0;padding:2px 6px;border:1px solid rgba(74,158,255,0.3);border-radius:4px;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">SteamDB ↗</a><span class="sts-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-body"><div class="heatmap-legend">
+          <span><i class="hm-legend-bar" style="background:var(--up)"></i> 상승</span>
+          <span><i class="hm-legend-bar" style="background:var(--down)"></i> 하락</span>
+          <span><i class="hm-legend-bar" style="background:var(--bd)"></i> 변동없음</span>
+          <span style="color:var(--gold);font-size:10px;font-weight:700">★최고</span>
+        </div>
+        <div class="heatmap-grid" id="sts-heatmap-grid"></div></div>
+      </div>
+    </div>
+  </div><!-- /sec-heatmap -->
+
+  <!-- ⑥ 국가별 -->
+  <div id="sec-table" class="tab-section">
+    <div class="dual-wrap">
+      <div class="dual-col ps-col">
+        <div class="dual-col-header ps-header">🎮 PS Store
+          <span class="ps-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span>
+          <button class="csv-btn" style="font-size:10px;padding:4px 10px;margin-left:8px" onclick="downloadCSV()">📥 CSV</button>
+        </div>
+        <div class="dual-col-body" id="ps-table-body"></div>
+      </div>
+      <div class="dual-col steam-col">
+        <div class="dual-col-header steam-header">🖥 Steam <a href="https://steamdb.info/app/3321460/charts/" target="_blank" style="font-size:13px;color:var(--steam);opacity:0.7;margin-left:auto;text-decoration:none;font-weight:700;letter-spacing:0;text-transform:none;flex-shrink:0;padding:2px 6px;border:1px solid rgba(74,158,255,0.3);border-radius:4px;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">SteamDB ↗</a>
+          <span class="sts-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span>
+          <button class="steam-ts-dl-btn" style="font-size:10px;padding:4px 10px;margin-left:8px" onclick="downloadSteamCSV()">📥 CSV</button>
+        </div>
+        <!-- 숨김 원소들 유지 -->
+        <div style="display:none">
+          <span id="sts-cs-avg"></span><span id="sts-cs-avg-sub"></span>
+          <span id="sts-cs-best-flag"></span><span id="sts-cs-best-name"></span>
+          <span id="sts-cs-worst-flag"></span><span id="sts-cs-worst-name"></span>
+          <span id="sts-cs-found"></span><span id="sts-cs-found-sub"></span>
+          <div id="sts-country-grid" style="display:none"></div>
+        </div>
+        <div class="dual-col-body" id="sts-table-body"></div>
+      </div>
+    </div>
+  </div><!-- /sec-table -->
 
 </div><!-- /container -->
 
-<!-- (기존 모든 모달, 스크립트 src 그대로 유지) -->
+<!-- Steam TS 국가 상세 모달 -->
+<div class="steam-ts-modal-overlay" id="sts-modal" onclick="closeStsModal(event)">
+  <div class="steam-ts-modal">
+    <div class="steam-ts-modal-header">
+      <div class="steam-ts-modal-title" id="sts-modal-title">—</div>
+      <button class="steam-ts-modal-close" onclick="closeStsModalDirect()">✕</button>
+    </div>
+    <div class="steam-ts-modal-stats">
+      <div class="steam-ts-stat-box" style="flex:1;min-width:100px"><div class="steam-ts-stat-label">현재</div><div class="steam-ts-stat-value" id="sts-modal-current">—</div></div>
+      <div class="steam-ts-stat-box" style="flex:1;min-width:100px"><div class="steam-ts-stat-label">최고</div><div class="steam-ts-stat-value" id="sts-modal-best">—</div></div>
+      <div class="steam-ts-stat-box" style="flex:1;min-width:100px"><div class="steam-ts-stat-label">평균</div><div class="steam-ts-stat-value" id="sts-modal-avg">—</div></div>
+    </div>
+    <div class="steam-ts-modal-chart-inner"><canvas id="stsModalChart"></canvas></div>
+    <a id="sts-modal-link" href="https://steamdb.info/app/3321460/charts/" target="_blank" class="steamdb-btn-sts">🔗 SteamDB에서 보기 ↗</a>
+  </div>
+</div>
+
+<div id="chartModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal()">&times;</span>
+    <h2 id="modalTitle" style="margin-bottom:20px; font-family:'Cinzel'; color:var(--gold);">Country Trend</h2>
+    <div style="height:min(400px,50vh);"><canvas id="countryChart"></canvas></div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@15.1.0/dist/twemoji.min.js" crossorigin="anonymous"></script>
 
 <script>
-/** 기존 모든 상수/함수 그대로 유지 (COUNTRY_LOCALE, WEIGHTS, FLAGS, STS_W, STS_F 등) */
-const COUNTRY_LOCALE = { /* 기존 그대로 */ };
-const WEIGHTS = { /* 기존 그대로 */ };
-const FLAGS = { /* 기존 그대로 */ };
+/** 파이썬 코드 기반 URL 및 가중치 동기화 **/
+// PS Store 공식 로케일 코드
+// 출처: psdevwiki.com/ps4/Regioning + gist.github.com/DartPower (실제 PS Store URL 검증)
+const COUNTRY_LOCALE = {
+  // ── Americas ──────────────────────────────
+  "미국":           "en-us",
+  "캐나다":         "en-ca",
+  "브라질":         "pt-br",
+  "멕시코":         "es-mx",
+  "아르헨티나":     "es-ar",
+  "칠레":           "es-cl",
+  "콜롬비아":       "es-co",
+  "페루":           "es-pe",
+  "우루과이":       "es-uy",
+  "볼리비아":       "es-bo",
+  "과테말라":       "es-gt",
+  "온두라스":       "es-hn",
+  "코스타리카":     "es-cr",
+  "에콰도르":       "es-ec",
+  "엘살바도르":           "es-sv",
+  "니카라과":       "es-ni",
+  "파나마":         "es-pa",
+  "파라과이":       "es-py",
+  // ── Europe ────────────────────────────────
+  "영국":           "en-gb",
+  "독일":           "de-de",
+  "프랑스":         "fr-fr",
+  "스페인":         "es-es",
+  "이탈리아":       "it-it",
+  "네덜란드":       "nl-nl",
+  "폴란드":         "pl-pl",
+  "스위스":         "de-ch",
+  "스웨덴":         "sv-se",
+  "노르웨이":       "no-no",
+  "덴마크":         "en-dk",  // 공식: en-dk (da-dk 아님)
+  "핀란드":         "fi-fi",
+  "포르투갈":       "pt-pt",
+  "그리스":         "en-gr",
+  "체코":           "en-cz",
+  "헝가리":         "en-hu",
+  "루마니아":       "en-ro",
+  "슬로바키아":     "en-sk",
+  "슬로베니아":     "en-si",
+  "우크라이나":     "ru-ua",  // 공식: ru-ua (uk-ua 아님)
+  "벨기에":         "nl-be",
+  "오스트리아":     "de-at",
+  "아이슬란드":     "en-is",
+  "아일랜드":       "en-ie",
+  "룩셈부르크":     "de-lu",  // 공식: de-lu (fr-lu 아님)
+  "몰타":           "en-mt",
+  "크로아티아":     "en-hr",
+  "불가리아":       "en-bg",
+  "키프로스":       "en-cy",
+  "터키":           "en-tr",
+  // ── Middle East & Africa ──────────────────
+  "사우디아라비아": "en-sa",
+  "아랍에미리트":   "en-ae",
+  "남아공":         "en-za",
+  "이스라엘":       "en-il",
+  "쿠웨이트":       "en-kw",
+  "레바논":         "en-lb",
+  "오만":           "en-om",
+  "카타르":         "en-qa",
+  "바레인":         "en-bh",
+  // ── Asia & Oceania ────────────────────────
+  "일본":           "ja-jp",
+  "한국":           "ko-kr",
+  "호주":           "en-au",
+  "뉴질랜드":       "en-nz",
+  "인도":           "en-in",
+  "태국":           "en-th",
+  "싱가포르":       "en-sg",
+  "말레이시아":     "en-my",
+  "인도네시아":     "en-id",
+  "필리핀":         "en-ph",
+  "베트남":         "en-vn",
+  "홍콩":           "en-hk",  // 공식: en-hk (zh-hant-hk 아님)
+  "대만":           "zh-hant-tw",
+};
+const WEIGHTS = {"미국":30.0,"영국":8.5,"일본":8.0,"독일":6.5,"프랑스":6.0,"캐나다":4.5,"스페인":4.0,"이탈리아":3.5,"호주":3.0,"한국":2.8};
+const FLAGS = {
+  "미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽",
+  "아르헨티나":"🇦🇷","칠레":"🇨🇱","콜롬비아":"🇨🇴","페루":"🇵🇪",
+  "우루과이":"🇺🇾","볼리비아":"🇧🇴","과테말라":"🇬🇹","온두라스":"🇭🇳",
+  "코스타리카":"🇨🇷","에콰도르":"🇪🇨","엘살바도르":"🇸🇻",
+  "니카라과":"🇳🇮","파나마":"🇵🇦","파라과이":"🇵🇾",
+  "영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸",
+  "이탈리아":"🇮🇹","네덜란드":"🇳🇱","폴란드":"🇵🇱","스위스":"🇨🇭",
+  "스웨덴":"🇸🇪","노르웨이":"🇳🇴","덴마크":"🇩🇰","핀란드":"🇫🇮",
+  "포르투갈":"🇵🇹","그리스":"🇬🇷","체코":"🇨🇿","헝가리":"🇭🇺",
+  "루마니아":"🇷🇴","슬로바키아":"🇸🇰","슬로베니아":"🇸🇮",
+  "우크라이나":"🇺🇦","사우디아라비아":"🇸🇦","아랍에미리트":"🇦🇪",
+  "남아공":"🇿🇦","터키":"🇹🇷","벨기에":"🇧🇪","오스트리아":"🇦🇹",
+  "이스라엘":"🇮🇱","크로아티아":"🇭🇷","불가리아":"🇧🇬",
+  "키프로스":"🇨🇾","아이슬란드":"🇮🇸","아일랜드":"🇮🇪",
+  "쿠웨이트":"🇰🇼","레바논":"🇱🇧","룩셈부르크":"🇱🇺",
+  "몰타":"🇲🇹","오만":"🇴🇲","카타르":"🇶🇦","바레인":"🇧🇭",
+  "일본":"🇯🇵","한국":"🇰🇷","중국":"🇨🇳","호주":"🇦🇺",
+  "인도":"🇮🇳","태국":"🇹🇭","싱가포르":"🇸🇬","말레이시아":"🇲🇾",
+  "인도네시아":"🇮🇩","필리핀":"🇵🇭","베트남":"🇻🇳",
+  "홍콩":"🇭🇰","대만":"🇹🇼","뉴질랜드":"🇳🇿"
+};
 
+let historyData = [];
+let scheduleSlots = [  // fallback: JSON schedule 없을 시 KST 09~19시 사용
+  {hour:9},{hour:10},{hour:11},{hour:12},{hour:13},{hour:14},{hour:15},{hour:16},{hour:17},{hour:18},{hour:19}
+];
+// JSON의 schedule.slots_kst 로드 시 자동 갱신됨
+// 기본 정렬을 현재순위(rank) 기준으로, 오름차순(true) 설정
+let sortKey = 'rank'; let sortAsc = true; 
+let mainChart = null; let countryChart = null;
+
+async function loadPsData() {
+  const res = await fetch('./bestseller_history.json?t=' + Date.now());
+  const payload = await res.json();
+  if (Array.isArray(payload)) {
+    historyData = payload;
+  } else {
+    historyData = payload.history || [];
+    if (payload.schedule && Array.isArray(payload.schedule.slots_kst)) {
+      scheduleSlots = payload.schedule.slots_kst.map(h => ({
+        hour: h,
+        label: h < 12 ? 'AM' : 'PM'
+      }));
+      window._scheduleCron = payload.schedule.cron || '';
+    }
+  }
+  render();
+}
+
+async function init() {
+  await loadPsData();
+  loadSteamTopSellerData();
+  fetchStock();
+}
+
+async function refreshData(silent) {
+  const btn = document.getElementById('btn-refresh-data');
+  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+  try {
+    await loadPsData();
+    await loadSteamTopSellerData();
+    if (!silent) showDispatchToast('🔄 데이터 갱신 완료', '#4a9eff');
+  } catch(e) {
+    if (!silent) showDispatchToast('❌ 갱신 실패', '#e74c3c');
+  } finally {
+    if (btn) { btn.textContent = '🔄'; btn.disabled = false; }
+  }
+}
+
+function getRank(entry, country) {
+  const r = entry.raw_results[country];
+  if (r === undefined || r === null) return 999;
+  return (typeof r === 'object') ? Math.min(...Object.values(r).filter(v => v !== null)) : r;
+}
+
+function getStoreUrl(name) {
+  const locale = COUNTRY_LOCALE[name];
+  if (!locale) return "https://store.playstation.com/";
+  return `https://store.playstation.com/${locale}/pages/browse/1?conceptId=10002363`;
+}
+
+/* ── PS 순위 유지 일수 계산 ── */
+function getDaysAtRank(name, currentRank) {
+  if (currentRank >= 999) return 0;
+  // 최신에서 과거 방향으로 순위가 동일한 연속 스냅샷 수
+  let count = 0;
+  for (let i = historyData.length - 1; i >= 0; i--) {
+    const r = getRank(historyData[i], name);
+    if (r === currentRank) count++;
+    else break;
+  }
+  // 스냅샷 간격(시간) → 일수 환산
+  if (count < 2 || historyData.length < 2) return count > 0 ? 1 : 0;
+  const first = new Date(historyData[historyData.length - count].timestamp);
+  const last  = new Date(historyData[historyData.length - 1].timestamp);
+  const diffDays = (last - first) / 86400000;
+  return diffDays < 1 ? (diffDays > 0 ? 1 : 0) : Math.round(diffDays);
+}
+function getStsDaysAtRank(name, currentRank) {
+  if (!currentRank) return 0;
+  let count = 0;
+  for (let i = stsHist.length - 1; i >= 0; i--) {
+    const r = stsHist[i].results?.[name]?.rank ?? null;
+    if (r === currentRank) count++;
+    else break;
+  }
+  if (count < 2 || stsHist.length < 2) return count > 0 ? 1 : 0;
+  const first = new Date(stsHist[stsHist.length - count].timestamp);
+  const last  = new Date(stsHist[stsHist.length - 1].timestamp);
+  const diffDays = (last - first) / 86400000;
+  return diffDays < 1 ? (diffDays > 0 ? 1 : 0) : Math.round(diffDays);
+}
+
+function render() {
+  const curr = historyData[historyData.length - 1];
+  const prev = historyData.length > 1 ? historyData[historyData.length - 2] : null;
+
+  const tsStr = curr.timestamp.split('.')[0].replace('T', ' ');
+  document.getElementById('update-time').innerText = `LAST SNAPSHOT: ${tsStr}`;
+  // PS 타임스탬프 뱃지 전체 업데이트
+  const psTs = curr.timestamp.split('.')[0].replace('T', ' ').slice(5); // MM-DD HH:mm
+  document.querySelectorAll('.ps-ts-badge, #ps-data-time').forEach(el => el.textContent = psTs);
+  document.getElementById('stat-avg').innerText = curr.averages.combined.toFixed(1) + '위';
+
+  let list = [];
+  let best = { r: 999, n: '' }; let worst = { r: 0, n: '' };
+
+  // 국가별 best/avg 계산
+  const countryBest = {}; const countryAvg = {};
+  Object.keys(curr.raw_results).forEach(name => {
+    const allRanks = historyData.map(h => getRank(h, name)).filter(r => r !== 999);
+    countryBest[name] = allRanks.length > 0 ? Math.min(...allRanks) : 999;
+    countryAvg[name] = allRanks.length > 0 ? (allRanks.reduce((a,b)=>a+b,0) / allRanks.length) : 999;
+  });
+
+  Object.keys(curr.raw_results).forEach(name => {
+    const r = getRank(curr, name);
+    const p = prev ? getRank(prev, name) : 999;
+    if (r !== 999) {
+      if (r < best.r) best = { r, n: name };
+      if (r > worst.r && r < 999) worst = { r, n: name };
+    }
+    const daysR = getDaysAtRank(name, r);
+    list.push({ name, rank: r, change: (p === 999 || r === 999) ? 0 : p - r, weight: WEIGHTS[name] || 1.0, best: countryBest[name], avg: countryAvg[name], days: daysR });
+  });
+
+  document.getElementById('stat-best-val').innerText = best.r + '위';
+  document.getElementById('stat-best-name').innerText = (FLAGS[best.n] || '') + ' ' + best.n;
+  document.getElementById('stat-worst-val').innerText = worst.r === 0 ? '—' : worst.r + '위';
+  document.getElementById('stat-worst-name').innerText = worst.n ? (FLAGS[worst.n] || '') + ' ' + worst.n : '...';
+  // 순위별 국가 수 집계 + 증감
+  const cnt1   = list.filter(x => x.rank === 1).length;
+  const cnt23  = list.filter(x => x.rank >= 2 && x.rank <= 3).length;
+  const cnt410 = list.filter(x => x.rank >= 4 && x.rank <= 10).length;
+  const cntRest= list.filter(x => x.rank >= 11 && x.rank < 999).length;
+  const cntAll = list.filter(x => x.rank < 999).length;
+
+  function makeChgBadge(items) {
+    const up = items.filter(x => x.change > 0).length;
+    const dn = items.filter(x => x.change < 0).length;
+    if (!up && !dn) return '';
+    return `<span style="font-size:9px;display:inline-flex;gap:3px;margin-left:4px;vertical-align:middle">
+      ${up ? `<span style="color:var(--up);font-weight:800">▲${up}</span>` : ''}
+      ${dn ? `<span style="color:var(--down);font-weight:800">▼${dn}</span>` : ''}
+    </span>`;
+  }
+  const g1items  = list.filter(x => x.rank === 1);
+  const g23items = list.filter(x => x.rank >= 2 && x.rank <= 3);
+  const g10items = list.filter(x => x.rank >= 4 && x.rank <= 10);
+
+  document.getElementById('stat-cnt-1').innerHTML  = cnt1  + makeChgBadge(g1items);
+  document.getElementById('stat-cnt-3').innerHTML  = cnt23 + makeChgBadge(g23items);
+  document.getElementById('stat-cnt-10').innerHTML = cnt410+ makeChgBadge(g10items);
+  document.getElementById('stat-cnt-rest').innerText = cntRest + '개 / ' + cntAll + '개국';
+  // 1위 국가명
+  const rank1Countries = list.filter(x => x.rank === 1).map(x => x.name);
+  const namesEl = document.getElementById('stat-cnt-1-names');
+  // 요약 순위별 전체 국가 그룹 렌더
+  renderSummaryRankGroups(
+    list,
+    'ps-summary-rank-groups',
+    n => FLAGS[n] || '',
+    n => getStoreUrl(n),
+    true
+  );
+
+  // 리더보드 PS - 순위별 그룹
+  const lbPs = document.getElementById('lb-ps-container');
+  if (lbPs) {
+    const psLeaderSorted = list
+      .slice()
+      .sort((a, b) => {
+        if (a.rank < 999 && b.rank < 999) return a.rank !== b.rank ? a.rank - b.rank : (b.weight||0) - (a.weight||0);
+        if (a.rank < 999) return -1; if (b.rank < 999) return 1;
+        return (b.weight||0) - (a.weight||0);
+      })
+      .map(d => ({ name: d.name, rank: d.rank }));
+    const psGroups = {};
+    psLeaderSorted.forEach(({ name, rank }) => {
+      const k = rank >= 999 ? '순위 밖' : rank + '위';
+      if (!psGroups[k]) psGroups[k] = { rank, names: [] };
+      psGroups[k].names.push(name);
+    });
+    // 변동 계산을 위해 name→change 맵 생성
+    const psChangeMap = {};
+    list.forEach(d => { psChangeMap[d.name] = d.change || 0; });
+
+    lbPs.innerHTML = Object.entries(psGroups).map(([label, { rank, names }]) => {
+      const lc = rank === 1 ? 'g1' : rank <= 3 ? 'g2' : rank <= 10 ? 'g3' : rank < 999 ? 'g10' : 'gout';
+      const tc = rank === 1 ? 'tier-1' : rank <= 3 ? 'tier-2' : rank <= 10 ? 'tier-3' : rank < 999 ? 'tier-10' : 'tier-out';
+      const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+      const groupId = 'ps-lb-grp-' + rank;
+      const upCnt   = names.filter(n => (psChangeMap[n]||0) > 0).length;
+      const downCnt = names.filter(n => (psChangeMap[n]||0) < 0).length;
+      const chgBadge = upCnt > 0 || downCnt > 0
+        ? `<span style="font-size:9px;margin-left:6px;display:inline-flex;gap:4px">
+             ${upCnt   > 0 ? `<span style="color:var(--up);font-weight:800">▲${upCnt}</span>` : ''}
+             ${downCnt > 0 ? `<span style="color:var(--down);font-weight:800">▼${downCnt}</span>` : ''}
+           </span>` : '';
+      const cardsHtml = names.map(n => {
+        const ch = psChangeMap[n] || 0;
+        const chTxt = ch > 0 ? `<span style="font-size:9px;color:var(--up);font-weight:800">▲${ch}</span>`
+                    : ch < 0 ? `<span style="font-size:9px;color:var(--down);font-weight:800">▼${Math.abs(ch)}</span>` : '';
+        return `<div class="top10-item ${tc}" onclick="showCountryChart('${n}')"><span class="n">${FLAGS[n]||''} ${n}${starBadge(n, true)}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank >= 9999 ? '—' : rank + '위' + (psChangeMap ? (() => { const d = getDaysAtRank(n, rank); return d>1?`(${d}d)`:''; })() : '')}${chTxt}</span></div>`;
+      }).join('');
+      return `<div>
+        <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
+          <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}${chgBadge}</span>
+          <span class="rank-group-count">${names.length}개국</span>
+          <span class="rank-group-arrow" id="${groupId}-arrow">▼</span>
+        </div>
+        <div class="rank-group-body collapsed" id="${groupId}">
+          <div class="top10-grid" style="padding:8px">${cardsHtml}</div>
+        </div>
+      </div>`;
+    }).join('');
+    twemoji.parse(lbPs, { folder: 'svg', ext: '.svg' });
+  }
+
+  // Steam 국가별 탭에서 PS 순위 순서를 참조할 수 있도록 저장
+  window._psRankOrder = list
+    .slice()
+    .sort((a, b) => {
+      const ar = a.rank >= 999 ? 99999 : a.rank;
+      const br = b.rank >= 999 ? 99999 : b.rank;
+      return ar !== br ? ar - br : (b.weight || 0) - (a.weight || 0);
+    })
+    .map(d => d.name);
+
+  // PS 국가별 - 순위별 접기/펼치기 그룹
+  renderPsTable(list);
+
+  renderMainChart();
+  renderSchedule();
+  renderPsHeatmap(list);
+
+  // 모든 이모지를 Twemoji 이미지로 변환 (PC/모바일 크로스 플랫폼)
+  twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
+}
+
+function renderPsTable(list) {
+  const container = document.getElementById('ps-table-body');
+  if (!container) return;
+  const sorted = [...list].sort((a,b) => {
+    const ar = a.rank>=999?99999:a.rank, br = b.rank>=999?99999:b.rank;
+    return ar!==br ? ar-br : (b.weight||0)-(a.weight||0);
+  });
+  const groups = {};
+  sorted.forEach(d => {
+    const k = d.rank>=999?'순위 밖':d.rank+'위';
+    if (!groups[k]) groups[k] = {rank:d.rank>=999?9999:d.rank, items:[]};
+    groups[k].items.push(d);
+  });
+  const tableHdr = `<div class="ct-table-header">
+    <span></span><span></span><span>국가</span>
+    <span style="text-align:right">최고</span>
+    <span style="text-align:right">평균</span>
+    <span style="text-align:center">변동</span>
+    <span style="text-align:right">순위</span>
+    <span></span>
+  </div>`;
+  container.innerHTML = Object.entries(groups).map(([label,{rank,items}]) => {
+    const lc = rank===1?'g1':rank<=3?'g2':rank<=10?'g3':rank<999?'g10':'gout';
+    const barColor = rank===1?'var(--gold)':rank<=3?'#c0c0c0':rank<=10?'#cd7f32':rank<999?'var(--steam)':'var(--bd)';
+    const rankColor = rank===1?'var(--gold)':rank<=3?'#c0c0c0':rank<=10?'#cd7f32':rank<999?'var(--steam)':'var(--tx-4)';
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+    const groupId = 'ps-grp-'+rank;
+    const rows = items.map(d => {
+      const bestStr = d.best===999?'—':d.best+'위';
+      const avgStr  = d.avg ===999?'—':d.avg.toFixed(1)+'위';
+      const chgCls  = d.change>0?'up':d.change<0?'down':'';
+      const chgTxt  = d.change>0?'▲'+d.change:d.change<0?'▼'+Math.abs(d.change):'—';
+      const daysCtR = getDaysAtRank(d.name, d.rank < 999 ? d.rank : 0);
+      const rankTxt = d.rank>=999?'—':d.rank+'위'+(daysCtR > 1 ? `(${daysCtR}d)` : '');
+      return `<div class="ct-row" onclick="showCountryChart('${d.name}')">
+        <span class="ct-bar" style="background:${barColor}"></span>
+        <span class="ct-flag">${FLAGS[d.name]||''}</span>
+        <span class="ct-name">${d.name}${starBadge(d.name, true)}</span>
+        <span class="ct-meta">${bestStr}</span>
+        <span class="ct-meta">${avgStr}</span>
+        <span class="ct-chg ${chgCls}">${chgTxt}</span>
+        <span class="ct-rank" style="color:${rankColor}">${rankTxt}</span>
+        <a class="ct-link" href="${getStoreUrl(d.name)}" target="_blank" onclick="event.stopPropagation()">🔗</a>
+      </div>`;
+    }).join('');
+    const upCnt   = items.filter(d => d.change > 0).length;
+    const downCnt = items.filter(d => d.change < 0).length;
+    const chgBadge = upCnt > 0 || downCnt > 0
+      ? `<span style="font-size:9px;margin-left:6px;display:inline-flex;gap:4px">
+           ${upCnt   > 0 ? `<span style="color:var(--up);font-weight:800">▲${upCnt}</span>` : ''}
+           ${downCnt > 0 ? `<span style="color:var(--down);font-weight:800">▼${downCnt}</span>` : ''}
+         </span>` : '';
+    return `<div>
+      <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
+        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}${chgBadge}</span>
+        <span class="rank-group-count">${items.length}개국</span>
+        <span class="rank-group-arrow" id="${groupId}-arrow">▼</span>
+      </div>
+      <div class="rank-group-body collapsed" id="${groupId}">${tableHdr}${rows}</div>
+    </div>`;
+  }).join('');
+  twemoji.parse(container, {folder:'svg',ext:'.svg'});
+}
+
+function toggleRankGroup(id) {
+  const body = document.getElementById(id);
+  const arrow = document.getElementById(id + '-arrow');
+  if (!body) return;
+  body.classList.toggle('collapsed');
+  if (arrow) arrow.classList.toggle('open');
+}
+
+function renderMainChart() {
+  const mainEl = document.getElementById('mainChart');
+  if (!mainEl) return;
+  const ctx = mainEl.getContext('2d');
+  if (mainChart) mainChart.destroy();
+
+  const allData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.averages.combined }))
+    .filter(d => d.y != null);
+  const dv = allData.map(d => d.y);
+  const lbs = allData.map(d => d.x);
+
+  const idxFirst = 0, idxLast = dv.length - 1;
+  const idxBest  = dv.reduce((bi,v,i,a) => v!==null&&(a[bi]===null||v<a[bi])?i:bi, 0);
+
+  const specialIdx = new Set([idxFirst, idxLast, idxBest]);
+  const ptR = dv.map((_,i) => specialIdx.has(i) ? 5 : 0);
+  const ptC = dv.map((_,i) => i===idxBest?'#2ecc71': i===idxLast?'#f1c40f':'#ffffff');
+
+  const fmtR = v => v != null ? v.toFixed(1) + '위' : '—';
+  const setL = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+  setL('ps-leg-start',   '시작 ' + fmtR(dv[idxFirst]));
+  setL('ps-leg-best',    '최고 ' + fmtR(dv[idxBest]));
+  setL('ps-leg-current', '현재 ' + fmtR(dv[idxLast]));
+
+  mainChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: lbs,
+      datasets: [{
+        label: 'Global Weighted Avg',
+        data: dv,
+        borderColor: '#f1c40f', borderWidth: 2,
+        pointRadius: ptR, pointBackgroundColor: ptC, pointBorderColor: ptC,
+        pointHoverRadius: 6, tension: 0.2, fill: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 10, right: 10 } },
+      scales: {
+        x: {
+          type: 'time',
+          time: { tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' } },
+          grid: { color: '#222' },
+          ticks: { color: '#fff', maxRotation: 45, autoSkip: true, maxTicksLimit: 12 }
+        },
+        y: { reverse: true, suggestedMin: 0, grid: { color: '#222' }, ticks: { color: '#fff', padding: 8, callback: v => v > 0 ? v + '위' : '' } }
+      },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y + '위' } } }
+    }
+  });
+}
+
+function showCountryChart(countryName) {
+  const modal = document.getElementById('chartModal');
+  modal.style.display = 'flex';
+  document.getElementById('modalTitle').innerText = `${FLAGS[countryName] || ''} ${countryName} History`;
+  twemoji.parse(document.getElementById('modalTitle'), { folder: 'svg', ext: '.svg' });
+  if (countryChart) { countryChart.destroy(); countryChart = null; }
+  const countryData = historyData
+    .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName) }))
+    .filter(d => d.y !== 999);
+
+  function drawCountryChart() {
+    const canvas = document.getElementById('countryChart');
+    const container = canvas.parentElement;
+    // 캔버스 크기를 컨테이너에 명시적으로 맞춤 (responsive 계산 전에 확보)
+    canvas.width  = container.offsetWidth  || 700;
+    canvas.height = container.offsetHeight || 400;
+    const ctx = canvas.getContext('2d');
+    countryChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        datasets: [{
+          label: countryName,
+          data: countryData,
+          borderColor: '#ff4757', borderWidth: 2,
+          pointRadius: countryData.length > 100 ? 0 : 2,
+          pointHoverRadius: 5, tension: 0.2, fill: false
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: {
+            type: 'time',
+            time: { tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' } },
+            grid: { color: '#333' },
+            ticks: { color: '#fff', maxRotation: 45, autoSkip: true, maxTicksLimit: 10 }
+          },
+          y: { reverse: true, suggestedMin: 0, grid: { color: '#333' }, ticks: { color: '#fff', padding: 8, callback: v => v > 0 ? v + '위' : '' } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+
+  // position:fixed 모달 내 캔버스는 rAF로도 offsetWidth=0인 경우 있음 → setTimeout으로 확실히
+  setTimeout(drawCountryChart, 50);
+}
+
+function closeModal() { document.getElementById('chartModal').style.display = 'none'; }
+
+function setSort(key) {
+  if (sortKey === key) sortAsc = !sortAsc;
+  else { sortKey = key; sortAsc = (key === 'weight' ? false : true); }
+  render();
+}
+
+function downloadCSV() {
+  const curr = historyData[historyData.length - 1];
+
+  // 국가별 best/avg 재계산
+  const rows = [];
+  Object.keys(curr.raw_results).forEach(name => {
+    const r = getRank(curr, name);
+    const allRanks = historyData.map(h => getRank(h, name)).filter(v => v !== 999);
+    const bestR = allRanks.length > 0 ? Math.min(...allRanks) : null;
+    const avgR = allRanks.length > 0 ? (allRanks.reduce((a,b)=>a+b,0)/allRanks.length) : null;
+    rows.push({ name, rank: r, best: bestR, avg: avgR, url: getStoreUrl(name) });
+  });
+
+  // 현재 순위 오름차순 정렬 (999 = 마지막)
+  rows.sort((a, b) => {
+    const ar = a.rank === 999 ? 9999 : a.rank;
+    const br = b.rank === 999 ? 9999 : b.rank;
+    return ar - br;
+  });
+
+  const header = ['Country', 'Current Rank', 'Best Rank', 'Avg Rank', 'PS Store URL'];
+  const csvLines = [header.join(',')];
+  rows.forEach(r => {
+    csvLines.push([
+      r.name,
+      r.rank === 999 ? '' : r.rank,
+      r.best !== null ? r.best : '',
+      r.avg !== null ? r.avg.toFixed(1) : '',
+      r.url
+    ].map(v => `"${v}"`).join(','));
+  });
+
+  const blob = new Blob(['\uFEFF' + csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const ts = curr.timestamp.split('.')[0].replace(/[-:T]/g, '').slice(0,12);
+  a.download = `crimson_desert_ranks_${ts}.csv`;
+  a.click();
+}
+
+/* ── Schedule Tracker ─────────────────────────────────────────────── */
+// cron은 yml 기준. Python이 파싱해서 JSON에 저장 → scheduleSlots로 로드됨.
+// JSON에 schedule 키가 없을 경우 위 fallback 값(06:00/18:00)이 사용됨.
+const TOLERANCE_MIN = 90; // ±90분 허용
+
+function renderSchedule() {
+  const container = document.getElementById('schedule-grid');
+  const summaryEl = document.getElementById('schedule-summary');
+  if (!container || !summaryEl) return;
+
+  const nowUtc = new Date(), KST_OFFSET = 9 * 3600000;
+  const nowKst = new Date(nowUtc.getTime() + KST_OFFSET);
+
+  // 슬롯 간격 결정 (scheduleSlots 기반)
+  let intervalMin = 60;
+  if (scheduleSlots && scheduleSlots.length > 0) {
+    // slots_kst가 있으면 1시간 간격
+    intervalMin = 60;
+  }
+
+  const stamps = historyData.map(h => new Date(h.timestamp).getTime()).filter(t => !isNaN(t));
+  const toleranceMs = 25 * 60000; // ±25분
+
+  const todayKstMidnight = new Date(Date.UTC(nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()) - KST_OFFSET);
+  const days = [
+    { label: '오늘', date: todayKstMidnight, isToday: true },
+  ];
+
+  // scheduleSlots에서 활성 시간대 추출 (없으면 0~23 전체)
+  const activeHours = scheduleSlots && scheduleSlots.length > 0
+    ? scheduleSlots.map(s => typeof s === 'object' ? s.hour : s)
+    : Array.from({length: 24}, (_, i) => i);
+
+  let totalSlots = 0, okSlots = 0, missSlots = 0;
+  container.innerHTML = '';
+
+  days.forEach(({ label, date, isToday }) => {
+    const kstDay = new Date(date.getTime() + KST_OFFSET);
+    const mm = kstDay.getUTCMonth() + 1, dd = kstDay.getUTCDate();
+
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'sts-sched-day-label';
+    labelDiv.innerHTML = `<span class="day-badge${isToday ? ' today' : ''}">${label}</span>${mm}/${dd}`;
+    container.appendChild(labelDiv);
+
+    const grid = document.createElement('div');
+    grid.className = 'sts-sched-grid';
+
+    // 오늘: 현재 시간 기준 앞뒤 2개 슬롯만
+    const hoursToRender = isToday ? (() => {
+      const nowMs2 = nowUtc.getTime();
+      const sorted = activeHours.slice().sort((a, b) => a - b);
+      // 현재 슬롯 인덱스 찾기
+      let ci = sorted.findIndex(h => date.getTime() + h * 3600000 > nowMs2 - toleranceMs);
+      if (ci === -1) ci = sorted.length;
+      const from = Math.max(0, ci - 2);
+      const to   = Math.min(sorted.length, ci + 3);
+      return sorted.slice(from, to);
+    })() : activeHours;
+
+    hoursToRender.forEach(h => {
+      const slotMs = date.getTime() + h * 3600000;
+      const slotKst = new Date(slotMs + KST_OFFSET);
+      const hhmm = `${String(slotKst.getUTCHours()).padStart(2,'0')}:00`;
+      const isFuture = slotMs > nowUtc.getTime() + toleranceMs;
+      const isNow = Math.abs(slotMs - nowUtc.getTime()) <= toleranceMs;
+
+      let status = 'miss', actualTime = '';
+      if (isFuture) { status = 'fut'; }
+      else {
+        const found = stamps.find(s => Math.abs(s - slotMs) <= toleranceMs);
+        if (found) {
+          status = 'ok'; okSlots++; totalSlots++;
+          const ft = new Date(found + KST_OFFSET);
+          actualTime = `${String(ft.getUTCHours()).padStart(2,'0')}:${String(ft.getUTCMinutes()).padStart(2,'0')}`;
+        } else { missSlots++; totalSlots++; }
+      }
+
+      // 수동 감지: 실제 실행 시각이 슬롯 정각에서 5분 이상 차이
+      const isManual = status === 'ok' && (() => {
+        const found = stamps.find(s => Math.abs(s - slotMs) <= toleranceMs);
+        if (!found) return false;
+        const ft = new Date(found + KST_OFFSET);
+        return ft.getUTCMinutes() > 5;
+      })();
+
+      const slot = document.createElement('div');
+      slot.className = `sts-slot ${status}${isNow ? ' now' : ''}${isManual ? ' manual' : ''}`;
+      const tip = status === 'ok' ? `${mm}/${dd} ${hhmm} → 실행 ${actualTime}`
+                : status === 'fut' ? `${mm}/${dd} ${hhmm} (예정)`
+                : `${mm}/${dd} ${hhmm} — 누락`;
+      slot.title = tip;
+      slot.innerHTML = `<span class="slot-h">${hhmm}</span><span class="slot-i">${status==='ok'?'✓':status==='fut'?'·':'✗'}</span>`;
+      grid.appendChild(slot);
+    });
+    container.appendChild(grid);
+  });
+
+  function getNextRunLabel() {
+    const nowMs = nowUtc.getTime();
+    let best = null;
+    for (let di = 0; di < 7; di++) {
+      const dayBase = todayKstMidnight.getTime() + di * 86400000;
+      for (const h of activeHours) {
+        const slotMs = dayBase + h * 3600000;
+        if (slotMs > nowMs + toleranceMs) { best = slotMs; break; }
+      }
+      if (best) break;
+    }
+    if (!best) return '—';
+    const nextKst = new Date(best + KST_OFFSET);
+    const diffMin = Math.round((best - nowMs) / 60000);
+    const h = Math.floor(diffMin / 60), m = diffMin % 60;
+    const hhmm = `${String(nextKst.getUTCHours()).padStart(2,'0')}:00`;
+    return h > 0 ? `${hhmm} KST (${h}시간 ${m}분 후)` : `${hhmm} KST (${m}분 후)`;
+  }
+
+  const rate = totalSlots > 0 ? Math.round(okSlots / totalSlots * 100) : 100;
+  summaryEl.innerHTML = `
+    <div class="ss"><span class="sv">${okSlots}</span><span class="sl">실행 완료</span></div>
+    <div class="ss"><span class="sv" style="color:${missSlots>0?'var(--down)':'var(--up)'}">${missSlots}</span><span class="sl">누락</span></div>
+    <div class="ss"><span class="sv">${rate}%</span><span class="sl">성공률 (2일)</span></div>
+    <div class="sts-next-badge"><span class="sts-pulse"></span>다음: ${getNextRunLabel()}</div>`;
+}
+
+function switchTab(tabEl) {
+  const secId = tabEl.dataset.section;
+  if (!secId) return;
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active-section'));
+  const sec = document.getElementById(secId);
+  if (sec) sec.classList.add('active-section');
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      if (secId === 'sec-chart') {
+        if (mainChart) mainChart.resize();
+        if (stsCI) stsCI.resize();
+      }
+      if (secId === 'sec-sales') { renderSalesChart(); }
+      if (secId === 'sec-summary') { setTimeout(renderSummaryCharts, 80); }
+    }, 50);
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ── stToggle: collapsible helper ── */
+
+/* ── stToggle: collapsible helper ── */
+function stToggle(bodyId, headerEl) {
+  const body = document.getElementById(bodyId);
+  if (!body) return;
+  const collapsed = body.classList.toggle('collapsed');
+  const btn = headerEl ? headerEl.querySelector('.sts-collapse-btn') : null;
+  if (btn) btn.textContent = collapsed ? '▼ 펼치기' : '▲ 접기';
+  // 차트가 포함된 섹션 펼칠 때 Chart.js resize 트리거
+  if (!collapsed) {
+    requestAnimationFrame(() => {
+      if (bodyId === 'ps-chart-body' && mainChart) mainChart.resize();
+      if (bodyId === 'sts-chart-body' && stsCI) stsCI.resize();
+    });
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STEAM TOP SELLER DATA & RENDERING
+══════════════════════════════════════════════════════════════ */
+const STS_W={"미국":30.0,"중국":28.0,"러시아":6.0,"독일":5.5,"영국":5.0,"브라질":4.5,"한국":4.2,"프랑스":4.0,"일본":3.5,"캐나다":3.5,"호주":2.5,"터키":2.0,"폴란드":2.0,"스페인":2.0,"이탈리아":1.8,"네덜란드":0.8,"스웨덴":0.7,"노르웨이":0.5,"덴마크":0.5,"핀란드":0.4,"오스트리아":0.6,"스위스":0.7,"체코":0.4,"싱가포르":0.5,"태국":0.8,"벨기에":0.8,"홍콩":0.7,"뉴질랜드":0.4,"대만":0.8};
+const STS_F={"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","호주":"🇦🇺","한국":"🇰🇷","중국":"🇨🇳","러시아":"🇷🇺","폴란드":"🇵🇱","터키":"🇹🇷","네덜란드":"🇳🇱","스웨덴":"🇸🇪","노르웨이":"🇳🇴","덴마크":"🇩🇰","핀란드":"🇫🇮","오스트리아":"🇦🇹","스위스":"🇨🇭","체코":"🇨🇿","싱가포르":"🇸🇬","태국":"🇹🇭","벨기에":"🇧🇪","홍콩":"🇭🇰","뉴질랜드":"🇳🇿","대만":"🇹🇼"};
+const STS_CC={"미국":"us","캐나다":"ca","브라질":"br","영국":"gb","독일":"de","프랑스":"fr","스페인":"es","이탈리아":"it","일본":"jp","호주":"au","한국":"kr","중국":"cn","러시아":"ru","폴란드":"pl","터키":"tr","네덜란드":"nl","스웨덴":"se","노르웨이":"no","덴마크":"dk","핀란드":"fi","오스트리아":"at","스위스":"ch","체코":"cz","싱가포르":"sg","태국":"th","벨기에":"be","홍콩":"hk","뉴질랜드":"nz","대만":"tw"};
+let stsHist=[], stsCI=null, stsMCI=null, stsSched=null;
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
+}
+
+async function loadSteamTopSellerData() {
+  try {
+    const r = await fetch('./steam_topseller_history.json?t=' + Date.now());
+    if (!r.ok) throw 0;
+    const payload = await r.json();
+    if (Array.isArray(payload)) { stsHist = payload; }
+    else {
+      stsHist = payload.history || [];
+      if (payload.schedule) {
+        stsSched = payload.schedule;
+        const cronEl = document.getElementById('sts-sched-cron');
+        if (cronEl && stsSched.cron) cronEl.textContent = stsSched.cron;
+      }
+    }
+    renderSTS();
+    renderSteamSchedule();
+  } catch(e) { console.warn('Steam TS load fail', e); }
+}
+
+function stsAvg(h) {
+  if (!h || !h.results) return null;
+  let tw = 0, ts = 0;
+  for (const [n, d] of Object.entries(h.results)) {
+    const r = d && d.rank; if (!r || r > 20) continue;  // 20위 밖 제외
+    const w = STS_W[n] || 1.0; ts += r * w; tw += w;
+  }
+  return tw > 0 ? Math.round(ts / tw * 10) / 10 : null;
+}
+
+/* ── Steam 국가 모달 ── */
+function openStsModal(n) {
+  const m = document.getElementById('sts-modal');
+  if (!m) return;
+  const cc = STS_CC[n] || 'us';
+  const flagImg = `<img src="https://flagcdn.com/w40/${cc}.png" alt="${n}" style="width:32px;height:22px;object-fit:cover;border-radius:2px;display:inline-block;vertical-align:middle">`;
+  document.getElementById('sts-modal-title').innerHTML = flagImg + ' ' + n;
+  document.getElementById('sts-modal-link').href = 'https://steamdb.info/app/3321460/charts/';
+  const h = stsHist.filter(x => x.results && x.results[n] && x.results[n].rank).map(x => ({ t: new Date(x.timestamp), r: x.results[n].rank }));
+  if (!h.length) {
+    ['sts-modal-current','sts-modal-best','sts-modal-avg'].forEach(id => document.getElementById(id).textContent = '—');
+  } else {
+    const cur = h[h.length-1].r, best = Math.min(...h.map(x=>x.r)), avg = Math.round(h.reduce((s,x)=>s+x.r,0)/h.length*10)/10;
+    document.getElementById('sts-modal-current').textContent = cur + '위';
+    document.getElementById('sts-modal-best').textContent    = best + '위';
+    document.getElementById('sts-modal-avg').textContent     = avg + '위';
+    const c2 = document.getElementById('stsModalChart').getContext('2d');
+    if (stsMCI) stsMCI.destroy();
+    const ptR2 = h.length > 60 ? 0 : h.length > 20 ? 2 : 3;
+    stsMCI = new Chart(c2, {
+      type: 'line',
+      data: { labels: h.map(x=>x.t), datasets: [{ label: '순위', data: h.map(x=>x.r), borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.1)', borderWidth: 2, pointRadius: ptR2, pointHoverRadius: ptR2+2, fill: true, tension: 0.3, spanGaps: true }] },
+      options: { responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { type:'time', time:{ unit: h.length>48?'day':'hour', displayFormats:{hour:'M/d HH:mm',day:'M/d'}}, ticks:{color:'#fff',maxTicksLimit:7,maxRotation:30,font:{size:10}}, grid:{color:'#222'} },
+          y: { reverse:true, suggestedMin:0, ticks:{color:'#fff',stepSize:1,callback:v=>v>0?v+'위':'',font:{size:11},padding:8}, grid:{color:'#222'} }
+        },
+        plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>c.parsed.y+'위'}} }
+      }
+    });
+  }
+  m.classList.add('open'); document.body.style.overflow = 'hidden';
+}
+
+function closeStsModal(e) { if (e.target === document.getElementById('sts-modal')) closeStsModalDirect(); }
+function closeStsModalDirect() { document.getElementById('sts-modal').classList.remove('open'); document.body.style.overflow = ''; if (stsMCI) { stsMCI.destroy(); stsMCI = null; } }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeStsModalDirect(); closeModal(); } });
+
+
+/* ── PS Store 링크 팝오버 ── */
+function openPsLinksPopover(e) {
+  e.stopPropagation();
+  const popover = document.getElementById('ps-links-popover');
+  const overlay = document.getElementById('ps-links-overlay');
+  const grid = document.getElementById('ps-links-grid');
+
+  // 현재 순위 기반으로 나라 목록 정렬
+  const data = historyData[historyData.length - 1];
+  if (!data) return;
+
+  const countries = Object.keys(data.raw_results || {}).map(name => {
+    const r = getRank(data, name);
+    return { name, rank: r, url: getStoreUrl(name) };
+  }).sort((a, b) => {
+    const ar = a.rank >= 999 ? 9999 : a.rank;
+    const br = b.rank >= 999 ? 9999 : b.rank;
+    return ar - br;
+  });
+
+  grid.innerHTML = countries.map(({ name, rank, url }) => {
+    const flag = FLAGS[name] || '';
+    const rankCls = rank === 1 ? 'rank-1' : rank <= 3 ? 'rank-23' : rank <= 10 ? 'rank-10' : '';
+    const rankStr = rank >= 999 ? '—' : rank + '위';
+    return `<a class="ps-links-item ${rankCls}" href="${url}" target="_blank" onclick="event.stopPropagation()">
+      <span>${flag}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis">${name}</span>
+      <span style="font-size:11px;opacity:0.7">${rankStr}</span>
+    </a>`;
+  }).join('');
+
+  twemoji.parse(grid, { folder: 'svg', ext: '.svg' });
+
+  // 버튼 위치 기반으로 팝오버 위치 결정
+  const btn = e.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  popover.style.top = (rect.bottom + 6) + 'px';
+  popover.style.left = Math.max(4, rect.left - 100) + 'px';
+
+  popover.classList.add('open');
+  overlay.classList.add('open');
+}
+function closePsLinksPopover() {
+  document.getElementById('ps-links-popover').classList.remove('open');
+  document.getElementById('ps-links-overlay').classList.remove('open');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   판매량 추정 엔진
+   - 출시일: 2026-03-19 (KST)
+   - 1일차: 입력값(기본 200만)을 PS/Steam 비율로 분배
+   - 2일차~: 가중 평균 순위 변화 비율로 추정
+     daily[d] = day1_sales * (rank_day1 / rank_d) ^ 0.65
+   - 누적: 각 플랫폼 + 합산
+═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
+   판매량 추정 엔진 (보수적 모델)
+   ─────────────────────────────────────────────────────────────
+   [알려진 사실]
+   - 출시일: 2026-03-20 KST 07:00
+   - Pearl Abyss 공식 발표: 출시 ~24시간 내 200만 판매 돌파
+   - Steam 사전 판매 (Alinea Analytics): 출시 전 약 363,000장
+   - Steam 출시 당일 최대 동접: 239,000명
+   - 리뷰: Steam 69% 긍정 (Mixed), 환불 요인 다수 (Intel Arc 미지원,
+     컨트롤 논란, Xbox 앱 오류 등)
+
+   [플랫폼 비율 추정 근거]
+   - Steam 사전 판매 363K / 총 2M → Steam 비율 최소 18%
+   - 대형 AAA 통상: PS5 45~55%, PC 30~40%, Xbox 10~20%
+   - Pearl Abyss 특성상 아시아·콘솔 비중 높아 PS 비중 높게 설정
+   - 기본값: PS5 55%, Steam 33%, Xbox 12%
+
+   [2M 수치 보수적 해석]
+   - "sold through" = 사전 판매 포함 (Steam 363K 이미 포함)
+   - 환불 추정: 10~15% (Intel Arc 1%, 혼합 원인 환불 추가)
+   - 순 판매량 보정: 입력값 × (1 - 환불율)
+
+   [일별 감소 모델]
+   - Day 0(출시 당일): 전체 판매의 큰 비중 (통상 AAA 첫날 25~35%)
+   - 2일차 이후: 순위 기반 감소율 적용
+     daily_d = day0 × decay_factor^d × (baseRank/rank_d)^0.45
+   - decay_factor = 0.82 (일 18% 자연 감소, 보수적)
+   - 지수 0.45: 순위↑ 판매 증가 탄성 낮게 설정 (0.65보다 보수적)
+   - 데이터 없는 날: 전날 × 0.82 (자연 감소만)
+═══════════════════════════════════════════════════════════════ */
+
+const LAUNCH_DATE = new Date('2026-03-20T07:00:00+09:00');
+let salesDailyCI = null, salesCumCI = null;
+
+function getDayIndex(ts) {
+  const d = new Date(ts);
+  const diff = d - LAUNCH_DATE;
+  return Math.floor(diff / 86400000);
+}
+
+function fmtSales(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(2) + 'M';
+  if (n >= 1000)    return (n/1000).toFixed(1) + 'K';
+  return Math.round(n).toLocaleString();
+}
+
+function renderSalesChart() {
+  const totalAnn   = parseInt(document.getElementById('sales-day1-total').value) || 2000000;
+  const refundPct  = parseFloat(document.getElementById('sales-refund-pct').value) || 12;
+  const psRatio    = parseInt(document.getElementById('sales-ps-ratio').value) || 55;
+  const stRatio    = 100 - psRatio - 12; // Xbox 고정 12%
+  const xbRatio    = 12;
+  const lbl = document.getElementById('sales-steam-ratio-lbl');
+  if (lbl) lbl.textContent = stRatio;
+  // 환불 적용 순 판매량
+  const netTotal = Math.round(totalAnn * (1 - refundPct / 100));
+  const psDay0 = netTotal * psRatio / 100;
+  const stDay0 = netTotal * stRatio / 100;
+  const xbDay0 = netTotal * xbRatio / 100;
+
+  // ── PS 일별 순위 집계 ──
+  const psByDay = {};
+  historyData.forEach(h => {
+    const di = getDayIndex(h.timestamp);
+    if (di < 0) return;
+    const avg = h.averages?.combined;
+    if (avg == null || avg >= 50) return; // 50위 밖은 제외
+    if (!psByDay[di]) psByDay[di] = { sum: 0, cnt: 0 };
+    psByDay[di].sum += avg; psByDay[di].cnt++;
+  });
+  const psDayAvg = {};
+  Object.entries(psByDay).forEach(([d, v]) => { psDayAvg[parseInt(d)] = v.sum / v.cnt; });
+
+  // ── Steam 일별 순위 집계 (상위 20위 이내만) ──
+  const stByDay = {};
+  stsHist.forEach(h => {
+    const di = getDayIndex(h.timestamp);
+    if (di < 0) return;
+    let tw = 0, ts = 0;
+    for (const [n, d] of Object.entries(h.results || {})) {
+      const r = d?.rank; if (!r || r > 20) continue;
+      const w = STS_W[n] || 1; ts += r * w; tw += w;
+    }
+    if (!tw) return;
+    const avg = ts / tw;
+    if (!stByDay[di]) stByDay[di] = { sum: 0, cnt: 0 };
+    stByDay[di].sum += avg; stByDay[di].cnt++;
+  });
+  const stDayAvg = {};
+  Object.entries(stByDay).forEach(([d, v]) => { stDayAvg[parseInt(d)] = v.sum / v.cnt; });
+
+  // ── 날짜 범위 ──
+  const allDays = new Set([...Object.keys(psDayAvg), ...Object.keys(stDayAvg)].map(Number));
+  if (!allDays.size) { console.warn('No sales data available'); return; }
+  const maxDay = Math.max(...allDays);
+  const days = Array.from({ length: maxDay + 1 }, (_, i) => i);
+
+  // ── 기준 순위 (0일차 또는 첫 데이터) ──
+  const psKeys = Object.keys(psDayAvg).map(Number).sort((a,b)=>a-b);
+  const stKeys = Object.keys(stDayAvg).map(Number).sort((a,b)=>a-b);
+  const psBase = psDayAvg[psKeys[0]] || 3;
+  const stBase = stDayAvg[stKeys[0]] || 2;
+  const DECAY_DAILY = 0.65; // 일 35% 감소 (업계 비교: Wukong/Elden Ring 수준)
+  const RANK_EXP = 0.10;    // 순위 탄성 최소화 (순위≠신규구매)
+
+  // ── 일별 판매 계산 ──
+  const psDaily = [], stDaily = [], xbDaily = [], totDaily = [];
+  const labels = [];
+  let psLastRank = psBase, stLastRank = stBase;
+
+  days.forEach(di => {
+    const date = new Date(LAUNCH_DATE.getTime() + di * 86400000);
+    labels.push(`${date.getMonth()+1}/${date.getDate()}`);
+
+    let ps, st, xb;
+    if (di === 0) {
+      ps = psDay0; st = stDay0; xb = xbDay0;
+    } else {
+      const psR = psDayAvg[di] || (psLastRank * 1.05);
+      const stR = stDayAvg[di] || (stLastRank * 1.05);
+      psLastRank = psR; stLastRank = stR;
+      // Day1=Day0×27% (스파이크 분리), 이후 DECAY 누적 적용
+      const D1 = 0.27;
+      const dayDecay = di === 1 ? D1 : D1 * Math.pow(DECAY_DAILY, di - 1);
+      ps = psDay0 * dayDecay * Math.pow(psBase / psR, RANK_EXP);
+      st = stDay0 * dayDecay * Math.pow(stBase / stR, RANK_EXP);
+      xb = xbDay0 * dayDecay;
+    }
+    ps = Math.max(0, Math.round(ps));
+    st = Math.max(0, Math.round(st));
+    xb = Math.max(0, Math.round(xb));
+    psDaily.push(ps); stDaily.push(st); xbDaily.push(xb);
+    totDaily.push(ps + st + xb);
+  });
+
+  // ── 누적 ──
+  const psCum = [], stCum = [], xbCum = [], totCum = [];
+  let pA = 0, sA = 0, xA = 0;
+  psDaily.forEach((p, i) => {
+    pA += p; sA += stDaily[i]; xA += xbDaily[i];
+    psCum.push(pA); stCum.push(sA); xbCum.push(xA); totCum.push(pA + sA + xA);
+  });
+
+  const psTotal = psCum[psCum.length-1] || 0;
+  const stTotal = stCum[stCum.length-1] || 0;
+  const xbTotal = xbCum[xbCum.length-1] || 0;
+  const totalEst = totCum[totCum.length-1] || 0;
+
+  // ── 요약 카드 ──
+  const cards = document.getElementById('sales-summary-cards');
+  if (cards) cards.innerHTML = [
+    { label: '📦 전체 누적 (순)', val: fmtSales(totalEst), sub: `환불 ${refundPct}% 적용`, color: 'var(--gold)' },
+    { label: '🎮 PS5 누적',        val: fmtSales(psTotal),   sub: `${psRatio}% 비중`,       color: 'var(--blood)' },
+    { label: '🖥 Steam 누적',      val: fmtSales(stTotal),   sub: `${stRatio}% 비중`,       color: 'var(--steam)' },
+    { label: '🎮 Xbox 누적',       val: fmtSales(xbTotal),   sub: `12% 비중`,               color: '#107C10' },
+  ].map(({ label, val, sub, color }) => `
+    <div style="background:var(--bg-2);border:1px solid var(--bd);border-left:3px solid ${color};border-radius:var(--radius);padding:10px 12px">
+      <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">${label}</div>
+      <div style="font-family:'Cinzel',serif;font-size:20px;color:${color};font-weight:900">${val}</div>
+      <div style="font-size:10px;color:var(--tx-4);margin-top:2px">${sub}</div>
+    </div>`).join('');
+
+  // ── 마일스톤 예측 (순위 데이터 기반 동적 계산) ────────────────
+  const msEl = document.getElementById('sales-milestone-cards');
+  if (msEl) {
+    const LAUNCH = new Date('2026-03-20T07:00:00+09:00');
+    const nowMs  = Date.now();
+    const todayDay = Math.max(0, Math.floor((nowMs - LAUNCH.getTime()) / 86400000));
+
+    // 현재 누적 (실제 모델 계산값 사용)
+    const cumNow = totCum.length > 0 ? totCum[Math.min(todayDay, totCum.length - 1)] : totalEst;
+
+    // 마지막 일별값 (평균 취해서 안정화)
+    const recentDailies = totDaily.slice(-3).filter(v => v > 0);
+    const lastDaily = recentDailies.length > 0
+      ? recentDailies.reduce((a,b) => a+b, 0) / recentDailies.length
+      : (totalEst * 0.01);
+
+    // 프로젝션: 현재 일별 판매에서 DECAY 적용 (최소 floor 설정)
+    const DAILY_FLOOR = 500; // 최소 하루 500장 (롱테일)
+    function projDailyFromDay() {
+      const proj = [];
+      for (let d = 0; d < 730; d++) { // 2년치
+        proj.push(Math.max(DAILY_FLOOR, lastDaily * Math.pow(DECAY_DAILY, d)));
+      }
+      return proj;
+    }
+    const projDays = projDailyFromDay();
+
+    function findMilestone(target) {
+      // 이미 달성 여부 확인
+      if (cumNow >= target) {
+        // totCum에서 달성 날짜 역추적
+        for (let i = 0; i < totCum.length; i++) {
+          if (totCum[i] >= target) {
+            const dt = new Date(LAUNCH.getTime() + i * 86400000);
+            return { date: dt, day: i, achieved: true };
+          }
+        }
+        // totCum에서 못찾으면 오늘 기준으로 이미 달성
+        return { date: new Date(nowMs), day: todayDay, achieved: true };
+      }
+      // 프로젝션으로 예측
+      let c = cumNow;
+      for (let d = 0; d < projDays.length; d++) {
+        c += projDays[d];
+        if (c >= target) {
+          const dt = new Date(nowMs + (d + 1) * 86400000);
+          return { date: dt, day: todayDay + d + 1, achieved: false };
+        }
+      }
+      return null; // 2년 내 불가
+    }
+
+    const fmtDate = dt => {
+      if (!dt) return '예측불가';
+      const m = dt.getMonth() + 1, d = dt.getDate();
+      return `${m}/${d}`;
+    };
+    const fmtDiff = (dt, achieved) => {
+      if (!dt) return '';
+      const diffDays = Math.round((dt.getTime() - Date.now()) / 86400000);
+      if (achieved) return '✅ 달성';
+      if (diffDays <= 0) return '오늘';
+      if (diffDays === 1) return '내일';
+      return `D+${diffDays}`;
+    };
+
+    const m3 = findMilestone(3_000_000);
+    const m5 = findMilestone(5_000_000);
+    const m10 = findMilestone(10_000_000);
+
+    const mCards = [
+      { label: '🎯 300만 달성', target: '3M', ms: m3, color: '#2ecc71' },
+      { label: '🚀 500만 달성', target: '5M', ms: m5, color: '#f1c40f' },
+      { label: '💎 1000만 달성', target: '10M', ms: m10, color: '#e74c3c' },
+    ];
+
+    msEl.innerHTML = mCards.map(({ label, target, ms, color }) => {
+      const dateStr = ms ? fmtDate(ms.date) : '예측불가';
+      const diffStr = ms ? fmtDiff(ms.date, ms.achieved) : '현재 추세로 불가';
+      const dayStr  = ms ? `출시 ${ms.day}일차` : '';
+      const bgColor = ms?.achieved ? `rgba(46,204,113,0.08)` : `rgba(0,0,0,0)`;
+      return `<div style="background:var(--bg-2);border:1px solid var(--bd);border-left:3px solid ${color};border-radius:var(--radius);padding:10px 14px;${ms?.achieved ? 'border-color:rgba(46,204,113,0.4)' : ''}">
+        <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">${label}</div>
+        <div style="font-family:'Cinzel',serif;font-size:22px;color:${color};font-weight:900;line-height:1">${dateStr}</div>
+        <div style="font-size:11px;color:var(--tx-3);margin-top:4px">${dayStr}</div>
+        <div style="font-size:12px;font-weight:800;margin-top:3px;color:${ms?.achieved ? '#2ecc71' : 'var(--tx-2)'}">${diffStr}</div>
+      </div>`;
+    }).join('');
+  }
+
+
+  const chartOpts = {
+    responsive: true, maintainAspectRatio: false,
+    layout: { padding: { top: 8 } },
+    scales: {
+      x: { ticks: { color: '#aaa', maxTicksLimit: 10, font: { size: 11 } }, grid: { color: '#1e1e1e' } },
+      y: { ticks: { color: '#aaa', font: { size: 11 }, callback: v => fmtSales(v) }, grid: { color: '#1e1e1e' } }
+    },
+    plugins: {
+      legend: { labels: { color: '#ccc', font: { size: 12 }, boxWidth: 12 } },
+      tooltip: { callbacks: { label: c => ' ' + c.dataset.label + ': ' + fmtSales(c.parsed.y) } }
+    }
+  };
+
+  const ctx1 = document.getElementById('salesDailyChart').getContext('2d');
+  if (salesDailyCI) salesDailyCI.destroy();
+  salesDailyCI = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'PS5',   data: psDaily, backgroundColor: 'rgba(255,71,87,0.75)',  borderColor: '#ff4757', borderWidth: 1, stack: 'a' },
+        { label: 'Steam', data: stDaily, backgroundColor: 'rgba(74,158,255,0.75)', borderColor: '#4a9eff', borderWidth: 1, stack: 'a' },
+        { label: 'Xbox',  data: xbDaily, backgroundColor: 'rgba(16,124,16,0.75)',  borderColor: '#107C10', borderWidth: 1, stack: 'a' },
+      ]
+    },
+    options: { ...chartOpts, scales: { ...chartOpts.scales, x: { ...chartOpts.scales.x, stacked: true }, y: { ...chartOpts.scales.y, stacked: true } } }
+  });
+
+  const ctx2 = document.getElementById('salesCumChart').getContext('2d');
+  if (salesCumCI) salesCumCI.destroy();
+  salesCumCI = new Chart(ctx2, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: '전체',  data: totCum, borderColor: '#f1c40f', backgroundColor: 'transparent', borderWidth: 2.5, borderDash: [5,3], fill: false, tension: 0.3, pointRadius: 0 },
+        { label: 'PS5',   data: psCum,  borderColor: '#ff4757', backgroundColor: 'rgba(255,71,87,0.06)',  borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
+        { label: 'Steam', data: stCum,  borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.06)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
+        { label: 'Xbox',  data: xbCum,  borderColor: '#107C10', backgroundColor: 'rgba(16,124,16,0.06)',  borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
+      ]
+    },
+    options: chartOpts
+  });
+}
+
+
+/* ── 요약 섹션 미니 차트 ── */
+let summaryPsCI = null, summaryStCI = null;
+
+function renderSummaryCharts() {
+  const W = 800, H_TREND = 280, H_DIST = 180;
+
+  // ── PS 추이 차트 ──
+  const psEl = document.getElementById('summaryPsChart');
+  if (psEl && historyData.length > 1) {
+    psEl.width  = psEl.parentElement.offsetWidth || W;
+    psEl.height = H_TREND;
+    const allData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.averages?.combined })).filter(d => d.y != null);
+    const dv = allData.map(d => d.y), lbs = allData.map(d => d.x);
+    const idxFirst = 0, idxLast = dv.length - 1;
+    const idxBest  = dv.reduce((bi, v, i, a) => v < (a[bi] ?? 99) ? i : bi, 0);
+    const ptR = dv.map((_, i) => (i===idxFirst||i===idxLast||i===idxBest) ? 5 : 0);
+    const ptC = dv.map((_, i) => i===idxBest ? '#2ecc71' : i===idxLast ? '#f1c40f' : '#fff');
+    const setL = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+    setL('sps-leg-start',   '시작 ' + (dv[idxFirst]?.toFixed(1)||'—') + '위');
+    setL('sps-leg-best',    '최고 ' + (dv[idxBest ]?.toFixed(1)||'—') + '위');
+    setL('sps-leg-current', '현재 ' + (dv[idxLast ]?.toFixed(1)||'—') + '위');
+    if (summaryPsCI) summaryPsCI.destroy();
+    summaryPsCI = new Chart(psEl.getContext('2d'), {
+      type: 'line',
+      data: { labels: lbs, datasets: [{ data: dv, borderColor: '#f1c40f', backgroundColor: 'rgba(241,196,15,0.08)', borderWidth: 2, pointRadius: ptR, pointBackgroundColor: ptC, pointBorderColor: ptC, fill: true, tension: 0.25, spanGaps: true }] },
+      options: { responsive: false, animation: false, layout: { padding: { top: 10, right: 10 } },
+        scales: {
+          x: { type: 'time', time: { displayFormats: { day: 'M/d' } }, ticks: { color: '#aaa', maxTicksLimit: 8, font: { size: 11 } }, grid: { color: '#1a1a1a' } },
+          y: { reverse: true, suggestedMin: 0, ticks: { color: '#aaa', font: { size: 11 }, callback: v => v > 0 ? v + '위' : '', padding: 6 }, grid: { color: '#1a1a1a' } }
+        },
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y + '위' } } }
+      }
+    });
+  }
+
+  // ── PS 일자별 순위 분포 차트 ──
+  const psDistEl = document.getElementById('psRankDistChart');
+  if (psDistEl && historyData.length > 1) {
+    psDistEl.width  = psDistEl.parentElement.offsetWidth || W;
+    psDistEl.height = H_DIST;
+    const psDateMap = {};
+    historyData.forEach(h => {
+      const kst = new Date(new Date(h.timestamp).getTime() + 9 * 3600000);
+      const dk = (kst.getUTCMonth() + 1) + '/' + kst.getUTCDate();
+      if (!psDateMap[dk]) psDateMap[dk] = { r1: 0, r23: 0, r410: 0, r11: 0, cnt: 0 };
+      const e = psDateMap[dk];
+      Object.keys(h.raw_results || {}).forEach(name => {
+        const r = getRank(h, name);
+        if (r >= 999) return;
+        if (r === 1) e.r1++;
+        else if (r <= 3) e.r23++;
+        else if (r <= 10) e.r410++;
+        else e.r11++;
+      });
+      e.cnt++;
+    });
+    const psDates = Object.keys(psDateMap);
+    if (window.psDistCI) window.psDistCI.destroy();
+    window.psDistCI = new Chart(psDistEl.getContext('2d'), {
+      type: 'bar',
+      data: { labels: psDates, datasets: [
+        { label: '1위',    data: psDates.map(d => Math.round(psDateMap[d].r1   / psDateMap[d].cnt)), backgroundColor: 'rgba(241,196,15,0.85)', stack: 's' },
+        { label: '2~3위',  data: psDates.map(d => Math.round(psDateMap[d].r23  / psDateMap[d].cnt)), backgroundColor: 'rgba(192,192,192,0.75)', stack: 's' },
+        { label: '4~10위', data: psDates.map(d => Math.round(psDateMap[d].r410 / psDateMap[d].cnt)), backgroundColor: 'rgba(74,158,255,0.75)',  stack: 's' },
+        { label: '11위+',  data: psDates.map(d => Math.round(psDateMap[d].r11  / psDateMap[d].cnt)), backgroundColor: 'rgba(80,80,80,0.6)',     stack: 's' }
+      ]},
+      options: { responsive: false, animation: false,
+        scales: {
+          x: { stacked: true, ticks: { color: '#aaa', maxTicksLimit: 12, font: { size: 10 } }, grid: { color: '#1a1a1a' } },
+          y: { stacked: true, ticks: { color: '#aaa', font: { size: 10 } }, grid: { color: '#1a1a1a' } }
+        },
+        plugins: { legend: { display: false }, tooltip: { mode: 'index', callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}개국` } } }
+      }
+    });
+  }
+
+  // ── Steam 추이 차트 ──
+  const stEl = document.getElementById('summaryStChart');
+  if (stEl && stsHist.length > 1) {
+    stEl.width  = stEl.parentElement.offsetWidth || W;
+    stEl.height = H_TREND;
+    const v = stsHist.filter(h => stsAvg(h) !== null);
+    if (v.length > 0) {
+      const lbs2 = v.map(h => new Date(h.timestamp)), dv2 = v.map(h => stsAvg(h));
+      const idxFirst2 = 0, idxLast2 = dv2.length - 1;
+      const idxBest2  = dv2.reduce((bi, val, i, a) => val !== null && (a[bi] === null || val < a[bi]) ? i : bi, 0);
+      const idxWorst2 = dv2.reduce((wi, val, i, a) => val !== null && (a[wi] === null || val > a[wi]) ? i : wi, 0);
+      const ptR2 = dv2.map((_, i) => (i===idxFirst2||i===idxLast2||i===idxBest2||i===idxWorst2) ? 5 : 0);
+      const ptC2 = dv2.map((_, i) => i===idxBest2 ? '#2ecc71' : i===idxWorst2 ? '#e74c3c' : i===idxLast2 ? '#f1c40f' : '#fff');
+      const setL2 = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+      const fmt2 = val => val != null ? val.toFixed(1) + '위' : '—';
+      setL2('sst-leg-start',   '시작 ' + fmt2(dv2[idxFirst2]));
+      setL2('sst-leg-best',    '최고 ' + fmt2(dv2[idxBest2 ]));
+      setL2('sst-leg-current', '현재 ' + fmt2(dv2[idxLast2 ]));
+      setL2('sst-leg-worst',   '최저 ' + fmt2(dv2[idxWorst2]));
+      if (summaryStCI) summaryStCI.destroy();
+      summaryStCI = new Chart(stEl.getContext('2d'), {
+        type: 'line',
+        data: { labels: lbs2, datasets: [{ data: dv2, borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.08)', borderWidth: 2, pointRadius: ptR2, pointBackgroundColor: ptC2, pointBorderColor: ptC2, fill: true, tension: 0.3, spanGaps: true }] },
+        options: { responsive: false, animation: false, layout: { padding: { top: 10, right: 10 } },
+          scales: {
+            x: { type: 'time', time: { displayFormats: { day: 'M/d' } }, ticks: { color: '#aaa', maxTicksLimit: 8, font: { size: 11 } }, grid: { color: '#1a1a1a' } },
+            y: { reverse: true, suggestedMin: 0, ticks: { color: '#aaa', font: { size: 11 }, callback: v => v > 0 ? v + '위' : '', padding: 6 }, grid: { color: '#1a1a1a' } }
+          },
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y + '위' } } }
+        }
+      });
+    }
+  }
+
+  // ── Steam 일자별 순위 분포 차트 ──
+  const stsDistEl = document.getElementById('stsRankDistChart');
+  if (stsDistEl && stsHist.length > 1) {
+    stsDistEl.width  = stsDistEl.parentElement.offsetWidth || W;
+    stsDistEl.height = H_DIST;
+    const stsDateMap = {};
+    stsHist.forEach(h => {
+      const kst = new Date(new Date(h.timestamp).getTime() + 9 * 3600000);
+      const dk = (kst.getUTCMonth() + 1) + '/' + kst.getUTCDate();
+      if (!stsDateMap[dk]) stsDateMap[dk] = { r1: 0, r23: 0, r410: 0, r11: 0, cnt: 0 };
+      const e = stsDateMap[dk];
+      Object.entries(h.results || {}).forEach(([, d]) => {
+        const r = d?.rank;
+        if (!r) return;
+        if (r === 1) e.r1++;
+        else if (r <= 3) e.r23++;
+        else if (r <= 10) e.r410++;
+        else e.r11++;
+      });
+      e.cnt++;
+    });
+    const stsDates = Object.keys(stsDateMap);
+    if (window.stsDistCI) window.stsDistCI.destroy();
+    window.stsDistCI = new Chart(stsDistEl.getContext('2d'), {
+      type: 'bar',
+      data: { labels: stsDates, datasets: [
+        { label: '1위',    data: stsDates.map(d => Math.round(stsDateMap[d].r1   / stsDateMap[d].cnt)), backgroundColor: 'rgba(241,196,15,0.85)', stack: 's' },
+        { label: '2~3위',  data: stsDates.map(d => Math.round(stsDateMap[d].r23  / stsDateMap[d].cnt)), backgroundColor: 'rgba(192,192,192,0.75)', stack: 's' },
+        { label: '4~10위', data: stsDates.map(d => Math.round(stsDateMap[d].r410 / stsDateMap[d].cnt)), backgroundColor: 'rgba(74,158,255,0.75)',  stack: 's' },
+        { label: '11위+',  data: stsDates.map(d => Math.round(stsDateMap[d].r11  / stsDateMap[d].cnt)), backgroundColor: 'rgba(80,80,80,0.6)',     stack: 's' }
+      ]},
+      options: { responsive: false, animation: false,
+        scales: {
+          x: { stacked: true, ticks: { color: '#aaa', maxTicksLimit: 12, font: { size: 10 } }, grid: { color: '#1a1a1a' } },
+          y: { stacked: true, ticks: { color: '#aaa', font: { size: 10 } }, grid: { color: '#1a1a1a' } }
+        },
+        plugins: { legend: { display: false }, tooltip: { mode: 'index', callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}개국` } } }
+      }
+    });
+  }
+}
+
+
+/* ── 요약 순위별 국가 그룹 렌더 ── */
+function renderSummaryRankGroups(list, containerId, flagFn, urlFn, isPsFlag) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const TIERS = [
+    { ranks: [1],                label: '🥇 1위',    cls: 'g1',  lc: 'color:#f1c40f' },
+    { ranks: [2,3],              label: '🥈 2~3위',  cls: 'g2',  lc: 'color:#c0c0c0' },
+    { ranks: [4,5,6,7,8,9,10],  label: '🏅 4~10위', cls: 'g3',  lc: 'color:#cd7f32' },
+    { ranks: null,               label: '📊 11위+',  cls: 'g10', lc: 'color:var(--steam)' },
+  ];
+
+  container.innerHTML = TIERS.map((tier, ti) => {
+    let items;
+    if (tier.ranks) {
+      items = list.filter(x => tier.ranks.includes(x.rank));
+    } else {
+      items = list.filter(x => x.rank >= 11 && x.rank < 999);
+    }
+    if (!items.length) return '';
+    const groupId = containerId + '-t' + ti;
+
+    const upCnt   = items.filter(x => (x.change||0) > 0).length;
+    const downCnt = items.filter(x => (x.change||0) < 0).length;
+    const chgBadge = (upCnt > 0 || downCnt > 0)
+      ? `<span style="font-size:9px;display:inline-flex;gap:3px;margin-left:5px">
+          ${upCnt   > 0 ? `<span style="color:var(--up);font-weight:800">▲${upCnt}</span>`   : ''}
+          ${downCnt > 0 ? `<span style="color:var(--down);font-weight:800">▼${downCnt}</span>` : ''}
+        </span>` : '';
+
+    items.sort((a, b) => starPriority(a.name) - starPriority(b.name));
+    const cards = items.map(x => {
+      const flag = flagFn(x.name);
+      const url  = urlFn(x.name);
+      const days = isPsFlag ? getDaysAtRank(x.name, x.rank) : getStsDaysAtRank(x.name, x.rank);
+      const dStr = days > 1 ? `<span style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:1px">(${days}D)</span>` : '';
+      const rankLbl = x.rank < 999 ? `<span style="font-size:10px;color:var(--tx-4);margin-left:auto">${x.rank}위</span>` : '';
+      const ch = x.change || 0;
+      const chgStr = ch > 0
+        ? `<span style="font-size:10px;color:var(--up);font-weight:800;margin-left:2px">▲${ch}</span>`
+        : ch < 0
+        ? `<span style="font-size:10px;color:var(--down);font-weight:800;margin-left:2px">▼${Math.abs(ch)}</span>`
+        : '';
+      return `<a class="rank1-tag" href="${url}" target="_blank" onclick="event.stopPropagation()" style="text-decoration:none">
+        <span>${flag}</span><span class="rank1-tag-name">${x.name}</span>${starBadge(x.name, isPsFlag)}${chgStr}${dStr}${rankLbl}
+      </a>`;
+    }).join('');
+
+    return `<div>
+      <div class="sum-rank-header" onclick="toggleSumGroup('${groupId}')">
+        <span class="sum-rank-label ${tier.cls}" style="${tier.lc}">${tier.label}${chgBadge}</span>
+        <span class="sum-rank-cnt">${items.length}개국</span>
+        <span class="sum-rank-arrow" id="${groupId}-arrow">▼</span>
+      </div>
+      <div class="sum-rank-body collapsed" id="${groupId}">
+        <div class="sum-rank-grid">${cards}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  twemoji.parse(container, { folder: 'svg', ext: '.svg' });
+}
+
+function toggleSumGroup(id) {
+  const body  = document.getElementById(id);
+  const arrow = document.getElementById(id + '-arrow');
+  if (!body) return;
+  body.classList.toggle('collapsed');
+  if (arrow) arrow.classList.toggle('open');
+}
+
+/* ── 시장 점유율 Top5 국가 ── */
 const PS_MARKET_TOP5    = new Set(['미국', '일본', '독일', '영국', '프랑스']);
 const STEAM_MARKET_TOP5 = new Set(['미국', '러시아', '독일', '영국', '중국']);
 
-/* ★ 새로 추가: Top5 배열 (순서 보장 + 차트용) */
-const PS_TOP5 = ['미국', '일본', '독일', '영국', '프랑스'];
-const STEAM_TOP5 = ['미국', '러시아', '독일', '영국', '중국'];
-
-/* 기존 차트 변수들 */
-let historyData = [];
-let scheduleSlots = [];
-let sortKey = 'rank'; let sortAsc = true; 
-let mainChart = null; let countryChart = null;
-let summaryPsCI = null, summaryStCI = null;
-let psDistCI = null; let stsDistCI = null; /* 기존 분포 차트 변수들 */
-
-/* ★ 새로 추가: Top5 Trend 차트 인스턴스 */
-let psTop5TrendCI = null;
-let steamTop5TrendCI = null;
-
-/* (기존 모든 함수 — loadPsData, init, render, renderSummaryCharts 등 그대로 유지) */
-
-/* ── 기존 renderSummaryCharts 함수에 Top5 차트 렌더 호출 추가 ── */
-function renderSummaryCharts() {
-  /* 기존 PS / Steam 추이 + 분포 차트 코드 (전체 그대로 유지) */
-  /* ... (기존 renderSummaryCharts 내부 전체 코드) ... */
-
-  /* ★ 끝에 Top5 차트 렌더링 추가 */
-  renderTop5TrendCharts();
+function starBadge(name, isPs) {
+  const inPs    = PS_MARKET_TOP5.has(name);
+  const inSteam = STEAM_MARKET_TOP5.has(name);
+  if (!inPs && !inSteam) return '';
+  if (inPs && inSteam)
+    return '<span title="PS·Steam 시장 Top5" style="color:#f1c40f;font-size:11px;margin-left:2px">★★</span>';
+  if (inPs)
+    return '<span title="PS Store 시장 Top5" style="color:#ff4757;font-size:11px;margin-left:2px">★</span>';
+  return '<span title="Steam 시장 Top5" style="color:#4a9eff;font-size:11px;margin-left:2px">★</span>';
 }
 
-/* ★ 새로 추가: Top5 시장점유율 국가 일별 순위 변화 그래프 렌더 함수 */
-function renderTop5TrendCharts() {
-  /* ── PS Top5 ───────────────────────────────────────────────────── */
-  const psCanvas = document.getElementById('psTop5TrendChart');
-  if (psCanvas && historyData.length > 1) {
-    psCanvas.width = psCanvas.parentElement.offsetWidth || 800;
-    psCanvas.height = 320;
+function starPriority(name) {
+  const inPs    = PS_MARKET_TOP5.has(name);
+  const inSteam = STEAM_MARKET_TOP5.has(name);
+  if (inPs && inSteam) return 0;  // ★★ 최우선
+  if (inPs || inSteam) return 1;  // ★
+  return 2;                        // 별 없음
+}
+function renderSteamSchedule() {
+  const container = document.getElementById('sts-sched-days');
+  const summaryEl = document.getElementById('sts-sched-summary');
+  if (!container || !summaryEl) return;
 
-    const labels = historyData.map(h => new Date(h.timestamp.split('.')[0]));
-    const colors = ['#ff4757', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6'];
+  const nowUtc = new Date(), KST_OFFSET = 9 * 3600000;
+  const nowKst = new Date(nowUtc.getTime() + KST_OFFSET);
+  let intervalMin = 30;
+  if (stsSched && stsSched.interval_min) intervalMin = stsSched.interval_min;
 
-    const datasets = PS_TOP5.map((country, idx) => {
-      const data = historyData.map(h => {
-        const r = getRank(h, country);
-        return r < 999 ? r : null;
-      });
-      return {
-        label: `${FLAGS[country] || ''} ${country}`,
-        data: data,
-        borderColor: colors[idx],
-        backgroundColor: 'rgba(255,255,255,0.06)',
-        borderWidth: 2.5,
-        tension: 0.25,
-        spanGaps: true,
-        pointRadius: 0,
-        pointHoverRadius: 5
-      };
-    });
+  const stamps = stsHist.map(h => new Date(h.timestamp).getTime());
+  const toleranceMs = Math.min(intervalMin * 0.4, 18) * 60000;
 
-    if (psTop5TrendCI) psTop5TrendCI.destroy();
-    psTop5TrendCI = new Chart(psCanvas.getContext('2d'), {
-      type: 'line',
-      data: { labels, datasets },
-      options: {
-        responsive: false,
-        animation: false,
-        layout: { padding: { top: 10, right: 20 } },
-        scales: {
-          x: { type: 'time', time: { displayFormats: { day: 'M/d' } }, ticks: { color: '#aaa', maxTicksLimit: 10, font: { size: 11 } }, grid: { color: '#1a1a1a' } },
-          y: { reverse: true, suggestedMin: 1, suggestedMax: 30, ticks: { color: '#aaa', font: { size: 11 }, callback: v => v + '위', padding: 6 }, grid: { color: '#1a1a1a' } }
-        },
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top',
-            align: 'start',
-            labels: { color: '#ccc', font: { size: 12 }, boxWidth: 12, padding: 15, usePointStyle: true }
-          },
-          tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y || '—') + '위' } }
-        }
+  const todayKstMidnight = new Date(Date.UTC(nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()) - KST_OFFSET);
+  const days = [
+    { label: '오늘', date: todayKstMidnight, isToday: true },
+  ];
+  const slotsPerDay = Math.floor(24 * 60 / intervalMin);
+  let totalSlots = 0, okSlots = 0, missSlots = 0;
+  container.innerHTML = '';
+
+  days.forEach(({ label, date, isToday }) => {
+    const kstDay = new Date(date.getTime() + KST_OFFSET);
+    const mm = kstDay.getUTCMonth() + 1, dd = kstDay.getUTCDate();
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'sts-sched-day-label';
+    labelDiv.innerHTML = `<span class="day-badge${isToday ? ' today' : ''}">${label}</span>${mm}/${dd}`;
+    container.appendChild(labelDiv);
+
+    const grid = document.createElement('div');
+    grid.className = 'sts-sched-grid';
+    // 오늘: 현재 시간 앞뒤 2개 슬롯만
+    const nowMs2 = nowUtc.getTime();
+    const allSlotMs = Array.from({length: slotsPerDay}, (_, i) => date.getTime() + i * intervalMin * 60000);
+    const slotsToRender = isToday ? (() => {
+      let ci = allSlotMs.findIndex(ms => ms > nowMs2 - toleranceMs);
+      if (ci === -1) ci = allSlotMs.length;
+      return allSlotMs.slice(Math.max(0, ci - 2), Math.min(allSlotMs.length, ci + 3));
+    })() : allSlotMs;
+
+    for (const slotMs of slotsToRender) {
+      const slotKst = new Date(slotMs + KST_OFFSET);
+      const hhmm = `${String(slotKst.getUTCHours()).padStart(2,'0')}:${String(slotKst.getUTCMinutes()).padStart(2,'0')}`;
+      const isFuture = slotMs > nowUtc.getTime() + toleranceMs;
+      const isNow = Math.abs(slotMs - nowUtc.getTime()) <= toleranceMs;
+      let status = 'miss', actualTime = '';
+      if (isFuture) { status = 'fut'; }
+      else {
+        const found = stamps.find(s => Math.abs(s - slotMs) <= toleranceMs);
+        if (found) {
+          status = 'ok'; okSlots++; totalSlots++;
+          const ft = new Date(found + KST_OFFSET);
+          actualTime = `${String(ft.getUTCHours()).padStart(2,'0')}:${String(ft.getUTCMinutes()).padStart(2,'0')}`;
+        } else { missSlots++; totalSlots++; }
       }
+      const isManual = status === 'ok' && (() => {
+        const found = stamps.find(s => Math.abs(s - slotMs) <= toleranceMs);
+        if (!found) return false;
+        const ft = new Date(found + KST_OFFSET);
+        return ft.getUTCMinutes() > 5 && ft.getUTCMinutes() < 55;
+      })();
+      const slot = document.createElement('div');
+      slot.className = `sts-slot ${status}${isNow ? ' now' : ''}${isManual ? ' manual' : ''}`;
+      slot.title = status === 'ok' ? `${mm}/${dd} ${hhmm} → 실행 ${actualTime}` :
+                   status === 'fut' ? `${mm}/${dd} ${hhmm} (예정)` : `${mm}/${dd} ${hhmm} — 누락`;
+      slot.innerHTML = `<span class="slot-h">${hhmm}</span><span class="slot-i">${status==='ok'?'✓':status==='fut'?'·':'✗'}</span>`;
+      grid.appendChild(slot);
+    }
+    container.appendChild(grid);
+  });
+
+  function getNextRunLabel() {
+    const nowMs = nowUtc.getTime(), step = intervalMin * 60000;
+    const next = Math.ceil((nowMs + 1000) / step) * step;
+    const nextKst = new Date(next + KST_OFFSET);
+    const diffMin = Math.round((next - nowMs) / 60000);
+    const hhmm = `${String(nextKst.getUTCHours()).padStart(2,'0')}:${String(nextKst.getUTCMinutes()).padStart(2,'0')}`;
+    return diffMin <= 60 ? `${hhmm} KST (${diffMin}분 후)` : `${hhmm} KST`;
+  }
+  const rate = totalSlots > 0 ? Math.round(okSlots / totalSlots * 100) : 100;
+  summaryEl.innerHTML = `
+    <div class="ss"><span class="sv">${okSlots}</span><span class="sl">실행 완료</span></div>
+    <div class="ss"><span class="sv" style="color:${missSlots>0?'var(--down)':'var(--up)'}">${missSlots}</span><span class="sl">누락</span></div>
+    <div class="ss"><span class="sv">${rate}%</span><span class="sl">성공률 (2일)</span></div>
+    <div class="sts-next-badge"><span class="sts-pulse"></span>다음: ${getNextRunLabel()}</div>`;
+}
+
+function renderSTS() {
+  if (!stsHist.length) return;
+  const v = stsHist.filter(h => stsAvg(h) !== null);
+  if (!v.length) return;
+  const lat = v[v.length-1], prv = v.length >= 2 ? v[v.length-2] : null;
+  const la = stsAvg(lat), pa = prv ? stsAvg(prv) : null;
+
+  document.getElementById('sts-avg').textContent = la ? la.toFixed(1) + '위' : '—';
+  // Steam 타임스탬프 뱃지 전체 업데이트
+  const stsTs = lat.timestamp ? lat.timestamp.split('.')[0].replace('T', ' ').slice(5) : '';
+  document.querySelectorAll('.sts-ts-badge, #sts-data-time').forEach(el => el.textContent = stsTs);
+  document.getElementById('sts-count').textContent = stsHist.length;
+  const stsTotalCountries = Object.keys(lat.results || {}).length;
+  document.getElementById('sts-countries-sub').textContent = stsTotalCountries + '개국 추적';
+
+
+  const el = document.getElementById('sts-avg-diff');
+  if (pa !== null && la !== null) {
+    const d = Math.round((pa - la) * 10) / 10;
+    if (d > 0) { el.textContent = '▲ ' + d + ' 상승'; el.className = 'steam-ts-stat-diff up'; }
+    else if (d < 0) { el.textContent = '▼ ' + Math.abs(d) + ' 하락'; el.className = 'steam-ts-stat-diff down'; }
+    else { el.textContent = '변동없음'; el.className = 'steam-ts-stat-diff'; }
+  }
+
+  let best = null, be = null;
+  for (const h of v) { const a = stsAvg(h); if (a !== null && (best === null || a < best)) { best = a; be = h; } }
+  document.getElementById('sts-best').textContent = best ? best.toFixed(1) + '위' : '—';
+  if (be) document.getElementById('sts-best-date').textContent = fmtDate(be.timestamp);
+
+
+  // 글로벌 순위
+  const globalRankLatest = stsHist.slice().reverse().find(h => h.global_rank != null);
+  const globalBox = document.getElementById('sts-global-rank-box');
+  if (globalRankLatest && globalBox) {
+    globalBox.style.display = '';
+    const gr = globalRankLatest.global_rank;
+    document.getElementById('sts-global-rank').textContent = '#' + gr;
+    const prevGlobal = stsHist.slice().reverse().find(h => h.global_rank != null && h !== globalRankLatest);
+    const gdEl = document.getElementById('sts-global-diff');
+    if (prevGlobal) {
+      const gd = prevGlobal.global_rank - gr;
+      if (gd > 0) { gdEl.textContent = '▲ ' + gd + ' 상승'; gdEl.className = 'steam-ts-stat-diff up'; }
+      else if (gd < 0) { gdEl.textContent = '▼ ' + Math.abs(gd) + ' 하락'; gdEl.className = 'steam-ts-stat-diff down'; }
+      else { gdEl.textContent = '변동없음'; }
+    }
+  }
+
+  // 히스토리 차트 (캔버스 없으면 건너뜀)
+  const lbs = v.map(h => new Date(h.timestamp)), dv = v.map(h => stsAvg(h));
+  const stsChartEl = document.getElementById('stsChart');
+  if (stsChartEl) {
+    const ctx = stsChartEl.getContext('2d');
+    if (stsCI) stsCI.destroy();
+    const idxFirst=0, idxLast=dv.length-1;
+    const idxBest  = dv.reduce((bi,val,i,a) => val!==null && (a[bi]===null || val<a[bi]) ? i : bi, 0);
+    const idxWorst = dv.reduce((wi,val,i,a) => val!==null && (a[wi]===null || val>a[wi]) ? i : wi, 0);
+    const specialIdx = new Set([idxFirst, idxLast, idxBest, idxWorst]);
+    const ptR = dv.map((_,i) => specialIdx.has(i) ? 5 : 0);
+    const ptC = dv.map((_,i) => i===idxBest?'#2ecc71': i===idxWorst?'#e74c3c': i===idxLast?'#f1c40f':'#ffffff');
+    const labelPlugin = { id: 'stsLabel', afterDatasetsDraw() {} };
+    const fmtR = v => v != null ? v.toFixed(1) + '위' : '—';
+    const setL = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+    setL('sts-leg-start',   '시작 ' + fmtR(dv[idxFirst]));
+    setL('sts-leg-best',    '최고 ' + fmtR(dv[idxBest]));
+    setL('sts-leg-current', '현재 ' + fmtR(dv[idxLast]));
+    setL('sts-leg-worst',   '최저 ' + fmtR(dv[idxWorst]));
+    stsCI = new Chart(ctx, {
+      type: 'line',
+      data: { labels: lbs, datasets: [{ label: '평균', data: dv, borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.1)', borderWidth: 2, pointRadius: ptR, pointBackgroundColor: ptC, pointBorderColor: ptC, fill: true, tension: 0.3 }] },
+      options: { responsive: true, maintainAspectRatio: false,
+        layout: { padding: { top: 10, right: 10 } },
+        scales: {
+          x: { type: 'time', time: { unit: 'day', tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' } }, ticks: { color: '#fff', maxTicksLimit: 8 }, grid: { color: '#222' } },
+          y: { reverse: true, suggestedMin: 0, ticks: { color: '#fff', stepSize: 1, callback: v => v > 0 ? v + '위' : '', padding: 8 }, grid: { color: '#222' } }
+        },
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y + '위' } } }
+      },
+      plugins: [labelPlugin]
     });
   }
 
-  /* ── Steam Top5 ─────────────────────────────────────────────────── */
-  const steamCanvas = document.getElementById('steamTop5TrendChart');
-  if (steamCanvas && stsHist.length > 1) {
-    steamCanvas.width = steamCanvas.parentElement.offsetWidth || 800;
-    steamCanvas.height = 320;
+  renderStsTable(lat, prv);
+  renderStsHeatmap(lat, prv);
+  renderStsLeaderboard(lat, prv);
+  // PS+Steam 데이터 모두 로드 후 차트 렌더
+  if (historyData.length > 0) setTimeout(renderSummaryCharts, 150);
+}
 
-    const labels = stsHist.map(h => new Date(h.timestamp));
-    const colors = ['#4a9eff', '#f1c40f', '#2ecc71', '#e74c3c', '#ff4757'];
+/* ══════════════════════════════════════════════════════════════
+   RANK HEATMAP — PS & Steam
+══════════════════════════════════════════════════════════════ */
+function hmRankClass(r) {
+  if (!r || r >= 999) return 'rout';
+  if (r === 1)  return 'r1';
+  if (r <= 3)   return 'r2';
+  if (r <= 10)  return 'r10';
+  if (r <= 30)  return 'r30';
+  return 'rout';
+}
 
-    const datasets = STEAM_TOP5.map((country, idx) => {
-      const data = stsHist.map(h => {
-        const r = h.results?.[country]?.rank ?? null;
-        return r && r < 999 ? r : null;
-      });
-      return {
-        label: `${STS_F[country] || FLAGS[country] || ''} ${country}`,
-        data: data,
-        borderColor: colors[idx],
-        backgroundColor: 'rgba(255,255,255,0.06)',
-        borderWidth: 2.5,
-        tension: 0.25,
-        spanGaps: true,
-        pointRadius: 0,
-        pointHoverRadius: 5
-      };
+function makeSparkline(ranks, color) {
+  // ranks: 시간순 배열, null/999 제외
+  const vals = ranks.filter(r => r != null && r < 999);
+  if (vals.length < 2) return '';
+  const W = 64, H = 24, PAD = 2;
+  const minR = Math.min(...vals), maxR = Math.max(...vals);
+  const range = maxR - minR || 1;
+  // y는 순위가 낮을수록(1위) 위로 → 반전
+  const toX = (i) => PAD + (i / (vals.length - 1)) * (W - PAD * 2);
+  const toY = (r) => PAD + ((r - minR) / range) * (H - PAD * 2);
+  // 순위 반전: 1위=상단
+  const pts = vals.map((r, i) => `${toX(i).toFixed(1)},${toY(r).toFixed(1)}`).join(' ');
+  // 현재값 점
+  const cx = toX(vals.length - 1).toFixed(1);
+  const cy = toY(vals[vals.length - 1]).toFixed(1);
+  return `<svg class="hm-spark" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round" opacity="0.7"/>
+    <circle cx="${cx}" cy="${cy}" r="2" fill="${color}" opacity="0.9"/>
+  </svg>`;
+}
+
+function renderPsHeatmap(list) {
+  const g = document.getElementById('ps-heatmap-grid');
+  if (!g) return;
+
+  const sorted = [...list].sort((a, b) => {
+    const ar = a.rank >= 999 ? 99999 : a.rank;
+    const br = b.rank >= 999 ? 99999 : b.rank;
+    return ar !== br ? ar - br : (b.weight || 0) - (a.weight || 0);
+  });
+
+  // 순위별 그룹
+  const groups = {};
+  sorted.forEach(d => {
+    const k = d.rank >= 999 ? '순위 밖' : d.rank + '위';
+    if (!groups[k]) groups[k] = { rank: d.rank >= 999 ? 9999 : d.rank, items: [] };
+    groups[k].items.push(d);
+  });
+
+  // 그룹 내 별 우선순위 정렬
+  Object.values(groups).forEach(g => g.items.sort((a, b) => starPriority(a.name) - starPriority(b.name)));
+  g.innerHTML = Object.entries(groups).map(([label, { rank, items }]) => {
+    const lc = rank===1?'g1':rank<=3?'g2':rank<=10?'g3':rank<999?'g10':'gout';
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+    const groupId = 'ps-hm-grp-' + rank;
+
+    const rowsHtml = items.map(d => {
+      const r = d.rank >= 999 ? null : d.rank;
+      const rankCls = hmRankClass(d.rank);
+      const daysAtR = getDaysAtRank(d.name, r || 0);
+      const rankTxt = r ? r + '위' + (daysAtR > 1 ? `(${daysAtR}d)` : '') : '—';
+      const bestTxt = (d.best && d.best < 999) ? '★' + d.best + '위' : '';
+      const ch = d.change;
+      const barCls = ch > 0 ? 'up' : ch < 0 ? 'down' : 'same';
+      const chgCls = ch > 0 ? 'up' : ch < 0 ? 'down' : 'same';
+      const chgTxt = ch > 0 ? '▲' + ch : ch < 0 ? '▼' + Math.abs(ch) : '—';
+      const flag = FLAGS[d.name] || '';
+      const url  = getStoreUrl(d.name);
+      const rowCls = r ? '' : ' hm-notfound';
+      const sparkColor = ch > 0 ? '#2ecc71' : ch < 0 ? '#e74c3c' : '#4a9eff';
+      const histRanks = historyData.map(h => getRank(h, d.name)).filter(v => v < 999);
+      const spark = makeSparkline(histRanks, sparkColor);
+      return `<div class="hm-row${rowCls}" onclick="showCountryChart('${d.name}')">
+        <div class="hm-bar ${barCls}"></div>
+        <div class="hm-rank ${rankCls}">${rankTxt}</div>
+        <div class="hm-info">
+          <div class="hm-name"><span class="hm-flag">${flag}</span><span class="hm-name-text">${d.name}</span>${starBadge(d.name, true)}</div>
+          <div class="hm-meta">
+            ${bestTxt ? `<span class="hm-best">${bestTxt}</span>` : ''}
+            <span class="hm-change ${chgCls}">${chgTxt}</span>
+            <span class="hm-w">W:${d.weight}</span>
+          </div>
+        </div>
+        ${spark ? `<div class="hm-spark-wrap">${spark}</div>` : ''}
+        <a class="hm-link" href="${url}" target="_blank" onclick="event.stopPropagation()" title="PS Store">🔗</a>
+      </div>`;
+    }).join('');
+
+    const upCnt   = items.filter(d => d.change > 0).length;
+    const downCnt = items.filter(d => d.change < 0).length;
+    const chgBadge = upCnt > 0 || downCnt > 0
+      ? `<span style="font-size:9px;margin-left:6px;display:inline-flex;gap:4px">
+           ${upCnt   > 0 ? `<span style="color:var(--up);font-weight:800">▲${upCnt}</span>` : ''}
+           ${downCnt > 0 ? `<span style="color:var(--down);font-weight:800">▼${downCnt}</span>` : ''}
+         </span>` : '';
+    return `<div>
+      <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
+        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}${chgBadge}</span>
+        <span class="rank-group-count">${items.length}개국</span>
+        <span class="rank-group-arrow" id="${groupId}-arrow">▼</span>
+      </div>
+      <div class="rank-group-body collapsed" id="${groupId}">
+        <div class="hm-cards-grid">${rowsHtml}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  twemoji.parse(g, { folder: 'svg', ext: '.svg' });
+}
+
+/* ── Steam Grid (legacy hidden container) ── */
+function renderStsGrid(lat, prv) {
+  // sts-table-body, sts-cnt, best/worst 업데이트 실행
+  renderStsTable(lat, prv);
+}
+
+/* ── Steam 국가별 테이블 ── */
+function renderStsTable(lat, prv) {
+  const container = document.getElementById('sts-table-body');
+  if (!container || !lat || !lat.results) return;
+  const entries = Object.entries(lat.results).map(([n,d]) => {
+    const r = d?.rank??null, pr = prv?.results?.[n]?.rank??null;
+    const ch = r&&pr?pr-r:0;
+    const histRanks = stsHist.map(h=>h.results?.[n]?.rank).filter(v=>v!=null);
+    const best = histRanks.length?Math.min(...histRanks):null;
+    const avg  = histRanks.length?histRanks.reduce((a,b)=>a+b,0)/histRanks.length:null;
+    return {name:n, rank:r, change:ch, best, avg, w:STS_W[n]||1};
+  }).sort((a,b)=>{
+    const ar=a.rank??99999, br=b.rank??99999;
+    return ar!==br?ar-br:b.w-a.w;
+  });
+
+  // 순위별 분포 업데이트
+  const ranked = entries.filter(d=>d.rank!=null);
+  const _cnt1   = ranked.filter(d=>d.rank===1).length;
+  const _cnt23  = ranked.filter(d=>d.rank>=2&&d.rank<=3).length;
+  const _cnt410 = ranked.filter(d=>d.rank>=4&&d.rank<=10).length;
+  const _cntRest= ranked.filter(d=>d.rank>=11).length;
+
+  function makeStsChgBadge(items) {
+    const up = items.filter(x => x.change > 0).length;
+    const dn = items.filter(x => x.change < 0).length;
+    if (!up && !dn) return '';
+    return `<span style="font-size:9px;display:inline-flex;gap:3px;margin-left:4px;vertical-align:middle">
+      ${up ? `<span style="color:var(--up);font-weight:800">▲${up}</span>` : ''}
+      ${dn ? `<span style="color:var(--down);font-weight:800">▼${dn}</span>` : ''}
+    </span>`;
+  }
+  const setTH = (id, num, items) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = num + makeStsChgBadge(items);
+  };
+  setTH('sts-cnt-1',  _cnt1,  ranked.filter(d=>d.rank===1));
+  setTH('sts-cnt-3',  _cnt23, ranked.filter(d=>d.rank>=2&&d.rank<=3));
+  setTH('sts-cnt-10', _cnt410,ranked.filter(d=>d.rank>=4&&d.rank<=10));
+  const setT = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  setT('sts-cnt-rest', _cntRest+'개 / '+ranked.length+'개국');
+  // 1위 국가명
+  const stsRank1Names = ranked.filter(d=>d.rank===1).map(d=>d.name);
+  const stsNamesEl = document.getElementById('sts-cnt-1-names');
+  // Steam 요약 순위별 전체 국가 그룹 렌더
+  const stsListForSum = Object.keys(STS_W).map(n => ({
+    name: n,
+    rank: lat.results?.[n]?.rank ?? 999,
+    change: (() => { const r = lat.results?.[n]?.rank; const p = prv?.results?.[n]?.rank; return (r && p) ? p - r : 0; })()
+  }));
+  renderSummaryRankGroups(
+    stsListForSum,
+    'sts-summary-rank-groups',
+    n => STS_F[n] || '',
+    n => { const cc = STS_CC[n] || 'us'; return `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`; },
+    false
+  );
+  // 최고/최하 순위 카드
+  if (ranked.length) {
+    const stsBest  = ranked.reduce((a,b)=>a.rank<b.rank?a:b);
+    const stsWorst = ranked.reduce((a,b)=>a.rank>b.rank?a:b);
+    setT('sts-best-rank-val',  stsBest.rank+'위');
+    setT('sts-best-rank-name', (STS_F[stsBest.name]||'')+' '+stsBest.name);
+    setT('sts-worst-rank-val', stsWorst.rank+'위');
+    setT('sts-worst-rank-name',(STS_F[stsWorst.name]||'')+' '+stsWorst.name);
+  }
+
+  // 그룹화
+  const groups = {};
+  entries.forEach(d=>{
+    const k = d.rank?d.rank+'위':'순위 밖';
+    if (!groups[k]) groups[k]={rank:d.rank||9999,items:[]};
+    groups[k].items.push(d);
+  });
+  const tableHdr = `<div class="ct-table-header">
+    <span></span><span></span><span>국가</span>
+    <span style="text-align:right">최고</span>
+    <span style="text-align:right">평균</span>
+    <span style="text-align:center">변동</span>
+    <span style="text-align:right">순위</span>
+    <span></span>
+  </div>`;
+  Object.values(groups).forEach(g => g.items.sort((a, b) => starPriority(a.name) - starPriority(b.name)));
+  Object.values(groups).forEach(g => g.items.sort((a, b) => starPriority(a.name) - starPriority(b.name)));
+  container.innerHTML = Object.entries(groups).map(([label,{rank,items}])=>{
+    const lc = rank===1?'g1':rank<=3?'g2':rank<=10?'g3':rank<999?'g10':'gout';
+    const barColor = rank===1?'var(--gold)':rank<=3?'#c0c0c0':rank<=10?'#cd7f32':rank<999?'var(--steam)':'var(--bd)';
+    const rankColor = rank===1?'var(--gold)':rank<=3?'#c0c0c0':rank<=10?'#cd7f32':rank<999?'var(--steam)':'var(--tx-4)';
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+    const groupId = 'sts-tbl-grp-'+rank;
+    const rows = items.map(d=>{
+      const cc = STS_CC[d.name]||'us';
+      const bestStr = d.best?d.best+'위':'—';
+      const avgStr  = d.avg?d.avg.toFixed(1)+'위':'—';
+      const chgCls  = d.change>0?'up':d.change<0?'down':'';
+      const chgTxt  = d.change>0?'▲'+d.change:d.change<0?'▼'+Math.abs(d.change):'—';
+      const daysStR = getStsDaysAtRank(d.name, d.rank);
+      const rankTxt = d.rank?d.rank+'위'+(daysStR > 1 ? `(${daysStR}d)` : ''):'—';
+      const flagImg = `<img src="https://flagcdn.com/w40/${cc}.png" alt="${d.name}" style="width:18px;height:13px;object-fit:cover;border-radius:2px">`;
+      const storeUrl = `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`;
+      return `<div class="ct-row" onclick="openStsModal('${d.name}')">
+        <span class="ct-bar" style="background:${barColor}"></span>
+        <span class="ct-flag">${flagImg}</span>
+        <span class="ct-name">${d.name}${starBadge(d.name, false)}</span>
+        <span class="ct-meta">${bestStr}</span>
+        <span class="ct-meta">${avgStr}</span>
+        <span class="ct-chg ${chgCls}">${chgTxt}</span>
+        <span class="ct-rank" style="color:${rankColor}">${rankTxt}</span>
+        <a class="ct-link" href="${storeUrl}" target="_blank" onclick="event.stopPropagation()">🔗</a>
+      </div>`;
+    }).join('');
+    const upCnt   = items.filter(d => d.change > 0).length;
+    const downCnt = items.filter(d => d.change < 0).length;
+    const chgBadge = upCnt > 0 || downCnt > 0
+      ? `<span style="font-size:9px;margin-left:6px;display:inline-flex;gap:4px">
+           ${upCnt   > 0 ? `<span style="color:var(--up);font-weight:800">▲${upCnt}</span>` : ''}
+           ${downCnt > 0 ? `<span style="color:var(--down);font-weight:800">▼${downCnt}</span>` : ''}
+         </span>` : '';
+    return `<div>
+      <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
+        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}${chgBadge}</span>
+        <span class="rank-group-count">${items.length}개국</span>
+        <span class="rank-group-arrow" id="${groupId}-arrow">▼</span>
+      </div>
+      <div class="rank-group-body collapsed" id="${groupId}">${tableHdr}${rows}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Steam 리더보드 ── */
+function renderStsLeaderboard(lat, prv) {
+  const g = document.getElementById('lb-sts-container');
+  if (!g || !lat || !lat.results) return;
+  // 변동 계산
+  const stsChangeMap = {};
+  Object.keys(STS_W).forEach(n => {
+    const r  = lat.results[n]?.rank ?? null;
+    const pr = prv?.results?.[n]?.rank ?? null;
+    stsChangeMap[n] = (r && pr) ? pr - r : 0;
+  });
+  const sorted = Object.keys(STS_W)
+    .map(n => ({ name: n, rank: lat.results[n]?.rank ?? null, w: STS_W[n] || 1 }))
+    .sort((a, b) => {
+      if (a.rank && b.rank) return a.rank !== b.rank ? a.rank - b.rank : b.w - a.w;
+      if (a.rank) return -1; if (b.rank) return 1;
+      return b.w - a.w;
     });
+  const groups = {};
+  sorted.forEach(d => {
+    const k = d.rank ? d.rank + '위' : '순위 밖';
+    if (!groups[k]) groups[k] = { rank: d.rank || 9999, names: [] };
+    groups[k].names.push(d.name);
+  });
+  // 각 그룹 내 별 우선순위 정렬
+  Object.values(groups).forEach(g => g.names.sort((a, b) => starPriority(a) - starPriority(b)));
+  g.innerHTML = Object.entries(groups).map(([label, { rank, names }]) => {
+    const lc = rank===1?'g1':rank<=3?'g2':rank<=10?'g3':rank<999?'g10':'gout';
+    const tc = rank===1?'tier-1':rank<=3?'tier-2':rank<=10?'tier-3':rank<999?'tier-10':'tier-out';
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+    const groupId = 'sts-lb-grp-' + rank;
+    const upCnt   = names.filter(n => (stsChangeMap[n]||0) > 0).length;
+    const downCnt = names.filter(n => (stsChangeMap[n]||0) < 0).length;
+    const chgBadge = upCnt > 0 || downCnt > 0
+      ? `<span style="font-size:9px;margin-left:6px;display:inline-flex;gap:4px">
+           ${upCnt   > 0 ? `<span style="color:var(--up);font-weight:800">▲${upCnt}</span>` : ''}
+           ${downCnt > 0 ? `<span style="color:var(--down);font-weight:800">▼${downCnt}</span>` : ''}
+         </span>` : '';
+    const cardsHtml = names.map(n => {
+      const flag = STS_F[n] || '';
+      const ch = stsChangeMap[n] || 0;
+      const chTxt = ch > 0 ? `<span style="font-size:9px;color:var(--up);font-weight:800">▲${ch}</span>`
+                  : ch < 0 ? `<span style="font-size:9px;color:var(--down);font-weight:800">▼${Math.abs(ch)}</span>` : '';
+      const dSts = getStsDaysAtRank(n, rank<9999?rank:0);
+      return `<div class="top10-item ${tc}" onclick="openStsModal('${n}')"><span class="n">${flag} ${n}${starBadge(n, false)}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank>=9999?'—':rank+'위'+(dSts>1?`(${dSts}d)`:'')}${chTxt}</span></div>`;
+    }).join('');
+    return `<div>
+      <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
+        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}${chgBadge}</span>
+        <span class="rank-group-count">${names.length}개국</span>
+        <span class="rank-group-arrow" id="${groupId}-arrow">▼</span>
+      </div>
+      <div class="rank-group-body collapsed" id="${groupId}">
+        <div class="top10-grid" style="padding:8px">${cardsHtml}</div>
+      </div>
+    </div>`;
+  }).join('');
+  twemoji.parse(g, { folder: 'svg', ext: '.svg' });
+}
 
-    if (steamTop5TrendCI) steamTop5TrendCI.destroy();
-    steamTop5TrendCI = new Chart(steamCanvas.getContext('2d'), {
-      type: 'line',
-      data: { labels, datasets },
-      options: {
-        responsive: false,
-        animation: false,
-        layout: { padding: { top: 10, right: 20 } },
-        scales: {
-          x: { type: 'time', time: { displayFormats: { day: 'M/d' } }, ticks: { color: '#aaa', maxTicksLimit: 10, font: { size: 11 } }, grid: { color: '#1a1a1a' } },
-          y: { reverse: true, suggestedMin: 1, suggestedMax: 30, ticks: { color: '#aaa', font: { size: 11 }, callback: v => v + '위', padding: 6 }, grid: { color: '#1a1a1a' } }
-        },
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top',
-            align: 'start',
-            labels: { color: '#ccc', font: { size: 12 }, boxWidth: 12, padding: 15, usePointStyle: true }
-          },
-          tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y || '—') + '위' } }
-        }
-      }
-    });
+function renderStsHeatmap(lat, prv) {
+  const g = document.getElementById('sts-heatmap-grid');
+  if (!g || !lat || !lat.results) return;
+
+  const countryBest = {};
+  Object.keys(STS_W).forEach(n => {
+    const ranks = stsHist.map(h => h.results?.[n]?.rank).filter(r => r != null);
+    countryBest[n] = ranks.length ? Math.min(...ranks) : null;
+  });
+
+  const entries = Object.keys(STS_W).map(n => {
+    const curr = lat.results?.[n];
+    const prvR  = prv?.results?.[n];
+    const r    = curr?.rank ?? null;
+    const pr   = prvR?.rank ?? null;
+    const ch   = (r != null && pr != null) ? pr - r : 0;
+    return { name: n, rank: r, prev: pr, change: ch, weight: STS_W[n] || 1, best: countryBest[n] };
+  });
+
+  entries.sort((a, b) => {
+    const ar = a.rank ?? 99999, br = b.rank ?? 99999;
+    return ar !== br ? ar - br : (b.weight || 0) - (a.weight || 0);
+  });
+
+  // 순위별 그룹
+  const groups = {};
+  entries.forEach(d => {
+    const k = d.rank ? d.rank + '위' : '순위 밖';
+    if (!groups[k]) groups[k] = { rank: d.rank || 9999, items: [] };
+    groups[k].items.push(d);
+  });
+
+  // 그룹 내 별 우선순위 정렬
+  Object.values(groups).forEach(g => g.items.sort((a, b) => starPriority(a.name) - starPriority(b.name)));
+  g.innerHTML = Object.entries(groups).map(([label, { rank, items }]) => {
+    const lc = rank===1?'g1':rank<=3?'g2':rank<=10?'g3':rank<999?'g10':'gout';
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+    const groupId = 'sts-hm-grp-' + rank;
+
+    const rowsHtml = items.map(d => {
+      const r = d.rank;
+      const rankCls = r ? hmRankClass(r) : 'rout';
+      const daysAtR = getStsDaysAtRank(d.name, r);
+      const rankTxt = r ? r + '위' + (daysAtR > 1 ? `(${daysAtR}d)` : '') : '—';
+      const bestTxt = d.best ? '★' + d.best + '위' : '';
+      const ch = d.change;
+      const barCls = ch > 0 ? 'up' : ch < 0 ? 'down' : 'same';
+      const chgCls = ch > 0 ? 'up' : ch < 0 ? 'down' : 'same';
+      const chgTxt = ch > 0 ? '▲' + ch : ch < 0 ? '▼' + Math.abs(ch) : '—';
+      const flag = STS_F[d.name] || '';
+      const cc   = STS_CC[d.name] || 'us';
+      const url  = `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`;
+      const rowCls = r ? '' : ' hm-notfound';
+      const sparkColor = ch > 0 ? '#2ecc71' : ch < 0 ? '#e74c3c' : '#4a9eff';
+      const histRanks = stsHist.map(h => h.results?.[d.name]?.rank ?? null);
+      const spark = makeSparkline(histRanks, sparkColor);
+      return `<div class="hm-row${rowCls}" onclick="openStsModal('${d.name}')">
+        <div class="hm-bar ${barCls}"></div>
+        <div class="hm-rank ${rankCls}">${rankTxt}</div>
+        <div class="hm-info">
+          <div class="hm-name"><span class="hm-flag">${flag}</span><span class="hm-name-text">${d.name}</span>${starBadge(d.name, true)}</div>
+          <div class="hm-meta">
+            ${bestTxt ? `<span class="hm-best">${bestTxt}</span>` : ''}
+            <span class="hm-change ${chgCls}">${chgTxt}</span>
+            <span class="hm-w">W:${d.weight}</span>
+          </div>
+        </div>
+        ${spark ? `<div class="hm-spark-wrap">${spark}</div>` : ''}
+        <a class="hm-link" href="${url}" target="_blank" onclick="event.stopPropagation()" title="Steam Store">🔗</a>
+      </div>`;
+    }).join('');
+
+    const upCnt   = items.filter(d => d.change > 0).length;
+    const downCnt = items.filter(d => d.change < 0).length;
+    const chgBadge = upCnt > 0 || downCnt > 0
+      ? `<span style="font-size:9px;margin-left:6px;display:inline-flex;gap:4px">
+           ${upCnt   > 0 ? `<span style="color:var(--up);font-weight:800">▲${upCnt}</span>` : ''}
+           ${downCnt > 0 ? `<span style="color:var(--down);font-weight:800">▼${downCnt}</span>` : ''}
+         </span>` : '';
+    return `<div>
+      <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
+        <span class="lb-group-label ${lc}" style="flex:1">${medal} ${label}${chgBadge}</span>
+        <span class="rank-group-count">${items.length}개국</span>
+        <span class="rank-group-arrow" id="${groupId}-arrow">▼</span>
+      </div>
+      <div class="rank-group-body collapsed" id="${groupId}">
+        <div class="hm-cards-grid">${rowsHtml}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  twemoji.parse(g, { folder: 'svg', ext: '.svg' });
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   GITHUB ACTIONS DISPATCH
+══════════════════════════════════════════════════════════════ */
+const GH_OWNER   = 'gonmau';
+const GH_REPO    = 'PreOrderBlackDesert';
+const GH_WF_PS   = 'bestseller_tracker.yml';
+const GH_WF_STEAM = 'steam_topseller_tracker.yml';
+
+function ghGetToken()    { return localStorage.getItem('gh_token') || ''; }
+function ghSetToken(v)   { localStorage.setItem('gh_token', v); }
+
+// 폴링 타이머 관리
+const _ghPollers = { ps: null, steam: null };
+
+function updateGhStatusDot() {
+  const btn = document.getElementById('gh-token-status');
+  if (!btn) return;
+  const hasToken = !!ghGetToken();
+  btn.innerHTML = `<span class="gh-status-dot ${hasToken ? 'ok' : 'none'}"></span>⚙`;
+  btn.title = hasToken ? 'Token 설정됨 (클릭하여 변경)' : 'Token 미설정 — 클릭하여 입력';
+}
+
+function openGhModal() {
+  document.getElementById('gh-token').value = ghGetToken();
+  document.getElementById('gh-modal').classList.add('open');
+}
+function closeGhModal() { document.getElementById('gh-modal').classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGhModal(); });
+document.getElementById('gh-modal').addEventListener('click', e => { if (e.target === document.getElementById('gh-modal')) closeGhModal(); });
+
+function saveGhSettings() {
+  ghSetToken(document.getElementById('gh-token').value.trim());
+  closeGhModal();
+  updateGhStatusDot();
+  showDispatchToast('✅ Token이 저장되었습니다', '#2ecc71');
+}
+
+function setRunBtn(type, state, extra) {
+  const btn   = document.getElementById(type === 'ps' ? 'btn-dispatch-ps' : 'btn-dispatch-steam');
+  const label = type === 'ps' ? 'PS' : 'Steam';
+  const states = {
+    idle:      { icon: '▶',  text: `${label} 실행`,  disabled: false },
+    waiting:   { icon: '⏳', text: '대기 중…',       disabled: true  },
+    running:   { icon: '↻',  text: '실행 중…',       disabled: true, spin: true },
+    success:   { icon: '✓',  text: '완료',           disabled: false },
+    failure:   { icon: '✗',  text: '실패',           disabled: false },
+    cancelled: { icon: '—',  text: '취소됨',         disabled: false },
+  };
+  const s = states[state] || states.idle;
+  const iconHtml = s.spin
+    ? `<span class="spin">${s.icon}</span>`
+    : `<span class="btn-icon">${s.icon}</span>`;
+  btn.innerHTML = `${iconHtml} ${s.text}`;
+  btn.disabled  = s.disabled;
+  // 완료/실패 후 3초 뒤 idle 복원
+  if (state === 'success' || state === 'failure' || state === 'cancelled') {
+    clearTimeout(btn._resetTimer);
+    btn._resetTimer = setTimeout(() => { clearPoller(type); setRunBtn(type, 'idle'); }, 4000);
   }
 }
 
-/* (기존 renderSTS, loadSteamTopSellerData 등 모든 함수 그대로 유지 — Top5 차트는 renderSummaryCharts에서 자동 호출됨) */
+async function pollRunStatus(type, wf, since) {
+  const token = ghGetToken();
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+  let attempts = 0;
+  const MAX = 60; // 최대 5분 (5초×60)
 
-/* 기존 init()에서 데이터 로드 후 차트가 정상 렌더되도록 이미 renderSummaryCharts가 호출됨 */
+  setRunBtn(type, 'waiting');
 
-/* (나머지 전체 스크립트 — dispatch, sales, modal 등 — 그대로 유지) */
+  const poll = async () => {
+    attempts++;
+    if (attempts > MAX) {
+      setRunBtn(type, 'idle');
+      return;
+    }
+    try {
+      const r = await fetch(
+        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${wf}/runs?per_page=5&created=>=${since}`,
+        { headers }
+      );
+      if (!r.ok) { setRunBtn(type, 'idle'); return; }
+      const data = await r.json();
+      const run  = data.workflow_runs?.[0];
+      if (!run) {
+        // 아직 run이 안 만들어짐 — 재시도
+        _ghPollers[type] = setTimeout(poll, 3000);
+        return;
+      }
+      const { status, conclusion } = run;
+      const runUrl = run.html_url;
+
+      if (status === 'queued' || status === 'waiting') {
+        setRunBtn(type, 'waiting');
+        _ghPollers[type] = setTimeout(poll, 3000);
+      } else if (status === 'in_progress') {
+        setRunBtn(type, 'running');
+        _ghPollers[type] = setTimeout(poll, 5000);
+      } else {
+        // completed
+        if (conclusion === 'success') {
+          setRunBtn(type, 'success');
+          showDispatchToast(`✅ ${type === 'ps' ? 'PS' : 'Steam'} 완료! Pages 배포 대기 중…`, '#2ecc71');
+          pollPagesDeployment(Date.now());
+        } else if (conclusion === 'failure') {
+          setRunBtn(type, 'failure');
+          showDispatchToast(`❌ ${type === 'ps' ? 'PS' : 'Steam'} 실패 — <a href="${runUrl}" target="_blank">로그 보기</a>`, '#e74c3c');
+        } else {
+          setRunBtn(type, 'cancelled');
+        }
+      }
+    } catch(e) {
+      setRunBtn(type, 'idle');
+    }
+  };
+  _ghPollers[type] = setTimeout(poll, 4000); // dispatch 후 4초 뒤 첫 폴링
+}
+
+async function dispatchWorkflow(type) {
+  const token = ghGetToken();
+  if (!token) {
+    openGhModal();
+    showDispatchToast('⚙ 먼저 GitHub Token을 입력해주세요', '#f1c40f');
+    return;
+  }
+  // 이미 폴링 중이면 무시
+  if (_ghPollers[type]) return;
+
+  const wf    = type === 'ps' ? GH_WF_PS : GH_WF_STEAM;
+  const label = type === 'ps' ? 'PS' : 'Steam';
+  const since = new Date(Date.now() - 5000).toISOString().slice(0, 19) + 'Z'; // 지금 기준
+
+  setRunBtn(type, 'waiting');
+
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${wf}/dispatches`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ref: 'main' })
+      }
+    );
+    if (res.status === 204) {
+      showDispatchToast(`🚀 ${label} 실행 요청됨`, '#4a9eff');
+      pollRunStatus(type, wf, since);
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showDispatchToast(`❌ 실패 (${res.status}): ${err.message || '알 수 없는 오류'}`, '#e74c3c');
+      setRunBtn(type, 'idle');
+    }
+  } catch(e) {
+    showDispatchToast(`❌ 네트워크 오류: ${e.message}`, '#e74c3c');
+    setRunBtn(type, 'idle');
+  }
+}
+
+function showDispatchToast(msg, color) {
+  let t = document.getElementById('gh-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'gh-toast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;z-index:300;transition:opacity 0.4s;white-space:nowrap';
+    document.body.appendChild(t);
+  }
+  t.innerHTML = msg;
+  t.style.background = color + '22';
+  t.style.border = `1px solid ${color}66`;
+  t.style.color = color;
+  t.style.opacity = '1';
+  t.style.pointerEvents = msg.includes('<a') ? 'auto' : 'none';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; t.style.pointerEvents = 'none'; }, 5000);
+}
+
+// 폴링 타이머 정리 (setRunBtn idle 복원 시)
+function clearPoller(type) {
+  if (_ghPollers[type]) { clearTimeout(_ghPollers[type]); _ghPollers[type] = null; }
+}
+
+/* ── GitHub Pages 배포 완료 감지 ── */
+let _pagesPoller = null;
+
+async function pollPagesDeployment(since) {
+  const token = ghGetToken();
+  if (!token) return;
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+
+  // Pages 배포 상태 배지 표시
+  showPagesStatus('deploying');
+
+  let attempts = 0;
+  const MAX = 40; // 최대 ~3분
+
+  const poll = async () => {
+    attempts++;
+    if (attempts > MAX) { showPagesStatus(null); return; }
+    try {
+      // 최신 Pages 배포 목록 조회
+      const r = await fetch(
+        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/pages/builds/latest`,
+        { headers }
+      );
+      if (!r.ok) { _pagesPoller = setTimeout(poll, 5000); return; }
+      const build = await r.json();
+      const status = build.status; // 'queued' | 'building' | 'built' | 'errored'
+      const updatedAt = new Date(build.updated_at).getTime();
+
+      if (status === 'built' && updatedAt >= since) {
+        showPagesStatus('done');
+        showDispatchToast('🌐 Pages 배포 완료 — 데이터 갱신 중…', '#2ecc71');
+        setTimeout(async () => {
+          await refreshData(true);
+          showDispatchToast('✅ 대시보드 갱신 완료!', '#2ecc71');
+          setTimeout(() => showPagesStatus(null), 4000);
+        }, 1500);
+      } else if (status === 'errored') {
+        showPagesStatus('error');
+        showDispatchToast('❌ Pages 배포 실패', '#e74c3c');
+      } else {
+        _pagesPoller = setTimeout(poll, 5000);
+      }
+    } catch(e) {
+      _pagesPoller = setTimeout(poll, 6000);
+    }
+  };
+  _pagesPoller = setTimeout(poll, 8000); // Actions 완료 후 8초 뒤 시작
+}
+
+function showPagesStatus(state) {
+  let badge = document.getElementById('gh-pages-badge');
+  if (!state) { if (badge) badge.remove(); return; }
+  if (!badge) {
+    badge = document.createElement('div');
+    badge.id = 'gh-pages-badge';
+    badge.style.cssText = 'display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:0.5px';
+    const wrap = document.querySelector('.gh-dispatch-wrap');
+    if (wrap) wrap.appendChild(badge);
+  }
+  const states = {
+    deploying: { text: '🌐 배포 중…', bg: 'rgba(74,158,255,0.12)', border: 'rgba(74,158,255,0.35)', color: '#4a9eff' },
+    done:      { text: '🌐 배포 완료', bg: 'rgba(46,204,113,0.12)', border: 'rgba(46,204,113,0.35)', color: '#2ecc71' },
+    error:     { text: '🌐 배포 실패', bg: 'rgba(231,76,60,0.12)',  border: 'rgba(231,76,60,0.35)',  color: '#e74c3c' },
+  };
+  const s = states[state];
+  badge.textContent = s.text;
+  badge.style.background = s.bg;
+  badge.style.border = `1px solid ${s.border}`;
+  badge.style.color = s.color;
+}
+
 window.addEventListener('DOMContentLoaded', () => {
-  /* 기존 초기화 코드 그대로 */
-  init();
+  updateGhStatusDot();
+  const header = document.querySelector('header');
+  const navBar = document.getElementById('nav-bar');
+  if (header && navBar) {
+    const setOffset = () => {
+      const navTop = header.offsetHeight;
+      navBar.style.top = navTop + 'px';
+      // dual-wrap 높이 = 뷰포트 - header - navBar - container padding(40px)
+      const offset = navTop + navBar.offsetHeight + 40;
+      document.documentElement.style.setProperty('--col-offset', offset + 'px');
+    };
+    setOffset();
+    new ResizeObserver(setOffset).observe(header);
+    new ResizeObserver(setOffset).observe(navBar);
+    window.addEventListener('resize', setOffset);
+  }
 });
+
+/* ── 펄어비스 주가 ── */
+async function fetchStock() {
+  const priceEl  = document.getElementById('pa-price');
+  const changeEl = document.getElementById('pa-change');
+  const boxEl    = document.getElementById('pa-stock');
+  priceEl.textContent = '…';
+  changeEl.textContent = '';
+
+  const naverUrl = 'https://m.stock.naver.com/api/stock/263750/basic';
+
+  // 4개 프록시 순서대로 시도
+  const tries = [
+    () => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(naverUrl))
+            .then(r => { if(!r.ok) throw 0; return r.json(); }),
+    () => fetch('https://corsproxy.io/?url=' + encodeURIComponent(naverUrl))
+            .then(r => { if(!r.ok) throw 0; return r.json(); }),
+    () => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(naverUrl))
+            .then(r => r.json()).then(j => JSON.parse(j.contents)),
+    () => fetch('https://thingproxy.freeboard.io/fetch/' + naverUrl)
+            .then(r => { if(!r.ok) throw 0; return r.json(); }),
+  ];
+
+  for (const tryFn of tries) {
+    try {
+      const j = await Promise.race([tryFn(), new Promise((_,rj) => setTimeout(() => rj('timeout'), 5000))]);
+      const price = parseInt((j.closePrice || j.stockEndPrice || '').replace(/,/g,''), 10);
+      if (!price || isNaN(price)) continue;
+      const diff = parseInt(String(j.compareToPreviousClosePrice || '0').replace(/,/g,''), 10);
+      const pct  = parseFloat(j.fluctuationsRatio || '0');
+      const sign = diff >= 0 ? '▲' : '▼';
+
+      priceEl.textContent  = price.toLocaleString() + '원';
+      changeEl.textContent = sign + Math.abs(diff).toLocaleString() + ' (' + Math.abs(pct).toFixed(2) + '%)';
+      changeEl.style.color = diff >= 0 ? '#2ecc71' : '#ff4757';
+
+      const status = j.marketStatus || '';
+      let badge = document.getElementById('pa-status');
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.id = 'pa-status';
+        badge.style.cssText = 'font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:2px';
+        boxEl.insertBefore(badge, boxEl.querySelector('span:last-child'));
+      }
+      if (status === 'OPEN') {
+        badge.textContent = 'LIVE'; badge.style.background = 'rgba(46,204,113,0.2)'; badge.style.color = '#2ecc71';
+      } else {
+        const lb = status === 'AFTER_HOURS' ? '시간외' : '종가';
+        badge.textContent = lb; badge.style.background = 'rgba(255,255,255,0.06)'; badge.style.color = '#555';
+      }
+      boxEl.title = '펄어비스 (263750) | 클릭하여 새로고침';
+      return;
+    } catch(e) { /* 다음 프록시 */ }
+  }
+
+  priceEl.textContent = '—';
+  changeEl.innerHTML  = '<a href="https://finance.naver.com/item/main.nhn?code=263750" target="_blank" style="color:#4a9eff;font-size:11px;text-decoration:none">네이버↗</a>';
+}
+
+init();
 </script>
 
-<!-- (기존 모든 모달, popover 등 그대로 유지) -->
 <!-- PS Store 링크 팝오버 -->
 <div id="ps-links-overlay" onclick="closePsLinksPopover()"></div>
 <div class="ps-links-popover" id="ps-links-popover">
