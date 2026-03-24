@@ -19645,5 +19645,28 @@
         "comments": 352
       }
     }
+  },
+  {
+    "timestamp": "2026-03-24T13:45:15.611739",
+    "videos": {
+      "Trailer - PS": {
+        "title": "Crimson Desert - Launch Trailer | PS5 Games",
+        "views": 988974,
+        "likes": 31407,
+        "comments": 2968
+      },
+      "Trailer - Crimson Desert": {
+        "title": "Official Launch Trailer | Crimson Desert",
+        "views": 910886,
+        "likes": 39924,
+        "comments": 6341
+      },
+      "Trailer - IGN": {
+        "title": "Crimson Desert - Official Launch Trailer",
+        "views": 81806,
+        "likes": 2419,
+        "comments": 352
+      }
+    }
   }
 ]
