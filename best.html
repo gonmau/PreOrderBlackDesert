@@ -2558,8 +2558,14 @@ function renderSummaryRankGroups(list, containerId, flagFn, urlFn, isPsFlag) {
       const days = isPsFlag ? getDaysAtRank(x.name, x.rank) : getStsDaysAtRank(x.name, x.rank);
       const dStr = days > 1 ? `<span style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:1px">(${days}D)</span>` : '';
       const rankLbl = x.rank < 999 ? `<span style="font-size:10px;color:var(--tx-4);margin-left:auto">${x.rank}위</span>` : '';
+      const ch = x.change || 0;
+      const chgStr = ch > 0
+        ? `<span style="font-size:10px;color:var(--up);font-weight:800;margin-left:2px">▲${ch}</span>`
+        : ch < 0
+        ? `<span style="font-size:10px;color:var(--down);font-weight:800;margin-left:2px">▼${Math.abs(ch)}</span>`
+        : '';
       return `<a class="rank1-tag" href="${url}" target="_blank" onclick="event.stopPropagation()" style="text-decoration:none">
-        <span>${flag}</span><span class="rank1-tag-name">${x.name}</span>${starBadge(x.name, isPsFlag)}${dStr}${rankLbl}
+        <span>${flag}</span><span class="rank1-tag-name">${x.name}</span>${starBadge(x.name, isPsFlag)}${chgStr}${dStr}${rankLbl}
       </a>`;
     }).join('');
 
