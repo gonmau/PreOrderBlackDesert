@@ -2746,81 +2746,88 @@ function renderCountrySalesHeatmap() {
   const container = document.getElementById('country-sales-heatmap');
   if (!container || historyData.length === 0) return;
 
-  // 국가별 #1 달성 시간 + Steam 점유율 기반 예상 매출 계산
+  // 국가별 순위 역수 기반 점유율 계산
   const countryMetrics = {};
 
   // PS Store 국가별 분석
   historyData.forEach(h => {
-    Object.entries(h.raw_results || {}).forEach(([name, rank]) => {
+    Object.entries(h.raw_results || {}).forEach(([name, _]) => {
       const r = getRank(h, name);
+      if (r >= 50) return; // 50위 이상 제외
+      
       if (!countryMetrics[name]) {
         countryMetrics[name] = {
-          psRank1Count: 0,
-          psRankSum: 0,
+          psInvRankSum: 0,  // 순위 역수 합계
           psRecords: 0,
-          stRank1Count: 0,
-          stRankSum: 0,
+          stInvRankSum: 0,
+          stWeightedInvRankSum: 0,
           stRecords: 0,
-          estimatedSales: 0,
-          flag: ''
+          flag: STS_F[name] || '🌍'
         };
       }
-      if (r === 1) countryMetrics[name].psRank1Count++;
-      if (r && r < 50) {
-        countryMetrics[name].psRankSum += r;
-        countryMetrics[name].psRecords++;
-      }
+      countryMetrics[name].psInvRankSum += (1 / r); // 순위 역수
+      countryMetrics[name].psRecords++;
     });
   });
 
-  // Steam 국가별 분석
+  // Steam 국가별 분석 (가중치 적용)
   stsHist.forEach(h => {
     Object.entries(h.results || {}).forEach(([code, d]) => {
+      const r = d?.rank;
+      if (!r || r > 20) return; // 20위 이상만
+      
       const countryName = Object.keys(STS_CC).find(n => STS_CC[n] === code);
       if (!countryName) return;
+      
       if (!countryMetrics[countryName]) {
         countryMetrics[countryName] = {
-          psRank1Count: 0,
-          psRankSum: 0,
+          psInvRankSum: 0,
           psRecords: 0,
-          stRank1Count: 0,
-          stRankSum: 0,
+          stInvRankSum: 0,
+          stWeightedInvRankSum: 0,
           stRecords: 0,
-          estimatedSales: 0,
-          flag: STS_F[countryName] || ''
+          flag: STS_F[countryName] || '🌍'
         };
       }
-      const r = d?.rank;
-      if (r === 1) countryMetrics[countryName].stRank1Count++;
-      if (r && r <= 20) {
-        countryMetrics[countryName].stRankSum += r;
-        countryMetrics[countryName].stRecords++;
-      }
+      
+      const w = STS_W[countryName] || 1;
+      countryMetrics[countryName].stInvRankSum += (1 / r); // 순위 역수
+      countryMetrics[countryName].stWeightedInvRankSum += (w / r); // 가중 순위 역수
+      countryMetrics[countryName].stRecords++;
     });
   });
 
-  // 예상 매출 계산 (점수 기반)
+  // 점유율 계산 (순위 역수의 상대비율)
   const totalAnn = parseInt(document.getElementById('sales-day1-total').value) || 3000000;
-  Object.entries(countryMetrics).forEach(([name, metrics]) => {
-    // PS 점수 (1위 달성 횟수 + 순위 역수)
-    const psScore = metrics.psRank1Count * 100 + (metrics.psRecords > 0 ? 1000 / (metrics.psRankSum / metrics.psRecords) : 0);
-    // Steam 점수
-    const stScore = metrics.stRank1Count * 80 + (metrics.stRecords > 0 ? 800 / (metrics.stRankSum / metrics.stRecords) : 0);
-    // 전체 점수
-    metrics.score = psScore + stScore;
+  
+  // PS/Steam의 전체 강도 계산
+  let psGlobalStrength = 0, stGlobalStrength = 0;
+  Object.values(countryMetrics).forEach(m => {
+    psGlobalStrength += m.psRecords > 0 ? m.psInvRankSum : 0;
+    stGlobalStrength += m.stRecords > 0 ? m.stWeightedInvRankSum : 0;
   });
 
-  // 상위 15개 국가 추출 (점수 기준)
+  // 국가별 판매량 추정
+  Object.entries(countryMetrics).forEach(([name, m]) => {
+    const psShare = psGlobalStrength > 0 ? m.psInvRankSum / psGlobalStrength : 0;
+    const stShare = stGlobalStrength > 0 ? m.stWeightedInvRankSum / stGlobalStrength : 0;
+    
+    // PS/Steam 비율에 따른 가중치
+    const psRatio = parseInt(document.getElementById('sales-ps-ratio').value) || 38;
+    const stRatio = 100 - psRatio - 12; // Xbox 12% 고정
+    
+    m.estimatedSales = Math.round(
+      (psShare * (psRatio / 100) + stShare * (stRatio / 100)) * totalAnn * 0.65
+    );
+    m.strength = (m.psInvRankSum * (psRatio / 100)) + (m.stWeightedInvRankSum * (stRatio / 100));
+  });
+
+  // 상위 15개 국가 추출 (강도 기준)
   const sortedCountries = Object.entries(countryMetrics)
-    .sort((a, b) => b[1].score - a[1].score)
+    .sort((a, b) => b[1].estimatedSales - a[1].estimatedSales)
     .slice(0, 15);
 
-  const totalScore = sortedCountries.reduce((sum, [, m]) => sum + m.score, 0);
-
-  // 예상 판매량 계산
-  sortedCountries.forEach(([, metrics]) => {
-    metrics.estimatedSales = Math.round((metrics.score / totalScore) * totalAnn * 0.65); // 전체의 65%가 상위 국가
-  });
+  const totalSales = Object.values(countryMetrics).reduce((sum, m) => sum + m.estimatedSales, 0);
 
   // HTML 렌더링
   let html = `<div style="font-size:12px;color:var(--tx-3);margin-bottom:10px;font-weight:700">📍 상위 15개 국가 예상 매출 분포 (₩)</div>`;
@@ -2838,7 +2845,7 @@ function renderCountrySalesHeatmap() {
     html += `
       <div style="display:grid;grid-template-columns:35px 80px 1fr 80px 60px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd-hi);font-size:11px">
         <span style="font-weight:700;text-align:center">${idx + 1}</span>
-        <span>${metrics.flag || '🌍'} ${name}</span>
+        <span>${metrics.flag} ${name}</span>
         <div style="position:relative;height:24px;background:var(--bg-3);border-radius:4px;overflow:hidden">
           <div style="position:absolute;left:0;top:0;height:100%;background:${color};width:${pct}%;opacity:0.7;transition:width 0.3s"></div>
           <span style="position:relative;display:block;text-align:center;line-height:24px;color:var(--tx-1);font-weight:700;z-index:1">${pct.toFixed(1)}%</span>
@@ -3058,33 +3065,41 @@ function renderRegionalAnalysis() {
 ══════════════════════════════════════════════════════════════ */
 
 function renderPearlfAbysspStockAnalysis() {
-  // 현재 주가 정보 업데이트 (기존 fetchStock 함수와 연동)
-  const currentPrice = document.getElementById('pa-price')?.textContent || '—';
+  // 현재 주가 파싱 (pa-price에서 숫자 추출)
+  const priceText = document.getElementById('pa-price')?.textContent || '—';
+  const currentPriceNum = parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
+  
+  if (currentPriceNum === 0) {
+    document.getElementById('pa-current-price').textContent = '로딩 중...';
+    return;
+  }
   
   // 투자 분석 모델
   const SHARE_COUNT = 64_247_855; // 발행주식수
-  const DEV_COST = 200_000_000_000; // 개발비 ₩200B 추정
-  const AMD_BUNDLE = 70_000_000_000; // AMD 번들 ≈ ₩70B
+  const DEV_COST = 200_000_000_000; // 개발비 ₩200B
   
   // 시나리오별 목표 주가 계산
   function calculateTargetPrice(salesUnits) {
-    // 모델: 월 판매 * 22개월(2년미만) ≈ 총 판매수
-    const estimatedRevenue = salesUnits * 50000; // 단가 ₩5만 기준
+    // 누적 판매량 기반 매출 모델
+    // 판매수 * 단가(₩5만) - 개발비 = 순이익
+    const estimatedRevenue = salesUnits * 50000;
     const netRevenue = estimatedRevenue * 0.65; // 채널비 35% 공제
-    const netIncome = netRevenue * 0.2; // 영업이익률 20% 보수 추정
-    const eps = (netIncome - DEV_COST) / SHARE_COUNT;
+    const grossIncome = netRevenue - DEV_COST;
     
-    // PER 18배 기준 (게임사 평균)
+    if (grossIncome <= 0) return currentPriceNum * 0.8; // 손실 상황
+    
+    const netIncome = grossIncome * 0.25; // 세후 이익률 ~25%
+    const eps = netIncome / SHARE_COUNT;
+    
+    // PER 18배 (한국 게임사 평균)
     const targetPrice = eps * 18;
-    return Math.max(targetPrice, 0);
+    return Math.max(targetPrice, 1000); // 최소 1000원
   }
 
   const target3m = calculateTargetPrice(3_000_000);
+  const target4m = calculateTargetPrice(4_000_000);
   const target5m = calculateTargetPrice(5_000_000);
   const target10m = calculateTargetPrice(10_000_000);
-
-  // 현재 주가에서 파싱 (현재 ₩25000 정도로 추정)
-  const currentPriceNum = 25000; // 임시값, 실제는 fetchStock에서 가져옴
 
   // 카드 업데이트
   document.getElementById('pa-current-price').textContent = (currentPriceNum).toLocaleString() + '원';
@@ -3097,11 +3112,10 @@ function renderPearlfAbysspStockAnalysis() {
   document.getElementById('pa-target-price-10m').textContent = Math.round(target10m).toLocaleString() + '원';
   document.getElementById('pa-upside-10m').textContent = ((target10m / currentPriceNum - 1) * 100).toFixed(0) + '%';
 
-  // 시나리오 테이블
+  // 시나리오 테이블 (300만 기준, 2M 제거)
   const scenarios = [
-    { name: '베어 (2M)', units: 2_000_000, color: '#e74c3c' },
-    { name: '보수 (3M)', units: 3_000_000, color: '#f1c40f' },
-    { name: '기본 (4M)', units: 4_000_000, color: '#3498db' },
+    { name: '현재 (3M)', units: 3_000_000, color: '#f1c40f' },
+    { name: '상승 (4M)', units: 4_000_000, color: '#3498db' },
     { name: '강세 (5M)', units: 5_000_000, color: '#2ecc71' },
     { name: '초강세 (10M)', units: 10_000_000, color: '#27ae60' }
   ];
@@ -3295,117 +3309,176 @@ let top5PsCI = null, top5StCI = null;
 function renderTop5Charts() {
   const W = 800, H = 280;
 
-  // ── PS Store Top5 (누적 #1 달성 시간) ──
+  // ── PS Store Top5: 평균 순위 기반 (점유율 상위) ──
   const psEl = document.getElementById('top5PsChart');
   if (psEl && historyData.length > 0) {
     psEl.width  = psEl.parentElement.offsetWidth || W;
     psEl.height = H;
     
+    // 국가별 평균 순위 계산
     const psCountries = {};
     historyData.forEach(h => {
-      Object.entries(h.raw_results || {}).forEach(([name, rank]) => {
+      Object.entries(h.raw_results || {}).forEach(([name, _]) => {
         const r = getRank(h, name);
-        if (r === 1) {
-          if (!psCountries[name]) psCountries[name] = 0;
-          psCountries[name]++;
+        if (r >= 50) return; // 50위 이상 제외
+        if (!psCountries[name]) psCountries[name] = { sum: 0, cnt: 0, byDay: {} };
+        psCountries[name].sum += r;
+        psCountries[name].cnt++;
+        
+        // 일자별 순위 저장
+        const di = getDayIndex(h.timestamp);
+        if (di >= 0) {
+          if (!psCountries[name].byDay[di]) psCountries[name].byDay[di] = [];
+          psCountries[name].byDay[di].push(r);
         }
       });
     });
     
+    // Top5 선택 (평균 순위가 가장 낮은 = 점유율 높은)
     const psList = Object.entries(psCountries)
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count)
+      .map(([name, data]) => ({
+        name,
+        avgRank: data.sum / data.cnt,
+        byDay: data.byDay
+      }))
+      .sort((a, b) => a.avgRank - b.avgRank)
       .slice(0, 5);
     
-    const psLabels = psList.map(d => d.name);
-    const psData = psList.map(d => d.count);
-    const psColors = ['#f1c40f', '#e8b923', '#d9a12a', '#ca8932', '#bb713a'];
+    // 일자별 데이터 구성
+    const allDays = new Set();
+    psList.forEach(c => {
+      Object.keys(c.byDay).forEach(d => allDays.add(parseInt(d)));
+    });
+    const dayArray = Array.from(allDays).sort((a, b) => a - b);
+    const labels = dayArray.map(di => {
+      const date = new Date(LAUNCH_DATE.getTime() + di * 86400000);
+      return `${date.getMonth()+1}/${date.getDate()}`;
+    });
+
+    // 국가별 일자별 데이터
+    const datasets = psList.map((c, idx) => {
+      const data = dayArray.map(di => {
+        const ranks = c.byDay[di] || [];
+        return ranks.length > 0 ? (ranks.reduce((a, b) => a + b) / ranks.length) : null;
+      });
+      const colors = ['#f1c40f', '#e8b923', '#d9a12a', '#ca8932', '#bb713a'];
+      return {
+        label: `${c.name} (${c.avgRank.toFixed(1)}위)`,
+        data,
+        borderColor: colors[idx],
+        backgroundColor: 'transparent',
+        borderWidth: 2.5,
+        tension: 0.3,
+        pointRadius: 0,
+        spanGaps: true
+      };
+    });
     
     if (top5PsCI) top5PsCI.destroy();
     top5PsCI = new Chart(psEl.getContext('2d'), {
-      type: 'bar',
-      data: {
-        labels: psLabels,
-        datasets: [{
-          label: '#1 달성 횟수',
-          data: psData,
-          backgroundColor: psColors.slice(0, psData.length),
-          borderColor: psColors.slice(0, psData.length),
-          borderWidth: 1
-        }]
-      },
+      type: 'line',
+      data: { labels, datasets },
       options: {
         responsive: false,
         animation: false,
-        indexAxis: 'y',
-        layout: { padding: { right: 20 } },
+        layout: { padding: { top: 8 } },
         scales: {
-          x: { ticks: { color: '#aaa', font: { size: 10 } }, grid: { color: '#1a1a1a' }, beginAtZero: true },
-          y: { ticks: { color: '#aaa', font: { size: 11 }, weight: 700 }, grid: { display: false } }
+          x: { ticks: { color: '#aaa', maxTicksLimit: 8, font: { size: 10 } }, grid: { color: '#1a1a1a' } },
+          y: { reverse: true, ticks: { color: '#aaa', font: { size: 10 }, callback: v => v > 0 ? v + '위' : '' }, grid: { color: '#1a1a1a' } }
         },
         plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x}회` } }
+          legend: { labels: { color: '#ccc', font: { size: 11 }, boxWidth: 12 } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}위` } }
         }
       }
     });
   }
 
-  // ── Steam Top5 (평균 순위) ──
+  // ── Steam Top5 (점유율 기반): 가중 순위 ──
   const stEl = document.getElementById('top5SteamChart');
   if (stEl && stsHist.length > 0) {
     stEl.width  = stEl.parentElement.offsetWidth || W;
     stEl.height = H;
     
+    // 국가별 가중 평균 순위 계산
     const stCountries = {};
     stsHist.forEach(h => {
       Object.entries(h.results || {}).forEach(([code, d]) => {
         const r = d?.rank;
-        if (!r) return;
-        // code 기반으로 국가명 매핑
+        if (!r || r > 20) return;
         const countryName = Object.keys(STS_CC).find(n => STS_CC[n] === code);
-        if (countryName) {
-          if (!stCountries[countryName]) stCountries[countryName] = { sum: 0, cnt: 0 };
-          stCountries[countryName].sum += r;
-          stCountries[countryName].cnt++;
+        if (!countryName) return;
+        
+        const w = STS_W[countryName] || 1;
+        if (!stCountries[countryName]) stCountries[countryName] = { sumW: 0, sumRW: 0, byDay: {} };
+        stCountries[countryName].sumW += w;
+        stCountries[countryName].sumRW += r * w;
+        
+        // 일자별 저장
+        const di = getDayIndex(h.timestamp);
+        if (di >= 0) {
+          if (!stCountries[countryName].byDay[di]) stCountries[countryName].byDay[di] = { sumW: 0, sumRW: 0 };
+          stCountries[countryName].byDay[di].sumW += w;
+          stCountries[countryName].byDay[di].sumRW += r * w;
         }
       });
     });
     
+    // Top5 선택 (가중 평균 순위가 가장 낮은)
     const stList = Object.entries(stCountries)
-      .map(([name, data]) => ({ name, avgRank: data.sum / data.cnt }))
+      .map(([name, data]) => ({
+        name,
+        avgRank: data.sumRW / data.sumW,
+        byDay: data.byDay
+      }))
       .sort((a, b) => a.avgRank - b.avgRank)
       .slice(0, 5);
     
-    const stLabels = stList.map(d => d.name);
-    const stData = stList.map(d => d.avgRank.toFixed(1));
-    const stColors = ['#4a9eff', '#5aafff', '#6ab8ff', '#7ac2ff', '#8accff'];
+    // 일자별 데이터 구성
+    const allDays = new Set();
+    stList.forEach(c => {
+      Object.keys(c.byDay).forEach(d => allDays.add(parseInt(d)));
+    });
+    const dayArray = Array.from(allDays).sort((a, b) => a - b);
+    const labels = dayArray.map(di => {
+      const date = new Date(LAUNCH_DATE.getTime() + di * 86400000);
+      return `${date.getMonth()+1}/${date.getDate()}`;
+    });
+
+    // 국가별 일자별 데이터
+    const datasets = stList.map((c, idx) => {
+      const data = dayArray.map(di => {
+        const d = c.byDay[di];
+        return d && d.sumW > 0 ? (d.sumRW / d.sumW) : null;
+      });
+      const colors = ['#4a9eff', '#6ab8ff', '#8accff', '#aadaff', '#bbddff'];
+      return {
+        label: `${c.name} (${c.avgRank.toFixed(1)}위)`,
+        data,
+        borderColor: colors[idx],
+        backgroundColor: 'transparent',
+        borderWidth: 2.5,
+        tension: 0.3,
+        pointRadius: 0,
+        spanGaps: true
+      };
+    });
     
     if (top5StCI) top5StCI.destroy();
     top5StCI = new Chart(stEl.getContext('2d'), {
-      type: 'bar',
-      data: {
-        labels: stLabels,
-        datasets: [{
-          label: '평균 순위',
-          data: stData,
-          backgroundColor: stColors.slice(0, stData.length),
-          borderColor: stColors.slice(0, stData.length),
-          borderWidth: 1
-        }]
-      },
+      type: 'line',
+      data: { labels, datasets },
       options: {
         responsive: false,
         animation: false,
-        indexAxis: 'y',
-        layout: { padding: { right: 20 } },
+        layout: { padding: { top: 8 } },
         scales: {
-          x: { ticks: { color: '#aaa', font: { size: 10 }, callback: v => v + '위' }, grid: { color: '#1a1a1a' }, beginAtZero: true },
-          y: { ticks: { color: '#aaa', font: { size: 11 }, weight: 700 }, grid: { display: false } }
+          x: { ticks: { color: '#aaa', maxTicksLimit: 8, font: { size: 10 } }, grid: { color: '#1a1a1a' } },
+          y: { reverse: true, ticks: { color: '#aaa', font: { size: 10 }, callback: v => v > 0 ? v + '위' : '' }, grid: { color: '#1a1a1a' } }
         },
         plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x.toFixed(1)}위` } }
+          legend: { labels: { color: '#ccc', font: { size: 11 }, boxWidth: 12 } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}위` } }
         }
       }
     });
