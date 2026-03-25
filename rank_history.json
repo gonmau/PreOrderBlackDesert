@@ -191791,6 +191791,298 @@
           "deluxe": null
         }
       }
+    },
+    {
+      "timestamp": "2026-03-25T16:31:48.542115+09:00",
+      "averages": {
+        "combined": null
+      },
+      "raw_results": {
+        "영국": {
+          "standard": null,
+          "deluxe": null
+        },
+        "독일": {
+          "standard": null,
+          "deluxe": null
+        },
+        "프랑스": {
+          "standard": null,
+          "deluxe": null
+        },
+        "스페인": {
+          "standard": null,
+          "deluxe": null
+        },
+        "이탈리아": {
+          "standard": null,
+          "deluxe": null
+        },
+        "네덜란드": {
+          "standard": null,
+          "deluxe": null
+        },
+        "폴란드": {
+          "standard": null,
+          "deluxe": null
+        },
+        "스위스": {
+          "standard": null,
+          "deluxe": null
+        },
+        "스웨덴": {
+          "standard": null,
+          "deluxe": null
+        },
+        "노르웨이": {
+          "standard": null,
+          "deluxe": null
+        },
+        "덴마크": {
+          "standard": null,
+          "deluxe": null
+        },
+        "핀란드": {
+          "standard": null,
+          "deluxe": null
+        },
+        "포르투갈": {
+          "standard": null,
+          "deluxe": null
+        },
+        "그리스": {
+          "standard": null,
+          "deluxe": null
+        },
+        "체코": {
+          "standard": null,
+          "deluxe": null
+        },
+        "헝가리": {
+          "standard": null,
+          "deluxe": null
+        },
+        "루마니아": {
+          "standard": null,
+          "deluxe": null
+        },
+        "슬로바키아": {
+          "standard": null,
+          "deluxe": null
+        },
+        "슬로베니아": {
+          "standard": null,
+          "deluxe": null
+        },
+        "우크라이나": {
+          "standard": null,
+          "deluxe": null
+        },
+        "사우디아라비아": {
+          "standard": null,
+          "deluxe": null
+        },
+        "아랍에미리트": {
+          "standard": null,
+          "deluxe": null
+        },
+        "남아공": {
+          "standard": null,
+          "deluxe": null
+        },
+        "터키": {
+          "standard": null,
+          "deluxe": null
+        },
+        "벨기에": {
+          "standard": null,
+          "deluxe": null
+        },
+        "오스트리아": {
+          "standard": null,
+          "deluxe": null
+        },
+        "이스라엘": {
+          "standard": null,
+          "deluxe": null
+        },
+        "크로아티아": {
+          "standard": null,
+          "deluxe": null
+        },
+        "불가리아": {
+          "standard": null,
+          "deluxe": null
+        },
+        "키프로스": {
+          "standard": null,
+          "deluxe": null
+        },
+        "아이슬란드": {
+          "standard": null,
+          "deluxe": null
+        },
+        "아일랜드": {
+          "standard": null,
+          "deluxe": null
+        },
+        "쿠웨이트": {
+          "standard": null,
+          "deluxe": null
+        },
+        "레바논": {
+          "standard": null,
+          "deluxe": null
+        },
+        "룩셈부르크": {
+          "standard": null,
+          "deluxe": null
+        },
+        "몰타": {
+          "standard": null,
+          "deluxe": null
+        },
+        "오만": {
+          "standard": null,
+          "deluxe": null
+        },
+        "카타르": {
+          "standard": null,
+          "deluxe": null
+        },
+        "바레인": {
+          "standard": null,
+          "deluxe": null
+        },
+        "미국": {
+          "standard": null,
+          "deluxe": null
+        },
+        "캐나다": {
+          "standard": null,
+          "deluxe": null
+        },
+        "브라질": {
+          "standard": null,
+          "deluxe": null
+        },
+        "멕시코": {
+          "standard": null,
+          "deluxe": null
+        },
+        "아르헨티나": {
+          "standard": null,
+          "deluxe": null
+        },
+        "칠레": {
+          "standard": null,
+          "deluxe": null
+        },
+        "콜롬비아": {
+          "standard": null,
+          "deluxe": null
+        },
+        "페루": {
+          "standard": null,
+          "deluxe": null
+        },
+        "우루과이": {
+          "standard": null,
+          "deluxe": null
+        },
+        "볼리비아": {
+          "standard": null,
+          "deluxe": null
+        },
+        "과테말라": {
+          "standard": null,
+          "deluxe": null
+        },
+        "온두라스": {
+          "standard": null,
+          "deluxe": null
+        },
+        "코스타리카": {
+          "standard": null,
+          "deluxe": null
+        },
+        "에콰도르": {
+          "standard": null,
+          "deluxe": null
+        },
+        "엘살바도르": {
+          "standard": null,
+          "deluxe": null
+        },
+        "니카라과": {
+          "standard": null,
+          "deluxe": null
+        },
+        "파나마": {
+          "standard": null,
+          "deluxe": null
+        },
+        "파라과이": {
+          "standard": null,
+          "deluxe": null
+        },
+        "일본": {
+          "standard": null,
+          "deluxe": null
+        },
+        "한국": {
+          "standard": null,
+          "deluxe": null
+        },
+        "중국": {
+          "standard": null,
+          "deluxe": null
+        },
+        "호주": {
+          "standard": null,
+          "deluxe": null
+        },
+        "인도": {
+          "standard": null,
+          "deluxe": null
+        },
+        "태국": {
+          "standard": null,
+          "deluxe": null
+        },
+        "싱가포르": {
+          "standard": null,
+          "deluxe": null
+        },
+        "말레이시아": {
+          "standard": null,
+          "deluxe": null
+        },
+        "인도네시아": {
+          "standard": null,
+          "deluxe": null
+        },
+        "필리핀": {
+          "standard": null,
+          "deluxe": null
+        },
+        "베트남": {
+          "standard": null,
+          "deluxe": null
+        },
+        "홍콩": {
+          "standard": null,
+          "deluxe": null
+        },
+        "대만": {
+          "standard": null,
+          "deluxe": null
+        },
+        "뉴질랜드": {
+          "standard": null,
+          "deluxe": null
+        }
+      }
     }
   ],
   "schedule": {
