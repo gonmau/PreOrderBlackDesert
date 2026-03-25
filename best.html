@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -10,910 +11,924 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@500;600;700&display=swap');
 
-  /* ══ 디자인 토큰 ══════════════════════════════════════════════ */
-  :root {
-    /* 브랜드 */
-    --blood:  #ff4757;
-    --gold:   #f1c40f;
-    --steam:  #4a9eff;
-    /* 상태 */
-    --up:     #2ecc71;
-    --down:   #e74c3c;
-    /* 배경 레벨 (어두울수록 낮은 숫자) */
-    --bg-0:   #000000;
-    --bg-1:   #0a0a0a;
-    --bg-2:   #111111;
-    --bg-3:   #181818;
-    --bg-4:   #222222;
-    /* 테두리 */
-    --bd:     #252525;
-    --bd-hi:  #333333;
-    /* 텍스트 */
-    --tx-1:   #ffffff;
-    --tx-2:   #cccccc;
-    --tx-3:   #888888;
-    --tx-4:   #555555;
-    /* 공통 */
-    --radius: 8px;
-    --gap:    12px;
-    --trans:  0.15s ease;
-    /* 하위 호환 */
-    --dark: var(--bg-0); --panel: var(--bg-2); --border: var(--bd-hi);
-    --text-main: var(--tx-1); --text-sub: var(--tx-3); --muted: var(--tx-3);
-    --text: var(--tx-1); --surface: var(--bg-2); --surface2: var(--bg-4);
-  }
+/* ══ 디자인 토큰 ══════════════════════════════════════════════ */
+:root {
+/* 브랜드 */
+–blood:  #ff4757;
+–gold:   #f1c40f;
+–steam:  #4a9eff;
+/* 상태 */
+–up:     #2ecc71;
+–down:   #e74c3c;
+/* 배경 레벨 (어두울수록 낮은 숫자) */
+–bg-0:   #000000;
+–bg-1:   #0a0a0a;
+–bg-2:   #111111;
+–bg-3:   #181818;
+–bg-4:   #222222;
+/* 테두리 */
+–bd:     #252525;
+–bd-hi:  #333333;
+/* 텍스트 */
+–tx-1:   #ffffff;
+–tx-2:   #cccccc;
+–tx-3:   #888888;
+–tx-4:   #555555;
+/* 공통 */
+–radius: 8px;
+–gap:    12px;
+–trans:  0.15s ease;
+/* 하위 호환 */
+–dark: var(–bg-0); –panel: var(–bg-2); –border: var(–bd-hi);
+–text-main: var(–tx-1); –text-sub: var(–tx-3); –muted: var(–tx-3);
+–text: var(–tx-1); –surface: var(–bg-2); –surface2: var(–bg-4);
+}
 
-  /* ══ 리셋 & 기본 ══════════════════════════════════════════════ */
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* ══ 리셋 & 기본 ══════════════════════════════════════════════ */
+
+- { box-sizing: border-box; margin: 0; padding: 0; }
   html { overflow-y: auto; }
-  body { background: var(--bg-0); color: var(--tx-1);
-    font-family: 'Rajdhani','Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','Twemoji Mozilla',sans-serif; }
-  .flag, .country-link .flag { font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif; font-style: normal; }
+  body { background: var(–bg-0); color: var(–tx-1);
+  font-family: ‘Rajdhani’,‘Apple Color Emoji’,‘Segoe UI Emoji’,‘Noto Color Emoji’,‘Twemoji Mozilla’,sans-serif; }
+  .flag, .country-link .flag { font-family: ‘Apple Color Emoji’,‘Segoe UI Emoji’,‘Noto Color Emoji’,sans-serif; font-style: normal; }
   .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
 
-  /* ══ 공통 섹션 카드 ════════════════════════════════════════════ */
-  .sec-card {
-    background: var(--bg-1);
-    border: 1px solid var(--bd);
-    border-radius: var(--radius);
-    padding: 16px 18px;
-    margin-bottom: var(--gap);
-  }
-  .sec-title {
-    font-size: 15px;
-    font-weight: 800;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    color: var(--tx-3);
-    margin-bottom: 12px;
-  }
+/* ══ 공통 섹션 카드 ════════════════════════════════════════════ */
+.sec-card {
+background: var(–bg-1);
+border: 1px solid var(–bd);
+border-radius: var(–radius);
+padding: 16px 18px;
+margin-bottom: var(–gap);
+}
+.sec-title {
+font-size: 15px;
+font-weight: 800;
+letter-spacing: 1.2px;
+text-transform: uppercase;
+color: var(–tx-3);
+margin-bottom: 12px;
+}
 
-  /* ══ 헤더 ═════════════════════════════════════════════════════ */
-  header {
-    border-bottom: 2px solid var(--blood);
-    padding: 10px 0;
-    display: block;
-    position: -webkit-sticky; position: sticky;
-    top: 0; z-index: 50;
-    background: rgba(0,0,0,0.95);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-  .logo h1 { font-family: 'Cinzel', serif; font-size: 31px; color: var(--tx-1); }
-  .logo h1 span { color: var(--blood); }
-  #update-time { font-size: 14px; color: var(--tx-3); font-weight: 700; letter-spacing: 0.5px; }
-  @media (max-width: 768px) {
-    .logo h1 { font-size: 20px; }
-    #update-time { display: none; }
-    .gh-dispatch-btn { font-size: 13px; padding: 4px 8px; }
-    #pa-stock { padding: 4px 10px; }
-    #pa-stock span:first-child, #pa-stock span:last-child { display: none; }
-    #pa-price { font-size: 16px; }
-    #pa-change { font-size: 11px; }
-    header .container { flex-wrap: nowrap; gap: 6px; }
-    .gh-dispatch-wrap { gap: 4px; }
-  }
-  @media (max-width: 480px) {
-    .logo h1 { font-size: 17px; }
-    .gh-dispatch-btn .btn-icon { display: none; }
-  }
+/* ══ 헤더 ═════════════════════════════════════════════════════ */
+header {
+border-bottom: 2px solid var(–blood);
+padding: 10px 0;
+display: block;
+position: -webkit-sticky; position: sticky;
+top: 0; z-index: 50;
+background: rgba(0,0,0,0.95);
+backdrop-filter: blur(10px);
+-webkit-backdrop-filter: blur(10px);
+}
+.logo h1 { font-family: ‘Cinzel’, serif; font-size: 31px; color: var(–tx-1); }
+.logo h1 span { color: var(–blood); }
+#update-time { font-size: 14px; color: var(–tx-3); font-weight: 700; letter-spacing: 0.5px; }
+@media (max-width: 768px) {
+.logo h1 { font-size: 20px; }
+#update-time { display: none; }
+.gh-dispatch-btn { font-size: 13px; padding: 4px 8px; }
+#pa-stock { padding: 4px 10px; }
+#pa-stock span:first-child, #pa-stock span:last-child { display: none; }
+#pa-price { font-size: 16px; }
+#pa-change { font-size: 11px; }
+header .container { flex-wrap: nowrap; gap: 6px; }
+.gh-dispatch-wrap { gap: 4px; }
+}
+@media (max-width: 480px) {
+.logo h1 { font-size: 17px; }
+.gh-dispatch-btn .btn-icon { display: none; }
+}
 
-  /* ══ 탭 섹션 ══════════════════════════════════════════════════ */
-  .tab-section { display: none; padding-top: 14px; }
-  .tab-section.active-section { display: block; }
+/* ══ 탭 섹션 ══════════════════════════════════════════════════ */
+.tab-section { display: none; padding-top: 14px; }
+.tab-section.active-section { display: block; }
 
-  /* ══ 듀얼 패널 ════════════════════════════════════════════════ */
-  /* 패널 영역: 전체 뷰포트 높이 - (header + nav + padding) */
-  .dual-wrap {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    height: calc(100vh - var(--col-offset, 140px));
-    min-height: 320px;
-  }
-  .dual-panel { display: contents; } /* 하위 호환 */
-  .dual-panel-chart .dual-wrap { align-items: stretch; }
-  .dual-col {
-    background: var(--bg-1);
-    border: 1px solid var(--bd);
-    border-radius: var(--radius);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; /* 자식이 튀어나오지 않게 */
-    min-height: 0;   /* flexbox 내 스크롤 필수 */
-  }
-  .dual-col-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 14px;
-    font-size: 15px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--bd);
-    flex-shrink: 0;
-    background: inherit;
-  }
-  .dual-col-body {
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    min-height: 0;
-  }
-  .dual-col-body::-webkit-scrollbar { width: 4px; }
-  .dual-col-body::-webkit-scrollbar-track { background: transparent; }
-  .dual-col-body::-webkit-scrollbar-thumb { background: var(--bd-hi); border-radius: 2px; }
-  .ps-col    { border-top: 2px solid var(--blood); }
-  .steam-col { border-top: 2px solid var(--steam); }
-  .ps-header    { color: var(--blood); background: rgba(255,71,87,0.05); }
-  .steam-header { color: var(--steam); background: rgba(74,158,255,0.05); }
-  .dual-col .stats        { padding: 12px; gap: 8px; margin-bottom: 0; }
-  .dual-col .card         { padding: 12px 14px; }
-  .dual-col .card .val    { font-size: 25px; }
-  .dual-col .sts-sched-wrap   { padding: 12px; }
-  .dual-col .chart-section    { border: none; border-radius: 0; margin-bottom: 0; padding: 12px; height: 100%; }
-  .dual-col .steam-ts-chart-box { border: none; border-radius: 0; height: 100%; }
-  .dual-col .heatmap-legend   { padding: 10px 12px 4px; }
-  .dual-col .heatmap-grid     { padding: 0 8px 10px; }
-  /* 모바일 */
-  @media (max-width: 700px) {
-    .dual-wrap {
-      grid-template-columns: 1fr;
-      height: auto;
-      min-height: 0;
-    }
-    .dual-col {
-      height: calc(100vh - var(--col-offset, 140px));
-      min-height: 300px;
-    }
-    .dual-col .stats { grid-template-columns: 1fr; gap: 6px; }
-    .dual-col .card { padding: 10px 12px; }
-    .dual-col .card .val { font-size: 18px; }
-    .dual-col .card .lbl { font-size: 10px; margin-bottom: 3px; }
-    .dual-col .card .sub { font-size: 12px; }
-    /* 최고/최하 합친 카드 내부는 2열 유지 */
-    #sec-summary .card > div[style*="grid-template-columns:1fr 1fr"] { gap: 6px; }
-    /* 요약 섹션 stats만 높이 auto */
-    #sec-summary .dual-col { height: auto !important; min-height: 0; }
-    #sec-summary .dual-col-body { height: auto !important; overflow: visible !important; }
-    /* 요약 하단 차트 모바일 1열 */
-    #sec-summary > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
-  }
+/* ══ 듀얼 패널 ════════════════════════════════════════════════ */
+/* 패널 영역: 전체 뷰포트 높이 - (header + nav + padding) */
+.dual-wrap {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 14px;
+height: calc(100vh - var(–col-offset, 140px));
+min-height: 320px;
+}
+.dual-panel { display: contents; } /* 하위 호환 */
+.dual-panel-chart .dual-wrap { align-items: stretch; }
+.dual-col {
+background: var(–bg-1);
+border: 1px solid var(–bd);
+border-radius: var(–radius);
+display: flex;
+flex-direction: column;
+overflow: hidden; /* 자식이 튀어나오지 않게 */
+min-height: 0;   /* flexbox 내 스크롤 필수 */
+}
+.dual-col-header {
+display: flex;
+align-items: center;
+gap: 8px;
+padding: 9px 14px;
+font-size: 15px;
+font-weight: 800;
+letter-spacing: 1px;
+text-transform: uppercase;
+border-bottom: 1px solid var(–bd);
+flex-shrink: 0;
+background: inherit;
+}
+.dual-col-body {
+flex: 1;
+overflow-y: auto;
+-webkit-overflow-scrolling: touch;
+overscroll-behavior: contain;
+min-height: 0;
+}
+.dual-col-body::-webkit-scrollbar { width: 4px; }
+.dual-col-body::-webkit-scrollbar-track { background: transparent; }
+.dual-col-body::-webkit-scrollbar-thumb { background: var(–bd-hi); border-radius: 2px; }
+.ps-col    { border-top: 2px solid var(–blood); }
+.steam-col { border-top: 2px solid var(–steam); }
+.ps-header    { color: var(–blood); background: rgba(255,71,87,0.05); }
+.steam-header { color: var(–steam); background: rgba(74,158,255,0.05); }
+.dual-col .stats        { padding: 12px; gap: 8px; margin-bottom: 0; }
+.dual-col .card         { padding: 12px 14px; }
+.dual-col .card .val    { font-size: 25px; }
+.dual-col .sts-sched-wrap   { padding: 12px; }
+.dual-col .chart-section    { border: none; border-radius: 0; margin-bottom: 0; padding: 12px; height: 100%; }
+.dual-col .steam-ts-chart-box { border: none; border-radius: 0; height: 100%; }
+.dual-col .heatmap-legend   { padding: 10px 12px 4px; }
+.dual-col .heatmap-grid     { padding: 0 8px 10px; }
+/* 모바일 */
+@media (max-width: 700px) {
+.dual-wrap {
+grid-template-columns: 1fr;
+height: auto;
+min-height: 0;
+}
+.dual-col {
+height: calc(100vh - var(–col-offset, 140px));
+min-height: 300px;
+}
+.dual-col .stats { grid-template-columns: 1fr; gap: 6px; }
+.dual-col .card { padding: 10px 12px; }
+.dual-col .card .val { font-size: 18px; }
+.dual-col .card .lbl { font-size: 10px; margin-bottom: 3px; }
+.dual-col .card .sub { font-size: 12px; }
+/* 최고/최하 합친 카드 내부는 2열 유지 */
+#sec-summary .card > div[style*=“grid-template-columns:1fr 1fr”] { gap: 6px; }
+/* 요약 섹션 stats만 높이 auto */
+#sec-summary .dual-col { height: auto !important; min-height: 0; }
+#sec-summary .dual-col-body { height: auto !important; overflow: visible !important; }
+/* 요약 하단 차트 모바일 1열 */
+#sec-summary > div[style*=“grid-template-columns:1fr 1fr”] { grid-template-columns: 1fr !important; }
+}
 
-  /* ══ 국가별 테이블형 행 ════════════════════════════════════════ */
-  .ct-table-header {
-    display: grid;
-    grid-template-columns: 3px 22px 1fr 66px 66px 36px 51px 22px;
-    gap: 6px;
-    padding: 5px 12px 5px 0;
-    background: var(--bg-3);
-    border-bottom: 2px solid var(--bd-hi);
-    font-size: 10px;
-    font-weight: 800;
-    color: var(--tx-4);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-  }
-  .ct-row {
-    display: grid;
-    grid-template-columns: 3px 22px 1fr 66px 66px 36px 51px 22px;
-    gap: 6px;
-    align-items: center;
-    padding: 7px 12px 7px 0;
-    border-bottom: 1px solid var(--bd);
-    cursor: pointer;
-    transition: background var(--trans);
-  }
-  .ct-row:hover { background: var(--bg-3); }
-  .ct-bar { height: 100%; min-height: 30px; border-radius: 0 2px 2px 0; }
-  .ct-flag { font-size: 17px; text-align: center; }
-  .ct-name { font-size: 15px; font-weight: 700; color: var(--tx-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ct-meta { font-size: 13px; color: var(--tx-4); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ct-chg  { font-size: 13px; font-weight: 800; text-align: center; }
-  .ct-chg.up   { color: var(--up); }
-  .ct-chg.down { color: var(--down); }
-  .ct-rank { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 900; text-align: right; white-space: nowrap; }
-  .ct-link { font-size: 13px; color: var(--tx-4); text-decoration: none; text-align: center; }
-  .ct-link:hover { color: var(--tx-2); }
-  @media (max-width: 500px) {
-    .ct-table-header { display: none; }
-    .ct-row {
-      grid-template-columns: 3px 22px 1fr auto 20px;
-      grid-template-rows: auto auto;
-      gap: 2px 6px; padding: 8px 10px 8px 0;
-    }
-    .ct-bar  { grid-row: 1 / 3; align-self: stretch; }
-    .ct-flag { grid-row: 1; grid-column: 2; }
-    .ct-name { grid-row: 1; grid-column: 3; font-size: 14px; }
-    .ct-rank { grid-row: 1; grid-column: 4; font-size: 14px; }
-    .ct-link { grid-row: 1; grid-column: 5; }
-    .ct-meta { grid-row: 2; grid-column: 3; font-size: 11px; text-align: left; white-space: nowrap; overflow: visible; width: auto; padding: 0; }
-    .ct-chg  { grid-row: 2; grid-column: 4; font-size: 11px; overflow: visible; width: auto; padding: 0; }
-  }
+/* ══ 국가별 테이블형 행 ════════════════════════════════════════ */
+.ct-table-header {
+display: grid;
+grid-template-columns: 3px 22px 1fr 66px 66px 36px 51px 22px;
+gap: 6px;
+padding: 5px 12px 5px 0;
+background: var(–bg-3);
+border-bottom: 2px solid var(–bd-hi);
+font-size: 10px;
+font-weight: 800;
+color: var(–tx-4);
+letter-spacing: 1px;
+text-transform: uppercase;
+position: sticky;
+top: 0;
+z-index: 2;
+}
+.ct-row {
+display: grid;
+grid-template-columns: 3px 22px 1fr 66px 66px 36px 51px 22px;
+gap: 6px;
+align-items: center;
+padding: 7px 12px 7px 0;
+border-bottom: 1px solid var(–bd);
+cursor: pointer;
+transition: background var(–trans);
+}
+.ct-row:hover { background: var(–bg-3); }
+.ct-bar { height: 100%; min-height: 30px; border-radius: 0 2px 2px 0; }
+.ct-flag { font-size: 17px; text-align: center; }
+.ct-name { font-size: 15px; font-weight: 700; color: var(–tx-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ct-meta { font-size: 13px; color: var(–tx-4); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ct-chg  { font-size: 13px; font-weight: 800; text-align: center; }
+.ct-chg.up   { color: var(–up); }
+.ct-chg.down { color: var(–down); }
+.ct-rank { font-family: ‘Cinzel’, serif; font-size: 13px; font-weight: 900; text-align: right; white-space: nowrap; }
+.ct-link { font-size: 13px; color: var(–tx-4); text-decoration: none; text-align: center; }
+.ct-link:hover { color: var(–tx-2); }
+@media (max-width: 500px) {
+.ct-table-header { display: none; }
+.ct-row {
+grid-template-columns: 3px 22px 1fr auto 20px;
+grid-template-rows: auto auto;
+gap: 2px 6px; padding: 8px 10px 8px 0;
+}
+.ct-bar  { grid-row: 1 / 3; align-self: stretch; }
+.ct-flag { grid-row: 1; grid-column: 2; }
+.ct-name { grid-row: 1; grid-column: 3; font-size: 14px; }
+.ct-rank { grid-row: 1; grid-column: 4; font-size: 14px; }
+.ct-link { grid-row: 1; grid-column: 5; }
+.ct-meta { grid-row: 2; grid-column: 3; font-size: 11px; text-align: left; white-space: nowrap; overflow: visible; width: auto; padding: 0; }
+.ct-chg  { grid-row: 2; grid-column: 4; font-size: 11px; overflow: visible; width: auto; padding: 0; }
+}
 
-  /* ══ 네비게이션 바 ════════════════════════════════════════════ */
-  .nav-bar {
-    position: -webkit-sticky; position: sticky;
-    top: 46px; z-index: 49;
-    background: rgba(5,5,5,0.97);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--bd);
-  }
-  .nav-group {
-    display: flex; align-items: center;
-    overflow-x: auto; scrollbar-width: none;
-    -ms-overflow-style: none;
-    padding: 0 16px;
-    max-width: 1400px;
-    margin: 0 auto;
-    width: 100%;
-  }
-  .nav-group::-webkit-scrollbar { display: none; }
-  .nav-group-label {
-    font-size: 10px; font-weight: 800;
-    letter-spacing: 1.5px; text-transform: uppercase;
-    padding: 0 10px 0 2px; white-space: nowrap; flex-shrink: 0;
-    border-right: 1px solid var(--bd); margin-right: 6px;
-  }
-  .nav-group-label.ps-lbl    { color: var(--blood); }
-  .nav-group-label.steam-lbl { color: var(--steam); }
-  .nav-tab {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 9px 12px; font-size: 15px; font-weight: 700;
-    color: var(--tx-4); cursor: pointer; white-space: nowrap;
-    border-bottom: 2px solid transparent;
-    transition: color var(--trans), border-color var(--trans);
-    flex-shrink: 0; user-select: none; -webkit-user-select: none;
-  }
-  .nav-tab:hover { color: var(--tx-2); }
-  .nav-tab.active.ps-tab    { color: var(--blood); border-bottom-color: var(--blood); }
-  .nav-tab.active.steam-tab { color: var(--steam); border-bottom-color: var(--steam); }
-  .nav-tab.active.dual-tab  { color: var(--tx-1);  border-bottom-color: var(--tx-1); }
-  @media (max-width: 600px) {
-    .nav-tab { padding: 7px 8px; font-size: 14px; }
-    .nav-group-label { font-size: 9px; }
-    .nav-bar { top: 40px; }
-  }
+/* ══ 네비게이션 바 ════════════════════════════════════════════ */
+.nav-bar {
+position: -webkit-sticky; position: sticky;
+top: 46px; z-index: 49;
+background: rgba(5,5,5,0.97);
+backdrop-filter: blur(10px);
+-webkit-backdrop-filter: blur(10px);
+border-bottom: 1px solid var(–bd);
+}
+.nav-group {
+display: flex; align-items: center;
+overflow-x: auto; scrollbar-width: none;
+-ms-overflow-style: none;
+padding: 0 16px;
+max-width: 1400px;
+margin: 0 auto;
+width: 100%;
+}
+.nav-group::-webkit-scrollbar { display: none; }
+.nav-group-label {
+font-size: 10px; font-weight: 800;
+letter-spacing: 1.5px; text-transform: uppercase;
+padding: 0 10px 0 2px; white-space: nowrap; flex-shrink: 0;
+border-right: 1px solid var(–bd); margin-right: 6px;
+}
+.nav-group-label.ps-lbl    { color: var(–blood); }
+.nav-group-label.steam-lbl { color: var(–steam); }
+.nav-tab {
+display: inline-flex; align-items: center; gap: 4px;
+padding: 9px 12px; font-size: 15px; font-weight: 700;
+color: var(–tx-4); cursor: pointer; white-space: nowrap;
+border-bottom: 2px solid transparent;
+transition: color var(–trans), border-color var(–trans);
+flex-shrink: 0; user-select: none; -webkit-user-select: none;
+}
+.nav-tab:hover { color: var(–tx-2); }
+.nav-tab.active.ps-tab    { color: var(–blood); border-bottom-color: var(–blood); }
+.nav-tab.active.steam-tab { color: var(–steam); border-bottom-color: var(–steam); }
+.nav-tab.active.dual-tab  { color: var(–tx-1);  border-bottom-color: var(–tx-1); }
+@media (max-width: 600px) {
+.nav-tab { padding: 7px 8px; font-size: 14px; }
+.nav-group-label { font-size: 9px; }
+.nav-bar { top: 40px; }
+}
 
-  /* ══ 스탯 카드 그리드 ════════════════════════════════════════ */
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--gap); margin-bottom: var(--gap); }
-  .card {
-    background: var(--bg-2); border: 1px solid var(--bd);
-    padding: 18px 20px; border-radius: var(--radius);
-    border-left: 3px solid var(--blood);
-  }
-  .card .lbl { font-size: 14px; color: var(--tx-3); margin-bottom: 6px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
-  .card .val { font-family: 'Cinzel', serif; font-size: 31px; color: var(--gold); }
-  .card .sub { font-size: 17px; margin-top: 4px; color: var(--tx-2); }
-  @media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+/* ══ 스탯 카드 그리드 ════════════════════════════════════════ */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(–gap); margin-bottom: var(–gap); }
+.card {
+background: var(–bg-2); border: 1px solid var(–bd);
+padding: 18px 20px; border-radius: var(–radius);
+border-left: 3px solid var(–blood);
+}
+.card .lbl { font-size: 14px; color: var(–tx-3); margin-bottom: 6px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+.card .val { font-family: ‘Cinzel’, serif; font-size: 31px; color: var(–gold); }
+.card .sub { font-size: 17px; margin-top: 4px; color: var(–tx-2); }
+@media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } }
 
-  /* ══ Top10 리더보드 ══════════════════════════════════════════ */
-  .top10-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(121px, 1fr)); gap: 8px; }
-  .top10-item {
-    background: var(--bg-3); padding: 10px 8px;
-    border-radius: var(--radius); text-align: center;
-    cursor: pointer; border: 1px solid transparent; transition: border-color var(--trans), background var(--trans);
-  }
-  .top10-item:hover { border-color: var(--gold); background: var(--bg-4); }
-  .top10-item .n { font-size: 15px; color: var(--tx-3); display: block; }
-  .top10-item .r { font-size: 19px; font-weight: 700; color: var(--tx-1); }
-  img.emoji { height: 1.3em; width: 1.3em; vertical-align: -0.2em; margin-right: 6px; display: inline-block; }
-  .top10-item img.emoji { height: 1.1em; width: 1.1em; margin-right: 3px; }
-  @media (max-width: 600px) { .top10-grid { grid-template-columns: repeat(auto-fill, minmax(99px, 1fr)); } }
+/* ══ Top10 리더보드 ══════════════════════════════════════════ */
+.top10-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(121px, 1fr)); gap: 8px; }
+.top10-item {
+background: var(–bg-3); padding: 10px 8px;
+border-radius: var(–radius); text-align: center;
+cursor: pointer; border: 1px solid transparent; transition: border-color var(–trans), background var(–trans);
+}
+.top10-item:hover { border-color: var(–gold); background: var(–bg-4); }
+.top10-item .n { font-size: 15px; color: var(–tx-3); display: block; }
+.top10-item .r { font-size: 19px; font-weight: 700; color: var(–tx-1); }
+img.emoji { height: 1.3em; width: 1.3em; vertical-align: -0.2em; margin-right: 6px; display: inline-block; }
+.top10-item img.emoji { height: 1.1em; width: 1.1em; margin-right: 3px; }
+@media (max-width: 600px) { .top10-grid { grid-template-columns: repeat(auto-fill, minmax(99px, 1fr)); } }
 
-  /* ══ 차트 ════════════════════════════════════════════════════ */
-  .chart-section {
-    background: var(--bg-1); border: 1px solid var(--bd);
-    padding: 16px; border-radius: var(--radius);
-    height: 340px; margin-bottom: var(--gap);
-  }
-  @media (max-width: 600px) { .chart-section { height: 220px; } }
+/* ══ 차트 ════════════════════════════════════════════════════ */
+.chart-section {
+background: var(–bg-1); border: 1px solid var(–bd);
+padding: 16px; border-radius: var(–radius);
+height: 340px; margin-bottom: var(–gap);
+}
+@media (max-width: 600px) { .chart-section { height: 220px; } }
 
-  /* ══ 테이블 ══════════════════════════════════════════════════ */
-  .table-toolbar { display: flex; justify-content: flex-end; margin-bottom: 8px; }
-  .csv-btn {
-    background: var(--bg-3); border: 1px solid var(--bd-hi);
-    color: var(--gold); font-family: 'Rajdhani', sans-serif;
-    font-size: 14px; font-weight: 700; padding: 6px 14px;
-    border-radius: var(--radius); cursor: pointer;
-    transition: background var(--trans);
-  }
-  .csv-btn:hover { background: rgba(241,196,15,0.12); }
-  .table-wrapper { background: var(--bg-2); border: 1px solid var(--bd); border-radius: var(--radius); overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; min-width: 600px; }
-  th { background: var(--bg-3); padding: 11px 10px; text-align: left; font-size: 13px; color: var(--gold); border-bottom: 1px solid var(--bd); cursor: pointer; white-space: nowrap; letter-spacing: 0.5px; text-transform: uppercase; }
-  td { padding: 9px 10px; border-bottom: 1px solid var(--bd); font-size: 15px; }
-  .td-mobile-meta { display: none; }
-  .country-link { color: inherit; text-decoration: none; display: flex; align-items: center; }
-  .country-link:hover { color: var(--gold); }
-  .flag { font-size: 20px; margin-right: 6px; vertical-align: middle; }
-  .rank-box { font-family: 'Cinzel', serif; font-weight: 900; display: inline-block; width: 62px; text-align: center; border-radius: var(--radius); padding: 3px 0; cursor: pointer; font-size: 16px; }
-  .trend-down { color: var(--down); font-weight: 700; }
-  @media (max-width: 640px) {
-    .table-wrapper { overflow-x: unset; background: transparent; border: none; padding: 0; }
-    table { min-width: unset; width: 100%; }
-    thead { display: none; }
-    tbody tr {
-      display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto;
-      gap: 2px 8px; background: var(--bg-2); border: 1px solid var(--bd);
-      border-radius: var(--radius); margin-bottom: 6px; padding: 10px 12px;
-    }
-    td { display: block; border: none; padding: 0; }
-    td:nth-child(1) { grid-column: 1; grid-row: 1; font-size: 15px; font-weight: 700; }
-    td:nth-child(2) { grid-column: 2; grid-row: 1/3; display: flex; align-items: center; justify-content: flex-end; }
-    td:nth-child(2) .rank-box { width: 48px; font-size: 15px; }
-    .td-meta { display: none !important; }
-    .td-mobile-meta { display: flex !important; grid-column: 1; grid-row: 2; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 3px; }
-  }
+/* ══ 테이블 ══════════════════════════════════════════════════ */
+.table-toolbar { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+.csv-btn {
+background: var(–bg-3); border: 1px solid var(–bd-hi);
+color: var(–gold); font-family: ‘Rajdhani’, sans-serif;
+font-size: 14px; font-weight: 700; padding: 6px 14px;
+border-radius: var(–radius); cursor: pointer;
+transition: background var(–trans);
+}
+.csv-btn:hover { background: rgba(241,196,15,0.12); }
+.table-wrapper { background: var(–bg-2); border: 1px solid var(–bd); border-radius: var(–radius); overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 600px; }
+th { background: var(–bg-3); padding: 11px 10px; text-align: left; font-size: 13px; color: var(–gold); border-bottom: 1px solid var(–bd); cursor: pointer; white-space: nowrap; letter-spacing: 0.5px; text-transform: uppercase; }
+td { padding: 9px 10px; border-bottom: 1px solid var(–bd); font-size: 15px; }
+.td-mobile-meta { display: none; }
+.country-link { color: inherit; text-decoration: none; display: flex; align-items: center; }
+.country-link:hover { color: var(–gold); }
+.flag { font-size: 20px; margin-right: 6px; vertical-align: middle; }
+.rank-box { font-family: ‘Cinzel’, serif; font-weight: 900; display: inline-block; width: 62px; text-align: center; border-radius: var(–radius); padding: 3px 0; cursor: pointer; font-size: 16px; }
+.trend-down { color: var(–down); font-weight: 700; }
+@media (max-width: 640px) {
+.table-wrapper { overflow-x: unset; background: transparent; border: none; padding: 0; }
+table { min-width: unset; width: 100%; }
+thead { display: none; }
+tbody tr {
+display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto;
+gap: 2px 8px; background: var(–bg-2); border: 1px solid var(–bd);
+border-radius: var(–radius); margin-bottom: 6px; padding: 10px 12px;
+}
+td { display: block; border: none; padding: 0; }
+td:nth-child(1) { grid-column: 1; grid-row: 1; font-size: 15px; font-weight: 700; }
+td:nth-child(2) { grid-column: 2; grid-row: 1/3; display: flex; align-items: center; justify-content: flex-end; }
+td:nth-child(2) .rank-box { width: 48px; font-size: 15px; }
+.td-meta { display: none !important; }
+.td-mobile-meta { display: flex !important; grid-column: 1; grid-row: 2; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 3px; }
+}
 
-  /* ══ 모바일 UI 최적화 (새로운 섹션) ════════════════════════════ */
-  @media (max-width: 768px) {
-    /* 지역별 요약 카드 - 모바일 2열 */
-    #regional-summary { grid-template-columns: 1fr 1fr !important; }
-    
-    /* 지역별 차트 - 모바일 스택 */
-    #sec-regional > div:nth-child(2) { grid-template-columns: 1fr !important; }
-    
-    /* 지역별 판매 분포 - 모바일 2열 */
-    #regional-sales-breakdown { grid-template-columns: 1fr 1fr !important; }
-    
-    /* 주가분석 - 카드 2열 */
-    #sec-stock > div:first-child > div:nth-child(2) { 
-      grid-template-columns: repeat(2, 1fr) !important;
-    }
-  }
+/* ══ 모바일 UI 최적화 (새로운 섹션) ════════════════════════════ */
+@media (max-width: 768px) {
+/* 지역별 요약 카드 - 모바일 2열 */
+#regional-summary { grid-template-columns: 1fr 1fr !important; }
 
-  @media (max-width: 480px) {
-    /* 극소 화면: 1열로 */
-    #regional-summary { grid-template-columns: 1fr !important; }
-    #regional-sales-breakdown { grid-template-columns: 1fr !important; }
-    #sec-stock > div:first-child > div:nth-child(2) { 
-      grid-template-columns: 1fr !important;
-    }
-    
-    /* 탭 네비게이션 - 작은 폰트 */
-    .nav-tab { 
-      font-size: 11px !important;
-      padding: 6px 8px !important;
-      flex-wrap: wrap;
-    }
-    
-    /* 차트 높이 감소 */
-    #regionalPsChart, #regionalStChart { height: 200px !important; }
-    
-    /* 시나리오 테이블 - 폰트 축소 */
-    #pa-scenario-table table { font-size: 10px !important; }
-  }
+```
+/* 지역별 차트 - 모바일 스택 */
+#sec-regional > div:nth-child(2) { grid-template-columns: 1fr !important; }
 
-  /* ══ 터치 친화적 요소 ════════════════════════════════════════ */
-  @media (max-width: 768px) {
-    /* 버튼 크기 증대 (터치 영역) */
-    button, input[type="button"] { 
-      min-height: 44px;
-      padding: 10px 16px !important;
-      font-size: 14px !important;
-    }
-    
-    /* 입력 필드 크기 */
-    input[type="number"], input[type="text"] {
-      min-height: 40px;
-      font-size: 16px !important; /* iOS 줌 방지 */
-      padding: 8px 12px !important;
-    }
-    
-    /* 카드/박스 패딩 증가 */
-    .sec-card, .dual-col { padding: 12px !important; }
-  }
+/* 지역별 판매 분포 - 모바일 2열 */
+#regional-sales-breakdown { grid-template-columns: 1fr 1fr !important; }
 
-  /* ══ 태블릿 (768px-1024px) 최적화 ════════════════════════════ */
-  @media (min-width: 768px) and (max-width: 1024px) {
-    /* 태블릿 - 차트 높이 조정 */
-    canvas { max-height: 250px; }
-    
-    /* 탭 가로 스크롤 허용 */
-    #nav-bar { overflow-x: auto; overflow-y: hidden; }
-  }
+/* 주가분석 - 카드 2열 */
+#sec-stock > div:first-child > div:nth-child(2) { 
+  grid-template-columns: repeat(2, 1fr) !important;
+}
+```
 
-  /* ══ 차트 반응형 ════════════════════════════════════════════ */
-  @media (max-width: 600px) {
-    .chart-section, .steam-ts-chart-box { height: 220px !important; }
-    canvas { height: 220px !important; }
-  }
+}
 
-  @media (max-width: 480px) {
-    .chart-section, .steam-ts-chart-box { height: 180px !important; }
-    canvas { height: 180px !important; }
-  }
+@media (max-width: 480px) {
+/* 극소 화면: 1열로 */
+#regional-summary { grid-template-columns: 1fr !important; }
+#regional-sales-breakdown { grid-template-columns: 1fr !important; }
+#sec-stock > div:first-child > div:nth-child(2) {
+grid-template-columns: 1fr !important;
+}
 
-  /* ══ 모달 ════════════════════════════════════════════════════ */
-  .modal { display: none; position: fixed; z-index: 100; inset: 0; background: rgba(0,0,0,0.88); align-items: center; justify-content: center; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  .modal-content { background: var(--bg-2); width: 90%; max-width: 800px; padding: 28px; border-radius: var(--radius); border: 1px solid var(--bd-hi); position: relative; margin: auto; }
-  .close-btn { position: absolute; top: 14px; right: 18px; font-size: 29px; color: var(--tx-3); cursor: pointer; }
-  .close-btn:hover { color: var(--tx-1); }
+```
+/* 탭 네비게이션 - 작은 폰트 */
+.nav-tab { 
+  font-size: 11px !important;
+  padding: 6px 8px !important;
+  flex-wrap: wrap;
+}
 
-  /* ══ 타임라인 스케줄 ═════════════════════════════════════════ */
-  .run-timeline { display: flex; flex-direction: column; }
-  .tl-section-label { font-size: 10px; color: var(--tx-4); text-transform: uppercase; letter-spacing: 1.2px; font-weight: 800; margin-bottom: 6px; margin-top: 4px; }
-  .tl-item { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: var(--radius); margin-bottom: 4px; }
-  .tl-past { background: rgba(46,204,113,0.06); border: 1px solid rgba(46,204,113,0.18); }
-  .tl-future { background: rgba(255,255,255,0.02); border: 1px dashed var(--bd); }
-  .tl-icon { font-size: 14px; width: 16px; text-align: center; flex-shrink: 0; }
-  .tl-past .tl-icon { color: var(--up); }
-  .tl-future .tl-icon { color: var(--tx-4); }
-  .tl-time { font-size: 15px; font-weight: 700; color: var(--tx-2); flex: 1; }
-  .tl-future .tl-time { color: var(--tx-4); }
-  .tl-badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 800; letter-spacing: 0.5px; flex-shrink: 0; }
-  .tl-badge.manual { background: rgba(241,196,15,0.10); color: var(--gold); border: 1px solid rgba(241,196,15,0.25); }
-  .tl-now-line { display: flex; align-items: center; gap: 8px; margin: 8px 0 10px; color: var(--blood); font-size: 10px; font-weight: 800; letter-spacing: 2px; }
-  .tl-now-line::before, .tl-now-line::after { content:''; flex:1; height:1px; background: rgba(255,71,87,0.2); }
-  .tl-empty { font-size: 14px; color: var(--tx-4); padding: 6px 12px; }
+/* 차트 높이 감소 */
+#regionalPsChart, #regionalStChart { height: 200px !important; }
 
-  /* ══ 히트맵 ══════════════════════════════════════════════════ */
-  .heatmap-legend { display: flex; gap: 12px; font-size: 13px; color: var(--tx-4); margin-bottom: 8px; flex-wrap: wrap; align-items: center; }
-  .heatmap-legend span { display: flex; align-items: center; gap: 4px; }
-  .hm-legend-bar { width: 4px; height: 13px; border-radius: 2px; display: inline-block; }
-  /* 바깥: 순위 그룹들을 세로로 배치 */
-  .heatmap-grid { display: flex; flex-direction: column; gap: 0; }
-  /* 안쪽: 각 그룹 내 카드들을 2열로 배치 */
-  .hm-cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; padding: 6px; }
-  .hm-row {
-    display: flex; align-items: center;
-    background: var(--bg-2); border: 1px solid var(--bd);
-    border-radius: var(--radius); overflow: hidden;
-    cursor: pointer; transition: border-color var(--trans); min-height: 44px;
-  }
-  .hm-row:hover { border-color: var(--bd-hi); }
-  .hm-bar { width: 4px; align-self: stretch; flex-shrink: 0; }
-  .hm-bar.up   { background: var(--up); }
-  .hm-bar.down { background: var(--down); }
-  .hm-bar.same { background: var(--bd); }
-  .hm-rank { display: none; }
-  .hm-info { flex: 1; padding: 5px 4px 5px 6px; min-width: 0; overflow: hidden; }
-  .hm-name { font-size: 13px; font-weight: 700; color: var(--tx-1); display: flex; align-items: center; gap: 3px; }
-  .hm-name .hm-flag { font-size: 14px; flex-shrink: 0; }
-  .hm-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .hm-meta { display: flex; align-items: center; gap: 4px; margin-top: 2px; flex-wrap: nowrap; }
-  .hm-best { font-size: 12px; color: var(--gold); font-weight: 700; white-space: nowrap; }
-  .hm-change { font-size: 11px; font-weight: 800; white-space: nowrap; }
-  .hm-change.up   { color: var(--up); }
-  .hm-change.down { color: var(--down); }
-  .hm-change.same { color: var(--tx-4); }
-  .hm-w { display: none; }
-  .hm-notfound { opacity: 0.3; }
-  /* 스파크라인: 항상 표시 */
-  .hm-spark-wrap { flex-shrink: 0; display: flex; align-items: center; padding: 0 4px; border-left: 1px solid var(--bd); }
-  .hm-spark { width: 44px; height: 20px; display: block; overflow: visible; }
-  .hm-link {
-    flex-shrink: 0; padding: 0 7px; font-size: 13px; color: var(--tx-4);
-    text-decoration: none; display: flex; align-items: center; align-self: stretch;
-    border-left: 1px solid var(--bd); transition: color var(--trans);
-  }
-  .hm-link:hover { color: var(--tx-2); background: rgba(255,255,255,0.03); }
-  /* 모바일 세로 480px 이하: 1열 */
-  @media (max-width: 480px) and (orientation: portrait) {
-    .heatmap-grid { grid-template-columns: 1fr; }
-  }
-  /* 모바일 가로보기: dual-col이 절반 너비라 카드 1열로 */
-  @media (max-height: 500px) and (orientation: landscape) {
-    .hm-cards-grid { grid-template-columns: 1fr; }
-    .hm-name { font-size: 12px; }
-    .hm-spark { width: 36px; height: 16px; }
-    .hm-link { padding: 0 5px; }
-  }
-  /* 모바일 전반 (700px 이하): 폰트 살짝 줄여 2열 내 여유 확보 */
-  @media (max-width: 700px) {
-    .hm-name { font-size: 12px; }
-    .hm-best { font-size: 11px; }
-    .hm-spark { width: 36px; height: 18px; }
-    .hm-link { padding: 0 5px; font-size: 12px; }
-  }
+/* 시나리오 테이블 - 폰트 축소 */
+#pa-scenario-table table { font-size: 10px !important; }
+```
 
-  /* ══ GitHub Actions 버튼 ════════════════════════════════════ */
-  .gh-dispatch-wrap { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-  .gh-dispatch-btn {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 5px 10px; border-radius: var(--radius);
-    font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 800;
-    letter-spacing: 0.5px; cursor: pointer; border: 1px solid;
-    transition: background var(--trans); white-space: nowrap; text-transform: uppercase;
-  }
-  .gh-dispatch-btn.ps    { background: rgba(255,71,87,0.08);  border-color: rgba(255,71,87,0.35);  color: var(--blood); }
-  .gh-dispatch-btn.steam { background: rgba(74,158,255,0.08); border-color: rgba(74,158,255,0.35); color: var(--steam); }
-  .gh-dispatch-btn.ps:hover    { background: rgba(255,71,87,0.18); }
-  .gh-dispatch-btn.steam:hover { background: rgba(74,158,255,0.18); }
-  .gh-dispatch-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-  .gh-dispatch-btn .spin { display: inline-block; animation: ghSpin 0.7s linear infinite; }
-  @keyframes ghSpin { to { transform: rotate(360deg); } }
-  .gh-token-btn {
-    background: none; border: 1px solid var(--bd); color: var(--tx-4);
-    border-radius: var(--radius); padding: 4px 8px; font-size: 13px;
-    cursor: pointer; transition: color var(--trans), border-color var(--trans);
-  }
-  .gh-token-btn:hover { color: var(--tx-2); border-color: var(--bd-hi); }
-  .gh-status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 3px; }
-  .gh-status-dot.ok   { background: var(--up); }
-  .gh-status-dot.none { background: var(--tx-4); }
+}
 
-  /* ══ GitHub Token 모달 ════════════════════════════════════════ */
-  .gh-modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; align-items: center; justify-content: center; }
-  .gh-modal-bg.open { display: flex; }
-  .gh-modal-box { background: var(--bg-2); border: 1px solid var(--bd-hi); border-radius: var(--radius); padding: 24px; width: 90%; max-width: 400px; position: relative; }
-  .gh-modal-title { font-size: 16px; font-weight: 800; color: var(--tx-1); margin-bottom: 6px; }
-  .gh-modal-desc  { font-size: 14px; color: var(--tx-4); margin-bottom: 14px; line-height: 1.6; }
-  .gh-modal-desc a { color: var(--steam); }
-  .gh-modal-label { font-size: 10px; color: var(--tx-4); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
-  .gh-modal-input {
-    width: 100%; background: var(--bg-1); border: 1px solid var(--bd-hi);
-    border-radius: var(--radius); color: var(--tx-1); font-size: 15px;
-    padding: 9px 12px; margin-bottom: 10px; box-sizing: border-box; font-family: monospace;
-  }
-  .gh-modal-input:focus { outline: none; border-color: var(--tx-4); }
-  .gh-modal-save {
-    width: 100%; padding: 9px; border-radius: var(--radius);
-    background: rgba(241,196,15,0.10); border: 1px solid rgba(241,196,15,0.25);
-    color: var(--gold); font-size: 15px; font-weight: 800; cursor: pointer;
-    transition: background var(--trans);
-  }
-  .gh-modal-save:hover { background: rgba(241,196,15,0.20); }
-  .gh-modal-close { position: absolute; top: 12px; right: 14px; font-size: 22px; color: var(--tx-4); cursor: pointer; }
-  .gh-modal-close:hover { color: var(--tx-1); }
+/* ══ 터치 친화적 요소 ════════════════════════════════════════ */
+@media (max-width: 768px) {
+/* 버튼 크기 증대 (터치 영역) */
+button, input[type=“button”] {
+min-height: 44px;
+padding: 10px 16px !important;
+font-size: 14px !important;
+}
 
-  /* ══ Pages 배포 배지 ═════════════════════════════════════════ */
-  #gh-pages-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: var(--radius); font-size: 13px; font-weight: 700; letter-spacing: 0.5px; }
+```
+/* 입력 필드 크기 */
+input[type="number"], input[type="text"] {
+  min-height: 40px;
+  font-size: 16px !important; /* iOS 줌 방지 */
+  padding: 8px 12px !important;
+}
 
-  /* ══ 스케줄 관련 (레거시 - 미사용 but 유지) ═════════════════ */
-  .schedule-section { background: var(--bg-1); border: 1px solid var(--bd); padding: 16px 18px; border-radius: var(--radius); margin-bottom: var(--gap); }
-  .schedule-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(97px, 1fr)); gap: 8px; }
-  #schedule-grid { display: block; }
-  .sts-sched-wrap { padding: 8px 0 4px; }
-  /* Steam 스케줄 그리드 */
-  .sts-sched-day-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--tx-4); margin: 8px 0 5px; display: flex; align-items: center; gap: 6px; }
-  .day-badge { background: var(--bg-3); border: 1px solid var(--bd); border-radius: 3px; padding: 1px 7px; font-size: 10px; color: var(--tx-2); letter-spacing: 0.5px; }
-  .day-badge.today { border-color: rgba(241,196,15,0.4); color: var(--gold); background: rgba(241,196,15,0.07); }
-  .sts-sched-grid { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 10px; }
-  .sts-slot { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 57px; min-height: 42px; border-radius: 5px; border: 1px solid var(--bd); background: var(--bg-2); cursor: default; transition: border-color var(--trans); padding: 3px 2px; gap: 2px; }
-  .slot-h { font-size: 11px; color: var(--tx-3); letter-spacing: 0.3px; font-weight: 600; }
-  .slot-i { font-size: 15px; font-weight: 700; }
-  .sts-slot.ok  { border-color: rgba(46,204,113,0.5); background: rgba(46,204,113,0.07); }
-  .sts-slot.ok .slot-i  { color: #2ecc71; }
-  .sts-slot.ok .slot-h  { color: #2ecc71; opacity: 0.8; }
-  .sts-slot.miss { border-color: rgba(231,76,60,0.35); background: rgba(231,76,60,0.04); }
-  .sts-slot.miss .slot-i { color: #e74c3c; }
-  .sts-slot.fut { opacity: 0.35; }
-  .sts-slot.fut .slot-i { color: var(--tx-4); }
-  .sts-slot.now { border-color: rgba(241,196,15,0.6) !important; box-shadow: 0 0 6px rgba(241,196,15,0.2); }
-  .sts-slot.manual { border-color: rgba(241,196,15,0.4); }
-  .sts-slot.manual .slot-i { color: var(--gold); }
-  .sts-legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-  .sts-sched-legend { display: flex; gap: 10px; font-size: 13px; color: var(--tx-4); margin-bottom: 8px; flex-wrap: wrap; }
-  .sts-sched-legend span { display: flex; align-items: center; gap: 4px; }
-  .sts-sched-summary { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid var(--bd); font-size: 14px; color: var(--tx-3); }
-  .sts-sched-summary .ss { display: flex; flex-direction: column; gap: 1px; }
-  .sts-sched-summary .sv { font-size: 19px; color: var(--tx-1); font-weight: 700; }
-  .sts-sched-summary .sl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--tx-4); }
-  .sts-next-badge { margin-left: auto; display: flex; align-items: center; gap: 5px; background: rgba(241,196,15,0.07); border: 1px solid rgba(241,196,15,0.2); border-radius: var(--radius); padding: 3px 9px; font-size: 13px; color: var(--gold); font-weight: 700; white-space: nowrap; }
-  .sts-pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: stsPulse 1.6s ease-in-out infinite; }
-  @keyframes stsPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.6)} }
+/* 카드/박스 패딩 증가 */
+.sec-card, .dual-col { padding: 12px !important; }
+```
 
-  /* ══ 순위 티어별 카드 스타일 ══════════════════════════════════ */
-  .top10-item .r { font-size: 19px; font-weight: 700; color: var(--tx-1); }
-  .top10-item.tier-1  { border-color: rgba(241,196,15,0.5); background: rgba(241,196,15,0.06); }
-  .top10-item.tier-1 .r { color: #f1c40f; }
-  .top10-item.tier-2  { border-color: rgba(192,192,192,0.35); background: rgba(192,192,192,0.04); }
-  .top10-item.tier-2 .r { color: #c0c0c0; }
-  .top10-item.tier-3  { border-color: rgba(205,127,50,0.35); background: rgba(205,127,50,0.04); }
-  .top10-item.tier-3 .r { color: #cd7f32; }
-  .top10-item.tier-10 { border-color: rgba(74,158,255,0.3); }
-  .top10-item.tier-10 .r { color: var(--steam); }
-  .top10-item.tier-out { opacity: 0.45; }
-  .top10-item.tier-out .r { color: var(--tx-4); }
+}
 
-  /* ══ 차트 레전드 ═══════════════════════════════════════════════ */
-  .chart-legend {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    padding: 8px 16px 10px;
-    border-top: 1px solid var(--bd);
-    font-size: 13px;
-    font-weight: 700;
-  }
-  .chart-legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    color: var(--tx-3);
-  }
-  .chart-legend-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    flex-shrink: 0;
-  }
-  /* rank1-tag */
-  .rank1-countries { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
-  .rank1-countries { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 4px !important; }
-  .rank1-tag {
-    display: flex; align-items: center; gap: 5px;
-    background: rgba(241,196,15,0.08); border: 1px solid rgba(241,196,15,0.2);
-    border-radius: 4px; padding: 5px 7px;
-    font-size: 13px; color: var(--gold); font-weight: 700;
-    text-decoration: none; overflow: hidden;
-    transition: background 0.15s, border-color 0.15s;
-    cursor: pointer;
-  }
-  .rank1-tag:hover { background: rgba(241,196,15,0.15); border-color: rgba(241,196,15,0.5); }
-  .rank1-tag img { width: 20px !important; height: 15px !important; vertical-align: middle; flex-shrink: 0; }
-  .rank1-tag-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+/* ══ 태블릿 (768px-1024px) 최적화 ════════════════════════════ */
+@media (min-width: 768px) and (max-width: 1024px) {
+/* 태블릿 - 차트 높이 조정 */
+canvas { max-height: 250px; }
 
-  .steam-ts-stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(--gap); margin-bottom: var(--gap); }
-  .steam-ts-stat-box {
-    background: var(--bg-2); border: 1px solid var(--bd);
-    border-left: 3px solid var(--steam);
-    border-radius: var(--radius); padding: 12px 14px; text-align: center;
-  }
-  .steam-ts-stat-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--tx-3); margin-bottom: 4px; font-weight: 700; }
-  .steam-ts-stat-value { font-family: 'Cinzel', serif; font-size: 1.8rem; color: var(--tx-1); line-height: 1; }
-  .steam-ts-stat-diff { font-size: 13px; margin-top: 4px; color: var(--tx-3); }
-  .steam-ts-stat-diff.up   { color: var(--up); }
-  .steam-ts-stat-diff.down { color: var(--down); }
-  .steam-ts-title { font-size: 16px; color: var(--steam); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-  .steam-ts-link {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: rgba(74,158,255,0.07); border: 1px solid rgba(74,158,255,0.25);
-    color: var(--steam); text-decoration: none; font-size: 13px; font-weight: 700;
-    padding: 5px 10px; border-radius: var(--radius); transition: background var(--trans);
-  }
-  .steam-ts-link:hover { background: rgba(74,158,255,0.15); }
-  .steam-ts-dl-btn {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: rgba(46,204,113,0.07); border: 1px solid rgba(46,204,113,0.25);
-    color: var(--up); text-decoration: none; font-size: 13px; font-weight: 700;
-    padding: 5px 10px; border-radius: var(--radius); cursor: pointer; transition: background var(--trans);
-  }
-  .steam-ts-dl-btn:hover { background: rgba(46,204,113,0.15); }
+```
+/* 탭 가로 스크롤 허용 */
+#nav-bar { overflow-x: auto; overflow-y: hidden; }
+```
 
-  /* Steam 국가 카드 */
-  .steam-ts-country-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 7px; margin-top: 10px; }
-  .steam-ts-country-card {
-    background: var(--bg-2); border: 1px solid var(--bd);
-    border-radius: var(--radius); padding: 10px 10px 8px;
-    cursor: pointer; transition: border-color var(--trans), background var(--trans);
-    display: flex; align-items: flex-start; gap: 8px; position: relative;
-  }
-  .steam-ts-country-card:hover { border-color: var(--steam); background: var(--bg-3); }
-  .steam-ts-country-card.rank1 { border-color: rgba(241,196,15,0.4); background: rgba(241,196,15,0.04); }
-  .steam-ts-country-card.rank2 { border-color: rgba(192,192,192,0.3); }
-  .steam-ts-country-card.rank3 { border-color: rgba(205,127,50,0.3); }
-  .steam-ts-country-info { flex: 1; min-width: 0; }
-  .steam-ts-country-name { font-size: 14px; font-weight: 700; color: var(--tx-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .steam-ts-country-rank { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 900; color: var(--tx-1); margin-top: 2px; }
-  .steam-ts-country-diff { font-size: 13px; font-weight: 800; margin-left: 4px; }
-  .steam-ts-country-diff.up   { color: var(--up); }
-  .steam-ts-country-diff.down { color: var(--down); }
-  .steam-ts-rank-badge { font-size: 10px; margin-left: 4px; vertical-align: middle; }
-  .steam-ts-weight-badge { font-size: 10px; color: var(--tx-4); }
-  .steam-ts-store-link {
-    position: absolute; top: 6px; right: 6px;
-    color: var(--tx-4); opacity: 0.5; transition: opacity var(--trans);
-    display: flex; align-items: center;
-  }
-  .steam-ts-store-link:hover { opacity: 1; }
-  .steam-ts-store-link svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
-  @media (max-width: 600px) { .steam-ts-country-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
+}
 
-  /* Steam 모달 */
-  .steam-ts-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 150; align-items: center; justify-content: center; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; }
-  .steam-ts-modal-overlay.open { display: flex; }
-  .steam-ts-modal { background: var(--bg-2); border: 1px solid var(--bd-hi); border-radius: var(--radius); padding: 24px; width: min(480px,92vw); max-height: 85vh; overflow-y: auto; margin: auto; }
-  .steam-ts-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  .steam-ts-modal-title { font-size: 17px; font-weight: 800; color: var(--tx-1); }
-  .steam-ts-modal-close { background: none; border: none; color: var(--tx-3); font-size: 22px; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
-  .steam-ts-modal-close:hover { color: var(--tx-1); background: var(--bg-3); }
-  .steam-ts-modal-stats { display: flex; gap: 8px; margin-bottom: 14px; }
-  .steam-ts-modal-chart-inner { height: 220px; }
-  .steam-ts-modal-link { display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; color: var(--steam); font-size: 14px; font-weight: 700; text-decoration: none; }
+/* ══ 차트 반응형 ════════════════════════════════════════════ */
+@media (max-width: 600px) {
+.chart-section, .steam-ts-chart-box { height: 220px !important; }
+canvas { height: 220px !important; }
+}
 
-  /* Steam 차트 */
-  .steam-ts-chart-box { background: var(--bg-1); border: 1px solid var(--bd); border-radius: var(--radius); padding: 16px; }
-  .steam-ts-chart-inner { height: 320px; }
-  @media (max-width: 600px) { .steam-ts-chart-inner { height: 200px; } }
+@media (max-width: 480px) {
+.chart-section, .steam-ts-chart-box { height: 180px !important; }
+canvas { height: 180px !important; }
+}
 
-  /* Steam 국가별 요약 행 */
-  .sts-country-summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(--gap); margin-bottom: var(--gap); }
+/* ══ 모달 ════════════════════════════════════════════════════ */
+.modal { display: none; position: fixed; z-index: 100; inset: 0; background: rgba(0,0,0,0.88); align-items: center; justify-content: center; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.modal-content { background: var(–bg-2); width: 90%; max-width: 800px; padding: 28px; border-radius: var(–radius); border: 1px solid var(–bd-hi); position: relative; margin: auto; }
+.close-btn { position: absolute; top: 14px; right: 18px; font-size: 29px; color: var(–tx-3); cursor: pointer; }
+.close-btn:hover { color: var(–tx-1); }
 
-  /* Steam 스케줄 섹션 collapsible (제거됐지만 body 스타일 유지) */
-  .sts-collapsible-body { overflow: hidden; transition: max-height 0.3s ease; }
-  .sts-collapsible-body.collapsed { max-height: 0 !important; }
+/* ══ 타임라인 스케줄 ═════════════════════════════════════════ */
+.run-timeline { display: flex; flex-direction: column; }
+.tl-section-label { font-size: 10px; color: var(–tx-4); text-transform: uppercase; letter-spacing: 1.2px; font-weight: 800; margin-bottom: 6px; margin-top: 4px; }
+.tl-item { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: var(–radius); margin-bottom: 4px; }
+.tl-past { background: rgba(46,204,113,0.06); border: 1px solid rgba(46,204,113,0.18); }
+.tl-future { background: rgba(255,255,255,0.02); border: 1px dashed var(–bd); }
+.tl-icon { font-size: 14px; width: 16px; text-align: center; flex-shrink: 0; }
+.tl-past .tl-icon { color: var(–up); }
+.tl-future .tl-icon { color: var(–tx-4); }
+.tl-time { font-size: 15px; font-weight: 700; color: var(–tx-2); flex: 1; }
+.tl-future .tl-time { color: var(–tx-4); }
+.tl-badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 800; letter-spacing: 0.5px; flex-shrink: 0; }
+.tl-badge.manual { background: rgba(241,196,15,0.10); color: var(–gold); border: 1px solid rgba(241,196,15,0.25); }
+.tl-now-line { display: flex; align-items: center; gap: 8px; margin: 8px 0 10px; color: var(–blood); font-size: 10px; font-weight: 800; letter-spacing: 2px; }
+.tl-now-line::before, .tl-now-line::after { content:’’; flex:1; height:1px; background: rgba(255,71,87,0.2); }
+.tl-empty { font-size: 14px; color: var(–tx-4); padding: 6px 12px; }
 
-  /* ══ 국가별 테이블 행 ═══════════════════════════════════════════ */
-  .ct-table-header,
-  .ct-row {
-    display: grid;
-    grid-template-columns: 3px 22px 1fr 60px 60px 28px 44px 22px;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px 6px 0;
-  }
-  .ct-table-header {
-    border-bottom: 2px solid var(--bd-hi);
-    font-size: 10px; color: var(--tx-4);
-    font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase;
-    padding-bottom: 5px;
-  }
-  .ct-row {
-    border-bottom: 1px solid var(--bd);
-    cursor: pointer;
-    transition: background var(--trans);
-    min-height: 34px;
-  }
-  .ct-row:hover { background: var(--bg-3); }
-  .ct-bar { align-self: stretch; border-radius: 0 2px 2px 0; min-height: 34px; }
-  .ct-flag { font-size: 17px; text-align: center; overflow: hidden; }
-  .ct-name { font-size: 15px; font-weight: 700; color: var(--tx-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ct-meta { font-size: 11px; color: var(--tx-3); text-align: right; white-space: nowrap; }
-  .ct-chg  { font-size: 13px; font-weight: 800; text-align: center; }
-  .ct-chg.up   { color: var(--up); }
-  .ct-chg.down { color: var(--down); }
-  .ct-rank { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 900; text-align: right; white-space: nowrap; }
-  .ct-link { font-size: 13px; color: var(--tx-4); text-decoration: none; text-align: center; }
-  .ct-link:hover { color: var(--tx-2); }
-  /* 접기/펼치기 */
-  .rank-group-header {
-    display: flex; align-items: center; gap: 10px;
-    padding: 11px 14px; cursor: pointer;
-    border-bottom: 1px solid var(--bd); border-top: 1px solid var(--bd);
-    transition: background var(--trans); margin-top: 2px;
-    background: var(--bg-2);
-  }
-  .rank-group-header:hover { background: var(--bg-3); }
-  .rank-group-count { font-size: 15px; font-weight: 700; color: var(--tx-3); }
-  .rank-group-arrow { font-size: 15px; color: var(--tx-4); transition: transform 0.2s; margin-left: auto; }
-  .rank-group-arrow.open { transform: rotate(180deg); }
-  .rank-group-body { overflow: hidden; transition: max-height 0.3s ease; }
-  .rank-group-body.collapsed { max-height: 0 !important; }
-  /* 리더보드/히트맵/국가별 그룹 레이블 */
-  .lb-group-label { font-size: 17px; font-weight: 800; }
-  .lb-group-label.g1  { color: #f1c40f; }
-  .lb-group-label.g2  { color: #c0c0c0; }
-  .lb-group-label.g3  { color: #cd7f32; }
-  .lb-group-label.g10 { color: var(--steam); }
-  .lb-group-label.gout { color: var(--tx-4); }
-  /* 모바일 */
-  @media (max-width: 700px) {
-    .rank-group-header { padding: 10px 12px; }
-    .lb-group-label { font-size: 16px; }
-    .rank-group-count { font-size: 14px; }
-    .rank-group-arrow { font-size: 14px; }
-  }
-  @media (max-width: 500px) {
-    .ct-table-header { display: none; }
-    .ct-row {
-      grid-template-columns: 3px 22px 1fr auto 20px;
-      grid-template-rows: auto auto;
-      gap: 2px 6px; padding: 8px 10px 8px 0;
-    }
-    .ct-bar  { grid-row: 1 / 3; align-self: stretch; }
-    .ct-flag { grid-row: 1; grid-column: 2; }
-    .ct-name { grid-row: 1; grid-column: 3; font-size: 14px; }
-    .ct-rank { grid-row: 1; grid-column: 4; font-size: 14px; }
-    .ct-link { grid-row: 1; grid-column: 5; }
-    .ct-meta { grid-row: 2; grid-column: 3; font-size: 11px; text-align: left; white-space: nowrap; overflow: visible; width: auto; padding: 0; }
-    .ct-chg  { grid-row: 2; grid-column: 4; font-size: 11px; overflow: visible; width: auto; padding: 0; }
-  }
+/* ══ 히트맵 ══════════════════════════════════════════════════ */
+.heatmap-legend { display: flex; gap: 12px; font-size: 13px; color: var(–tx-4); margin-bottom: 8px; flex-wrap: wrap; align-items: center; }
+.heatmap-legend span { display: flex; align-items: center; gap: 4px; }
+.hm-legend-bar { width: 4px; height: 13px; border-radius: 2px; display: inline-block; }
+/* 바깥: 순위 그룹들을 세로로 배치 */
+.heatmap-grid { display: flex; flex-direction: column; gap: 0; }
+/* 안쪽: 각 그룹 내 카드들을 2열로 배치 */
+.hm-cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; padding: 6px; }
+.hm-row {
+display: flex; align-items: center;
+background: var(–bg-2); border: 1px solid var(–bd);
+border-radius: var(–radius); overflow: hidden;
+cursor: pointer; transition: border-color var(–trans); min-height: 44px;
+}
+.hm-row:hover { border-color: var(–bd-hi); }
+.hm-bar { width: 4px; align-self: stretch; flex-shrink: 0; }
+.hm-bar.up   { background: var(–up); }
+.hm-bar.down { background: var(–down); }
+.hm-bar.same { background: var(–bd); }
+.hm-rank { display: none; }
+.hm-info { flex: 1; padding: 5px 4px 5px 6px; min-width: 0; overflow: hidden; }
+.hm-name { font-size: 13px; font-weight: 700; color: var(–tx-1); display: flex; align-items: center; gap: 3px; }
+.hm-name .hm-flag { font-size: 14px; flex-shrink: 0; }
+.hm-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm-meta { display: flex; align-items: center; gap: 4px; margin-top: 2px; flex-wrap: nowrap; }
+.hm-best { font-size: 12px; color: var(–gold); font-weight: 700; white-space: nowrap; }
+.hm-change { font-size: 11px; font-weight: 800; white-space: nowrap; }
+.hm-change.up   { color: var(–up); }
+.hm-change.down { color: var(–down); }
+.hm-change.same { color: var(–tx-4); }
+.hm-w { display: none; }
+.hm-notfound { opacity: 0.3; }
+/* 스파크라인: 항상 표시 */
+.hm-spark-wrap { flex-shrink: 0; display: flex; align-items: center; padding: 0 4px; border-left: 1px solid var(–bd); }
+.hm-spark { width: 44px; height: 20px; display: block; overflow: visible; }
+.hm-link {
+flex-shrink: 0; padding: 0 7px; font-size: 13px; color: var(–tx-4);
+text-decoration: none; display: flex; align-items: center; align-self: stretch;
+border-left: 1px solid var(–bd); transition: color var(–trans);
+}
+.hm-link:hover { color: var(–tx-2); background: rgba(255,255,255,0.03); }
+/* 모바일 세로 480px 이하: 1열 */
+@media (max-width: 480px) and (orientation: portrait) {
+.heatmap-grid { grid-template-columns: 1fr; }
+}
+/* 모바일 가로보기: dual-col이 절반 너비라 카드 1열로 */
+@media (max-height: 500px) and (orientation: landscape) {
+.hm-cards-grid { grid-template-columns: 1fr; }
+.hm-name { font-size: 12px; }
+.hm-spark { width: 36px; height: 16px; }
+.hm-link { padding: 0 5px; }
+}
+/* 모바일 전반 (700px 이하): 폰트 살짝 줄여 2열 내 여유 확보 */
+@media (max-width: 700px) {
+.hm-name { font-size: 12px; }
+.hm-best { font-size: 11px; }
+.hm-spark { width: 36px; height: 18px; }
+.hm-link { padding: 0 5px; font-size: 12px; }
+}
 
-  /* ══ 모바일 가로보기 ══════════════════════════════════════════ */
-  @media (max-height: 500px) and (orientation: landscape) {
-    header { padding: 4px 0; }
-    header h1 { font-size: 18px !important; }
-    .gh-dispatch-btn { font-size: 11px; padding: 3px 6px; }
-    #pa-stock { padding: 4px 8px !important; }
-    #pa-price { font-size: 16px !important; }
-    .dual-wrap { grid-template-columns: 1fr 1fr; }
-    .dual-col { height: calc(100vh - var(--col-offset, 100px)); min-height: 200px; }
-    .summary-chart-wrap .dual-col { height: auto !important; min-height: 280px; overflow: visible !important; }
-    .dual-col-header { padding: 6px 12px; font-size: 13px; }
-    .dual-col .card .val { font-size: 16px !important; }
-    .modal-content { padding: 12px; margin: 4px auto; }
-    .modal-content > div[style*="height"] { height: min(240px, 40vh) !important; }
-    .steam-ts-modal { padding: 12px; max-height: 90vh; }
-    .steam-ts-modal-chart-inner { height: 150px !important; }
-  }
+/* ══ GitHub Actions 버튼 ════════════════════════════════════ */
+.gh-dispatch-wrap { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.gh-dispatch-btn {
+display: inline-flex; align-items: center; gap: 4px;
+padding: 5px 10px; border-radius: var(–radius);
+font-family: ‘Rajdhani’, sans-serif; font-size: 13px; font-weight: 800;
+letter-spacing: 0.5px; cursor: pointer; border: 1px solid;
+transition: background var(–trans); white-space: nowrap; text-transform: uppercase;
+}
+.gh-dispatch-btn.ps    { background: rgba(255,71,87,0.08);  border-color: rgba(255,71,87,0.35);  color: var(–blood); }
+.gh-dispatch-btn.steam { background: rgba(74,158,255,0.08); border-color: rgba(74,158,255,0.35); color: var(–steam); }
+.gh-dispatch-btn.ps:hover    { background: rgba(255,71,87,0.18); }
+.gh-dispatch-btn.steam:hover { background: rgba(74,158,255,0.18); }
+.gh-dispatch-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.gh-dispatch-btn .spin { display: inline-block; animation: ghSpin 0.7s linear infinite; }
+@keyframes ghSpin { to { transform: rotate(360deg); } }
+.gh-token-btn {
+background: none; border: 1px solid var(–bd); color: var(–tx-4);
+border-radius: var(–radius); padding: 4px 8px; font-size: 13px;
+cursor: pointer; transition: color var(–trans), border-color var(–trans);
+}
+.gh-token-btn:hover { color: var(–tx-2); border-color: var(–bd-hi); }
+.gh-status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 3px; }
+.gh-status-dot.ok   { background: var(–up); }
+.gh-status-dot.none { background: var(–tx-4); }
 
-  /* ══ PC 전용 (768px+) ═══════════════════════════════════════ */
-  @media (min-width: 768px) {
-    .summary-chart-wrap .dual-col { height: auto !important; overflow: visible !important; }
-    .summary-chart-wrap .dual-col-body { overflow: visible !important; height: auto !important; }
-    .nav-tab { font-size: 16px; padding: 10px 14px; }
-    .card .lbl { font-size: 14px; }
-    .card .val { font-size: 33px; }
-    .card .sub { font-size: 17px; }
-    .dual-col .card .val { font-size: 27px; }
-    .dual-col-header { font-size: 16px; padding: 11px 16px; }
-    .lb-group-label { font-size: 18px; }
-    .rank-group-count { font-size: 16px; }
-    .rank-group-header { padding: 12px 16px; }
-    .ct-name { font-size: 16px; }
-    .ct-meta { font-size: 14px; }
-    .ct-rank { font-size: 17px; }
-    .hm-name { font-size: 16px; }
-    .top10-item .n { font-size: 16px; }
-    .top10-item .r { font-size: 18px; }
-    .sts-sched-summary .sv { font-size: 22px; }
-    .slot-h { font-size: 13px; }
-    .slot-i { font-size: 17px; }
-    .sts-slot { width: 64px; min-height: 46px; }
-    .rank-group-arrow { font-size: 16px; }
-  }
+/* ══ GitHub Token 모달 ════════════════════════════════════════ */
+.gh-modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; align-items: center; justify-content: center; }
+.gh-modal-bg.open { display: flex; }
+.gh-modal-box { background: var(–bg-2); border: 1px solid var(–bd-hi); border-radius: var(–radius); padding: 24px; width: 90%; max-width: 400px; position: relative; }
+.gh-modal-title { font-size: 16px; font-weight: 800; color: var(–tx-1); margin-bottom: 6px; }
+.gh-modal-desc  { font-size: 14px; color: var(–tx-4); margin-bottom: 14px; line-height: 1.6; }
+.gh-modal-desc a { color: var(–steam); }
+.gh-modal-label { font-size: 10px; color: var(–tx-4); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+.gh-modal-input {
+width: 100%; background: var(–bg-1); border: 1px solid var(–bd-hi);
+border-radius: var(–radius); color: var(–tx-1); font-size: 15px;
+padding: 9px 12px; margin-bottom: 10px; box-sizing: border-box; font-family: monospace;
+}
+.gh-modal-input:focus { outline: none; border-color: var(–tx-4); }
+.gh-modal-save {
+width: 100%; padding: 9px; border-radius: var(–radius);
+background: rgba(241,196,15,0.10); border: 1px solid rgba(241,196,15,0.25);
+color: var(–gold); font-size: 15px; font-weight: 800; cursor: pointer;
+transition: background var(–trans);
+}
+.gh-modal-save:hover { background: rgba(241,196,15,0.20); }
+.gh-modal-close { position: absolute; top: 12px; right: 14px; font-size: 22px; color: var(–tx-4); cursor: pointer; }
+.gh-modal-close:hover { color: var(–tx-1); }
 
-  /* ══ PS Store 링크 팝오버 ═══════════════════════════════════ */
-  .ps-links-btn {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-size: 13px; color: var(--blood); opacity: 0.7;
-    padding: 2px 8px; border: 1px solid rgba(255,71,87,0.3);
-    border-radius: 4px; cursor: pointer; white-space: nowrap;
-    font-weight: 700; letter-spacing: 0; text-transform: none;
-    flex-shrink: 0; background: transparent;
-    transition: opacity 0.15s;
-    position: relative;
-  }
-  .ps-links-btn:hover { opacity: 1; }
-  .ps-links-popover {
-    display: none;
-    position: fixed;
-    background: var(--bg-2); border: 1px solid var(--bd-hi);
-    border-radius: 8px; padding: 10px; z-index: 200;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-    max-width: 340px; max-height: 60vh;
-    overflow-y: auto;
-  }
-  .ps-links-popover.open { display: block; }
-  .ps-links-title { font-size: 11px; font-weight: 800; color: var(--blood); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
-  .ps-links-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
-  .ps-links-item {
-    display: flex; align-items: center; gap: 5px;
-    padding: 5px 7px; border-radius: 5px; cursor: pointer;
-    font-size: 12px; font-weight: 700; color: var(--tx-2);
-    background: var(--bg-3); border: 1px solid var(--bd);
-    text-decoration: none; white-space: nowrap;
-    transition: background var(--trans), border-color var(--trans);
-  }
-  .ps-links-item:hover { background: var(--bg-4); border-color: var(--blood); color: var(--tx-1); }
-  .ps-links-item.rank-1  { border-color: rgba(241,196,15,0.4); }
-  .ps-links-item.rank-23 { border-color: rgba(192,192,192,0.3); }
-  .ps-links-item.rank-10 { border-color: rgba(74,158,255,0.3); }
-  #ps-links-overlay { display:none; position:fixed; inset:0; z-index:199; }
-  #ps-links-overlay.open { display:block; }
+/* ══ Pages 배포 배지 ═════════════════════════════════════════ */
+#gh-pages-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: var(–radius); font-size: 13px; font-weight: 700; letter-spacing: 0.5px; }
 
-  /* 요약 섹션: dual-wrap 높이 자동 (아래 차트가 보이도록) */
-  #sec-summary > .dual-wrap { height: auto !important; min-height: 0 !important; }
-  #sec-summary > .dual-wrap .dual-col { height: auto !important; overflow: visible !important; }
-  #sec-summary > .dual-wrap .dual-col-body { height: auto !important; overflow: visible !important; }
+/* ══ 스케줄 관련 (레거시 - 미사용 but 유지) ═════════════════ */
+.schedule-section { background: var(–bg-1); border: 1px solid var(–bd); padding: 16px 18px; border-radius: var(–radius); margin-bottom: var(–gap); }
+.schedule-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(97px, 1fr)); gap: 8px; }
+#schedule-grid { display: block; }
+.sts-sched-wrap { padding: 8px 0 4px; }
+/* Steam 스케줄 그리드 */
+.sts-sched-day-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(–tx-4); margin: 8px 0 5px; display: flex; align-items: center; gap: 6px; }
+.day-badge { background: var(–bg-3); border: 1px solid var(–bd); border-radius: 3px; padding: 1px 7px; font-size: 10px; color: var(–tx-2); letter-spacing: 0.5px; }
+.day-badge.today { border-color: rgba(241,196,15,0.4); color: var(–gold); background: rgba(241,196,15,0.07); }
+.sts-sched-grid { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 10px; }
+.sts-slot { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 57px; min-height: 42px; border-radius: 5px; border: 1px solid var(–bd); background: var(–bg-2); cursor: default; transition: border-color var(–trans); padding: 3px 2px; gap: 2px; }
+.slot-h { font-size: 11px; color: var(–tx-3); letter-spacing: 0.3px; font-weight: 600; }
+.slot-i { font-size: 15px; font-weight: 700; }
+.sts-slot.ok  { border-color: rgba(46,204,113,0.5); background: rgba(46,204,113,0.07); }
+.sts-slot.ok .slot-i  { color: #2ecc71; }
+.sts-slot.ok .slot-h  { color: #2ecc71; opacity: 0.8; }
+.sts-slot.miss { border-color: rgba(231,76,60,0.35); background: rgba(231,76,60,0.04); }
+.sts-slot.miss .slot-i { color: #e74c3c; }
+.sts-slot.fut { opacity: 0.35; }
+.sts-slot.fut .slot-i { color: var(–tx-4); }
+.sts-slot.now { border-color: rgba(241,196,15,0.6) !important; box-shadow: 0 0 6px rgba(241,196,15,0.2); }
+.sts-slot.manual { border-color: rgba(241,196,15,0.4); }
+.sts-slot.manual .slot-i { color: var(–gold); }
+.sts-legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.sts-sched-legend { display: flex; gap: 10px; font-size: 13px; color: var(–tx-4); margin-bottom: 8px; flex-wrap: wrap; }
+.sts-sched-legend span { display: flex; align-items: center; gap: 4px; }
+.sts-sched-summary { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid var(–bd); font-size: 14px; color: var(–tx-3); }
+.sts-sched-summary .ss { display: flex; flex-direction: column; gap: 1px; }
+.sts-sched-summary .sv { font-size: 19px; color: var(–tx-1); font-weight: 700; }
+.sts-sched-summary .sl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(–tx-4); }
+.sts-next-badge { margin-left: auto; display: flex; align-items: center; gap: 5px; background: rgba(241,196,15,0.07); border: 1px solid rgba(241,196,15,0.2); border-radius: var(–radius); padding: 3px 9px; font-size: 13px; color: var(–gold); font-weight: 700; white-space: nowrap; }
+.sts-pulse { width: 6px; height: 6px; border-radius: 50%; background: var(–gold); animation: stsPulse 1.6s ease-in-out infinite; }
+@keyframes stsPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.6)} }
 
-  /* 요약 차트 전용: 높이 자동, 스크롤 없이 canvas 크기 보장 */
-  /* summary-chart-wrap 제거됨 - 단순 div로 교체 */
+/* ══ 순위 티어별 카드 스타일 ══════════════════════════════════ */
+.top10-item .r { font-size: 19px; font-weight: 700; color: var(–tx-1); }
+.top10-item.tier-1  { border-color: rgba(241,196,15,0.5); background: rgba(241,196,15,0.06); }
+.top10-item.tier-1 .r { color: #f1c40f; }
+.top10-item.tier-2  { border-color: rgba(192,192,192,0.35); background: rgba(192,192,192,0.04); }
+.top10-item.tier-2 .r { color: #c0c0c0; }
+.top10-item.tier-3  { border-color: rgba(205,127,50,0.35); background: rgba(205,127,50,0.04); }
+.top10-item.tier-3 .r { color: #cd7f32; }
+.top10-item.tier-10 { border-color: rgba(74,158,255,0.3); }
+.top10-item.tier-10 .r { color: var(–steam); }
+.top10-item.tier-out { opacity: 0.45; }
+.top10-item.tier-out .r { color: var(–tx-4); }
 
-  /* 요약 순위별 국가 그룹 */
-  .sum-rank-header {
-    display: flex; align-items: center; gap: 8px;
-    padding: 9px 14px; cursor: pointer;
-    background: var(--bg-2); border-bottom: 1px solid var(--bd);
-    transition: background var(--trans); user-select: none;
-  }
-  .sum-rank-header:first-child { border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0; }
-  .sum-rank-header:hover { background: var(--bg-3); }
-  .sum-rank-label { font-size: 15px; font-weight: 800; flex: 1; }
-  .sum-rank-cnt   { font-size: 14px; font-weight: 700; color: var(--tx-3); }
-  .sum-rank-arrow { font-size: 12px; color: var(--tx-4); transition: transform 0.2s; }
-  .sum-rank-arrow.open { transform: rotate(180deg); }
-  .sum-rank-body  { overflow: hidden; transition: max-height 0.3s ease; }
-  .sum-rank-body.collapsed { max-height: 0 !important; }
-  .sum-rank-grid  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px 14px 12px; }
+/* ══ 차트 레전드 ═══════════════════════════════════════════════ */
+.chart-legend {
+display: flex;
+gap: 16px;
+flex-wrap: wrap;
+padding: 8px 16px 10px;
+border-top: 1px solid var(–bd);
+font-size: 13px;
+font-weight: 700;
+}
+.chart-legend-item {
+display: flex;
+align-items: center;
+gap: 5px;
+color: var(–tx-3);
+}
+.chart-legend-dot {
+width: 8px; height: 8px; border-radius: 50%;
+flex-shrink: 0;
+}
+/* rank1-tag */
+.rank1-countries { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
+.rank1-countries { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 4px !important; }
+.rank1-tag {
+display: flex; align-items: center; gap: 5px;
+background: rgba(241,196,15,0.08); border: 1px solid rgba(241,196,15,0.2);
+border-radius: 4px; padding: 5px 7px;
+font-size: 13px; color: var(–gold); font-weight: 700;
+text-decoration: none; overflow: hidden;
+transition: background 0.15s, border-color 0.15s;
+cursor: pointer;
+}
+.rank1-tag:hover { background: rgba(241,196,15,0.15); border-color: rgba(241,196,15,0.5); }
+.rank1-tag img { width: 20px !important; height: 15px !important; vertical-align: middle; flex-shrink: 0; }
+.rank1-tag-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+
+.steam-ts-stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(–gap); margin-bottom: var(–gap); }
+.steam-ts-stat-box {
+background: var(–bg-2); border: 1px solid var(–bd);
+border-left: 3px solid var(–steam);
+border-radius: var(–radius); padding: 12px 14px; text-align: center;
+}
+.steam-ts-stat-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(–tx-3); margin-bottom: 4px; font-weight: 700; }
+.steam-ts-stat-value { font-family: ‘Cinzel’, serif; font-size: 1.8rem; color: var(–tx-1); line-height: 1; }
+.steam-ts-stat-diff { font-size: 13px; margin-top: 4px; color: var(–tx-3); }
+.steam-ts-stat-diff.up   { color: var(–up); }
+.steam-ts-stat-diff.down { color: var(–down); }
+.steam-ts-title { font-size: 16px; color: var(–steam); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+.steam-ts-link {
+display: inline-flex; align-items: center; gap: 5px;
+background: rgba(74,158,255,0.07); border: 1px solid rgba(74,158,255,0.25);
+color: var(–steam); text-decoration: none; font-size: 13px; font-weight: 700;
+padding: 5px 10px; border-radius: var(–radius); transition: background var(–trans);
+}
+.steam-ts-link:hover { background: rgba(74,158,255,0.15); }
+.steam-ts-dl-btn {
+display: inline-flex; align-items: center; gap: 5px;
+background: rgba(46,204,113,0.07); border: 1px solid rgba(46,204,113,0.25);
+color: var(–up); text-decoration: none; font-size: 13px; font-weight: 700;
+padding: 5px 10px; border-radius: var(–radius); cursor: pointer; transition: background var(–trans);
+}
+.steam-ts-dl-btn:hover { background: rgba(46,204,113,0.15); }
+
+/* Steam 국가 카드 */
+.steam-ts-country-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 7px; margin-top: 10px; }
+.steam-ts-country-card {
+background: var(–bg-2); border: 1px solid var(–bd);
+border-radius: var(–radius); padding: 10px 10px 8px;
+cursor: pointer; transition: border-color var(–trans), background var(–trans);
+display: flex; align-items: flex-start; gap: 8px; position: relative;
+}
+.steam-ts-country-card:hover { border-color: var(–steam); background: var(–bg-3); }
+.steam-ts-country-card.rank1 { border-color: rgba(241,196,15,0.4); background: rgba(241,196,15,0.04); }
+.steam-ts-country-card.rank2 { border-color: rgba(192,192,192,0.3); }
+.steam-ts-country-card.rank3 { border-color: rgba(205,127,50,0.3); }
+.steam-ts-country-info { flex: 1; min-width: 0; }
+.steam-ts-country-name { font-size: 14px; font-weight: 700; color: var(–tx-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.steam-ts-country-rank { font-family: ‘Cinzel’, serif; font-size: 18px; font-weight: 900; color: var(–tx-1); margin-top: 2px; }
+.steam-ts-country-diff { font-size: 13px; font-weight: 800; margin-left: 4px; }
+.steam-ts-country-diff.up   { color: var(–up); }
+.steam-ts-country-diff.down { color: var(–down); }
+.steam-ts-rank-badge { font-size: 10px; margin-left: 4px; vertical-align: middle; }
+.steam-ts-weight-badge { font-size: 10px; color: var(–tx-4); }
+.steam-ts-store-link {
+position: absolute; top: 6px; right: 6px;
+color: var(–tx-4); opacity: 0.5; transition: opacity var(–trans);
+display: flex; align-items: center;
+}
+.steam-ts-store-link:hover { opacity: 1; }
+.steam-ts-store-link svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
+@media (max-width: 600px) { .steam-ts-country-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
+
+/* Steam 모달 */
+.steam-ts-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 150; align-items: center; justify-content: center; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; }
+.steam-ts-modal-overlay.open { display: flex; }
+.steam-ts-modal { background: var(–bg-2); border: 1px solid var(–bd-hi); border-radius: var(–radius); padding: 24px; width: min(480px,92vw); max-height: 85vh; overflow-y: auto; margin: auto; }
+.steam-ts-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.steam-ts-modal-title { font-size: 17px; font-weight: 800; color: var(–tx-1); }
+.steam-ts-modal-close { background: none; border: none; color: var(–tx-3); font-size: 22px; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+.steam-ts-modal-close:hover { color: var(–tx-1); background: var(–bg-3); }
+.steam-ts-modal-stats { display: flex; gap: 8px; margin-bottom: 14px; }
+.steam-ts-modal-chart-inner { height: 220px; }
+.steam-ts-modal-link { display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; color: var(–steam); font-size: 14px; font-weight: 700; text-decoration: none; }
+
+/* Steam 차트 */
+.steam-ts-chart-box { background: var(–bg-1); border: 1px solid var(–bd); border-radius: var(–radius); padding: 16px; }
+.steam-ts-chart-inner { height: 320px; }
+@media (max-width: 600px) { .steam-ts-chart-inner { height: 200px; } }
+
+/* Steam 국가별 요약 행 */
+.sts-country-summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(–gap); margin-bottom: var(–gap); }
+
+/* Steam 스케줄 섹션 collapsible (제거됐지만 body 스타일 유지) */
+.sts-collapsible-body { overflow: hidden; transition: max-height 0.3s ease; }
+.sts-collapsible-body.collapsed { max-height: 0 !important; }
+
+/* ══ 국가별 테이블 행 ═══════════════════════════════════════════ */
+.ct-table-header,
+.ct-row {
+display: grid;
+grid-template-columns: 3px 22px 1fr 60px 60px 28px 44px 22px;
+align-items: center;
+gap: 6px;
+padding: 6px 10px 6px 0;
+}
+.ct-table-header {
+border-bottom: 2px solid var(–bd-hi);
+font-size: 10px; color: var(–tx-4);
+font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase;
+padding-bottom: 5px;
+}
+.ct-row {
+border-bottom: 1px solid var(–bd);
+cursor: pointer;
+transition: background var(–trans);
+min-height: 34px;
+}
+.ct-row:hover { background: var(–bg-3); }
+.ct-bar { align-self: stretch; border-radius: 0 2px 2px 0; min-height: 34px; }
+.ct-flag { font-size: 17px; text-align: center; overflow: hidden; }
+.ct-name { font-size: 15px; font-weight: 700; color: var(–tx-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ct-meta { font-size: 11px; color: var(–tx-3); text-align: right; white-space: nowrap; }
+.ct-chg  { font-size: 13px; font-weight: 800; text-align: center; }
+.ct-chg.up   { color: var(–up); }
+.ct-chg.down { color: var(–down); }
+.ct-rank { font-family: ‘Cinzel’, serif; font-size: 13px; font-weight: 900; text-align: right; white-space: nowrap; }
+.ct-link { font-size: 13px; color: var(–tx-4); text-decoration: none; text-align: center; }
+.ct-link:hover { color: var(–tx-2); }
+/* 접기/펼치기 */
+.rank-group-header {
+display: flex; align-items: center; gap: 10px;
+padding: 11px 14px; cursor: pointer;
+border-bottom: 1px solid var(–bd); border-top: 1px solid var(–bd);
+transition: background var(–trans); margin-top: 2px;
+background: var(–bg-2);
+}
+.rank-group-header:hover { background: var(–bg-3); }
+.rank-group-count { font-size: 15px; font-weight: 700; color: var(–tx-3); }
+.rank-group-arrow { font-size: 15px; color: var(–tx-4); transition: transform 0.2s; margin-left: auto; }
+.rank-group-arrow.open { transform: rotate(180deg); }
+.rank-group-body { overflow: hidden; transition: max-height 0.3s ease; }
+.rank-group-body.collapsed { max-height: 0 !important; }
+/* 리더보드/히트맵/국가별 그룹 레이블 */
+.lb-group-label { font-size: 17px; font-weight: 800; }
+.lb-group-label.g1  { color: #f1c40f; }
+.lb-group-label.g2  { color: #c0c0c0; }
+.lb-group-label.g3  { color: #cd7f32; }
+.lb-group-label.g10 { color: var(–steam); }
+.lb-group-label.gout { color: var(–tx-4); }
+/* 모바일 */
+@media (max-width: 700px) {
+.rank-group-header { padding: 10px 12px; }
+.lb-group-label { font-size: 16px; }
+.rank-group-count { font-size: 14px; }
+.rank-group-arrow { font-size: 14px; }
+}
+@media (max-width: 500px) {
+.ct-table-header { display: none; }
+.ct-row {
+grid-template-columns: 3px 22px 1fr auto 20px;
+grid-template-rows: auto auto;
+gap: 2px 6px; padding: 8px 10px 8px 0;
+}
+.ct-bar  { grid-row: 1 / 3; align-self: stretch; }
+.ct-flag { grid-row: 1; grid-column: 2; }
+.ct-name { grid-row: 1; grid-column: 3; font-size: 14px; }
+.ct-rank { grid-row: 1; grid-column: 4; font-size: 14px; }
+.ct-link { grid-row: 1; grid-column: 5; }
+.ct-meta { grid-row: 2; grid-column: 3; font-size: 11px; text-align: left; white-space: nowrap; overflow: visible; width: auto; padding: 0; }
+.ct-chg  { grid-row: 2; grid-column: 4; font-size: 11px; overflow: visible; width: auto; padding: 0; }
+}
+
+/* ══ 모바일 가로보기 ══════════════════════════════════════════ */
+@media (max-height: 500px) and (orientation: landscape) {
+header { padding: 4px 0; }
+header h1 { font-size: 18px !important; }
+.gh-dispatch-btn { font-size: 11px; padding: 3px 6px; }
+#pa-stock { padding: 4px 8px !important; }
+#pa-price { font-size: 16px !important; }
+.dual-wrap { grid-template-columns: 1fr 1fr; }
+.dual-col { height: calc(100vh - var(–col-offset, 100px)); min-height: 200px; }
+.summary-chart-wrap .dual-col { height: auto !important; min-height: 280px; overflow: visible !important; }
+.dual-col-header { padding: 6px 12px; font-size: 13px; }
+.dual-col .card .val { font-size: 16px !important; }
+.modal-content { padding: 12px; margin: 4px auto; }
+.modal-content > div[style*=“height”] { height: min(240px, 40vh) !important; }
+.steam-ts-modal { padding: 12px; max-height: 90vh; }
+.steam-ts-modal-chart-inner { height: 150px !important; }
+}
+
+/* ══ PC 전용 (768px+) ═══════════════════════════════════════ */
+@media (min-width: 768px) {
+.summary-chart-wrap .dual-col { height: auto !important; overflow: visible !important; }
+.summary-chart-wrap .dual-col-body { overflow: visible !important; height: auto !important; }
+.nav-tab { font-size: 16px; padding: 10px 14px; }
+.card .lbl { font-size: 14px; }
+.card .val { font-size: 33px; }
+.card .sub { font-size: 17px; }
+.dual-col .card .val { font-size: 27px; }
+.dual-col-header { font-size: 16px; padding: 11px 16px; }
+.lb-group-label { font-size: 18px; }
+.rank-group-count { font-size: 16px; }
+.rank-group-header { padding: 12px 16px; }
+.ct-name { font-size: 16px; }
+.ct-meta { font-size: 14px; }
+.ct-rank { font-size: 17px; }
+.hm-name { font-size: 16px; }
+.top10-item .n { font-size: 16px; }
+.top10-item .r { font-size: 18px; }
+.sts-sched-summary .sv { font-size: 22px; }
+.slot-h { font-size: 13px; }
+.slot-i { font-size: 17px; }
+.sts-slot { width: 64px; min-height: 46px; }
+.rank-group-arrow { font-size: 16px; }
+}
+
+/* ══ PS Store 링크 팝오버 ═══════════════════════════════════ */
+.ps-links-btn {
+display: inline-flex; align-items: center; gap: 4px;
+font-size: 13px; color: var(–blood); opacity: 0.7;
+padding: 2px 8px; border: 1px solid rgba(255,71,87,0.3);
+border-radius: 4px; cursor: pointer; white-space: nowrap;
+font-weight: 700; letter-spacing: 0; text-transform: none;
+flex-shrink: 0; background: transparent;
+transition: opacity 0.15s;
+position: relative;
+}
+.ps-links-btn:hover { opacity: 1; }
+.ps-links-popover {
+display: none;
+position: fixed;
+background: var(–bg-2); border: 1px solid var(–bd-hi);
+border-radius: 8px; padding: 10px; z-index: 200;
+box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+max-width: 340px; max-height: 60vh;
+overflow-y: auto;
+}
+.ps-links-popover.open { display: block; }
+.ps-links-title { font-size: 11px; font-weight: 800; color: var(–blood); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.ps-links-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.ps-links-item {
+display: flex; align-items: center; gap: 5px;
+padding: 5px 7px; border-radius: 5px; cursor: pointer;
+font-size: 12px; font-weight: 700; color: var(–tx-2);
+background: var(–bg-3); border: 1px solid var(–bd);
+text-decoration: none; white-space: nowrap;
+transition: background var(–trans), border-color var(–trans);
+}
+.ps-links-item:hover { background: var(–bg-4); border-color: var(–blood); color: var(–tx-1); }
+.ps-links-item.rank-1  { border-color: rgba(241,196,15,0.4); }
+.ps-links-item.rank-23 { border-color: rgba(192,192,192,0.3); }
+.ps-links-item.rank-10 { border-color: rgba(74,158,255,0.3); }
+#ps-links-overlay { display:none; position:fixed; inset:0; z-index:199; }
+#ps-links-overlay.open { display:block; }
+
+/* 요약 섹션: dual-wrap 높이 자동 (아래 차트가 보이도록) */
+#sec-summary > .dual-wrap { height: auto !important; min-height: 0 !important; }
+#sec-summary > .dual-wrap .dual-col { height: auto !important; overflow: visible !important; }
+#sec-summary > .dual-wrap .dual-col-body { height: auto !important; overflow: visible !important; }
+
+/* 요약 차트 전용: 높이 자동, 스크롤 없이 canvas 크기 보장 */
+/* summary-chart-wrap 제거됨 - 단순 div로 교체 */
+
+/* 요약 순위별 국가 그룹 */
+.sum-rank-header {
+display: flex; align-items: center; gap: 8px;
+padding: 9px 14px; cursor: pointer;
+background: var(–bg-2); border-bottom: 1px solid var(–bd);
+transition: background var(–trans); user-select: none;
+}
+.sum-rank-header:first-child { border-radius: calc(var(–radius) - 1px) calc(var(–radius) - 1px) 0 0; }
+.sum-rank-header:hover { background: var(–bg-3); }
+.sum-rank-label { font-size: 15px; font-weight: 800; flex: 1; }
+.sum-rank-cnt   { font-size: 14px; font-weight: 700; color: var(–tx-3); }
+.sum-rank-arrow { font-size: 12px; color: var(–tx-4); transition: transform 0.2s; }
+.sum-rank-arrow.open { transform: rotate(180deg); }
+.sum-rank-body  { overflow: hidden; transition: max-height 0.3s ease; }
+.sum-rank-body.collapsed { max-height: 0 !important; }
+.sum-rank-grid  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px 14px 12px; }
 </style>
+
 </head>
 <body>
 
@@ -960,6 +975,7 @@
 <div class="container" style="padding-top:20px">
 
   <!-- GitHub Token 설정 모달 -->
+
   <div class="gh-modal-bg" id="gh-modal">
     <div class="gh-modal-box">
       <span class="gh-modal-close" onclick="closeGhModal()">×</span>
@@ -977,6 +993,7 @@
   <!-- 탭 섹션: 통합 듀얼 패널 -->
 
   <!-- ① 요약 -->
+
   <div id="sec-summary" class="tab-section active-section">
     <div class="dual-wrap">
       <!-- PS 좌측 -->
@@ -1009,115 +1026,119 @@
             <div id="ps-summary-rank-groups"></div>
           </div>
 
-        </div>
-      </div></div><!-- /dual-col-body -->
-      <!-- Steam 우측 -->
-      <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header">🖥 Steam <a href="https://steamdb.info/app/3321460/charts/" target="_blank" style="font-size:13px;color:var(--steam);opacity:0.7;margin-left:auto;text-decoration:none;font-weight:700;letter-spacing:0;text-transform:none;flex-shrink:0;padding:2px 6px;border:1px solid rgba(74,158,255,0.3);border-radius:4px;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">SteamDB ↗</a><span id="sts-data-time" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
-        <div class="dual-col-body"><div class="stats">
-          <!-- 글로벌 순위 (숨김 - JS 표시용) -->
-          <div id="sts-global-rank-box" style="display:none">
-            <div id="sts-global-rank"></div><div id="sts-global-diff"></div>
-          </div>
-          <!-- 숨김 유지 원소들 (JS 참조용) -->
-          <div style="display:none"><span id="sts-avg-diff"></span><span id="sts-best-date"></span><span id="sts-count"></span><span id="sts-countries-sub"></span><span id="sts-best"></span></div>
-          <div class="card" style="border-left-color:var(--steam)">
-            <div class="lbl">가중 평균</div>
-            <div class="val" id="sts-avg" style="color:var(--steam)">—</div>
-          </div>
-          <!-- 최고/최하 합친 카드 -->
-          <div class="card" style="border-left-color:var(--steam);grid-column:span 1">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-              <div>
-                <div class="lbl" style="margin-bottom:4px">최고 순위</div>
-                <div class="val" id="sts-best-rank-val" style="font-size:22px;color:var(--gold)">—</div>
-                <div class="sub" id="sts-best-rank-name" style="font-size:13px">...</div>
-              </div>
-              <div style="border-left:1px solid var(--bd);padding-left:10px">
-                <div class="lbl" style="margin-bottom:4px">최하 순위</div>
-                <div class="val" id="sts-worst-rank-val" style="font-size:22px;color:var(--down)">—</div>
-                <div class="sub" id="sts-worst-rank-name" style="font-size:13px">...</div>
-              </div>
-            </div>
-          </div>
-          <!-- 숨김 유지 (JS 참조용) -->
-          <span id="sts-cnt-1" style="display:none">0</span>
-          <span id="sts-cnt-3" style="display:none">0</span>
-          <span id="sts-cnt-10" style="display:none">0</span>
-          <span id="sts-cnt-rest" style="display:none">0</span>
-          <!-- 순위별 전체 국가 목록 -->
-          <div class="card" style="border-left-color:var(--steam);grid-column:1/-1;padding:0">
-            <div id="sts-summary-rank-groups"></div>
-          </div>
-
-        </div>
-      </div></div><!-- /dual-col-body -->
+```
     </div>
-
-    <!-- Top5 국가 비교 차트 -->
-    <div style="background:var(--bg-1);border:1px solid var(--bd);border-radius:var(--radius);margin-top:14px;padding:14px">
-      <div style="font-size:13px;font-weight:800;color:var(--tx-2);letter-spacing:1px;margin-bottom:12px;text-transform:uppercase">📊 Top5 국가별 점유율 순위</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;height:300px">
-        <div style="background:var(--bg-2);border:1px solid var(--bd);border-radius:var(--radius);border-top:2px solid var(--blood)">
-          <div style="width:100%;height:100%"><canvas id="top5PsChart" style="display:block"></canvas></div>
-        </div>
-        <div style="background:var(--bg-2);border:1px solid var(--bd);border-radius:var(--radius);border-top:2px solid var(--steam)">
-          <div style="width:100%;height:100%"><canvas id="top5SteamChart" style="display:block"></canvas></div>
-        </div>
+  </div></div><!-- /dual-col-body -->
+  <!-- Steam 우측 -->
+  <div class="dual-col steam-col">
+    <div class="dual-col-header steam-header">🖥 Steam <a href="https://steamdb.info/app/3321460/charts/" target="_blank" style="font-size:13px;color:var(--steam);opacity:0.7;margin-left:auto;text-decoration:none;font-weight:700;letter-spacing:0;text-transform:none;flex-shrink:0;padding:2px 6px;border:1px solid rgba(74,158,255,0.3);border-radius:4px;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">SteamDB ↗</a><span id="sts-data-time" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+    <div class="dual-col-body"><div class="stats">
+      <!-- 글로벌 순위 (숨김 - JS 표시용) -->
+      <div id="sts-global-rank-box" style="display:none">
+        <div id="sts-global-rank"></div><div id="sts-global-diff"></div>
       </div>
-    </div>
-
-    <!-- 요약 하단 차트 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
-      <!-- PS 차트 -->
-      <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--blood);border-radius:var(--radius)">
-        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--blood);letter-spacing:1px;border-bottom:1px solid var(--bd)">📈 PS Store 추이</div>
-        <div style="padding:14px">
-          <div style="width:100%;overflow:hidden"><canvas id="summaryPsChart" style="display:block"></canvas></div>
-          <div class="chart-legend" style="margin-top:8px">
-            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sps-leg-start">시작 —</span></div>
-            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sps-leg-best">최고 —</span></div>
-            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="sps-leg-current">현재 —</span></div>
+      <!-- 숨김 유지 원소들 (JS 참조용) -->
+      <div style="display:none"><span id="sts-avg-diff"></span><span id="sts-best-date"></span><span id="sts-count"></span><span id="sts-countries-sub"></span><span id="sts-best"></span></div>
+      <div class="card" style="border-left-color:var(--steam)">
+        <div class="lbl">가중 평균</div>
+        <div class="val" id="sts-avg" style="color:var(--steam)">—</div>
+      </div>
+      <!-- 최고/최하 합친 카드 -->
+      <div class="card" style="border-left-color:var(--steam);grid-column:span 1">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <div class="lbl" style="margin-bottom:4px">최고 순위</div>
+            <div class="val" id="sts-best-rank-val" style="font-size:22px;color:var(--gold)">—</div>
+            <div class="sub" id="sts-best-rank-name" style="font-size:13px">...</div>
           </div>
-        </div>
-        <div style="padding:0 14px 14px;border-top:1px solid var(--bd)">
-          <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:10px 0 6px">일자별 순위별 국가수</div>
-          <div style="width:100%;overflow:hidden"><canvas id="psRankDistChart" style="display:block"></canvas></div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:11px">
-            <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#f1c40f;border-radius:2px;display:inline-block"></span>1위</span>
-            <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#c0c0c0;border-radius:2px;display:inline-block"></span>2~3위</span>
-            <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#4a9eff;border-radius:2px;display:inline-block"></span>4~10위</span>
-            <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#555;border-radius:2px;display:inline-block"></span>11위+</span>
+          <div style="border-left:1px solid var(--bd);padding-left:10px">
+            <div class="lbl" style="margin-bottom:4px">최하 순위</div>
+            <div class="val" id="sts-worst-rank-val" style="font-size:22px;color:var(--down)">—</div>
+            <div class="sub" id="sts-worst-rank-name" style="font-size:13px">...</div>
           </div>
         </div>
       </div>
-      <!-- Steam 차트 -->
-      <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--steam);border-radius:var(--radius)">
-        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--steam);letter-spacing:1px;border-bottom:1px solid var(--bd)">📈 Steam 추이</div>
-        <div style="padding:14px">
-          <div style="width:100%;overflow:hidden"><canvas id="summaryStChart" style="display:block"></canvas></div>
-          <div class="chart-legend" style="margin-top:8px">
-            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sst-leg-start">시작 —</span></div>
-            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sst-leg-best">최고 —</span></div>
-            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="sst-leg-current">현재 —</span></div>
-            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#e74c3c"></span><span id="sst-leg-worst">최저 —</span></div>
-          </div>
-        </div>
-        <div style="padding:0 14px 14px;border-top:1px solid var(--bd)">
-          <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:10px 0 6px">일자별 순위별 국가수</div>
-          <div style="width:100%;overflow:hidden"><canvas id="stsRankDistChart" style="display:block"></canvas></div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:11px">
-            <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#f1c40f;border-radius:2px;display:inline-block"></span>1위</span>
-            <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#c0c0c0;border-radius:2px;display:inline-block"></span>2~3위</span>
-            <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#4a9eff;border-radius:2px;display:inline-block"></span>4~10위</span>
-            <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#555;border-radius:2px;display:inline-block"></span>11위+</span>
-          </div>
-        </div>
+      <!-- 숨김 유지 (JS 참조용) -->
+      <span id="sts-cnt-1" style="display:none">0</span>
+      <span id="sts-cnt-3" style="display:none">0</span>
+      <span id="sts-cnt-10" style="display:none">0</span>
+      <span id="sts-cnt-rest" style="display:none">0</span>
+      <!-- 순위별 전체 국가 목록 -->
+      <div class="card" style="border-left-color:var(--steam);grid-column:1/-1;padding:0">
+        <div id="sts-summary-rank-groups"></div>
+      </div>
+
+    </div>
+  </div></div><!-- /dual-col-body -->
+</div>
+
+<!-- Top5 국가 비교 차트 -->
+<div style="background:var(--bg-1);border:1px solid var(--bd);border-radius:var(--radius);margin-top:14px;padding:14px">
+  <div style="font-size:13px;font-weight:800;color:var(--tx-2);letter-spacing:1px;margin-bottom:12px;text-transform:uppercase">📊 Top5 국가별 점유율 순위</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;height:300px">
+    <div style="background:var(--bg-2);border:1px solid var(--bd);border-radius:var(--radius);border-top:2px solid var(--blood)">
+      <div style="width:100%;height:100%"><canvas id="top5PsChart" style="display:block"></canvas></div>
+    </div>
+    <div style="background:var(--bg-2);border:1px solid var(--bd);border-radius:var(--radius);border-top:2px solid var(--steam)">
+      <div style="width:100%;height:100%"><canvas id="top5SteamChart" style="display:block"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- 요약 하단 차트 -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+  <!-- PS 차트 -->
+  <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--blood);border-radius:var(--radius)">
+    <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--blood);letter-spacing:1px;border-bottom:1px solid var(--bd)">📈 PS Store 추이</div>
+    <div style="padding:14px">
+      <div style="width:100%;overflow:hidden"><canvas id="summaryPsChart" style="display:block"></canvas></div>
+      <div class="chart-legend" style="margin-top:8px">
+        <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sps-leg-start">시작 —</span></div>
+        <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sps-leg-best">최고 —</span></div>
+        <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="sps-leg-current">현재 —</span></div>
       </div>
     </div>
+    <div style="padding:0 14px 14px;border-top:1px solid var(--bd)">
+      <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:10px 0 6px">일자별 순위별 국가수</div>
+      <div style="width:100%;overflow:hidden"><canvas id="psRankDistChart" style="display:block"></canvas></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:11px">
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#f1c40f;border-radius:2px;display:inline-block"></span>1위</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#c0c0c0;border-radius:2px;display:inline-block"></span>2~3위</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#4a9eff;border-radius:2px;display:inline-block"></span>4~10위</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#555;border-radius:2px;display:inline-block"></span>11위+</span>
+      </div>
+    </div>
+  </div>
+  <!-- Steam 차트 -->
+  <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--steam);border-radius:var(--radius)">
+    <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--steam);letter-spacing:1px;border-bottom:1px solid var(--bd)">📈 Steam 추이</div>
+    <div style="padding:14px">
+      <div style="width:100%;overflow:hidden"><canvas id="summaryStChart" style="display:block"></canvas></div>
+      <div class="chart-legend" style="margin-top:8px">
+        <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sst-leg-start">시작 —</span></div>
+        <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sst-leg-best">최고 —</span></div>
+        <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="sst-leg-current">현재 —</span></div>
+        <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#e74c3c"></span><span id="sst-leg-worst">최저 —</span></div>
+      </div>
+    </div>
+    <div style="padding:0 14px 14px;border-top:1px solid var(--bd)">
+      <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:10px 0 6px">일자별 순위별 국가수</div>
+      <div style="width:100%;overflow:hidden"><canvas id="stsRankDistChart" style="display:block"></canvas></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:11px">
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#f1c40f;border-radius:2px;display:inline-block"></span>1위</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#c0c0c0;border-radius:2px;display:inline-block"></span>2~3위</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#4a9eff;border-radius:2px;display:inline-block"></span>4~10위</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#555;border-radius:2px;display:inline-block"></span>11위+</span>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
   </div><!-- /sec-summary -->
 
   <!-- ② 리더보드 -->
+
   <div id="sec-leaderboard" class="tab-section">
     <div class="dual-wrap">
       <div class="dual-col ps-col">
@@ -1132,6 +1153,7 @@
   </div><!-- /sec-leaderboard -->
 
   <!-- ③ 스케줄 -->
+
   <div id="sec-sched" class="tab-section">
     <div class="dual-wrap">
       <div class="dual-col ps-col">
@@ -1161,10 +1183,8 @@
     </div>
   </div><!-- /sec-sched -->
 
-
-
-
   <!-- 💰 판매량 추정 -->
+
   <div id="sec-sales" class="tab-section">
     <div class="dual-wrap">
       <div class="dual-col ps-col" style="flex:1">
@@ -1217,15 +1237,19 @@
       </div>
     </div>
 
-    <!-- 국가별 예상 매출 분포 -->
-    <div style="background:var(--bg-1);border:1px solid var(--bd);border-radius:var(--radius);padding:14px;margin-top:14px">
-      <div id="country-sales-heatmap" style="font-size:12px;color:var(--tx-2)">
-        <div style="color:var(--tx-4);text-align:center;padding:20px">📊 데이터 계산 중...</div>
-      </div>
-    </div>
+```
+<!-- 국가별 예상 매출 분포 -->
+<div style="background:var(--bg-1);border:1px solid var(--bd);border-radius:var(--radius);padding:14px;margin-top:14px">
+  <div id="country-sales-heatmap" style="font-size:12px;color:var(--tx-2)">
+    <div style="color:var(--tx-4);text-align:center;padding:20px">📊 데이터 계산 중...</div>
+  </div>
+</div>
+```
+
   </div><!-- /sec-sales -->
 
   <!-- 🗺️ 지역 전망 -->
+
   <div id="sec-regional" class="tab-section">
     <div style="background:var(--bg-1);border:1px solid var(--bd);border-radius:var(--radius);padding:14px;margin-bottom:14px">
       <div style="font-size:13px;font-weight:800;color:var(--tx-2);letter-spacing:1px;margin-bottom:12px;text-transform:uppercase">🗺️ 지역별 전망 분석</div>
@@ -1234,82 +1258,90 @@
       </div>
     </div>
 
-    <!-- 지역별 상세 차트 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-      <!-- 지역별 누적 순위 -->
-      <div style="background:var(--bg-1);border:1px solid var(--bd);border-radius:var(--radius);padding:14px;border-top:2px solid var(--blood)">
-        <div style="font-size:12px;font-weight:800;color:var(--blood);letter-spacing:1px;margin-bottom:10px;text-transform:uppercase">PS Store - 지역별 순위</div>
-        <div style="height:280px"><canvas id="regionalPsChart"></canvas></div>
-      </div>
-      <!-- 지역별 Steam 순위 -->
-      <div style="background:var(--bg-1);border:1px solid var(--bd);border-radius:var(--radius);padding:14px;border-top:2px solid var(--steam)">
-        <div style="font-size:12px;font-weight:800;color:var(--steam);letter-spacing:1px;margin-bottom:10px;text-transform:uppercase">Steam - 지역별 순위</div>
-        <div style="height:280px"><canvas id="regionalStChart"></canvas></div>
-      </div>
-    </div>
+```
+<!-- 지역별 상세 차트 -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+  <!-- 지역별 누적 순위 -->
+  <div style="background:var(--bg-1);border:1px solid var(--bd);border-radius:var(--radius);padding:14px;border-top:2px solid var(--blood)">
+    <div style="font-size:12px;font-weight:800;color:var(--blood);letter-spacing:1px;margin-bottom:10px;text-transform:uppercase">PS Store - 지역별 순위</div>
+    <div style="height:280px"><canvas id="regionalPsChart"></canvas></div>
+  </div>
+  <!-- 지역별 Steam 순위 -->
+  <div style="background:var(--bg-1);border:1px solid var(--bd);border-radius:var(--radius);padding:14px;border-top:2px solid var(--steam)">
+    <div style="font-size:12px;font-weight:800;color:var(--steam);letter-spacing:1px;margin-bottom:10px;text-transform:uppercase">Steam - 지역별 순위</div>
+    <div style="height:280px"><canvas id="regionalStChart"></canvas></div>
+  </div>
+</div>
 
-    <!-- 지역별 판매량 분포 -->
-    <div style="background:var(--bg-1);border:1px solid var(--bd);border-radius:var(--radius);padding:14px">
-      <div style="font-size:12px;font-weight:800;color:var(--tx-2);letter-spacing:1px;margin-bottom:10px;text-transform:uppercase">💰 지역별 추정 판매 분포</div>
-      <div id="regional-sales-breakdown" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:12px">
-        <div style="color:var(--tx-4);text-align:center;padding:15px">📊 계산 중...</div>
-      </div>
-    </div>
+<!-- 지역별 판매량 분포 -->
+<div style="background:var(--bg-1);border:1px solid var(--bd);border-radius:var(--radius);padding:14px">
+  <div style="font-size:12px;font-weight:800;color:var(--tx-2);letter-spacing:1px;margin-bottom:10px;text-transform:uppercase">💰 지역별 추정 판매 분포</div>
+  <div id="regional-sales-breakdown" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:12px">
+    <div style="color:var(--tx-4);text-align:center;padding:15px">📊 계산 중...</div>
+  </div>
+</div>
+```
+
   </div><!-- /sec-regional -->
 
   <!-- 📈 Pearl Abyss 주가 영향도 분석 -->
+
   <div id="sec-stock" class="tab-section">
     <div style="background:var(--bg-1);border:1px solid var(--bd);border-radius:var(--radius);padding:14px;margin-bottom:14px">
       <div style="font-size:13px;font-weight:800;color:var(--tx-2);letter-spacing:1px;margin-bottom:12px;text-transform:uppercase">📈 Pearl Abyss (263750) 주가 영향도</div>
-      
-      <!-- 현재 주가 요약 -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px">
-        <div style="background:var(--bg-2);border:1px solid var(--bd);border-radius:var(--radius);padding:12px;border-left:3px solid var(--gold)">
-          <div style="font-size:10px;color:var(--tx-4);font-weight:800;margin-bottom:6px;text-transform:uppercase">현재 주가</div>
-          <div style="font-size:22px;font-weight:900;color:var(--gold);font-family:Cinzel,serif" id="pa-current-price">—</div>
-          <div style="font-size:11px;color:var(--tx-4);margin-top:4px" id="pa-current-change">—</div>
-        </div>
-        <div style="background:var(--bg-2);border:1px solid var(--bd);border-radius:var(--radius);padding:12px;border-left:3px solid #2ecc71">
-          <div style="font-size:10px;color:var(--tx-4);font-weight:800;margin-bottom:6px;text-transform:uppercase">300만 기준 목표</div>
-          <div style="font-size:22px;font-weight:900;color:#2ecc71;font-family:Cinzel,serif" id="pa-target-price-base">—</div>
-          <div style="font-size:11px;color:var(--tx-4);margin-top:4px" id="pa-upside-base">—</div>
-        </div>
-        <div style="background:var(--bg-2);border:1px solid var(--bd);border-radius:var(--radius);padding:12px;border-left:3px solid #f1c40f">
-          <div style="font-size:10px;color:var(--tx-4);font-weight:800;margin-bottom:6px;text-transform:uppercase">500만 시나리오</div>
-          <div style="font-size:22px;font-weight:900;color:#f1c40f;font-family:Cinzel,serif" id="pa-target-price-5m">—</div>
-          <div style="font-size:11px;color:var(--tx-4);margin-top:4px" id="pa-upside-5m">—</div>
-        </div>
-        <div style="background:var(--bg-2);border:1px solid var(--bd);border-radius:var(--radius);padding:12px;border-left:3px solid #e74c3c">
-          <div style="font-size:10px;color:var(--tx-4);font-weight:800;margin-bottom:6px;text-transform:uppercase">1000만 시나리오</div>
-          <div style="font-size:22px;font-weight:900;color:#e74c3c;font-family:Cinzel,serif" id="pa-target-price-10m">—</div>
-          <div style="font-size:11px;color:var(--tx-4);margin-top:4px" id="pa-upside-10m">—</div>
-        </div>
-      </div>
 
-      <!-- 판매량 vs 주가 상관성 -->
-      <div style="background:var(--bg-2);border:1px solid var(--bd);border-radius:var(--radius);padding:12px">
-        <div style="font-size:11px;font-weight:800;color:var(--tx-3);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase">📊 판매 시나리오별 주가 추정</div>
-        <div id="pa-scenario-table" style="font-size:12px;color:var(--tx-2)">
-          <div style="text-align:center;padding:20px;color:var(--tx-4)">💾 데이터 계산 중...</div>
-        </div>
-      </div>
+```
+  <!-- 현재 주가 요약 -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px">
+    <div style="background:var(--bg-2);border:1px solid var(--bd);border-radius:var(--radius);padding:12px;border-left:3px solid var(--gold)">
+      <div style="font-size:10px;color:var(--tx-4);font-weight:800;margin-bottom:6px;text-transform:uppercase">현재 주가</div>
+      <div style="font-size:22px;font-weight:900;color:var(--gold);font-family:Cinzel,serif" id="pa-current-price">—</div>
+      <div style="font-size:11px;color:var(--tx-4);margin-top:4px" id="pa-current-change">—</div>
     </div>
+    <div style="background:var(--bg-2);border:1px solid var(--bd);border-radius:var(--radius);padding:12px;border-left:3px solid #2ecc71">
+      <div style="font-size:10px;color:var(--tx-4);font-weight:800;margin-bottom:6px;text-transform:uppercase">300만 기준 목표</div>
+      <div style="font-size:22px;font-weight:900;color:#2ecc71;font-family:Cinzel,serif" id="pa-target-price-base">—</div>
+      <div style="font-size:11px;color:var(--tx-4);margin-top:4px" id="pa-upside-base">—</div>
+    </div>
+    <div style="background:var(--bg-2);border:1px solid var(--bd);border-radius:var(--radius);padding:12px;border-left:3px solid #f1c40f">
+      <div style="font-size:10px;color:var(--tx-4);font-weight:800;margin-bottom:6px;text-transform:uppercase">500만 시나리오</div>
+      <div style="font-size:22px;font-weight:900;color:#f1c40f;font-family:Cinzel,serif" id="pa-target-price-5m">—</div>
+      <div style="font-size:11px;color:var(--tx-4);margin-top:4px" id="pa-upside-5m">—</div>
+    </div>
+    <div style="background:var(--bg-2);border:1px solid var(--bd);border-radius:var(--radius);padding:12px;border-left:3px solid #e74c3c">
+      <div style="font-size:10px;color:var(--tx-4);font-weight:800;margin-bottom:6px;text-transform:uppercase">1000만 시나리오</div>
+      <div style="font-size:22px;font-weight:900;color:#e74c3c;font-family:Cinzel,serif" id="pa-target-price-10m">—</div>
+      <div style="font-size:11px;color:var(--tx-4);margin-top:4px" id="pa-upside-10m">—</div>
+    </div>
+  </div>
 
-    <!-- 펄어비스 영향도 분석 -->
-    <div style="background:var(--bg-1);border:1px solid var(--bd);border-radius:var(--radius);padding:14px">
-      <div style="font-size:12px;font-weight:800;color:var(--tx-2);letter-spacing:1px;margin-bottom:10px;text-transform:uppercase">💡 투자 참고 사항</div>
-      <div id="pa-insights" style="font-size:12px;line-height:1.6;color:var(--tx-2)">
-        <ul style="margin:0;padding:0 0 0 20px;">
-          <li>Crimson Desert는 Pearl Abyss의 전략적 핵심 타이틀</li>
-          <li>성공 시 외인 Re-entry 가능성 (현재 2.95% 극저점)</li>
-          <li>월 300만장 기준 ≈ ₩141B 월 매출 추정</li>
-          <li>Q1 실적 (5/7) 공개 시 마일스톤 평가 예상</li>
-        </ul>
-      </div>
+  <!-- 판매량 vs 주가 상관성 -->
+  <div style="background:var(--bg-2);border:1px solid var(--bd);border-radius:var(--radius);padding:12px">
+    <div style="font-size:11px;font-weight:800;color:var(--tx-3);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase">📊 판매 시나리오별 주가 추정</div>
+    <div id="pa-scenario-table" style="font-size:12px;color:var(--tx-2)">
+      <div style="text-align:center;padding:20px;color:var(--tx-4)">💾 데이터 계산 중...</div>
     </div>
+  </div>
+</div>
+
+<!-- 펄어비스 영향도 분석 -->
+<div style="background:var(--bg-1);border:1px solid var(--bd);border-radius:var(--radius);padding:14px">
+  <div style="font-size:12px;font-weight:800;color:var(--tx-2);letter-spacing:1px;margin-bottom:10px;text-transform:uppercase">💡 투자 참고 사항</div>
+  <div id="pa-insights" style="font-size:12px;line-height:1.6;color:var(--tx-2)">
+    <ul style="margin:0;padding:0 0 0 20px;">
+      <li>Crimson Desert는 Pearl Abyss의 전략적 핵심 타이틀</li>
+      <li>성공 시 외인 Re-entry 가능성 (현재 2.95% 극저점)</li>
+      <li>월 300만장 기준 ≈ ₩141B 월 매출 추정</li>
+      <li>Q1 실적 (5/7) 공개 시 마일스톤 평가 예상</li>
+    </ul>
+  </div>
+</div>
+```
+
   </div><!-- /sec-stock -->
 
   <!-- ⑤ 히트맵 -->
+
   <div id="sec-heatmap" class="tab-section">
     <div class="dual-wrap">
       <div class="dual-col ps-col">
@@ -1336,6 +1368,7 @@
   </div><!-- /sec-heatmap -->
 
   <!-- ⑥ 국가별 -->
+
   <div id="sec-table" class="tab-section">
     <div class="dual-wrap">
       <div class="dual-col ps-col">
@@ -1366,6 +1399,7 @@
 </div><!-- /container -->
 
 <!-- Steam TS 국가 상세 모달 -->
+
 <div class="steam-ts-modal-overlay" id="sts-modal" onclick="closeStsModal(event)">
   <div class="steam-ts-modal">
     <div class="steam-ts-modal-header">
@@ -1391,7 +1425,9 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@15.1.0/dist/twemoji.min.js" crossorigin="anonymous"></script>
 
 <script>
@@ -2161,6 +2197,12 @@ function getRegion(country) {
   }
   return '기타';
 }
+
+/* ══ Top5 국가 정의 (점유율 기반) ══ */
+const TOP5_COUNTRIES = {
+  PS: ['미국', '일본', '영국', '독일', '프랑스'],
+  ST: ['미국', '중국', '러시아', '일본', '독일']
+};
 let stsHist=[], stsCI=null, stsMCI=null, stsSched=null;
 
 function fmtDate(iso) {
@@ -3065,35 +3107,46 @@ function renderRegionalAnalysis() {
 ══════════════════════════════════════════════════════════════ */
 
 function renderPearlfAbysspStockAnalysis() {
-  // 현재 주가 파싱 (pa-price에서 숫자 추출)
+  // 현재 주가 파싱
   const priceText = document.getElementById('pa-price')?.textContent || '—';
-  const currentPriceNum = parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
+  let currentPriceNum = parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
   
+  // 주가 로딩 중이면 딜레이
   if (currentPriceNum === 0) {
-    document.getElementById('pa-current-price').textContent = '로딩 중...';
+    setTimeout(renderPearlfAbysspStockAnalysis, 2000);
     return;
   }
   
   // 투자 분석 모델
   const SHARE_COUNT = 64_247_855; // 발행주식수
-  const DEV_COST = 200_000_000_000; // 개발비 ₩200B
+  const TOTAL_DEV_COST = 200_000_000_000; // 개발비 ₩200B
+  const MONTHLY_REVENUE_AT_3M = 141_000_000_000; // 300만장 = 월 141B
   
   // 시나리오별 목표 주가 계산
   function calculateTargetPrice(salesUnits) {
-    // 누적 판매량 기반 매출 모델
-    // 판매수 * 단가(₩5만) - 개발비 = 순이익
-    const estimatedRevenue = salesUnits * 50000;
-    const netRevenue = estimatedRevenue * 0.65; // 채널비 35% 공제
-    const grossIncome = netRevenue - DEV_COST;
+    // 단가: 141B / 3M = 47,000원
+    const unitPrice = MONTHLY_REVENUE_AT_3M / 3_000_000;
     
-    if (grossIncome <= 0) return currentPriceNum * 0.8; // 손실 상황
+    // 총 매출액
+    const totalRevenue = salesUnits * unitPrice;
     
-    const netIncome = grossIncome * 0.25; // 세후 이익률 ~25%
+    // 채널비 35% 공제 후 수익
+    const channelFee = 0.35;
+    const netRevenue = totalRevenue * (1 - channelFee);
+    
+    // 세전 순이익 (개발비 포함 회계 처리)
+    const grossIncome = netRevenue - TOTAL_DEV_COST;
+    
+    // 세후 순이익 (세율 25% 가정)
+    const netIncome = grossIncome > 0 ? grossIncome * 0.75 : 0;
+    
+    // EPS 계산
     const eps = netIncome / SHARE_COUNT;
     
-    // PER 18배 (한국 게임사 평균)
+    // 목표 주가 (PER 18배)
     const targetPrice = eps * 18;
-    return Math.max(targetPrice, 1000); // 최소 1000원
+    
+    return Math.max(targetPrice, 1000);
   }
 
   const target3m = calculateTargetPrice(3_000_000);
@@ -3102,7 +3155,7 @@ function renderPearlfAbysspStockAnalysis() {
   const target10m = calculateTargetPrice(10_000_000);
 
   // 카드 업데이트
-  document.getElementById('pa-current-price').textContent = (currentPriceNum).toLocaleString() + '원';
+  document.getElementById('pa-current-price').textContent = currentPriceNum.toLocaleString() + '원';
   document.getElementById('pa-target-price-base').textContent = Math.round(target3m).toLocaleString() + '원';
   document.getElementById('pa-upside-base').textContent = ((target3m / currentPriceNum - 1) * 100).toFixed(0) + '%';
   
@@ -3112,7 +3165,7 @@ function renderPearlfAbysspStockAnalysis() {
   document.getElementById('pa-target-price-10m').textContent = Math.round(target10m).toLocaleString() + '원';
   document.getElementById('pa-upside-10m').textContent = ((target10m / currentPriceNum - 1) * 100).toFixed(0) + '%';
 
-  // 시나리오 테이블 (300만 기준, 2M 제거)
+  // 시나리오 테이블
   const scenarios = [
     { name: '현재 (3M)', units: 3_000_000, color: '#f1c40f' },
     { name: '상승 (4M)', units: 4_000_000, color: '#3498db' },
@@ -3309,71 +3362,66 @@ let top5PsCI = null, top5StCI = null;
 function renderTop5Charts() {
   const W = 800, H = 280;
 
-  // ── PS Store Top5: 평균 순위 기반 (점유율 상위) ──
+  // ── PS Store Top5 (정의된 국가들의 일자별 순위) ──
   const psEl = document.getElementById('top5PsChart');
   if (psEl && historyData.length > 0) {
     psEl.width  = psEl.parentElement.offsetWidth || W;
     psEl.height = H;
     
-    // 국가별 평균 순위 계산
-    const psCountries = {};
+    // 국가별 일자별 순위 추적
+    const psCountriesByDay = {};
+    TOP5_COUNTRIES.PS.forEach(country => {
+      psCountriesByDay[country] = {};
+    });
+
+    // 데이터 수집
     historyData.forEach(h => {
-      Object.entries(h.raw_results || {}).forEach(([name, _]) => {
-        const r = getRank(h, name);
-        if (r >= 50) return; // 50위 이상 제외
-        if (!psCountries[name]) psCountries[name] = { sum: 0, cnt: 0, byDay: {} };
-        psCountries[name].sum += r;
-        psCountries[name].cnt++;
-        
-        // 일자별 순위 저장
-        const di = getDayIndex(h.timestamp);
-        if (di >= 0) {
-          if (!psCountries[name].byDay[di]) psCountries[name].byDay[di] = [];
-          psCountries[name].byDay[di].push(r);
+      const di = getDayIndex(h.timestamp);
+      if (di < 0) return;
+      
+      TOP5_COUNTRIES.PS.forEach(country => {
+        const r = getRank(h, country);
+        if (r < 999) {
+          if (!psCountriesByDay[country][di]) {
+            psCountriesByDay[country][di] = [];
+          }
+          psCountriesByDay[country][di].push(r);
         }
       });
     });
-    
-    // Top5 선택 (평균 순위가 가장 낮은 = 점유율 높은)
-    const psList = Object.entries(psCountries)
-      .map(([name, data]) => ({
-        name,
-        avgRank: data.sum / data.cnt,
-        byDay: data.byDay
-      }))
-      .sort((a, b) => a.avgRank - b.avgRank)
-      .slice(0, 5);
-    
-    // 일자별 데이터 구성
+
+    // 일자별 평균 순위 계산
     const allDays = new Set();
-    psList.forEach(c => {
-      Object.keys(c.byDay).forEach(d => allDays.add(parseInt(d)));
+    Object.values(psCountriesByDay).forEach(countryData => {
+      Object.keys(countryData).forEach(d => allDays.add(parseInt(d)));
     });
     const dayArray = Array.from(allDays).sort((a, b) => a - b);
+    
     const labels = dayArray.map(di => {
       const date = new Date(LAUNCH_DATE.getTime() + di * 86400000);
       return `${date.getMonth()+1}/${date.getDate()}`;
     });
 
-    // 국가별 일자별 데이터
-    const datasets = psList.map((c, idx) => {
+    // 국가별 데이터셋
+    const psColors = ['#FFD700', '#FFA500', '#FF6347', '#4169E1', '#32CD32'];
+    const datasets = TOP5_COUNTRIES.PS.map((country, idx) => {
       const data = dayArray.map(di => {
-        const ranks = c.byDay[di] || [];
+        const ranks = psCountriesByDay[country][di] || [];
         return ranks.length > 0 ? (ranks.reduce((a, b) => a + b) / ranks.length) : null;
       });
-      const colors = ['#f1c40f', '#e8b923', '#d9a12a', '#ca8932', '#bb713a'];
       return {
-        label: `${c.name} (${c.avgRank.toFixed(1)}위)`,
+        label: country,
         data,
-        borderColor: colors[idx],
+        borderColor: psColors[idx],
         backgroundColor: 'transparent',
         borderWidth: 2.5,
         tension: 0.3,
-        pointRadius: 0,
+        pointRadius: 2,
+        pointBackgroundColor: psColors[idx],
         spanGaps: true
       };
     });
-    
+
     if (top5PsCI) top5PsCI.destroy();
     top5PsCI = new Chart(psEl.getContext('2d'), {
       type: 'line',
@@ -3384,86 +3432,79 @@ function renderTop5Charts() {
         layout: { padding: { top: 8 } },
         scales: {
           x: { ticks: { color: '#aaa', maxTicksLimit: 8, font: { size: 10 } }, grid: { color: '#1a1a1a' } },
-          y: { reverse: true, ticks: { color: '#aaa', font: { size: 10 }, callback: v => v > 0 ? v + '위' : '' }, grid: { color: '#1a1a1a' } }
+          y: { reverse: true, min: 0, max: 50, ticks: { color: '#aaa', font: { size: 10 }, callback: v => v + '위' }, grid: { color: '#1a1a1a' } }
         },
         plugins: {
           legend: { labels: { color: '#ccc', font: { size: 11 }, boxWidth: 12 } },
-          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}위` } }
+          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(1) || 'N/A'}위` } }
         }
       }
     });
   }
 
-  // ── Steam Top5 (점유율 기반): 가중 순위 ──
+  // ── Steam Top5 (정의된 국가들의 일자별 순위) ──
   const stEl = document.getElementById('top5SteamChart');
   if (stEl && stsHist.length > 0) {
     stEl.width  = stEl.parentElement.offsetWidth || W;
     stEl.height = H;
     
-    // 국가별 가중 평균 순위 계산
-    const stCountries = {};
+    // 국가별 일자별 순위 추적
+    const stCountriesByDay = {};
+    TOP5_COUNTRIES.ST.forEach(country => {
+      stCountriesByDay[country] = {};
+    });
+
+    // 데이터 수집 (가중 순위)
     stsHist.forEach(h => {
+      const di = getDayIndex(h.timestamp);
+      if (di < 0) return;
+      
       Object.entries(h.results || {}).forEach(([code, d]) => {
-        const r = d?.rank;
-        if (!r || r > 20) return;
         const countryName = Object.keys(STS_CC).find(n => STS_CC[n] === code);
-        if (!countryName) return;
+        if (!countryName || !TOP5_COUNTRIES.ST.includes(countryName)) return;
         
-        const w = STS_W[countryName] || 1;
-        if (!stCountries[countryName]) stCountries[countryName] = { sumW: 0, sumRW: 0, byDay: {} };
-        stCountries[countryName].sumW += w;
-        stCountries[countryName].sumRW += r * w;
-        
-        // 일자별 저장
-        const di = getDayIndex(h.timestamp);
-        if (di >= 0) {
-          if (!stCountries[countryName].byDay[di]) stCountries[countryName].byDay[di] = { sumW: 0, sumRW: 0 };
-          stCountries[countryName].byDay[di].sumW += w;
-          stCountries[countryName].byDay[di].sumRW += r * w;
+        const r = d?.rank;
+        if (r && r <= 20) {
+          if (!stCountriesByDay[countryName][di]) {
+            stCountriesByDay[countryName][di] = [];
+          }
+          stCountriesByDay[countryName][di].push(r);
         }
       });
     });
-    
-    // Top5 선택 (가중 평균 순위가 가장 낮은)
-    const stList = Object.entries(stCountries)
-      .map(([name, data]) => ({
-        name,
-        avgRank: data.sumRW / data.sumW,
-        byDay: data.byDay
-      }))
-      .sort((a, b) => a.avgRank - b.avgRank)
-      .slice(0, 5);
-    
-    // 일자별 데이터 구성
+
+    // 일자별 평균 순위 계산
     const allDays = new Set();
-    stList.forEach(c => {
-      Object.keys(c.byDay).forEach(d => allDays.add(parseInt(d)));
+    Object.values(stCountriesByDay).forEach(countryData => {
+      Object.keys(countryData).forEach(d => allDays.add(parseInt(d)));
     });
     const dayArray = Array.from(allDays).sort((a, b) => a - b);
+    
     const labels = dayArray.map(di => {
       const date = new Date(LAUNCH_DATE.getTime() + di * 86400000);
       return `${date.getMonth()+1}/${date.getDate()}`;
     });
 
-    // 국가별 일자별 데이터
-    const datasets = stList.map((c, idx) => {
+    // 국가별 데이터셋
+    const stColors = ['#4a9eff', '#FF69B4', '#FF4500', '#1E90FF', '#20B2AA'];
+    const datasets = TOP5_COUNTRIES.ST.map((country, idx) => {
       const data = dayArray.map(di => {
-        const d = c.byDay[di];
-        return d && d.sumW > 0 ? (d.sumRW / d.sumW) : null;
+        const ranks = stCountriesByDay[country][di] || [];
+        return ranks.length > 0 ? (ranks.reduce((a, b) => a + b) / ranks.length) : null;
       });
-      const colors = ['#4a9eff', '#6ab8ff', '#8accff', '#aadaff', '#bbddff'];
       return {
-        label: `${c.name} (${c.avgRank.toFixed(1)}위)`,
+        label: country,
         data,
-        borderColor: colors[idx],
+        borderColor: stColors[idx],
         backgroundColor: 'transparent',
         borderWidth: 2.5,
         tension: 0.3,
-        pointRadius: 0,
+        pointRadius: 2,
+        pointBackgroundColor: stColors[idx],
         spanGaps: true
       };
     });
-    
+
     if (top5StCI) top5StCI.destroy();
     top5StCI = new Chart(stEl.getContext('2d'), {
       type: 'line',
@@ -3474,11 +3515,11 @@ function renderTop5Charts() {
         layout: { padding: { top: 8 } },
         scales: {
           x: { ticks: { color: '#aaa', maxTicksLimit: 8, font: { size: 10 } }, grid: { color: '#1a1a1a' } },
-          y: { reverse: true, ticks: { color: '#aaa', font: { size: 10 }, callback: v => v > 0 ? v + '위' : '' }, grid: { color: '#1a1a1a' } }
+          y: { reverse: true, min: 0, max: 20, ticks: { color: '#aaa', font: { size: 10 }, callback: v => v + '위' }, grid: { color: '#1a1a1a' } }
         },
         plugins: {
           legend: { labels: { color: '#ccc', font: { size: 11 }, boxWidth: 12 } },
-          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}위` } }
+          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(1) || 'N/A'}위` } }
         }
       }
     });
@@ -4507,6 +4548,7 @@ init();
 </script>
 
 <!-- PS Store 링크 팝오버 -->
+
 <div id="ps-links-overlay" onclick="closePsLinksPopover()"></div>
 <div class="ps-links-popover" id="ps-links-popover">
   <div class="ps-links-title">🎮 PS Store 링크</div>
