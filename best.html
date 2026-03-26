@@ -1098,14 +1098,13 @@
         <div class="dual-col-body" style="padding:12px">
           <!-- 모델 설명 -->
           <div style="background:var(--bg-3);border:1px solid var(--bd);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--tx-4);line-height:1.7">
-            <b style="color:var(--tx-2)">📌 모델 근거</b><br>
-            • 공식 발표: 출시 ~24h 내 200만 "sold through" (사전판매 ~36만 포함) — 환불 12% 적용<br>
-            • <b style="color:var(--gold)">Steam CCU 최고: 248,530명 → CCU/소유자 비율 10~12% 적용 시 Steam 소유자 2.1~2.5M 추정</b><br>
-            • <b style="color:var(--gold)">리뷰 55,501개 → 리뷰율 2% 기준 Steam 소유자 ~2.8M 추정</b><br>
-            • SteamDB 소유자 표시(~1.1M)는 "집계 중" 초기값 — 실제보다 과소<br>
-            • 플랫폼 비율: CCU 역산 기준 Steam ~50% · PS5 ~38% · Xbox 12%<br>
-            • Day1=Day0×27% 스파이크 분리 → DECAY=0.65 (일 35% 감소) · 순위탄성 0.10<br>
-            • ⚠ 침묵 = 5M 마일스톤 대기 가능성 (Elden Ring도 5M 발표까지 16일 소요)
+            <b style="color:var(--tx-2)">📌 모델 근거 (재점검 반영)</b><br>
+            • 공식 2M은 <b style="color:var(--gold)">출시 직후 24시간 내 sold through</b>로 보는 편이 맞고, KST 기준으로는 <b style="color:var(--gold)">3/20(출시일) 앵커</b>로 두는 것이 가장 자연스럽습니다.<br>
+            • 공식 3M은 해외 기사 기준 5일 / 국내 기사 기준 4일 표현이 혼재하지만, <b style="color:var(--gold)">보수적으로 출시 4일차 300만</b> 앵커로 반영했습니다.<br>
+            • PS는 <b style="color:var(--gold)">WEIGHTS 기반 가중 평균 순위</b>, Steam은 <b style="color:var(--gold)">STS_W 기반 국가별 가중 평균 순위</b>를 일별 신호로 사용합니다.<br>
+            • 기존처럼 Day0에 바로 환불을 빼지 않고, <b style="color:var(--gold)">공식 sold-through(총량)</b>를 먼저 맞춘 뒤 Steam·PC 기타 중심으로만 순보유량을 별도 계산합니다.<br>
+            • Epic Games Store / Mac / 오프라인(물리) / AMD 번들은 순위 데이터에 직접 안 잡히므로, <b style="color:var(--gold)">기타 채널 보정</b>으로 별도 반영합니다.<br>
+            • 기타 채널 보정은 <b style="color:var(--gold)">EGS·Mac·AMD 중심 50%</b>, <b style="color:var(--gold)">PS 물리 30%</b>, <b style="color:var(--gold)">Xbox 리테일 15%</b>, <b style="color:var(--gold)">Steam 지연 반영 5%</b> 가정입니다.
           </div>
           <!-- 컨트롤 -->
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
@@ -1113,19 +1112,19 @@
               <input id="sales-day1-total" type="number" value="2000000" step="100000"
                 style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:110px;margin-left:6px">
             </label>
-            <label style="font-size:12px;color:var(--tx-3)">환불율(%):
-              <input id="sales-refund-pct" type="number" value="12" min="0" max="40" step="1"
+            <label style="font-size:12px;color:var(--tx-3)">PC 환불율(%):
+              <input id="sales-refund-pct" type="number" value="8" min="0" max="25" step="1"
                 style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:55px;margin-left:6px">
             </label>
-            <label style="font-size:12px;color:var(--tx-3)">PS5(%):
-              <input id="sales-ps-ratio" type="number" value="38" min="1" max="86" step="1"
+            <label style="font-size:12px;color:var(--tx-3)">PS5 기본(%):
+              <input id="sales-ps-ratio" type="number" value="36" min="10" max="60" step="1"
                 style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:55px;margin-left:6px">
-              <span style="color:var(--tx-4);font-size:11px"> Steam <span id="sales-steam-ratio-lbl">33</span>% / Xbox 12%</span>
+              <span style="color:var(--tx-4);font-size:11px"> Steam <span id="sales-steam-ratio-lbl">40</span>% / Xbox 10% / 기타 14%</span>
             </label>
             <button onclick="renderSalesChart()" style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:5px 14px;color:var(--tx-2);font-size:13px;cursor:pointer;font-weight:700">재계산</button>
           </div>
           <!-- 요약 카드 -->
-          <div id="sales-summary-cards" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px"></div>
+          <div id="sales-summary-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px"></div>
           <!-- 마일스톤 예측 -->
           <div id="sales-milestone-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px"></div>
           <!-- 일별 차트 -->
@@ -2134,114 +2133,198 @@ function fmtSales(n) {
 }
 
 function renderSalesChart() {
-  const totalAnn   = parseInt(document.getElementById('sales-day1-total').value) || 2000000;
-  const refundPct  = parseFloat(document.getElementById('sales-refund-pct').value) || 12;
-  const psRatio    = parseInt(document.getElementById('sales-ps-ratio').value) || 55;
-  const stRatio    = 100 - psRatio - 12; // Xbox 고정 12%
-  const xbRatio    = 12;
+  const soldThroughD0 = parseInt(document.getElementById('sales-day1-total').value) || 2000000;
+  const refundPct = parseFloat(document.getElementById('sales-refund-pct').value) || 8;
+  const psBaseRatio = parseInt(document.getElementById('sales-ps-ratio').value) || 36;
+  const xbBaseRatio = 10;
+  const otherBaseRatio = 14;
+  const stBaseRatio = Math.max(5, 100 - psBaseRatio - xbBaseRatio - otherBaseRatio);
   const lbl = document.getElementById('sales-steam-ratio-lbl');
-  if (lbl) lbl.textContent = stRatio;
-  // 환불 적용 순 판매량
-  const netTotal = Math.round(totalAnn * (1 - refundPct / 100));
-  const psDay0 = netTotal * psRatio / 100;
-  const stDay0 = netTotal * stRatio / 100;
-  const xbDay0 = netTotal * xbRatio / 100;
+  if (lbl) lbl.textContent = stBaseRatio;
 
-  // ── PS 일별 순위 집계 ──
+  const MILESTONE_DAY4 = 3000000;
+  const PRE4_INCREMENT = Math.max(0, MILESTONE_DAY4 - soldThroughD0);
+  const POST_D4_DECAY = 0.87;
+  const DAILY_FLOOR = 20000;
+  const OTHER_ALLOC = { ps: 0.30, st: 0.05, xb: 0.15, other: 0.50 };
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  const sig = (base, rank, exp) => {
+    const b = Math.max(1, base || 1);
+    const r = clamp(rank || b, 1, 80);
+    return Math.pow(b / r, exp);
+  };
+  const otherShareForDay = di => clamp(0.14 + di * 0.01, 0.14, 0.18);
+
+  // ── PS 일별 가중 평균 순위 (이미 WEIGHTS 반영된 averages.combined 사용) ──
   const psByDay = {};
   historyData.forEach(h => {
     const di = getDayIndex(h.timestamp);
     if (di < 0) return;
     const avg = h.averages?.combined;
-    if (avg == null || avg >= 50) return; // 50위 밖은 제외
+    if (avg == null || !isFinite(avg)) return;
     if (!psByDay[di]) psByDay[di] = { sum: 0, cnt: 0 };
-    psByDay[di].sum += avg; psByDay[di].cnt++;
+    psByDay[di].sum += avg;
+    psByDay[di].cnt++;
   });
   const psDayAvg = {};
   Object.entries(psByDay).forEach(([d, v]) => { psDayAvg[parseInt(d)] = v.sum / v.cnt; });
 
-  // ── Steam 일별 순위 집계 (상위 20위 이내만) ──
+  // ── Steam 일별 가중 평균 순위 (STS_W 반영) ──
   const stByDay = {};
   stsHist.forEach(h => {
     const di = getDayIndex(h.timestamp);
     if (di < 0) return;
     let tw = 0, ts = 0;
-    for (const [n, d] of Object.entries(h.results || {})) {
-      const r = d?.rank; if (!r || r > 20) continue;
-      const w = STS_W[n] || 1; ts += r * w; tw += w;
-    }
+    Object.entries(h.results || {}).forEach(([name, d]) => {
+      const r = d?.rank;
+      if (!r || r >= 100) return;
+      const w = STS_W[name] || 1;
+      ts += r * w;
+      tw += w;
+    });
     if (!tw) return;
-    const avg = ts / tw;
     if (!stByDay[di]) stByDay[di] = { sum: 0, cnt: 0 };
-    stByDay[di].sum += avg; stByDay[di].cnt++;
+    stByDay[di].sum += ts / tw;
+    stByDay[di].cnt++;
   });
   const stDayAvg = {};
   Object.entries(stByDay).forEach(([d, v]) => { stDayAvg[parseInt(d)] = v.sum / v.cnt; });
 
-  // ── 날짜 범위 ──
-  const allDays = new Set([...Object.keys(psDayAvg), ...Object.keys(stDayAvg)].map(Number));
-  if (!allDays.size) { console.warn('No sales data available'); return; }
-  const maxDay = Math.max(...allDays);
+  const observedDays = new Set([...Object.keys(psDayAvg), ...Object.keys(stDayAvg)].map(Number));
+  const todayDay = Math.max(0, Math.floor((Date.now() - LAUNCH_DATE.getTime()) / 86400000));
+  const maxDay = Math.max(4, todayDay, observedDays.size ? Math.max(...observedDays) : 0);
   const days = Array.from({ length: maxDay + 1 }, (_, i) => i);
 
-  // ── 기준 순위 (0일차 또는 첫 데이터) ──
-  const psKeys = Object.keys(psDayAvg).map(Number).sort((a,b)=>a-b);
-  const stKeys = Object.keys(stDayAvg).map(Number).sort((a,b)=>a-b);
-  const psBase = psDayAvg[psKeys[0]] || 3;
-  const stBase = stDayAvg[stKeys[0]] || 2;
-  const DECAY_DAILY = 0.65; // 일 35% 감소 (업계 비교: Wukong/Elden Ring 수준)
-  const RANK_EXP = 0.10;    // 순위 탄성 최소화 (순위≠신규구매)
+  const psKeys = Object.keys(psDayAvg).map(Number).sort((a,b) => a - b);
+  const stKeys = Object.keys(stDayAvg).map(Number).sort((a,b) => a - b);
+  const psBase = psDayAvg[psKeys[0]] || 4.0;
+  const stBase = stDayAvg[stKeys[0]] || 3.0;
 
-  // ── 일별 판매 계산 ──
-  const psDaily = [], stDaily = [], xbDaily = [], totDaily = [];
   const labels = [];
+  const psRankSeries = [], stRankSeries = [];
   let psLastRank = psBase, stLastRank = stBase;
 
   days.forEach(di => {
     const date = new Date(LAUNCH_DATE.getTime() + di * 86400000);
-    labels.push(`${date.getMonth()+1}/${date.getDate()}`);
+    labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
+    const psR = psDayAvg[di] != null ? psDayAvg[di] : clamp(psLastRank * 1.05, 1, 80);
+    const stR = stDayAvg[di] != null ? stDayAvg[di] : clamp(stLastRank * 1.06, 1, 80);
+    psLastRank = psR;
+    stLastRank = stR;
+    psRankSeries.push(psR);
+    stRankSeries.push(stR);
+  });
 
-    let ps, st, xb;
-    if (di === 0) {
-      ps = psDay0; st = stDay0; xb = xbDay0;
-    } else {
-      const psR = psDayAvg[di] || (psLastRank * 1.05);
-      const stR = stDayAvg[di] || (stLastRank * 1.05);
-      psLastRank = psR; stLastRank = stR;
-      // Day1=Day0×27% (스파이크 분리), 이후 DECAY 누적 적용
-      const D1 = 0.27;
-      const dayDecay = di === 1 ? D1 : D1 * Math.pow(DECAY_DAILY, di - 1);
-      ps = psDay0 * dayDecay * Math.pow(psBase / psR, RANK_EXP);
-      st = stDay0 * dayDecay * Math.pow(stBase / stR, RANK_EXP);
-      xb = xbDay0 * dayDecay;
+  const psSignal = psRankSeries.map(r => (psBaseRatio / 100) * sig(psBase, r, 0.28));
+  const stSignal = stRankSeries.map(r => (stBaseRatio / 100) * sig(stBase, r, 0.30));
+  const xbSignal = days.map((_, i) => {
+    const combinedBase = (psBase + stBase) / 2;
+    const combinedRank = (psRankSeries[i] + stRankSeries[i]) / 2;
+    return (xbBaseRatio / 100) * sig(combinedBase, combinedRank, 0.18);
+  });
+  const comboSignal = days.map((_, i) => 0.52 * psSignal[i] + 0.48 * stSignal[i]);
+
+  // ── 일별 총 판매량: D0=2M, D4=3M을 하드 앵커로 맞추고 사이를 순위 기반으로 분배 ──
+  const totalDaily = Array(days.length).fill(0);
+  totalDaily[0] = soldThroughD0;
+
+  const day14Weights = [];
+  for (let di = 1; di <= 4; di++) {
+    const decay = Math.pow(0.89, di - 1);
+    const momentum = clamp(comboSignal[di] / (comboSignal[0] || 1), 0.72, 1.18);
+    day14Weights.push(Math.max(0.12, decay * momentum));
+  }
+  const wSum = day14Weights.reduce((a, b) => a + b, 0) || 1;
+  for (let di = 1; di <= 4; di++) {
+    totalDaily[di] = Math.round(PRE4_INCREMENT * (day14Weights[di - 1] / wSum));
+  }
+
+  for (let di = 5; di < days.length; di++) {
+    const signalRef = comboSignal[4] || comboSignal[0] || 1;
+    const rel = clamp((comboSignal[di] || signalRef) / signalRef, 0.75, 1.20);
+    totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[4] * Math.pow(POST_D4_DECAY, di - 4) * rel));
+  }
+
+  // ── 플랫폼 분배: 순위 신호 + 기타 채널 보정 ──
+  const psDaily = [], stDaily = [], xbDaily = [], otherDaily = [];
+  const psAdjDaily = [], stAdjDaily = [], xbAdjDaily = [];
+  days.forEach((di) => {
+    const gross = totalDaily[di] || 0;
+    const otherPool = gross * otherShareForDay(di);
+    const visiblePool = gross - otherPool;
+
+    const rawPs = psSignal[di] || 0.01;
+    const rawSt = stSignal[di] || 0.01;
+    const rawXb = xbSignal[di] || 0.01;
+    const rawSum = rawPs + rawSt + rawXb || 1;
+
+    const psCore = visiblePool * rawPs / rawSum;
+    const stCore = visiblePool * rawSt / rawSum;
+    const xbCore = visiblePool * rawXb / rawSum;
+
+    const psAdj = otherPool * OTHER_ALLOC.ps;
+    const stAdj = otherPool * OTHER_ALLOC.st;
+    const xbAdj = otherPool * OTHER_ALLOC.xb;
+
+    let ps = Math.round(psCore + psAdj);
+    let st = Math.round(stCore + stAdj);
+    let xb = Math.round(xbCore + xbAdj);
+    let other = Math.round(gross - ps - st - xb);
+    if (other < 0) {
+      xb = Math.max(0, xb + other);
+      other = 0;
     }
-    ps = Math.max(0, Math.round(ps));
-    st = Math.max(0, Math.round(st));
-    xb = Math.max(0, Math.round(xb));
-    psDaily.push(ps); stDaily.push(st); xbDaily.push(xb);
-    totDaily.push(ps + st + xb);
+
+    psDaily.push(ps);
+    stDaily.push(st);
+    xbDaily.push(xb);
+    otherDaily.push(other);
+    psAdjDaily.push(Math.round(psAdj));
+    stAdjDaily.push(Math.round(stAdj));
+    xbAdjDaily.push(Math.round(xbAdj));
   });
 
   // ── 누적 ──
-  const psCum = [], stCum = [], xbCum = [], totCum = [];
-  let pA = 0, sA = 0, xA = 0;
-  psDaily.forEach((p, i) => {
-    pA += p; sA += stDaily[i]; xA += xbDaily[i];
-    psCum.push(pA); stCum.push(sA); xbCum.push(xA); totCum.push(pA + sA + xA);
+  const psCum = [], stCum = [], xbCum = [], otherCum = [], totCum = [];
+  let psAcc = 0, stAcc = 0, xbAcc = 0, otherAcc = 0;
+  days.forEach((_, i) => {
+    psAcc += psDaily[i];
+    stAcc += stDaily[i];
+    xbAcc += xbDaily[i];
+    otherAcc += otherDaily[i];
+    psCum.push(psAcc);
+    stCum.push(stAcc);
+    xbCum.push(xbAcc);
+    otherCum.push(otherAcc);
+    totCum.push(psAcc + stAcc + xbAcc + otherAcc);
   });
 
-  const psTotal = psCum[psCum.length-1] || 0;
-  const stTotal = stCum[stCum.length-1] || 0;
-  const xbTotal = xbCum[xbCum.length-1] || 0;
-  const totalEst = totCum[totCum.length-1] || 0;
+  const psTotal = psCum[Math.min(todayDay, psCum.length - 1)] || psCum[psCum.length - 1] || 0;
+  const stTotal = stCum[Math.min(todayDay, stCum.length - 1)] || stCum[stCum.length - 1] || 0;
+  const xbTotal = xbCum[Math.min(todayDay, xbCum.length - 1)] || xbCum[xbCum.length - 1] || 0;
+  const otherTotal = otherCum[Math.min(todayDay, otherCum.length - 1)] || otherCum[otherCum.length - 1] || 0;
+  const totalGross = totCum[Math.min(todayDay, totCum.length - 1)] || totCum[totCum.length - 1] || 0;
 
-  // ── 요약 카드 ──
+  const psAdjTotal = psAdjDaily.slice(0, todayDay + 1).reduce((a, b) => a + b, 0);
+  const stAdjTotal = stAdjDaily.slice(0, todayDay + 1).reduce((a, b) => a + b, 0);
+  const xbAdjTotal = xbAdjDaily.slice(0, todayDay + 1).reduce((a, b) => a + b, 0);
+  const psCoreTotal = Math.max(0, psTotal - psAdjTotal);
+  const stCoreTotal = Math.max(0, stTotal - stAdjTotal);
+  const xbCoreTotal = Math.max(0, xbTotal - xbAdjTotal);
+
+  // 환불은 Steam + 기타 PC 중심으로만 보수적으로 반영
+  const refundableBase = stTotal + otherTotal * 0.65;
+  const totalNet = Math.round(totalGross - refundableBase * (refundPct / 100));
+
   const cards = document.getElementById('sales-summary-cards');
   if (cards) cards.innerHTML = [
-    { label: '📦 전체 누적 (순)', val: fmtSales(totalEst), sub: `환불 ${refundPct}% 적용`, color: 'var(--gold)' },
-    { label: '🎮 PS5 누적',        val: fmtSales(psTotal),   sub: `${psRatio}% 비중`,       color: 'var(--blood)' },
-    { label: '🖥 Steam 누적',      val: fmtSales(stTotal),   sub: `${stRatio}% 비중`,       color: 'var(--steam)' },
-    { label: '🎮 Xbox 누적',       val: fmtSales(xbTotal),   sub: `12% 비중`,               color: '#107C10' },
+    { label: '📦 전체 누적 (총)', val: fmtSales(totalGross), sub: '공식 2M·3M 앵커 보정', color: 'var(--gold)' },
+    { label: '🧾 순보유량 추정',   val: fmtSales(totalNet),   sub: `환불 ${refundPct}% (Steam·PC 기타 중심)`, color: '#c0c0c0' },
+    { label: '🎮 PS5 누적',        val: fmtSales(psTotal),    sub: `기본 ${fmtSales(psCoreTotal)} + 추가 ${fmtSales(psAdjTotal)}`, color: 'var(--blood)' },
+    { label: '🖥 Steam 누적',      val: fmtSales(stTotal),    sub: `기본 ${fmtSales(stCoreTotal)} + 추가 ${fmtSales(stAdjTotal)}`, color: 'var(--steam)' },
+    { label: '🎮 Xbox 누적',       val: fmtSales(xbTotal),    sub: `기본 ${fmtSales(xbCoreTotal)} + 추가 ${fmtSales(xbAdjTotal)}`, color: '#107C10' },
+    { label: '🧩 기타 채널 누적',   val: fmtSales(otherTotal), sub: 'EGS · Mac · 오프라인 · AMD', color: '#9b59b6' },
   ].map(({ label, val, sub, color }) => `
     <div style="background:var(--bg-2);border:1px solid var(--bd);border-left:3px solid ${color};border-radius:var(--radius);padding:10px 12px">
       <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">${label}</div>
@@ -2249,63 +2332,43 @@ function renderSalesChart() {
       <div style="font-size:10px;color:var(--tx-4);margin-top:2px">${sub}</div>
     </div>`).join('');
 
-  // ── 마일스톤 예측 (순위 데이터 기반 동적 계산) ────────────────
+  // ── 마일스톤 예측 ──
   const msEl = document.getElementById('sales-milestone-cards');
   if (msEl) {
     const LAUNCH = new Date('2026-03-20T07:00:00+09:00');
-    const nowMs  = Date.now();
-    const todayDay = Math.max(0, Math.floor((nowMs - LAUNCH.getTime()) / 86400000));
+    const nowMs = Date.now();
+    const currentDay = Math.max(0, Math.floor((nowMs - LAUNCH.getTime()) / 86400000));
+    const cumNow = totCum[Math.min(currentDay, totCum.length - 1)] || totalGross;
+    const recentDailies = totalDaily.slice(Math.max(0, currentDay - 2), currentDay + 1).filter(v => v > 0);
+    const lastDaily = recentDailies.length ? recentDailies.reduce((a, b) => a + b, 0) / recentDailies.length : (totalGross * 0.03);
+    const signalRef = comboSignal[Math.min(currentDay, comboSignal.length - 1)] || comboSignal[comboSignal.length - 1] || 1;
 
-    // 현재 누적 (실제 모델 계산값 사용)
-    const cumNow = totCum.length > 0 ? totCum[Math.min(todayDay, totCum.length - 1)] : totalEst;
-
-    // 마지막 일별값 (평균 취해서 안정화)
-    const recentDailies = totDaily.slice(-3).filter(v => v > 0);
-    const lastDaily = recentDailies.length > 0
-      ? recentDailies.reduce((a,b) => a+b, 0) / recentDailies.length
-      : (totalEst * 0.01);
-
-    // 프로젝션: 현재 일별 판매에서 DECAY 적용 (최소 floor 설정)
-    const DAILY_FLOOR = 500; // 최소 하루 500장 (롱테일)
-    function projDailyFromDay() {
-      const proj = [];
-      for (let d = 0; d < 730; d++) { // 2년치
-        proj.push(Math.max(DAILY_FLOOR, lastDaily * Math.pow(DECAY_DAILY, d)));
-      }
-      return proj;
+    function projectedDaily(offset) {
+      const di = currentDay + offset;
+      const rel = clamp(((comboSignal[di] || signalRef) / signalRef), 0.72, 1.12);
+      return Math.max(DAILY_FLOOR, lastDaily * Math.pow(0.90, offset - 1) * rel);
     }
-    const projDays = projDailyFromDay();
 
     function findMilestone(target) {
-      // 이미 달성 여부 확인
       if (cumNow >= target) {
-        // totCum에서 달성 날짜 역추적
         for (let i = 0; i < totCum.length; i++) {
           if (totCum[i] >= target) {
-            const dt = new Date(LAUNCH.getTime() + i * 86400000);
-            return { date: dt, day: i, achieved: true };
+            return { date: new Date(LAUNCH.getTime() + i * 86400000), day: i, achieved: true };
           }
         }
-        // totCum에서 못찾으면 오늘 기준으로 이미 달성
-        return { date: new Date(nowMs), day: todayDay, achieved: true };
+        return { date: new Date(nowMs), day: currentDay, achieved: true };
       }
-      // 프로젝션으로 예측
       let c = cumNow;
-      for (let d = 0; d < projDays.length; d++) {
-        c += projDays[d];
+      for (let d = 1; d <= 730; d++) {
+        c += projectedDaily(d);
         if (c >= target) {
-          const dt = new Date(nowMs + (d + 1) * 86400000);
-          return { date: dt, day: todayDay + d + 1, achieved: false };
+          return { date: new Date(nowMs + d * 86400000), day: currentDay + d, achieved: false };
         }
       }
-      return null; // 2년 내 불가
+      return null;
     }
 
-    const fmtDate = dt => {
-      if (!dt) return '예측불가';
-      const m = dt.getMonth() + 1, d = dt.getDate();
-      return `${m}/${d}`;
-    };
+    const fmtDate = dt => !dt ? '예측불가' : `${dt.getMonth() + 1}/${dt.getDate()}`;
     const fmtDiff = (dt, achieved) => {
       if (!dt) return '';
       const diffDays = Math.round((dt.getTime() - Date.now()) / 86400000);
@@ -2318,18 +2381,16 @@ function renderSalesChart() {
     const m3 = findMilestone(3_000_000);
     const m5 = findMilestone(5_000_000);
     const m10 = findMilestone(10_000_000);
-
     const mCards = [
-      { label: '🎯 300만 달성', target: '3M', ms: m3, color: '#2ecc71' },
-      { label: '🚀 500만 달성', target: '5M', ms: m5, color: '#f1c40f' },
-      { label: '💎 1000만 달성', target: '10M', ms: m10, color: '#e74c3c' },
+      { label: '🎯 300만 달성', ms: m3, color: '#2ecc71' },
+      { label: '🚀 500만 달성', ms: m5, color: '#f1c40f' },
+      { label: '💎 1000만 달성', ms: m10, color: '#e74c3c' },
     ];
 
-    msEl.innerHTML = mCards.map(({ label, target, ms, color }) => {
+    msEl.innerHTML = mCards.map(({ label, ms, color }) => {
       const dateStr = ms ? fmtDate(ms.date) : '예측불가';
       const diffStr = ms ? fmtDiff(ms.date, ms.achieved) : '현재 추세로 불가';
-      const dayStr  = ms ? `출시 ${ms.day}일차` : '';
-      const bgColor = ms?.achieved ? `rgba(46,204,113,0.08)` : `rgba(0,0,0,0)`;
+      const dayStr = ms ? `출시 ${ms.day}일차` : '';
       return `<div style="background:var(--bg-2);border:1px solid var(--bd);border-left:3px solid ${color};border-radius:var(--radius);padding:10px 14px;${ms?.achieved ? 'border-color:rgba(46,204,113,0.4)' : ''}">
         <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">${label}</div>
         <div style="font-family:'Cinzel',serif;font-size:22px;color:${color};font-weight:900;line-height:1">${dateStr}</div>
@@ -2338,7 +2399,6 @@ function renderSalesChart() {
       </div>`;
     }).join('');
   }
-
 
   const chartOpts = {
     responsive: true, maintainAspectRatio: false,
@@ -2360,9 +2420,10 @@ function renderSalesChart() {
     data: {
       labels,
       datasets: [
-        { label: 'PS5',   data: psDaily, backgroundColor: 'rgba(255,71,87,0.75)',  borderColor: '#ff4757', borderWidth: 1, stack: 'a' },
-        { label: 'Steam', data: stDaily, backgroundColor: 'rgba(74,158,255,0.75)', borderColor: '#4a9eff', borderWidth: 1, stack: 'a' },
-        { label: 'Xbox',  data: xbDaily, backgroundColor: 'rgba(16,124,16,0.75)',  borderColor: '#107C10', borderWidth: 1, stack: 'a' },
+        { label: 'PS5',   data: psDaily,    backgroundColor: 'rgba(255,71,87,0.75)',  borderColor: '#ff4757', borderWidth: 1, stack: 'a' },
+        { label: 'Steam', data: stDaily,    backgroundColor: 'rgba(74,158,255,0.75)', borderColor: '#4a9eff', borderWidth: 1, stack: 'a' },
+        { label: 'Xbox',  data: xbDaily,    backgroundColor: 'rgba(16,124,16,0.75)',  borderColor: '#107C10', borderWidth: 1, stack: 'a' },
+        { label: '기타',   data: otherDaily, backgroundColor: 'rgba(155,89,182,0.75)', borderColor: '#9b59b6', borderWidth: 1, stack: 'a' },
       ]
     },
     options: { ...chartOpts, scales: { ...chartOpts.scales, x: { ...chartOpts.scales.x, stacked: true }, y: { ...chartOpts.scales.y, stacked: true } } }
@@ -2375,10 +2436,11 @@ function renderSalesChart() {
     data: {
       labels,
       datasets: [
-        { label: '전체',  data: totCum, borderColor: '#f1c40f', backgroundColor: 'transparent', borderWidth: 2.5, borderDash: [5,3], fill: false, tension: 0.3, pointRadius: 0 },
-        { label: 'PS5',   data: psCum,  borderColor: '#ff4757', backgroundColor: 'rgba(255,71,87,0.06)',  borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
-        { label: 'Steam', data: stCum,  borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.06)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
-        { label: 'Xbox',  data: xbCum,  borderColor: '#107C10', backgroundColor: 'rgba(16,124,16,0.06)',  borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
+        { label: '전체',  data: totCum,   borderColor: '#f1c40f', backgroundColor: 'transparent', borderWidth: 2.5, borderDash: [5,3], fill: false, tension: 0.3, pointRadius: 0 },
+        { label: 'PS5',   data: psCum,    borderColor: '#ff4757', backgroundColor: 'rgba(255,71,87,0.05)',  borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
+        { label: 'Steam', data: stCum,    borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.05)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
+        { label: 'Xbox',  data: xbCum,    borderColor: '#107C10', backgroundColor: 'rgba(16,124,16,0.05)',  borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
+        { label: '기타',   data: otherCum, borderColor: '#9b59b6', backgroundColor: 'rgba(155,89,182,0.05)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
       ]
     },
     options: chartOpts
