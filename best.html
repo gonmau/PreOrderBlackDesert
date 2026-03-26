@@ -1021,6 +1021,24 @@
         </div>
       </div>
     </div>
+
+    <!-- 요약 섹션 하단 추가: Top5+한국 일자별 최고순위 차트 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+      <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--blood);border-radius:var(--radius)">
+        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--blood);letter-spacing:1px;border-bottom:1px solid var(--bd)">📉 PS Store Top5 + 한국 일자별 최고순위</div>
+        <div style="padding:14px">
+          <div style="font-size:11px;color:var(--tx-4);margin-bottom:10px">각 날짜에서 기록한 최고(최소) 순위를 국가별 라인으로 표시합니다.</div>
+          <div style="width:100%;overflow:hidden"><canvas id="summaryPsTop5KrChart" style="display:block"></canvas></div>
+        </div>
+      </div>
+      <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--steam);border-radius:var(--radius)">
+        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--steam);letter-spacing:1px;border-bottom:1px solid var(--bd)">📉 Steam Top5 + 한국 일자별 최고순위</div>
+        <div style="padding:14px">
+          <div style="font-size:11px;color:var(--tx-4);margin-bottom:10px">각 날짜에서 기록한 최고(최소) 순위를 국가별 라인으로 표시합니다.</div>
+          <div style="width:100%;overflow:hidden"><canvas id="summaryStTop5KrChart" style="display:block"></canvas></div>
+        </div>
+      </div>
+    </div>
   </div><!-- /sec-summary -->
 
   <!-- ② 리더보드 -->
@@ -2370,6 +2388,74 @@ function renderSalesChart() {
 
 /* ── 요약 섹션 미니 차트 ── */
 let summaryPsCI = null, summaryStCI = null;
+let summaryPsTop5KrCI = null, summaryStTop5KrCI = null;
+
+function getTop5PlusKorea(weightMap) {
+  const top5 = Object.entries(weightMap || {})
+    .sort((a, b) => (b[1] || 0) - (a[1] || 0))
+    .slice(0, 5)
+    .map(([name]) => name);
+  return [...new Set([...top5, '한국'])];
+}
+
+function getKstDayKey(ts) {
+  const kst = new Date(new Date(ts).getTime() + 9 * 3600000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(kst.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function getDayLabel(dayKey) {
+  const [, m, d] = dayKey.split('-');
+  return `${Number(m)}/${Number(d)}`;
+}
+
+function buildDailyBestSeries(entries, countries, rankGetter) {
+  const dayMap = {};
+  entries.forEach(entry => {
+    const dayKey = getKstDayKey(entry.timestamp);
+    if (!dayMap[dayKey]) {
+      dayMap[dayKey] = {};
+      countries.forEach(name => { dayMap[dayKey][name] = null; });
+    }
+    countries.forEach(name => {
+      const rank = rankGetter(entry, name);
+      if (rank == null || rank >= 999) return;
+      const prev = dayMap[dayKey][name];
+      dayMap[dayKey][name] = prev == null ? rank : Math.min(prev, rank);
+    });
+  });
+  const dayKeys = Object.keys(dayMap).sort();
+  return {
+    labels: dayKeys.map(getDayLabel),
+    series: countries.map(name => ({
+      name,
+      data: dayKeys.map(dayKey => dayMap[dayKey][name])
+    }))
+  };
+}
+
+function buildTopRankDatasets(bundle, flagMap, palette, accentColor) {
+  return bundle.series.map((row, idx) => {
+    const color = row.name === '한국' ? accentColor : palette[idx % palette.length];
+    return {
+      label: `${flagMap[row.name] || ''} ${row.name}`.trim(),
+      data: row.data,
+      borderColor: color,
+      backgroundColor: color,
+      pointBackgroundColor: color,
+      pointBorderColor: '#111',
+      pointBorderWidth: row.name === '한국' ? 1.5 : 1,
+      pointRadius: row.name === '한국' ? 3 : 2,
+      pointHoverRadius: row.name === '한국' ? 5 : 4,
+      borderWidth: row.name === '한국' ? 3 : 2,
+      tension: 0.22,
+      spanGaps: true,
+      fill: false
+    };
+  });
+}
 
 function renderSummaryCharts() {
   const W = 800, H_TREND = 280, H_DIST = 180;
@@ -2517,6 +2603,70 @@ function renderSummaryCharts() {
         plugins: { legend: { display: false }, tooltip: { mode: 'index', callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}개국` } } }
       }
     });
+  }
+
+  // ── PS Top5 + 한국 일자별 최고순위 차트 ──
+  const psTop5KrEl = document.getElementById('summaryPsTop5KrChart');
+  if (psTop5KrEl && historyData.length > 0) {
+    const countries = getTop5PlusKorea(WEIGHTS);
+    const bundle = buildDailyBestSeries(historyData, countries, (entry, name) => getRank(entry, name));
+    if (bundle.labels.length > 0) {
+      psTop5KrEl.width  = psTop5KrEl.parentElement.offsetWidth || W;
+      psTop5KrEl.height = H_TREND;
+      if (summaryPsTop5KrCI) summaryPsTop5KrCI.destroy();
+      summaryPsTop5KrCI = new Chart(psTop5KrEl.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: bundle.labels,
+          datasets: buildTopRankDatasets(bundle, FLAGS, ['#ff4757', '#f1c40f', '#4a9eff', '#2ecc71', '#9b59b6', '#ff9f43'], '#ffffff')
+        },
+        options: {
+          responsive: false,
+          animation: false,
+          interaction: { mode: 'nearest', intersect: false },
+          scales: {
+            x: { ticks: { color: '#aaa', maxTicksLimit: 12, font: { size: 10 } }, grid: { color: '#1a1a1a' } },
+            y: { reverse: true, suggestedMin: 0, ticks: { color: '#aaa', font: { size: 11 }, callback: v => v > 0 ? v + '위' : '' }, grid: { color: '#1a1a1a' } }
+          },
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#ccc', usePointStyle: true, boxWidth: 10, padding: 12, font: { size: 11 } } },
+            tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}위` } }
+          }
+        }
+      });
+    }
+  }
+
+  // ── Steam Top5 + 한국 일자별 최고순위 차트 ──
+  const stTop5KrEl = document.getElementById('summaryStTop5KrChart');
+  if (stTop5KrEl && stsHist.length > 0) {
+    const countries = getTop5PlusKorea(STS_W);
+    const bundle = buildDailyBestSeries(stsHist, countries, (entry, name) => entry.results?.[name]?.rank ?? null);
+    if (bundle.labels.length > 0) {
+      stTop5KrEl.width  = stTop5KrEl.parentElement.offsetWidth || W;
+      stTop5KrEl.height = H_TREND;
+      if (summaryStTop5KrCI) summaryStTop5KrCI.destroy();
+      summaryStTop5KrCI = new Chart(stTop5KrEl.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: bundle.labels,
+          datasets: buildTopRankDatasets(bundle, STS_F, ['#4a9eff', '#f1c40f', '#2ecc71', '#ff6b81', '#a55eea', '#45aaf2'], '#ffffff')
+        },
+        options: {
+          responsive: false,
+          animation: false,
+          interaction: { mode: 'nearest', intersect: false },
+          scales: {
+            x: { ticks: { color: '#aaa', maxTicksLimit: 12, font: { size: 10 } }, grid: { color: '#1a1a1a' } },
+            y: { reverse: true, suggestedMin: 0, ticks: { color: '#aaa', font: { size: 11 }, callback: v => v > 0 ? v + '위' : '' }, grid: { color: '#1a1a1a' } }
+          },
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#ccc', usePointStyle: true, boxWidth: 10, padding: 12, font: { size: 11 } } },
+            tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}위` } }
+          }
+        }
+      });
+    }
   }
 }
 
