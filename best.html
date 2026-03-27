@@ -1724,14 +1724,19 @@ function showCountryChart(countryName) {
   document.getElementById('modalTitle').innerText = `${FLAGS[countryName] || ''} ${countryName} History`;
   twemoji.parse(document.getElementById('modalTitle'), { folder: 'svg', ext: '.svg' });
   if (countryChart) { countryChart.destroy(); countryChart = null; }
+  
+  // ✅ 오늘 데이터만 필터링
+  const nowKst = new Date(new Date().getTime() + 9 * 3600000);
+  const todayStart = new Date(Date.UTC(nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()) - 9 * 3600000);
+  
   const countryData = historyData
+    .filter(h => new Date(h.timestamp) >= todayStart)  // 오늘만
     .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName) }))
     .filter(d => d.y !== 999);
 
   function drawCountryChart() {
     const canvas = document.getElementById('countryChart');
     const container = canvas.parentElement;
-    // 캔버스 크기를 컨테이너에 명시적으로 맞춤 (responsive 계산 전에 확보)
     canvas.width  = container.offsetWidth  || 700;
     canvas.height = container.offsetHeight || 400;
     const ctx = canvas.getContext('2d');
@@ -1751,7 +1756,7 @@ function showCountryChart(countryName) {
         scales: {
           x: {
             type: 'time',
-            time: { tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' } },
+            time: { tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'HH:mm', day: 'MM/dd' } },
             grid: { color: '#333' },
             ticks: { color: '#fff', maxRotation: 45, autoSkip: true, maxTicksLimit: 10 }
           },
@@ -1762,8 +1767,28 @@ function showCountryChart(countryName) {
     });
   }
 
-  // position:fixed 모달 내 캔버스는 rAF로도 offsetWidth=0인 경우 있음 → setTimeout으로 확실히
   setTimeout(drawCountryChart, 50);
+}
+
+function showCountryModalWithLink(countryName, platform, storeUrl) {
+  // 먼저 모달 차트 표시
+  showCountryChart(countryName);
+  
+  // 링크를 modalTitle 옆에 추가
+  const titleEl = document.getElementById('modalTitle');
+  let linkBtn = titleEl.querySelector('.modal-store-link');
+  if (!linkBtn) {
+    linkBtn = document.createElement('a');
+    linkBtn.className = 'modal-store-link';
+    linkBtn.style.cssText = 'margin-left:auto;padding:4px 8px;background:#4a9eff;border-radius:4px;color:#fff;text-decoration:none;font-size:12px;font-weight:700';
+    titleEl.parentElement.style.display = 'flex';
+    titleEl.parentElement.style.alignItems = 'center';
+    titleEl.parentElement.style.gap = '10px';
+    titleEl.parentElement.appendChild(linkBtn);
+  }
+  linkBtn.href = storeUrl;
+  linkBtn.target = '_blank';
+  linkBtn.textContent = '🔗 ' + (platform === 'ps' ? 'PS Store' : 'Steam');
 }
 
 function closeModal() { document.getElementById('chartModal').style.display = 'none'; }
@@ -3009,9 +3034,8 @@ function renderSummaryRankGroups(list, containerId, flagFn, urlFn, isPsFlag) {
         : ch < 0
         ? `<span style="font-size:10px;color:var(--down);font-weight:800;margin-left:2px">▼${Math.abs(ch)}</span>`
         : '';
-      return `<div class="rank1-tag" data-country="${x.name}" data-platform="${isPsFlag ? 'ps' : 'steam'}" style="cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:4px;background:var(--bg-3);transition:background 0.15s">
+      return `<div class="rank1-tag" data-country="${x.name}" data-platform="${isPsFlag ? 'ps' : 'steam'}" data-url="${url}" onclick="showCountryModalWithLink('${x.name}', '${isPsFlag ? 'ps' : 'steam'}', '${url}')" style="cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:4px;background:var(--bg-3);transition:background 0.15s">
         <span>${flag}</span><span class="rank1-tag-name">${x.name}</span>${starBadge(x.name, isPsFlag)}${chgStr}${dStr}${rankLbl}
-        <a class="rank1-tag-link" href="${url}" target="_blank" onclick="event.stopPropagation()" style="margin-left:auto;text-decoration:none;font-size:14px;opacity:0.6">🔗</a>
       </div>`;
     }).join('');
 
@@ -3028,27 +3052,6 @@ function renderSummaryRankGroups(list, containerId, flagFn, urlFn, isPsFlag) {
   }).join('');
 
   twemoji.parse(container, { folder: 'svg', ext: '.svg' });
-  
-  // ── 순위별 그룹 행에 호버 이벤트 바인딩 ──
-  const tags = container.querySelectorAll('.rank1-tag');
-  console.log('[renderSummaryRankGroups] Binding events to', tags.length, 'tags');
-  tags.forEach((tag) => {
-    const country = tag.getAttribute('data-country');
-    const platform = tag.getAttribute('data-platform') || 'ps';
-    
-    if (!country) return;
-    
-    tag.addEventListener('mouseenter', function(e) {
-      console.log('[mouseenter-summary]', country);
-      clearTimeout(hoverPopoverTimeout);
-      showHoverChart(country, e, platform);
-    });
-    
-    tag.addEventListener('mouseleave', function(e) {
-      console.log('[mouseleave-summary]', country);
-      hideHoverChart();
-    });
-  });
 }
 
 function toggleSumGroup(id) {
@@ -3330,7 +3333,7 @@ function renderPsHeatmap(list) {
       const sparkColor = ch > 0 ? '#2ecc71' : ch < 0 ? '#e74c3c' : '#4a9eff';
       const histRanks = historyData.map(h => getRank(h, d.name)).filter(v => v < 999);
       const spark = makeSparkline(histRanks, sparkColor);
-      return `<div class="hm-row${rowCls}">
+      return `<div class="hm-row${rowCls}" onclick="showCountryChart('${d.name}')">
         <div class="hm-bar ${barCls}"></div>
         <div class="hm-rank ${rankCls}">${rankTxt}</div>
         <div class="hm-info">
@@ -3619,7 +3622,7 @@ function renderStsHeatmap(lat, prv) {
       const sparkColor = ch > 0 ? '#2ecc71' : ch < 0 ? '#e74c3c' : '#4a9eff';
       const histRanks = stsHist.map(h => h.results?.[d.name]?.rank ?? null);
       const spark = makeSparkline(histRanks, sparkColor);
-      return `<div class="hm-row${rowCls}">
+      return `<div class="hm-row${rowCls}" onclick="openStsModal('${d.name}')">
         <div class="hm-bar ${barCls}"></div>
         <div class="hm-rank ${rankCls}">${rankTxt}</div>
         <div class="hm-info">
