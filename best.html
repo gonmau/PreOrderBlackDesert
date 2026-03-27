@@ -2293,7 +2293,20 @@ function openStsModal(n) {
     const ptR2 = h.length > 60 ? 0 : h.length > 20 ? 2 : 3;
     stsMCI = new Chart(c2, {
       type: 'line',
-      data: { labels: h.map(x=>x.t), datasets: [{ label: '순위', data: h.map(x=>x.r), borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.1)', borderWidth: 2, pointRadius: ptR2, pointHoverRadius: ptR2+2, fill: true, tension: 0.3, spanGaps: true }] },
+      data: { 
+        datasets: [{ 
+          label: '순위', 
+          data: h.map(x=>({x: x.t, y: x.r})),  // ✅ x/y 형식으로 변경
+          borderColor: '#4a9eff', 
+          backgroundColor: 'rgba(74,158,255,0.1)', 
+          borderWidth: 2, 
+          pointRadius: ptR2, 
+          pointHoverRadius: ptR2+2, 
+          fill: true, 
+          tension: 0.3, 
+          spanGaps: true 
+        }] 
+      },
       options: { responsive: true, maintainAspectRatio: false,
         scales: {
           x: { type:'time', time:{ unit: h.length>48?'day':'hour', displayFormats:{hour:'HH:mm',day:'M/d'}}, ticks:{color:'#fff',maxTicksLimit:7,maxRotation:30,font:{size:10}}, grid:{color:'#222'} },
