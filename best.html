@@ -1774,8 +1774,12 @@ function showCountryChart(countryName) {
 }
 
 function showCountryModalWithLink(countryName, platform, storeUrl) {
-  // 먼저 모달 차트 표시
-  showCountryChart(countryName);
+  // platform에 따라 다른 모달 호출
+  if (platform === 'steam') {
+    openStsModal(countryName);
+  } else {
+    showCountryChart(countryName);
+  }
   
   // 기존 링크 모두 제거
   const existingLinks = document.querySelectorAll('.modal-store-link');
@@ -1785,29 +1789,32 @@ function showCountryModalWithLink(countryName, platform, storeUrl) {
   const titleEl = document.getElementById('modalTitle');
   const modalContent = document.querySelector('.modal-content');
   
-  // 제목 컨테이너 생성
-  let titleContainer = document.getElementById('title-container');
-  if (!titleContainer) {
-    titleContainer = document.createElement('div');
-    titleContainer.id = 'title-container';
-    titleContainer.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:20px;width:100%';
-    titleEl.parentElement.insertBefore(titleContainer, titleEl);
+  // PS 모달의 경우만 링크 추가 (Steam은 별도 모달이므로 제외)
+  if (platform === 'ps') {
+    // 제목 컨테이너 생성
+    let titleContainer = document.getElementById('title-container');
+    if (!titleContainer) {
+      titleContainer = document.createElement('div');
+      titleContainer.id = 'title-container';
+      titleContainer.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:20px;width:100%';
+      titleEl.parentElement.insertBefore(titleContainer, titleEl);
+    }
+    
+    // 기존 제목을 컨테이너로 이동
+    if (titleEl.parentElement !== titleContainer) {
+      titleContainer.appendChild(titleEl);
+    }
+    
+    // 링크 생성 및 추가
+    const linkBtn = document.createElement('a');
+    linkBtn.className = 'modal-store-link';
+    linkBtn.href = storeUrl;
+    linkBtn.target = '_blank';
+    linkBtn.style.cssText = 'padding:6px 12px;background:#4a9eff;border-radius:4px;color:#fff;text-decoration:none;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0';
+    linkBtn.textContent = '🔗 PS Store';
+    
+    titleContainer.appendChild(linkBtn);
   }
-  
-  // 기존 제목을 컨테이너로 이동
-  if (titleEl.parentElement !== titleContainer) {
-    titleContainer.appendChild(titleEl);
-  }
-  
-  // 링크 생성 및 추가
-  const linkBtn = document.createElement('a');
-  linkBtn.className = 'modal-store-link';
-  linkBtn.href = storeUrl;
-  linkBtn.target = '_blank';
-  linkBtn.style.cssText = 'padding:6px 12px;background:#4a9eff;border-radius:4px;color:#fff;text-decoration:none;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0';
-  linkBtn.textContent = '🔗 ' + (platform === 'ps' ? 'PS Store' : 'Steam');
-  
-  titleContainer.appendChild(linkBtn);
 }
 
 function closeModal() { 
