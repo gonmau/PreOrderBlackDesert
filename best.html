@@ -1811,27 +1811,35 @@ function showHoverChart(countryName, event, platform = 'ps') {
   title.textContent = `${flag || ''} ${countryName}`;
   console.log('  → Title updated:', title.textContent);
   
-  // 데이터 가져오기
+  // 데이터 가져오기 - 오늘 하루만
   let countryData = [];
   try {
+    // 오늘 00:00 KST 계산
+    const nowKst = new Date(new Date().getTime() + 9 * 3600000);
+    const todayStart = new Date(Date.UTC(nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()) - 9 * 3600000);
+    
+    console.log('  → Today start:', todayStart.toISOString());
+    
     if (platform === 'steam') {
       if (!stsHist) {
         console.error('  ✗ stsHist is undefined');
         return;
       }
       countryData = stsHist
+        .filter(h => new Date(h.timestamp) >= todayStart)  // 오늘만
         .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.results?.[countryName]?.rank ?? null }))
         .filter(d => d.y !== null);
-      console.log('  → Steam data loaded:', countryData.length, 'points');
+      console.log('  → Steam data loaded (today):', countryData.length, 'points');
     } else {
       if (!historyData) {
         console.error('  ✗ historyData is undefined');
         return;
       }
       countryData = historyData
+        .filter(h => new Date(h.timestamp) >= todayStart)  // 오늘만
         .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName) }))
         .filter(d => d.y !== 999);
-      console.log('  → PS data loaded:', countryData.length, 'points');
+      console.log('  → PS data loaded (today):', countryData.length, 'points');
     }
   } catch(err) {
     console.error('  ✗ Data loading error:', err.message);
@@ -3001,9 +3009,10 @@ function renderSummaryRankGroups(list, containerId, flagFn, urlFn, isPsFlag) {
         : ch < 0
         ? `<span style="font-size:10px;color:var(--down);font-weight:800;margin-left:2px">▼${Math.abs(ch)}</span>`
         : '';
-      return `<a class="rank1-tag" href="${url}" target="_blank" onclick="event.stopPropagation()" style="text-decoration:none">
+      return `<div class="rank1-tag" data-country="${x.name}" data-platform="${isPsFlag ? 'ps' : 'steam'}" style="cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:4px;background:var(--bg-3);transition:background 0.15s">
         <span>${flag}</span><span class="rank1-tag-name">${x.name}</span>${starBadge(x.name, isPsFlag)}${chgStr}${dStr}${rankLbl}
-      </a>`;
+        <a class="rank1-tag-link" href="${url}" target="_blank" onclick="event.stopPropagation()" style="margin-left:auto;text-decoration:none;font-size:14px;opacity:0.6">🔗</a>
+      </div>`;
     }).join('');
 
     return `<div>
@@ -3019,6 +3028,27 @@ function renderSummaryRankGroups(list, containerId, flagFn, urlFn, isPsFlag) {
   }).join('');
 
   twemoji.parse(container, { folder: 'svg', ext: '.svg' });
+  
+  // ── 순위별 그룹 행에 호버 이벤트 바인딩 ──
+  const tags = container.querySelectorAll('.rank1-tag');
+  console.log('[renderSummaryRankGroups] Binding events to', tags.length, 'tags');
+  tags.forEach((tag) => {
+    const country = tag.getAttribute('data-country');
+    const platform = tag.getAttribute('data-platform') || 'ps';
+    
+    if (!country) return;
+    
+    tag.addEventListener('mouseenter', function(e) {
+      console.log('[mouseenter-summary]', country);
+      clearTimeout(hoverPopoverTimeout);
+      showHoverChart(country, e, platform);
+    });
+    
+    tag.addEventListener('mouseleave', function(e) {
+      console.log('[mouseleave-summary]', country);
+      hideHoverChart();
+    });
+  });
 }
 
 function toggleSumGroup(id) {
