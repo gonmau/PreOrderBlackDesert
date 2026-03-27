@@ -1787,104 +1787,155 @@ function getOrCreateHoverPopover() {
 }
 
 function showHoverChart(countryName, event, platform = 'ps') {
-  console.log('[showHoverChart]', { countryName, platform, innerWidth: window.innerWidth });
+  console.log('[showHoverChart] START', { countryName, platform, innerWidth: window.innerWidth });
+  
   if (window.innerWidth <= 700) { 
     console.log('  → Mobile mode, skipping');
     return; 
   }
   
+  console.log('  → Desktop mode, creating popover');
+  
   const popover = getOrCreateHoverPopover();
   const title = popover.querySelector('.chart-title');
   const canvas = popover.querySelector('canvas');
-  console.log('  → Elements:', { canvas: !!canvas, title: !!title });
+  console.log('  → Elements check:', { title: !!title, canvas: !!canvas, popover: !!popover });
+  
+  if (!title || !canvas) {
+    console.error('  ✗ Missing title or canvas');
+    return;
+  }
   
   // 제목 업데이트
   const flag = platform === 'steam' ? STS_F[countryName] : FLAGS[countryName];
   title.textContent = `${flag || ''} ${countryName}`;
+  console.log('  → Title updated:', title.textContent);
   
   // 데이터 가져오기
-  let countryData;
-  if (platform === 'steam') {
-    countryData = stsHist
-      .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.results?.[countryName]?.rank ?? null }))
-      .filter(d => d.y !== null);
-    console.log('  → Steam data points:', countryData.length);
-  } else {
-    countryData = historyData
-      .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName) }))
-      .filter(d => d.y !== 999);
-    console.log('  → PS data points:', countryData.length);
-  }
-  
-  // 차트 그리기
-  if (hoverPopoverChart) {
-    console.log('  → Destroying old chart');
-    hoverPopoverChart.destroy();
-  }
-  const ctx = canvas.getContext('2d');
-  hoverPopoverChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      datasets: [{
-        label: countryName,
-        data: countryData,
-        borderColor: platform === 'steam' ? '#4a9eff' : '#ff4757',
-        borderWidth: 1.5,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-        tension: 0.2,
-        fill: false
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      scales: {
-        x: {
-          type: 'time',
-          time: { tooltipFormat: 'MM/dd', displayFormats: { day: 'MM/dd' } },
-          grid: { display: false },
-          ticks: { display: false }
-        },
-        y: {
-          reverse: true,
-          suggestedMin: 0,
-          grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
-          ticks: { display: false }
-        }
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: c => c.parsed.y + '위' } }
+  let countryData = [];
+  try {
+    if (platform === 'steam') {
+      if (!stsHist) {
+        console.error('  ✗ stsHist is undefined');
+        return;
       }
+      countryData = stsHist
+        .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.results?.[countryName]?.rank ?? null }))
+        .filter(d => d.y !== null);
+      console.log('  → Steam data loaded:', countryData.length, 'points');
+    } else {
+      if (!historyData) {
+        console.error('  ✗ historyData is undefined');
+        return;
+      }
+      countryData = historyData
+        .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName) }))
+        .filter(d => d.y !== 999);
+      console.log('  → PS data loaded:', countryData.length, 'points');
     }
-  });
-  
-  // 팝오버 위치 설정
-  let row = event.target;
-  while (row && !row.classList.contains('hm-row')) {
-    row = row.parentElement;
-  }
-  if (!row) {
-    console.warn('  ✗ Could not find .hm-row');
+  } catch(err) {
+    console.error('  ✗ Data loading error:', err.message);
     return;
   }
   
-  const rect = row.getBoundingClientRect();
-  let top = rect.top - popover.offsetHeight - 10;
-  let left = rect.left + rect.width / 2 - popover.offsetWidth / 2;
-  console.log('  → Position:', { top, left, rectTop: rect.top, rectBottom: rect.bottom });
+  if (countryData.length === 0) {
+    console.warn('  ⚠ No data points for', countryName);
+  }
   
-  // 화면 경계 체크
-  if (top < 10) top = rect.bottom + 10;
-  if (left < 10) left = 10;
-  if (left + popover.offsetWidth > window.innerWidth) left = window.innerWidth - popover.offsetWidth - 10;
+  // 차트 그리기
+  try {
+    if (hoverPopoverChart) {
+      console.log('  → Destroying old chart');
+      hoverPopoverChart.destroy();
+    }
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      console.error('  ✗ Canvas context is null');
+      return;
+    }
+    
+    console.log('  → Creating new chart');
+    hoverPopoverChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        datasets: [{
+          label: countryName,
+          data: countryData,
+          borderColor: platform === 'steam' ? '#4a9eff' : '#ff4757',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.2,
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+          x: {
+            type: 'time',
+            time: { tooltipFormat: 'MM/dd', displayFormats: { day: 'MM/dd' } },
+            grid: { display: false },
+            ticks: { display: false }
+          },
+          y: {
+            reverse: true,
+            suggestedMin: 0,
+            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+            ticks: { display: false }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: c => c.parsed.y + '위' } }
+        }
+      }
+    });
+    console.log('  ✓ Chart created');
+  } catch(err) {
+    console.error('  ✗ Chart creation error:', err.message, err.stack);
+    return;
+  }
   
-  popover.style.top = top + 'px';
-  popover.style.left = left + 'px';
-  popover.classList.add('visible');
-  console.log('  ✓ Popover shown');
+  // 팝오버 위치 설정
+  try {
+    let row = event.target;
+    let depth = 0;
+    while (row && !row.classList.contains('hm-row') && depth < 10) {
+      row = row.parentElement;
+      depth++;
+    }
+    
+    if (!row || !row.classList.contains('hm-row')) {
+      console.warn('  ✗ Could not find .hm-row after', depth, 'levels');
+      return;
+    }
+    
+    console.log('  → Found .hm-row after', depth, 'levels');
+    
+    const rect = row.getBoundingClientRect();
+    let top = rect.top - popover.offsetHeight - 10;
+    let left = rect.left + rect.width / 2 - popover.offsetWidth / 2;
+    
+    console.log('  → Initial position:', { top, left, rowTop: rect.top, rowBottom: rect.bottom });
+    
+    // 화면 경계 체크
+    if (top < 10) top = rect.bottom + 10;
+    if (left < 10) left = 10;
+    if (left + popover.offsetWidth > window.innerWidth) left = window.innerWidth - popover.offsetWidth - 10;
+    
+    popover.style.top = top + 'px';
+    popover.style.left = left + 'px';
+    popover.classList.add('visible');
+    
+    console.log('  ✓ Popover shown at:', { top, left });
+    console.log('[showHoverChart] END - SUCCESS');
+  } catch(err) {
+    console.error('  ✗ Position error:', err.message);
+  }
 }
 
 function hideHoverChart() {
@@ -2897,26 +2948,6 @@ function renderSummaryCharts() {
     }
   }
 
-  // ── 히트맵 호버 전역 이벤트 위임 ──
-  document.addEventListener('mouseenter', (e) => {
-    const row = e.target.closest('.hm-row');
-    if (!row) return;
-    
-    const country = row.getAttribute('data-country');
-    const platform = row.getAttribute('data-platform') || 'ps';
-    if (!country) return;
-    
-    clearTimeout(hoverPopoverTimeout);
-    showHoverChart(country, e, platform);
-  }, true);
-  
-  document.addEventListener('mouseleave', (e) => {
-    const row = e.target.closest('.hm-row');
-    if (!row) return;
-    
-    hideHoverChart();
-  }, true);
-
   // ── 히트맵 호버 팝오버 클릭 닫기 ──
   document.addEventListener('click', (e) => {
     const popover = getOrCreateHoverPopover();
@@ -3269,7 +3300,7 @@ function renderPsHeatmap(list) {
       const sparkColor = ch > 0 ? '#2ecc71' : ch < 0 ? '#e74c3c' : '#4a9eff';
       const histRanks = historyData.map(h => getRank(h, d.name)).filter(v => v < 999);
       const spark = makeSparkline(histRanks, sparkColor);
-      return `<div class="hm-row${rowCls}" data-country="${d.name}">
+      return `<div class="hm-row${rowCls}" data-country="${d.name}" data-platform="ps" style="cursor:pointer">
         <div class="hm-bar ${barCls}"></div>
         <div class="hm-rank ${rankCls}">${rankTxt}</div>
         <div class="hm-info">
@@ -3305,6 +3336,27 @@ function renderPsHeatmap(list) {
   }).join('');
 
   twemoji.parse(g, { folder: 'svg', ext: '.svg' });
+  
+  // ── 히트맵 행에 직접 이벤트 바인딩 (동적 렌더링 지원) ──
+  const rows = g.querySelectorAll('.hm-row');
+  console.log('[renderPsHeatmap] Binding events to', rows.length, 'rows');
+  rows.forEach((row) => {
+    const country = row.getAttribute('data-country');
+    const platform = row.getAttribute('data-platform') || 'ps';
+    
+    if (!country) return;
+    
+    row.addEventListener('mouseenter', function(e) {
+      console.log('[mouseenter]', country);
+      clearTimeout(hoverPopoverTimeout);
+      showHoverChart(country, e, platform);
+    });
+    
+    row.addEventListener('mouseleave', function(e) {
+      console.log('[mouseleave]', country);
+      hideHoverChart();
+    });
+  });
 }
 
 /* ── Steam Grid (legacy hidden container) ── */
@@ -3594,6 +3646,27 @@ function renderStsHeatmap(lat, prv) {
   }).join('');
 
   twemoji.parse(g, { folder: 'svg', ext: '.svg' });
+  
+  // ── 히트맵 행에 직접 이벤트 바인딩 (동적 렌더링 지원) ──
+  const rows = g.querySelectorAll('.hm-row');
+  console.log('[renderStsHeatmap] Binding events to', rows.length, 'rows');
+  rows.forEach((row) => {
+    const country = row.getAttribute('data-country');
+    const platform = row.getAttribute('data-platform') || 'steam';
+    
+    if (!country) return;
+    
+    row.addEventListener('mouseenter', function(e) {
+      console.log('[mouseenter]', country);
+      clearTimeout(hoverPopoverTimeout);
+      showHoverChart(country, e, platform);
+    });
+    
+    row.addEventListener('mouseleave', function(e) {
+      console.log('[mouseleave]', country);
+      hideHoverChart();
+    });
+  });
 }
 
 
