@@ -1243,7 +1243,7 @@
   <div class="modal-content">
     <span class="close-btn" onclick="closeModal()">&times;</span>
     <h2 id="modalTitle" style="margin-bottom:20px; font-family:'Cinzel'; color:var(--gold);">Country Trend</h2>
-    <div style="height:min(400px,50vh);"><canvas id="countryChart"></canvas></div>
+    <div style="height:min(400px,50vh);width:100%;display:flex;justify-content:center;align-items:center;"><canvas id="countryChart" style="max-width:100%;"></canvas></div>
   </div>
 </div>
 
@@ -1721,6 +1721,9 @@ function renderMainChart() {
 function showCountryChart(countryName) {
   const modal = document.getElementById('chartModal');
   modal.style.display = 'flex';
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+  
   document.getElementById('modalTitle').innerText = `${FLAGS[countryName] || ''} ${countryName} History`;
   twemoji.parse(document.getElementById('modalTitle'), { folder: 'svg', ext: '.svg' });
   if (countryChart) { countryChart.destroy(); countryChart = null; }
@@ -1760,7 +1763,7 @@ function showCountryChart(countryName) {
             grid: { color: '#333' },
             ticks: { color: '#fff', maxRotation: 45, autoSkip: true, maxTicksLimit: 10 }
           },
-          y: { reverse: true, suggestedMin: 0, grid: { color: '#333' }, ticks: { color: '#fff', padding: 8, callback: v => v > 0 ? v + '위' : '' } }
+          y: { reverse: true, suggestedMin: 0, grid: { color: '#333' }, ticks: { color: '#fff', padding: 8, stepSize: 1, callback: v => v > 0 ? Math.floor(v) + '위' : '' } }
         },
         plugins: { legend: { display: false } }
       }
@@ -1774,24 +1777,42 @@ function showCountryModalWithLink(countryName, platform, storeUrl) {
   // 먼저 모달 차트 표시
   showCountryChart(countryName);
   
-  // 링크를 modalTitle 옆에 추가
+  // 기존 링크 모두 제거
+  const existingLinks = document.querySelectorAll('.modal-store-link');
+  existingLinks.forEach(link => link.remove());
+  
+  // 제목 스타일 조정 (flex로 양쪽 배치)
   const titleEl = document.getElementById('modalTitle');
-  let linkBtn = titleEl.querySelector('.modal-store-link');
-  if (!linkBtn) {
-    linkBtn = document.createElement('a');
-    linkBtn.className = 'modal-store-link';
-    linkBtn.style.cssText = 'margin-left:auto;padding:4px 8px;background:#4a9eff;border-radius:4px;color:#fff;text-decoration:none;font-size:12px;font-weight:700';
-    titleEl.parentElement.style.display = 'flex';
-    titleEl.parentElement.style.alignItems = 'center';
-    titleEl.parentElement.style.gap = '10px';
-    titleEl.parentElement.appendChild(linkBtn);
+  const modalContent = document.querySelector('.modal-content');
+  
+  // 제목 컨테이너 생성
+  let titleContainer = document.getElementById('title-container');
+  if (!titleContainer) {
+    titleContainer = document.createElement('div');
+    titleContainer.id = 'title-container';
+    titleContainer.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:20px;width:100%';
+    titleEl.parentElement.insertBefore(titleContainer, titleEl);
   }
+  
+  // 기존 제목을 컨테이너로 이동
+  if (titleEl.parentElement !== titleContainer) {
+    titleContainer.appendChild(titleEl);
+  }
+  
+  // 링크 생성 및 추가
+  const linkBtn = document.createElement('a');
+  linkBtn.className = 'modal-store-link';
   linkBtn.href = storeUrl;
   linkBtn.target = '_blank';
+  linkBtn.style.cssText = 'padding:6px 12px;background:#4a9eff;border-radius:4px;color:#fff;text-decoration:none;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0';
   linkBtn.textContent = '🔗 ' + (platform === 'ps' ? 'PS Store' : 'Steam');
+  
+  titleContainer.appendChild(linkBtn);
 }
 
-function closeModal() { document.getElementById('chartModal').style.display = 'none'; }
+function closeModal() { 
+  document.getElementById('chartModal').style.display = 'none'; 
+}
 
 /* ── 히트맵 호버 팝오버 ── */
 let hoverPopover = null;
@@ -2250,7 +2271,16 @@ function openStsModal(n) {
   const flagImg = `<img src="https://flagcdn.com/w40/${cc}.png" alt="${n}" style="width:32px;height:22px;object-fit:cover;border-radius:2px;display:inline-block;vertical-align:middle">`;
   document.getElementById('sts-modal-title').innerHTML = flagImg + ' ' + n;
   document.getElementById('sts-modal-link').href = 'https://steamdb.info/app/3321460/charts/';
-  const h = stsHist.filter(x => x.results && x.results[n] && x.results[n].rank).map(x => ({ t: new Date(x.timestamp), r: x.results[n].rank }));
+  
+  // ✅ 오늘 데이터만 필터링
+  const nowKst = new Date(new Date().getTime() + 9 * 3600000);
+  const todayStart = new Date(Date.UTC(nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()) - 9 * 3600000);
+  
+  const h = stsHist
+    .filter(x => new Date(x.timestamp) >= todayStart)  // 오늘만
+    .filter(x => x.results && x.results[n] && x.results[n].rank)
+    .map(x => ({ t: new Date(x.timestamp), r: x.results[n].rank }));
+  
   if (!h.length) {
     ['sts-modal-current','sts-modal-best','sts-modal-avg'].forEach(id => document.getElementById(id).textContent = '—');
   } else {
@@ -2266,8 +2296,8 @@ function openStsModal(n) {
       data: { labels: h.map(x=>x.t), datasets: [{ label: '순위', data: h.map(x=>x.r), borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.1)', borderWidth: 2, pointRadius: ptR2, pointHoverRadius: ptR2+2, fill: true, tension: 0.3, spanGaps: true }] },
       options: { responsive: true, maintainAspectRatio: false,
         scales: {
-          x: { type:'time', time:{ unit: h.length>48?'day':'hour', displayFormats:{hour:'M/d HH:mm',day:'M/d'}}, ticks:{color:'#fff',maxTicksLimit:7,maxRotation:30,font:{size:10}}, grid:{color:'#222'} },
-          y: { reverse:true, suggestedMin:0, ticks:{color:'#fff',stepSize:1,callback:v=>v>0?v+'위':'',font:{size:11},padding:8}, grid:{color:'#222'} }
+          x: { type:'time', time:{ unit: h.length>48?'day':'hour', displayFormats:{hour:'HH:mm',day:'M/d'}}, ticks:{color:'#fff',maxTicksLimit:7,maxRotation:30,font:{size:10}}, grid:{color:'#222'} },
+          y: { reverse:true, suggestedMin:0, ticks:{color:'#fff',stepSize:1,callback:v=>v>0?Math.floor(v)+'위':'',font:{size:11},padding:8}, grid:{color:'#222'} }
         },
         plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>c.parsed.y+'위'}} }
       }
