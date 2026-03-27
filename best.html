@@ -1885,15 +1885,15 @@ function showHoverChart(countryName, event, platform = 'ps') {
         scales: {
           x: {
             type: 'time',
-            time: { tooltipFormat: 'MM/dd', displayFormats: { day: 'MM/dd' } },
+            time: { tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'HH:mm', day: 'MM/dd' } },
             grid: { display: false },
-            ticks: { display: false }
+            ticks: { display: true, color: '#888', font: { size: 9 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 8 }
           },
           y: {
             reverse: true,
             suggestedMin: 0,
             grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
-            ticks: { display: false }
+            ticks: { display: true, color: '#888', font: { size: 10 }, callback: v => v > 0 ? v + '위' : '' }
           }
         },
         plugins: {
@@ -3330,7 +3330,7 @@ function renderPsHeatmap(list) {
       const sparkColor = ch > 0 ? '#2ecc71' : ch < 0 ? '#e74c3c' : '#4a9eff';
       const histRanks = historyData.map(h => getRank(h, d.name)).filter(v => v < 999);
       const spark = makeSparkline(histRanks, sparkColor);
-      return `<div class="hm-row${rowCls}" data-country="${d.name}" data-platform="ps" style="cursor:pointer">
+      return `<div class="hm-row${rowCls}">
         <div class="hm-bar ${barCls}"></div>
         <div class="hm-rank ${rankCls}">${rankTxt}</div>
         <div class="hm-info">
@@ -3366,27 +3366,6 @@ function renderPsHeatmap(list) {
   }).join('');
 
   twemoji.parse(g, { folder: 'svg', ext: '.svg' });
-  
-  // ── 히트맵 행에 직접 이벤트 바인딩 (동적 렌더링 지원) ──
-  const rows = g.querySelectorAll('.hm-row');
-  console.log('[renderPsHeatmap] Binding events to', rows.length, 'rows');
-  rows.forEach((row) => {
-    const country = row.getAttribute('data-country');
-    const platform = row.getAttribute('data-platform') || 'ps';
-    
-    if (!country) return;
-    
-    row.addEventListener('mouseenter', function(e) {
-      console.log('[mouseenter]', country);
-      clearTimeout(hoverPopoverTimeout);
-      showHoverChart(country, e, platform);
-    });
-    
-    row.addEventListener('mouseleave', function(e) {
-      console.log('[mouseleave]', country);
-      hideHoverChart();
-    });
-  });
 }
 
 /* ── Steam Grid (legacy hidden container) ── */
@@ -3640,7 +3619,7 @@ function renderStsHeatmap(lat, prv) {
       const sparkColor = ch > 0 ? '#2ecc71' : ch < 0 ? '#e74c3c' : '#4a9eff';
       const histRanks = stsHist.map(h => h.results?.[d.name]?.rank ?? null);
       const spark = makeSparkline(histRanks, sparkColor);
-      return `<div class="hm-row${rowCls}" data-country="${d.name}" data-platform="steam">
+      return `<div class="hm-row${rowCls}">
         <div class="hm-bar ${barCls}"></div>
         <div class="hm-rank ${rankCls}">${rankTxt}</div>
         <div class="hm-info">
@@ -3676,27 +3655,6 @@ function renderStsHeatmap(lat, prv) {
   }).join('');
 
   twemoji.parse(g, { folder: 'svg', ext: '.svg' });
-  
-  // ── 히트맵 행에 직접 이벤트 바인딩 (동적 렌더링 지원) ──
-  const rows = g.querySelectorAll('.hm-row');
-  console.log('[renderStsHeatmap] Binding events to', rows.length, 'rows');
-  rows.forEach((row) => {
-    const country = row.getAttribute('data-country');
-    const platform = row.getAttribute('data-platform') || 'steam';
-    
-    if (!country) return;
-    
-    row.addEventListener('mouseenter', function(e) {
-      console.log('[mouseenter]', country);
-      clearTimeout(hoverPopoverTimeout);
-      showHoverChart(country, e, platform);
-    });
-    
-    row.addEventListener('mouseleave', function(e) {
-      console.log('[mouseleave]', country);
-      hideHoverChart();
-    });
-  });
 }
 
 
