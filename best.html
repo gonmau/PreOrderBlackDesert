@@ -1787,11 +1787,16 @@ function getOrCreateHoverPopover() {
 }
 
 function showHoverChart(countryName, event, platform = 'ps') {
-  if (window.innerWidth <= 700) return; // 모바일은 호버 차트 비활성화
+  console.log('[showHoverChart]', { countryName, platform, innerWidth: window.innerWidth });
+  if (window.innerWidth <= 700) { 
+    console.log('  → Mobile mode, skipping');
+    return; 
+  }
   
   const popover = getOrCreateHoverPopover();
   const title = popover.querySelector('.chart-title');
   const canvas = popover.querySelector('canvas');
+  console.log('  → Elements:', { canvas: !!canvas, title: !!title });
   
   // 제목 업데이트
   const flag = platform === 'steam' ? STS_F[countryName] : FLAGS[countryName];
@@ -1803,14 +1808,19 @@ function showHoverChart(countryName, event, platform = 'ps') {
     countryData = stsHist
       .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.results?.[countryName]?.rank ?? null }))
       .filter(d => d.y !== null);
+    console.log('  → Steam data points:', countryData.length);
   } else {
     countryData = historyData
       .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName) }))
       .filter(d => d.y !== 999);
+    console.log('  → PS data points:', countryData.length);
   }
   
   // 차트 그리기
-  if (hoverPopoverChart) hoverPopoverChart.destroy();
+  if (hoverPopoverChart) {
+    console.log('  → Destroying old chart');
+    hoverPopoverChart.destroy();
+  }
   const ctx = canvas.getContext('2d');
   hoverPopoverChart = new Chart(ctx, {
     type: 'line',
@@ -1852,9 +1862,19 @@ function showHoverChart(countryName, event, platform = 'ps') {
   });
   
   // 팝오버 위치 설정
-  const rect = event.target.closest('.hm-row').getBoundingClientRect();
+  let row = event.target;
+  while (row && !row.classList.contains('hm-row')) {
+    row = row.parentElement;
+  }
+  if (!row) {
+    console.warn('  ✗ Could not find .hm-row');
+    return;
+  }
+  
+  const rect = row.getBoundingClientRect();
   let top = rect.top - popover.offsetHeight - 10;
   let left = rect.left + rect.width / 2 - popover.offsetWidth / 2;
+  console.log('  → Position:', { top, left, rectTop: rect.top, rectBottom: rect.bottom });
   
   // 화면 경계 체크
   if (top < 10) top = rect.bottom + 10;
@@ -1864,12 +1884,15 @@ function showHoverChart(countryName, event, platform = 'ps') {
   popover.style.top = top + 'px';
   popover.style.left = left + 'px';
   popover.classList.add('visible');
+  console.log('  ✓ Popover shown');
 }
 
 function hideHoverChart() {
   const popover = getOrCreateHoverPopover();
-  popover.classList.remove('visible');
   clearTimeout(hoverPopoverTimeout);
+  hoverPopoverTimeout = setTimeout(() => {
+    popover.classList.remove('visible');
+  }, 100);
 }
 
 function handleHeatmapRowClick(countryName, event, platform = 'ps') {
@@ -2874,6 +2897,26 @@ function renderSummaryCharts() {
     }
   }
 
+  // ── 히트맵 호버 전역 이벤트 위임 ──
+  document.addEventListener('mouseenter', (e) => {
+    const row = e.target.closest('.hm-row');
+    if (!row) return;
+    
+    const country = row.getAttribute('data-country');
+    const platform = row.getAttribute('data-platform') || 'ps';
+    if (!country) return;
+    
+    clearTimeout(hoverPopoverTimeout);
+    showHoverChart(country, e, platform);
+  }, true);
+  
+  document.addEventListener('mouseleave', (e) => {
+    const row = e.target.closest('.hm-row');
+    if (!row) return;
+    
+    hideHoverChart();
+  }, true);
+
   // ── 히트맵 호버 팝오버 클릭 닫기 ──
   document.addEventListener('click', (e) => {
     const popover = getOrCreateHoverPopover();
@@ -3226,7 +3269,7 @@ function renderPsHeatmap(list) {
       const sparkColor = ch > 0 ? '#2ecc71' : ch < 0 ? '#e74c3c' : '#4a9eff';
       const histRanks = historyData.map(h => getRank(h, d.name)).filter(v => v < 999);
       const spark = makeSparkline(histRanks, sparkColor);
-      return `<div class="hm-row${rowCls}" data-country="${d.name}" onclick="handleHeatmapRowClick('${d.name}', event)">
+      return `<div class="hm-row${rowCls}" data-country="${d.name}">
         <div class="hm-bar ${barCls}"></div>
         <div class="hm-rank ${rankCls}">${rankTxt}</div>
         <div class="hm-info">
@@ -3262,24 +3305,6 @@ function renderPsHeatmap(list) {
   }).join('');
 
   twemoji.parse(g, { folder: 'svg', ext: '.svg' });
-  
-  // ── 히트맵 행에 호버 이벤트 붙이기 ──
-  setTimeout(() => {
-    const rows = g.querySelectorAll('.hm-row');
-    rows.forEach(row => {
-      const country = row.getAttribute('data-country');
-      if (!country) return;
-      
-      row.addEventListener('mouseenter', (e) => {
-        clearTimeout(hoverPopoverTimeout);
-        showHoverChart(country, e, 'ps');
-      });
-      
-      row.addEventListener('mouseleave', () => {
-        hoverPopoverTimeout = setTimeout(hideHoverChart, 200);
-      });
-    });
-  }, 0);
 }
 
 /* ── Steam Grid (legacy hidden container) ── */
@@ -3533,7 +3558,7 @@ function renderStsHeatmap(lat, prv) {
       const sparkColor = ch > 0 ? '#2ecc71' : ch < 0 ? '#e74c3c' : '#4a9eff';
       const histRanks = stsHist.map(h => h.results?.[d.name]?.rank ?? null);
       const spark = makeSparkline(histRanks, sparkColor);
-      return `<div class="hm-row${rowCls}" data-country="${d.name}" data-platform="steam" onclick="handleHeatmapRowClick('${d.name}', event, 'steam')">
+      return `<div class="hm-row${rowCls}" data-country="${d.name}" data-platform="steam">
         <div class="hm-bar ${barCls}"></div>
         <div class="hm-rank ${rankCls}">${rankTxt}</div>
         <div class="hm-info">
@@ -3569,24 +3594,6 @@ function renderStsHeatmap(lat, prv) {
   }).join('');
 
   twemoji.parse(g, { folder: 'svg', ext: '.svg' });
-  
-  // ── 히트맵 행에 호버 이벤트 붙이기 ──
-  setTimeout(() => {
-    const rows = g.querySelectorAll('.hm-row');
-    rows.forEach(row => {
-      const country = row.getAttribute('data-country');
-      if (!country) return;
-      
-      row.addEventListener('mouseenter', (e) => {
-        clearTimeout(hoverPopoverTimeout);
-        showHoverChart(country, e, 'steam');
-      });
-      
-      row.addEventListener('mouseleave', () => {
-        hoverPopoverTimeout = setTimeout(hideHoverChart, 200);
-      });
-    });
-  }, 0);
 }
 
 
