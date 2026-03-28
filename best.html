@@ -2323,17 +2323,20 @@ function renderSalesChart() {
 
   const cards = document.getElementById('sales-summary-cards');
   if (cards) cards.innerHTML = [
-    { label: '📦 전체 누적 (총)', val: fmtSales(totalGross), sub: '공식 2M·3M 앵커 보정', color: 'var(--gold)' },
-    { label: '🧾 순보유량 추정',   val: fmtSales(totalNet),   sub: `환불 ${refundPct}% (Steam·PC 전량, PS5 30% 가중)`, color: '#c0c0c0' },
-    { label: '🎮 PS5 누적',        val: fmtSales(psTotal),    sub: `기본 ${fmtSales(psCoreTotal)} + 추가 ${fmtSales(psAdjTotal)}`, color: 'var(--blood)' },
-    { label: '🖥 Steam 누적',      val: fmtSales(stTotal),    sub: `기본 ${fmtSales(stCoreTotal)} + 추가 ${fmtSales(stAdjTotal)}`, color: 'var(--steam)' },
-    { label: '🎮 Xbox 누적',       val: fmtSales(xbTotal),    sub: `기본 ${fmtSales(xbCoreTotal)} + 추가 ${fmtSales(xbAdjTotal)}`, color: '#107C10' },
-    { label: '🧩 기타 채널 누적',   val: fmtSales(otherTotal), sub: 'EGS · Mac · 오프라인 · AMD', color: '#9b59b6' },
-  ].map(({ label, val, sub, color }) => `
+    { label: '📦 전체 누적 (총)', val: fmtSales(totalGross), adj: null,                    sub: '공식 2M·3M 앵커 보정',                             color: 'var(--gold)' },
+    { label: '🧾 순보유량 추정',   val: fmtSales(totalNet),   adj: null,                    sub: `환불 ${refundPct}% (Steam·PC 전량, PS5 30% 가중)`, color: '#c0c0c0' },
+    { label: '🎮 PS5 누적',        val: fmtSales(psTotal),    adj: fmtSales(psAdjTotal),   sub: null,                                               color: 'var(--blood)' },
+    { label: '🖥 Steam 누적',      val: fmtSales(stTotal),    adj: fmtSales(stAdjTotal),   sub: null,                                               color: 'var(--steam)' },
+    { label: '🎮 Xbox 누적',       val: fmtSales(xbTotal),    adj: fmtSales(xbAdjTotal),   sub: null,                                               color: '#107C10' },
+    { label: '🧩 기타 채널 누적',   val: fmtSales(otherTotal), adj: null,                    sub: 'EGS · Mac · 오프라인 · AMD',                       color: '#9b59b6' },
+  ].map(({ label, val, adj, sub, color }) => `
     <div style="background:var(--bg-2);border:1px solid var(--bd);border-left:3px solid ${color};border-radius:var(--radius);padding:10px 12px">
       <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">${label}</div>
-      <div style="font-family:'Cinzel',serif;font-size:20px;color:${color};font-weight:900">${val}</div>
-      <div style="font-size:10px;color:var(--tx-4);margin-top:2px">${sub}</div>
+      <div style="display:flex;align-items:baseline;gap:5px;flex-wrap:nowrap">
+        <span style="font-family:'Cinzel',serif;font-size:20px;color:${color};font-weight:900">${val}</span>
+        ${adj ? `<span style="font-size:14px;color:var(--tx-3);font-weight:700">+${adj}</span>` : ''}
+      </div>
+      ${sub ? `<div style="font-size:10px;color:var(--tx-4);margin-top:3px">${sub}</div>` : ''}
     </div>`).join('');
 
   // ── 마일스톤 예측 ──
