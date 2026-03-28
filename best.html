@@ -1104,7 +1104,7 @@
             • PS는 <b style="color:var(--gold)">WEIGHTS 기반 가중 평균 순위</b>, Steam은 <b style="color:var(--gold)">STS_W 기반 국가별 가중 평균 순위</b>를 일별 신호로 사용합니다.<br>
             • 기존처럼 Day0에 바로 환불을 빼지 않고, <b style="color:var(--gold)">공식 sold-through(총량)</b>를 먼저 맞춘 뒤 Steam·PC 기타 100%, PS5 30% 가중으로 순보유량을 별도 계산합니다.<br>
             • Epic Games Store / Mac / 오프라인(물리) / AMD 번들은 순위 데이터에 직접 안 잡히므로, <b style="color:var(--gold)">기타 채널 보정</b>으로 별도 반영합니다.<br>
-            • 기타 채널 보정은 <b style="color:var(--gold)">EGS·Mac·AMD 중심 50%</b>, <b style="color:var(--gold)">PS 물리 30%</b>, <b style="color:var(--gold)">Xbox 리테일 15%</b>, <b style="color:var(--gold)">Steam 지연 반영 5%</b> 가정입니다.
+            • 기타 채널 보정은 <b style="color:var(--gold)">EGS·Mac·AMD 중심 40%</b>, <b style="color:var(--gold)">Steam 지연·EGS 반영 35%</b>, <b style="color:var(--gold)">PS 물리 20%</b>, <b style="color:var(--gold)">Xbox 리테일 5%</b> 가정입니다. (EGS·AMD 번들 등 PC 채널 비중 반영)
           </div>
           <!-- 컨트롤 -->
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
@@ -2148,7 +2148,7 @@ function renderSalesChart() {
   const PRE4_INCREMENT = Math.max(0, MILESTONE_DAY4 - soldThroughD0);
   const POST_D4_DECAY = 0.87;
   const DAILY_FLOOR = 20000;
-  const OTHER_ALLOC = { ps: 0.30, st: 0.05, xb: 0.15, other: 0.50 };
+  const OTHER_ALLOC = { ps: 0.20, st: 0.35, xb: 0.05, other: 0.40 };
 
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
   const sig = (base, rank, exp) => {
