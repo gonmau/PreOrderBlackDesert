@@ -157,34 +157,6 @@
   .dual-col .steam-ts-chart-box { border: none; border-radius: 0; height: 100%; }
   .dual-col .heatmap-legend   { padding: 10px 12px 4px; }
   .dual-col .heatmap-grid     { padding: 0 8px 10px; }
-
-  /* ── 히트맵 호버 차트 팝오버 ── */
-  .hm-hover-chart-popover {
-    position: fixed;
-    background: var(--bg-2);
-    border: 1px solid var(--bd-hi);
-    border-radius: var(--radius);
-    padding: 10px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    z-index: 1000;
-    pointer-events: none;
-    width: 280px;
-    max-width: 90vw;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-  }
-  .hm-hover-chart-popover.visible { opacity: 1; pointer-events: auto; }
-  .hm-hover-chart-popover .chart-title {
-    font-size: 12px;
-    font-weight: 800;
-    color: var(--tx-2);
-    margin-bottom: 6px;
-    letter-spacing: 0.5px;
-  }
-  .hm-hover-chart-popover canvas {
-    width: 100% !important;
-    height: 120px !important;
-  }
   /* 모바일 */
   @media (max-width: 700px) {
     .dual-wrap {
@@ -1243,7 +1215,7 @@
   <div class="modal-content">
     <span class="close-btn" onclick="closeModal()">&times;</span>
     <h2 id="modalTitle" style="margin-bottom:20px; font-family:'Cinzel'; color:var(--gold);">Country Trend</h2>
-    <div style="height:min(400px,50vh);width:100%;display:flex;justify-content:center;align-items:center;"><canvas id="countryChart" style="max-width:100%;"></canvas></div>
+    <div style="height:min(400px,50vh);"><canvas id="countryChart"></canvas></div>
   </div>
 </div>
 
@@ -1721,25 +1693,17 @@ function renderMainChart() {
 function showCountryChart(countryName) {
   const modal = document.getElementById('chartModal');
   modal.style.display = 'flex';
-  modal.style.alignItems = 'center';
-  modal.style.justifyContent = 'center';
-  
   document.getElementById('modalTitle').innerText = `${FLAGS[countryName] || ''} ${countryName} History`;
   twemoji.parse(document.getElementById('modalTitle'), { folder: 'svg', ext: '.svg' });
   if (countryChart) { countryChart.destroy(); countryChart = null; }
-  
-  // ✅ 오늘 데이터만 필터링
-  const nowKst = new Date(new Date().getTime() + 9 * 3600000);
-  const todayStart = new Date(Date.UTC(nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()) - 9 * 3600000);
-  
   const countryData = historyData
-    .filter(h => new Date(h.timestamp) >= todayStart)  // 오늘만
     .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName) }))
     .filter(d => d.y !== 999);
 
   function drawCountryChart() {
     const canvas = document.getElementById('countryChart');
     const container = canvas.parentElement;
+    // 캔버스 크기를 컨테이너에 명시적으로 맞춤 (responsive 계산 전에 확보)
     canvas.width  = container.offsetWidth  || 700;
     canvas.height = container.offsetHeight || 400;
     const ctx = canvas.getContext('2d');
@@ -1759,264 +1723,22 @@ function showCountryChart(countryName) {
         scales: {
           x: {
             type: 'time',
-            time: { tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'HH:mm', day: 'MM/dd' } },
+            time: { tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'MM/dd HH:mm', day: 'MM/dd' } },
             grid: { color: '#333' },
             ticks: { color: '#fff', maxRotation: 45, autoSkip: true, maxTicksLimit: 10 }
           },
-          y: { reverse: true, suggestedMin: 0, grid: { color: '#333' }, ticks: { color: '#fff', padding: 8, stepSize: 1, callback: v => v > 0 ? Math.floor(v) + '위' : '' } }
+          y: { reverse: true, suggestedMin: 0, grid: { color: '#333' }, ticks: { color: '#fff', padding: 8, callback: v => v > 0 ? v + '위' : '' } }
         },
         plugins: { legend: { display: false } }
       }
     });
   }
 
+  // position:fixed 모달 내 캔버스는 rAF로도 offsetWidth=0인 경우 있음 → setTimeout으로 확실히
   setTimeout(drawCountryChart, 50);
 }
 
-function showCountryModalWithLink(countryName, platform, storeUrl) {
-  // platform에 따라 다른 모달 호출
-  if (platform === 'steam') {
-    openStsModal(countryName);
-  } else {
-    showCountryChart(countryName);
-  }
-  
-  // 기존 링크 모두 제거
-  const existingLinks = document.querySelectorAll('.modal-store-link');
-  existingLinks.forEach(link => link.remove());
-  
-  // 제목 스타일 조정 (flex로 양쪽 배치)
-  const titleEl = document.getElementById('modalTitle');
-  const modalContent = document.querySelector('.modal-content');
-  
-  // PS 모달의 경우만 링크 추가 (Steam은 별도 모달이므로 제외)
-  if (platform === 'ps') {
-    // 제목 컨테이너 생성
-    let titleContainer = document.getElementById('title-container');
-    if (!titleContainer) {
-      titleContainer = document.createElement('div');
-      titleContainer.id = 'title-container';
-      titleContainer.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:20px;width:100%';
-      titleEl.parentElement.insertBefore(titleContainer, titleEl);
-    }
-    
-    // 기존 제목을 컨테이너로 이동
-    if (titleEl.parentElement !== titleContainer) {
-      titleContainer.appendChild(titleEl);
-    }
-    
-    // 링크 생성 및 추가
-    const linkBtn = document.createElement('a');
-    linkBtn.className = 'modal-store-link';
-    linkBtn.href = storeUrl;
-    linkBtn.target = '_blank';
-    linkBtn.style.cssText = 'padding:6px 12px;background:#4a9eff;border-radius:4px;color:#fff;text-decoration:none;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0';
-    linkBtn.textContent = '🔗 PS Store';
-    
-    titleContainer.appendChild(linkBtn);
-  }
-}
-
-function closeModal() { 
-  document.getElementById('chartModal').style.display = 'none'; 
-}
-
-/* ── 히트맵 호버 팝오버 ── */
-let hoverPopover = null;
-let hoverPopoverChart = null;
-let hoverPopoverTimeout = null;
-
-function getOrCreateHoverPopover() {
-  if (!hoverPopover) {
-    hoverPopover = document.createElement('div');
-    hoverPopover.className = 'hm-hover-chart-popover';
-    hoverPopover.innerHTML = `
-      <div class="chart-title" id="hover-chart-title"></div>
-      <canvas id="hover-chart-canvas" width="260" height="100"></canvas>
-    `;
-    document.body.appendChild(hoverPopover);
-  }
-  return hoverPopover;
-}
-
-function showHoverChart(countryName, event, platform = 'ps') {
-  console.log('[showHoverChart] START', { countryName, platform, innerWidth: window.innerWidth });
-  
-  if (window.innerWidth <= 700) { 
-    console.log('  → Mobile mode, skipping');
-    return; 
-  }
-  
-  console.log('  → Desktop mode, creating popover');
-  
-  const popover = getOrCreateHoverPopover();
-  const title = popover.querySelector('.chart-title');
-  const canvas = popover.querySelector('canvas');
-  console.log('  → Elements check:', { title: !!title, canvas: !!canvas, popover: !!popover });
-  
-  if (!title || !canvas) {
-    console.error('  ✗ Missing title or canvas');
-    return;
-  }
-  
-  // 제목 업데이트
-  const flag = platform === 'steam' ? STS_F[countryName] : FLAGS[countryName];
-  title.textContent = `${flag || ''} ${countryName}`;
-  console.log('  → Title updated:', title.textContent);
-  
-  // 데이터 가져오기 - 오늘 하루만
-  let countryData = [];
-  try {
-    // 오늘 00:00 KST 계산
-    const nowKst = new Date(new Date().getTime() + 9 * 3600000);
-    const todayStart = new Date(Date.UTC(nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()) - 9 * 3600000);
-    
-    console.log('  → Today start:', todayStart.toISOString());
-    
-    if (platform === 'steam') {
-      if (!stsHist) {
-        console.error('  ✗ stsHist is undefined');
-        return;
-      }
-      countryData = stsHist
-        .filter(h => new Date(h.timestamp) >= todayStart)  // 오늘만
-        .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.results?.[countryName]?.rank ?? null }))
-        .filter(d => d.y !== null);
-      console.log('  → Steam data loaded (today):', countryData.length, 'points');
-    } else {
-      if (!historyData) {
-        console.error('  ✗ historyData is undefined');
-        return;
-      }
-      countryData = historyData
-        .filter(h => new Date(h.timestamp) >= todayStart)  // 오늘만
-        .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName) }))
-        .filter(d => d.y !== 999);
-      console.log('  → PS data loaded (today):', countryData.length, 'points');
-    }
-  } catch(err) {
-    console.error('  ✗ Data loading error:', err.message);
-    return;
-  }
-  
-  if (countryData.length === 0) {
-    console.warn('  ⚠ No data points for', countryName);
-  }
-  
-  // 차트 그리기
-  try {
-    if (hoverPopoverChart) {
-      console.log('  → Destroying old chart');
-      hoverPopoverChart.destroy();
-    }
-    
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      console.error('  ✗ Canvas context is null');
-      return;
-    }
-    
-    console.log('  → Creating new chart');
-    hoverPopoverChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        datasets: [{
-          label: countryName,
-          data: countryData,
-          borderColor: platform === 'steam' ? '#4a9eff' : '#ff4757',
-          borderWidth: 1.5,
-          pointRadius: 0,
-          pointHoverRadius: 4,
-          tension: 0.2,
-          fill: false
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        scales: {
-          x: {
-            type: 'time',
-            time: { tooltipFormat: 'MM/dd HH:mm', displayFormats: { hour: 'HH:mm', day: 'MM/dd' } },
-            grid: { display: false },
-            ticks: { display: true, color: '#888', font: { size: 9 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 8 }
-          },
-          y: {
-            reverse: true,
-            suggestedMin: 0,
-            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
-            ticks: { display: true, color: '#888', font: { size: 10 }, callback: v => v > 0 ? v + '위' : '' }
-          }
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: { label: c => c.parsed.y + '위' } }
-        }
-      }
-    });
-    console.log('  ✓ Chart created');
-  } catch(err) {
-    console.error('  ✗ Chart creation error:', err.message, err.stack);
-    return;
-  }
-  
-  // 팝오버 위치 설정
-  try {
-    let row = event.target;
-    let depth = 0;
-    while (row && !row.classList.contains('hm-row') && depth < 10) {
-      row = row.parentElement;
-      depth++;
-    }
-    
-    if (!row || !row.classList.contains('hm-row')) {
-      console.warn('  ✗ Could not find .hm-row after', depth, 'levels');
-      return;
-    }
-    
-    console.log('  → Found .hm-row after', depth, 'levels');
-    
-    const rect = row.getBoundingClientRect();
-    let top = rect.top - popover.offsetHeight - 10;
-    let left = rect.left + rect.width / 2 - popover.offsetWidth / 2;
-    
-    console.log('  → Initial position:', { top, left, rowTop: rect.top, rowBottom: rect.bottom });
-    
-    // 화면 경계 체크
-    if (top < 10) top = rect.bottom + 10;
-    if (left < 10) left = 10;
-    if (left + popover.offsetWidth > window.innerWidth) left = window.innerWidth - popover.offsetWidth - 10;
-    
-    popover.style.top = top + 'px';
-    popover.style.left = left + 'px';
-    popover.classList.add('visible');
-    
-    console.log('  ✓ Popover shown at:', { top, left });
-    console.log('[showHoverChart] END - SUCCESS');
-  } catch(err) {
-    console.error('  ✗ Position error:', err.message);
-  }
-}
-
-function hideHoverChart() {
-  const popover = getOrCreateHoverPopover();
-  clearTimeout(hoverPopoverTimeout);
-  hoverPopoverTimeout = setTimeout(() => {
-    popover.classList.remove('visible');
-  }, 100);
-}
-
-function handleHeatmapRowClick(countryName, event, platform = 'ps') {
-  // 모바일은 모달 띄우기
-  if (window.innerWidth <= 700) {
-    if (platform === 'steam') {
-      openStsModal(countryName);
-    } else {
-      showCountryChart(countryName);
-    }
-  }
-}
+function closeModal() { document.getElementById('chartModal').style.display = 'none'; }
 
 function setSort(key) {
   if (sortKey === key) sortAsc = !sortAsc;
@@ -2277,21 +1999,8 @@ function openStsModal(n) {
   const cc = STS_CC[n] || 'us';
   const flagImg = `<img src="https://flagcdn.com/w40/${cc}.png" alt="${n}" style="width:32px;height:22px;object-fit:cover;border-radius:2px;display:inline-block;vertical-align:middle">`;
   document.getElementById('sts-modal-title').innerHTML = flagImg + ' ' + n;
-  
-  // ✅ Steam Store 링크 설정
-  const storeUrl = `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`;
-  document.getElementById('sts-modal-link').href = storeUrl;
-  document.getElementById('sts-modal-link').textContent = '🔗 Steam Store ↗';
-  
-  // ✅ 오늘 데이터만 필터링
-  const nowKst = new Date(new Date().getTime() + 9 * 3600000);
-  const todayStart = new Date(Date.UTC(nowKst.getUTCFullYear(), nowKst.getUTCMonth(), nowKst.getUTCDate()) - 9 * 3600000);
-  
-  const h = stsHist
-    .filter(x => new Date(x.timestamp) >= todayStart)  // 오늘만
-    .filter(x => x.results && x.results[n] && x.results[n].rank)
-    .map(x => ({ t: new Date(x.timestamp), r: x.results[n].rank }));
-  
+  document.getElementById('sts-modal-link').href = 'https://steamdb.info/app/3321460/charts/';
+  const h = stsHist.filter(x => x.results && x.results[n] && x.results[n].rank).map(x => ({ t: new Date(x.timestamp), r: x.results[n].rank }));
   if (!h.length) {
     ['sts-modal-current','sts-modal-best','sts-modal-avg'].forEach(id => document.getElementById(id).textContent = '—');
   } else {
@@ -2304,24 +2013,11 @@ function openStsModal(n) {
     const ptR2 = h.length > 60 ? 0 : h.length > 20 ? 2 : 3;
     stsMCI = new Chart(c2, {
       type: 'line',
-      data: { 
-        datasets: [{ 
-          label: '순위', 
-          data: h.map(x=>({x: x.t, y: x.r})),  // ✅ x/y 형식으로 변경
-          borderColor: '#4a9eff', 
-          backgroundColor: 'rgba(74,158,255,0.1)', 
-          borderWidth: 2, 
-          pointRadius: ptR2, 
-          pointHoverRadius: ptR2+2, 
-          fill: true, 
-          tension: 0.3, 
-          spanGaps: true 
-        }] 
-      },
+      data: { labels: h.map(x=>x.t), datasets: [{ label: '순위', data: h.map(x=>x.r), borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.1)', borderWidth: 2, pointRadius: ptR2, pointHoverRadius: ptR2+2, fill: true, tension: 0.3, spanGaps: true }] },
       options: { responsive: true, maintainAspectRatio: false,
         scales: {
-          x: { type:'time', time:{ unit: h.length>48?'day':'hour', displayFormats:{hour:'HH:mm',day:'M/d'}}, ticks:{color:'#fff',maxTicksLimit:7,maxRotation:30,font:{size:10}}, grid:{color:'#222'} },
-          y: { reverse:true, suggestedMin:0, ticks:{color:'#fff',stepSize:1,callback:v=>v>0?Math.floor(v)+'위':'',font:{size:11},padding:8}, grid:{color:'#222'} }
+          x: { type:'time', time:{ unit: h.length>48?'day':'hour', displayFormats:{hour:'M/d HH:mm',day:'M/d'}}, ticks:{color:'#fff',maxTicksLimit:7,maxRotation:30,font:{size:10}}, grid:{color:'#222'} },
+          y: { reverse:true, suggestedMin:0, ticks:{color:'#fff',stepSize:1,callback:v=>v>0?v+'위':'',font:{size:11},padding:8}, grid:{color:'#222'} }
         },
         plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>c.parsed.y+'위'}} }
       }
@@ -3034,14 +2730,6 @@ function renderSummaryCharts() {
       });
     }
   }
-
-  // ── 히트맵 호버 팝오버 클릭 닫기 ──
-  document.addEventListener('click', (e) => {
-    const popover = getOrCreateHoverPopover();
-    if (!popover.contains(e.target) && !e.target.closest('.hm-row')) {
-      hideHoverChart();
-    }
-  });
 }
 
 
@@ -3088,9 +2776,9 @@ function renderSummaryRankGroups(list, containerId, flagFn, urlFn, isPsFlag) {
         : ch < 0
         ? `<span style="font-size:10px;color:var(--down);font-weight:800;margin-left:2px">▼${Math.abs(ch)}</span>`
         : '';
-      return `<div class="rank1-tag" data-country="${x.name}" data-platform="${isPsFlag ? 'ps' : 'steam'}" data-url="${url}" onclick="showCountryModalWithLink('${x.name}', '${isPsFlag ? 'ps' : 'steam'}', '${url}')" style="cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:4px;background:var(--bg-3);transition:background 0.15s">
+      return `<a class="rank1-tag" href="${url}" target="_blank" onclick="event.stopPropagation()" style="text-decoration:none">
         <span>${flag}</span><span class="rank1-tag-name">${x.name}</span>${starBadge(x.name, isPsFlag)}${chgStr}${dStr}${rankLbl}
-      </div>`;
+      </a>`;
     }).join('');
 
     return `<div>
