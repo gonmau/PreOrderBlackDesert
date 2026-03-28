@@ -675,20 +675,6 @@
 
 <div class="container" style="padding-top:20px">
 
-  <!-- GitHub Token 설정 모달 -->
-  <div class="gh-modal-bg" id="gh-modal">
-    <div class="gh-modal-box">
-      <span class="gh-modal-close" onclick="closeGhModal()">×</span>
-      <div class="gh-modal-title">⚙ GitHub Token 설정</div>
-      <div class="gh-modal-desc">
-        GitHub <a href="https://github.com/settings/tokens" target="_blank">Personal Access Token</a>을 입력하세요.<br>
-        <span style="color:#444">workflow 권한 필요 · 브라우저 로컬에만 저장됨</span>
-      </div>
-      <div class="gh-modal-label" style="margin-bottom:4px">Personal Access Token</div>
-      <input class="gh-modal-input" id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-      <button class="gh-modal-save" onclick="saveGhSettings()">저장</button>
-    </div>
-  </div>
 
   <!-- 탭 섹션: 통합 듀얼 패널 -->
 
@@ -2558,8 +2544,10 @@ function renderSteamSchedule() {
 function renderSTS() {
   if (!stsHist.length) return;
   const v = stsHist.filter(h => stsAvg(h) !== null);
-  if (!v.length) return;
-  const lat = v[v.length-1], prv = v.length >= 2 ? v[v.length-2] : null;
+  // lat/prv는 stsAvg 필터와 무관하게 최신 데이터 사용
+  const lat = stsHist[stsHist.length - 1];
+  const prv = stsHist.length >= 2 ? stsHist[stsHist.length - 2] : null;
+  if (!lat) return;
   const la = stsAvg(lat), pa = prv ? stsAvg(prv) : null;
 
   document.getElementById('sts-avg').textContent = la ? la.toFixed(1) + '위' : '—';
@@ -2602,10 +2590,10 @@ function renderSTS() {
     }
   }
 
-  // 히스토리 차트 (캔버스 없으면 건너뜀)
+  // 히스토리 차트 (캔버스 없으면 건너뜀, v가 비어있으면 스킵)
   const lbs = v.map(h => new Date(h.timestamp)), dv = v.map(h => stsAvg(h));
   const stsChartEl = document.getElementById('stsChart');
-  if (stsChartEl) {
+  if (stsChartEl && v.length > 0) {
     const ctx = stsChartEl.getContext('2d');
     if (stsCI) stsCI.destroy();
     const idxFirst=0, idxLast=dv.length-1;
@@ -3047,6 +3035,21 @@ init();
 <div class="ps-links-popover" id="ps-links-popover">
   <div class="ps-links-title">🎮 PS Store 링크</div>
   <div class="ps-links-grid" id="ps-links-grid"></div>
+</div>
+
+<!-- GitHub Token 설정 모달 -->
+<div class="gh-modal-bg" id="gh-modal">
+  <div class="gh-modal-box">
+    <span class="gh-modal-close" onclick="closeGhModal()">×</span>
+    <div class="gh-modal-title">⚙ GitHub Token 설정</div>
+    <div class="gh-modal-desc">
+      GitHub <a href="https://github.com/settings/tokens" target="_blank">Personal Access Token</a>을 입력하세요.<br>
+      <span style="color:#444">workflow 권한 필요 · 브라우저 로컬에만 저장됨</span>
+    </div>
+    <div class="gh-modal-label" style="margin-bottom:4px">Personal Access Token</div>
+    <input class="gh-modal-input" id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+    <button class="gh-modal-save" onclick="saveGhSettings()">저장</button>
+  </div>
 </div>
 
 </body>
