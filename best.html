@@ -2624,6 +2624,32 @@ function buildTopRankDatasets(bundle, flagMap, palette, accentColor) {
   });
 }
 
+// ── 스택형 막대 내부 숫자 레이블 플러그인 ──
+const stackedBarLabelPlugin = {
+  id: 'stackedBarLabel',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    ctx.save();
+    chart.data.datasets.forEach((dataset, di) => {
+      const meta = chart.getDatasetMeta(di);
+      if (meta.hidden) return;
+      meta.data.forEach((bar, i) => {
+        const val = dataset.data[i];
+        if (!val || val < 1) return;
+        const { x, y, width, height } = bar.getProps(['x', 'y', 'width', 'height'], true);
+        // 막대 높이가 너무 작으면 숫자 생략 (겹침 방지)
+        if (Math.abs(height) < 12) return;
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.font = `700 10px Rajdhani, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(val, x, y + height / 2);
+      });
+    });
+    ctx.restore();
+  }
+};
+
 function renderSummaryCharts() {
   const W = 800, H_TREND = 280, H_DIST = 180;
 
@@ -2687,6 +2713,7 @@ function renderSummaryCharts() {
         { label: '4~10위', data: psDates.map(d => Math.round(psDateMap[d].r410 / psDateMap[d].cnt)), backgroundColor: 'rgba(74,158,255,0.75)',  stack: 's' },
         { label: '11위+',  data: psDates.map(d => Math.round(psDateMap[d].r11  / psDateMap[d].cnt)), backgroundColor: 'rgba(80,80,80,0.6)',     stack: 's' }
       ]},
+      plugins: [stackedBarLabelPlugin],
       options: { responsive: false, animation: false,
         scales: {
           x: { stacked: true, ticks: { color: '#aaa', maxTicksLimit: 12, font: { size: 10 } }, grid: { color: '#1a1a1a' } },
@@ -2762,6 +2789,7 @@ function renderSummaryCharts() {
         { label: '4~10위', data: stsDates.map(d => Math.round(stsDateMap[d].r410 / stsDateMap[d].cnt)), backgroundColor: 'rgba(74,158,255,0.75)',  stack: 's' },
         { label: '11위+',  data: stsDates.map(d => Math.round(stsDateMap[d].r11  / stsDateMap[d].cnt)), backgroundColor: 'rgba(80,80,80,0.6)',     stack: 's' }
       ]},
+      plugins: [stackedBarLabelPlugin],
       options: { responsive: false, animation: false,
         scales: {
           x: { stacked: true, ticks: { color: '#aaa', maxTicksLimit: 12, font: { size: 10 } }, grid: { color: '#1a1a1a' } },
