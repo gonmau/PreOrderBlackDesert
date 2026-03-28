@@ -1107,6 +1107,21 @@
             • 기타 채널 보정은 <b style="color:var(--gold)">EGS·Mac·AMD 중심 40%</b>, <b style="color:var(--gold)">Steam 지연·EGS 반영 35%</b>, <b style="color:var(--gold)">PS 물리 20%</b>, <b style="color:var(--gold)">Xbox 리테일 5%</b> 가정입니다. (EGS·AMD 번들 등 PC 채널 비중 반영)<br>
             • 각 플랫폼 카드의 <b style="color:var(--tx-2)">+숫자(추가)</b>는 <b style="color:var(--gold)">순위 미반영 채널의 고정 비율 추정치</b>입니다 — 순위 역산값이 아닌 참고용이며, AMD 번들 등 초기 한정 프로모션도 포함되어 실제보다 과대 추정될 수 있습니다.
           </div>
+          <!-- 모드 탭 -->
+          <div style="display:flex;gap:6px;margin-bottom:12px">
+            <button id="sales-mode-conservative" onclick="setSalesMode('conservative')"
+              style="flex:1;padding:7px 0;border-radius:6px;border:1px solid #4a9eff;background:rgba(74,158,255,0.12);color:#4a9eff;font-size:13px;font-weight:800;cursor:pointer;letter-spacing:0.5px;transition:all 0.15s">
+              🔵 보수적
+            </button>
+            <button id="sales-mode-normal" onclick="setSalesMode('normal')"
+              style="flex:1;padding:7px 0;border-radius:6px;border:1px solid var(--bd);background:var(--bg-3);color:var(--tx-3);font-size:13px;font-weight:800;cursor:pointer;letter-spacing:0.5px;transition:all 0.15s">
+              ⚪ 중간
+            </button>
+            <button id="sales-mode-optimistic" onclick="setSalesMode('optimistic')"
+              style="flex:1;padding:7px 0;border-radius:6px;border:1px solid var(--bd);background:var(--bg-3);color:var(--tx-3);font-size:13px;font-weight:800;cursor:pointer;letter-spacing:0.5px;transition:all 0.15s">
+              🔴 낙관적
+            </button>
+          </div>
           <!-- 컨트롤 -->
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
             <label style="font-size:12px;color:var(--tx-3)">발표 판매량:
@@ -1129,7 +1144,10 @@
           <!-- 마일스톤 예측 -->
           <div id="sales-milestone-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>
           <!-- 일별 차트 -->
-          <div style="font-size:11px;color:var(--tx-4);margin-bottom:4px;font-weight:800;letter-spacing:1px;text-transform:uppercase">📊 일별 판매량 추정 (누적 막대)</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:11px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase">📊 일별 판매량 추정 (누적 막대)</span>
+            <span id="sales-chart-mode-lbl" style="font-size:11px;font-weight:800;padding:1px 7px;border-radius:3px;background:var(--bg-3);color:var(--tx-3)"></span>
+          </div>
           <div style="height:220px;margin-bottom:16px"><canvas id="salesDailyChart"></canvas></div>
           <!-- 누적 차트 -->
           <div style="font-size:11px;color:var(--tx-4);margin-bottom:4px;font-weight:800;letter-spacing:1px;text-transform:uppercase">📈 누적 판매량 추정</div>
@@ -1926,7 +1944,7 @@ function switchTab(tabEl) {
         if (mainChart) mainChart.resize();
         if (stsCI) stsCI.resize();
       }
-      if (secId === 'sec-sales') { renderSalesChart(); }
+      if (secId === 'sec-sales') { setSalesMode(currentSalesMode); }
       if (secId === 'sec-summary') { setTimeout(renderSummaryCharts, 80); }
     }, 50);
   });
@@ -2120,7 +2138,60 @@ function closePsLinksPopover() {
    - 데이터 없는 날: 전날 × 0.82 (자연 감소만)
 ═══════════════════════════════════════════════════════════════ */
 
-const LAUNCH_DATE = new Date('2026-03-20T07:00:00+09:00');
+const SALES_MODES = {
+  conservative: {
+    label: '🔵 보수적',
+    postDecay:    0.82,   // D5+ 일별 감소율 (강한 감소)
+    psExp:        0.20,   // PS 순위 탄성 (낮을수록 보수적)
+    stExp:        0.22,   // Steam 순위 탄성
+    xbExp:        0.13,
+    otherMin:     0.12,   // 기타 채널 최소 비중
+    otherMax:     0.15,
+    dailyFloor:   15000,  // 일 최저 판매량
+    d14Decay:     0.85,   // D1~D4 구간 감소율
+  },
+  normal: {
+    label: '⚪ 중간',
+    postDecay:    0.87,
+    psExp:        0.28,
+    stExp:        0.30,
+    xbExp:        0.18,
+    otherMin:     0.14,
+    otherMax:     0.18,
+    dailyFloor:   20000,
+    d14Decay:     0.89,
+  },
+  optimistic: {
+    label: '🔴 낙관적',
+    postDecay:    0.92,   // D5+ 감소 완만
+    psExp:        0.38,   // 순위 탄성 높음 (순위 유지 시 판매 잘 버팀)
+    stExp:        0.40,
+    xbExp:        0.25,
+    otherMin:     0.16,
+    otherMax:     0.22,
+    dailyFloor:   30000,
+    d14Decay:     0.93,
+  },
+};
+let currentSalesMode = 'normal';
+
+function setSalesMode(mode) {
+  currentSalesMode = mode;
+  // 탭 버튼 스타일 업데이트
+  const colors = { conservative: '#4a9eff', normal: '#aaaaaa', optimistic: '#ff4757' };
+  ['conservative', 'normal', 'optimistic'].forEach(m => {
+    const btn = document.getElementById(`sales-mode-${m}`);
+    if (!btn) return;
+    const active = m === mode;
+    const c = colors[m];
+    btn.style.border      = `1px solid ${active ? c : 'var(--bd)'}`;
+    btn.style.background  = active ? `rgba(${m==='conservative'?'74,158,255':m==='normal'?'170,170,170':'255,71,87'},0.15)` : 'var(--bg-3)';
+    btn.style.color       = active ? c : 'var(--tx-3)';
+  });
+  renderSalesChart();
+}
+
+
 let salesDailyCI = null, salesCumCI = null;
 
 function getDayIndex(ts) {
@@ -2145,11 +2216,24 @@ function renderSalesChart() {
   const lbl = document.getElementById('sales-steam-ratio-lbl');
   if (lbl) lbl.textContent = stBaseRatio;
 
+  // 차트 모드 라벨 업데이트
+  const modeColors = { conservative: '#4a9eff', normal: '#aaaaaa', optimistic: '#ff4757' };
+  const modeLbl = document.getElementById('sales-chart-mode-lbl');
+  if (modeLbl) {
+    const MODE_INFO = SALES_MODES[currentSalesMode];
+    modeLbl.textContent = MODE_INFO.label;
+    modeLbl.style.color = modeColors[currentSalesMode];
+    modeLbl.style.border = `1px solid ${modeColors[currentSalesMode]}55`;
+    modeLbl.style.background = `${modeColors[currentSalesMode]}11`;
+  }
+
+  const MODE = SALES_MODES[currentSalesMode] || SALES_MODES.normal;
+
   const MILESTONE_DAY4 = 3000000;
   const PRE4_INCREMENT = Math.max(0, MILESTONE_DAY4 - soldThroughD0);
-  const POST_D4_DECAY = 0.87;
-  const DAILY_FLOOR = 20000;
-  const OTHER_ALLOC = { ps: 0.20, st: 0.35, xb: 0.05, other: 0.40 };
+  const POST_D4_DECAY  = MODE.postDecay;
+  const DAILY_FLOOR    = MODE.dailyFloor;
+  const OTHER_ALLOC    = { ps: 0.20, st: 0.35, xb: 0.05, other: 0.40 };
 
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
   const sig = (base, rank, exp) => {
@@ -2157,7 +2241,7 @@ function renderSalesChart() {
     const r = clamp(rank || b, 1, 80);
     return Math.pow(b / r, exp);
   };
-  const otherShareForDay = di => clamp(0.14 + di * 0.01, 0.14, 0.18);
+  const otherShareForDay = di => clamp(MODE.otherMin + di * 0.005, MODE.otherMin, MODE.otherMax);
 
   // ── PS 일별 가중 평균 순위 (이미 WEIGHTS 반영된 averages.combined 사용) ──
   const psByDay = {};
@@ -2220,12 +2304,12 @@ function renderSalesChart() {
     stRankSeries.push(stR);
   });
 
-  const psSignal = psRankSeries.map(r => (psBaseRatio / 100) * sig(psBase, r, 0.28));
-  const stSignal = stRankSeries.map(r => (stBaseRatio / 100) * sig(stBase, r, 0.30));
+  const psSignal = psRankSeries.map(r => (psBaseRatio / 100) * sig(psBase, r, MODE.psExp));
+  const stSignal = stRankSeries.map(r => (stBaseRatio / 100) * sig(stBase, r, MODE.stExp));
   const xbSignal = days.map((_, i) => {
     const combinedBase = (psBase + stBase) / 2;
     const combinedRank = (psRankSeries[i] + stRankSeries[i]) / 2;
-    return (xbBaseRatio / 100) * sig(combinedBase, combinedRank, 0.18);
+    return (xbBaseRatio / 100) * sig(combinedBase, combinedRank, MODE.xbExp);
   });
   const comboSignal = days.map((_, i) => 0.52 * psSignal[i] + 0.48 * stSignal[i]);
 
@@ -2235,7 +2319,7 @@ function renderSalesChart() {
 
   const day14Weights = [];
   for (let di = 1; di <= 4; di++) {
-    const decay = Math.pow(0.89, di - 1);
+    const decay = Math.pow(MODE.d14Decay, di - 1);
     const momentum = clamp(comboSignal[di] / (comboSignal[0] || 1), 0.72, 1.18);
     day14Weights.push(Math.max(0.12, decay * momentum));
   }
