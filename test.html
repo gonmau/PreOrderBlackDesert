@@ -1,190 +1,50 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crimson Desert — Global Heatmap & Trend</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@500;600;700&display=swap');
-
-:root {
-  --blood:  #ff4757;
-  --gold:   #f1c40f;
-  --steam:  #4a9eff;
-  --up:     #2ecc71;
-  --down:   #e74c3c;
-  --bg-0:   #000000;
-  --bg-1:   #0a0a0a;
-  --bg-2:   #111111;
-  --bg-3:   #181818;
-  --bg-4:   #222222;
-  --bd:     #252525;
-  --bd-hi:  #333333;
-  --tx-1:   #ffffff;
-  --tx-2:   #cccccc;
-  --tx-3:   #888888;
-  --tx-4:   #555555;
-  --radius: 8px;
-  --gap:    12px;
-  --trans:  0.15s ease;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { overflow-y: auto; }
-body { background: var(--bg-0); color: var(--tx-1); font-family: 'Rajdhani', sans-serif; }
-.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-
-header { border-bottom: 2px solid var(--blood); padding: 10px 0; position: sticky; top: 0; z-index: 50; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); }
-.logo h1 { font-family: 'Cinzel', serif; font-size: 31px; }
-.logo h1 span { color: var(--blood); }
-.nav-bar { position: sticky; top: 46px; z-index: 49; background: rgba(5,5,5,0.97); border-bottom: 1px solid var(--bd); }
-.nav-tab { padding: 9px 12px; font-size: 15px; font-weight: 700; color: var(--tx-4); cursor: pointer; white-space: nowrap; }
-.nav-tab.active { color: var(--tx-1); border-bottom: 2px solid var(--tx-1); }
-.tab-section { display: none; }
-.tab-section.active-section { display: block; }
-.dual-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.dual-col { background: var(--bg-1); border: 1px solid var(--bd); border-radius: var(--radius); display: flex; flex-direction: column; overflow: hidden; }
-.dual-col-header { padding: 9px 14px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--bd); }
-.ps-header { color: var(--blood); }
-.steam-header { color: var(--steam); }
-.card { background: var(--bg-2); border: 1px solid var(--bd); padding: 18px 20px; border-radius: var(--radius); border-left: 3px solid var(--blood); }
-.card .val { font-family: 'Cinzel', serif; font-size: 31px; color: var(--gold); }
-</style>
-</head>
-<body>
-
-<header>
-  <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
-    <div class="logo">
-      <h1><span>CRIMSON</span> DESERT <span id="d-day-badge" style="font-size:14px;color:var(--gold);background:rgba(241,196,15,0.15);border:1px solid rgba(241,196,15,0.4);padding:2px 8px;border-radius:6px;font-weight:800;"></span></h1>
-    </div>
-    <div style="display:flex;align-items:center;gap:15px;">
-      <button class="gh-dispatch-btn" onclick="dispatchWorkflow('ps')">PS 실행</button>
-      <button class="gh-dispatch-btn" onclick="dispatchWorkflow('steam')">Steam 실행</button>
-      <button onclick="refreshData()">🔄 새로고침</button>
-      <div id="update-time">LAST SNAPSHOT: —</div>
-    </div>
-  </div>
-</header>
-
-<div class="nav-bar">
-  <div class="container">
-    <span class="nav-tab dual-tab active" data-section="sec-sales" onclick="switchTab(this)">💰 판매량</span>
-  </div>
-</div>
-
-<div class="container" style="padding-top:20px">
-
-  <div id="sec-sales" class="tab-section active-section">
-    <div class="dual-wrap">
-      <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">💰 플랫폼별 판매량 추정 
-          <span style="font-size:9px;color:var(--tx-4);margin-left:auto;">개선 모델 v2.0 (2026.03.20 07:00 KST)</span>
-        </div>
-        <div style="padding:15px">
-
-          <div style="background:var(--bg-3);border:1px solid var(--bd);border-radius:8px;padding:12px;margin-bottom:15px;font-size:11px;line-height:1.6">
-            <b>개선된 계산식 적용 완료</b><br>
-            • 출시일 정확 앵커 (07:00 KST)<br>
-            • Steam 영향력 강화 (55%)<br>
-            • 순위 탄성 상향 (PS 0.35 / Steam 0.40)<br>
-            • Day 1~4 최소 판매량 보장<br>
-            • 기타 채널 비중 자연 증가
-          </div>
-
-          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:15px;align-items:center">
-            <label style="font-size:13px">Day0 판매량: 
-              <input id="sales-day1-total" type="number" value="2000000" step="100000" style="width:130px;background:var(--bg-3);border:1px solid var(--bd);color:var(--tx-1);padding:5px;">
-            </label>
-            <label style="font-size:13px">PC 환불율(%): 
-              <input id="sales-refund-pct" type="number" value="8" min="0" max="25" style="width:70px;background:var(--bg-3);border:1px solid var(--bd);color:var(--tx-1);padding:5px;">
-            </label>
-            <label style="font-size:13px">PS5 기본(%): 
-              <input id="sales-ps-ratio" type="number" value="36" min="10" max="60" style="width:70px;background:var(--bg-3);border:1px solid var(--bd);color:var(--tx-1);padding:5px;">
-            </label>
-            <button onclick="renderSalesChart()" style="padding:8px 20px;background:var(--bg-3);border:1px solid var(--bd);color:var(--tx-2);font-weight:700;cursor:pointer;">재계산</button>
-          </div>
-
-          <div id="sales-summary-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:20px;"></div>
-
-          <div style="margin:15px 0 8px;font-size:11px;color:var(--tx-4);font-weight:800;">📊 일별 판매량 추정</div>
-          <div style="height:260px;margin-bottom:25px"><canvas id="salesDailyChart"></canvas></div>
-
-          <div style="margin:15px 0 8px;font-size:11px;color:var(--tx-4);font-weight:800;">📈 누적 판매량 추정</div>
-          <div style="height:260px"><canvas id="salesCumChart"></canvas></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-
-<script>
-// ==================== 개선된 판매량 관련 함수 ====================
-const LAUNCH_DATE = new Date('2026-03-20T07:00:00+09:00');
-
-function getDayIndex(ts) {
-  const diffMs = new Date(ts).getTime() - LAUNCH_DATE.getTime();
-  return Math.floor(diffMs / 86400000);
-}
-
-const WEIGHTS = {"미국":30.0,"영국":8.5,"일본":8.0,"독일":6.5,"프랑스":6.0,"캐나다":4.5,"스페인":4.0,"이탈리아":3.5,"호주":3.0,"한국":2.8};
-const STS_W = {"미국":30.0,"중국":28.0,"러시아":6.0,"독일":5.5,"영국":5.0,"브라질":4.5,"한국":4.2,"프랑스":4.0,"일본":3.5,"캐나다":3.5,"호주":2.5,"터키":2.0,"폴란드":2.0,"스페인":2.0,"이탈리아":1.8,"네덜란드":0.8,"스웨덴":0.7,"노르웨이":0.5,"덴마크":0.5,"핀란드":0.4,"오스트리아":0.6,"스위스":0.7,"체코":0.4,"싱가포르":0.5,"태국":0.8,"벨기에":0.8,"홍콩":0.7,"뉴질랜드":0.4,"대만":0.8};
-
-let historyData = [];
-let stsHist = [];
-
-function fmtSales(n) {
-  if (n >= 1000000) return (n/1000000).toFixed(2) + 'M';
-  if (n >= 1000) return (n/1000).toFixed(1) + 'K';
-  return Math.round(n).toLocaleString();
-}
-
-let salesDailyCI = null;
-let salesCumCI = null;
-
 function renderSalesChart() {
   const soldThroughD0 = parseInt(document.getElementById('sales-day1-total').value) || 2000000;
-  const refundPct = parseFloat(document.getElementById('sales-refund-pct').value) || 8;
-  const psBaseRatio = parseInt(document.getElementById('sales-ps-ratio').value) || 36;
-  const xbBaseRatio = 10;
-  const stBaseRatio = Math.max(5, 100 - psBaseRatio - xbBaseRatio - 14);
+  const refundPct     = parseFloat(document.getElementById('sales-refund-pct').value) || 8;
+  const psBaseRatio   = parseInt(document.getElementById('sales-ps-ratio').value) || 36;
+  const xbBaseRatio   = 10;
+  const otherBaseRatio= 14;
+  const stBaseRatio   = Math.max(5, 100 - psBaseRatio - xbBaseRatio - otherBaseRatio);
 
-  document.getElementById('sales-steam-ratio-lbl').textContent = stBaseRatio;
+  const lbl = document.getElementById('sales-steam-ratio-lbl');
+  if (lbl) lbl.textContent = stBaseRatio;
 
   const MILESTONE_DAY4 = 3000000;
   const PRE4_INCREMENT = Math.max(0, MILESTONE_DAY4 - soldThroughD0);
-  const POST_D4_DECAY = 0.87;
-  const DAILY_FLOOR = 20000;
+  const POST_D4_DECAY  = 0.87;
+  const DAILY_FLOOR    = 20000;
 
   const OTHER_ALLOC = { ps: 0.30, st: 0.05, xb: 0.15, other: 0.50 };
+
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-  const sig = (base, rank, exp) => Math.pow(Math.max(1, base || 1) / Math.max(1, rank || base), exp);
+  // 순위 → 판매 탄성 함수 개선 (PS 0.35, Steam 0.40)
+  const sig = (base, rank, exp) => {
+    const b = Math.max(1, base || 1);
+    const r = clamp(rank || b, 1, 80);
+    return Math.pow(b / r, exp);
+  };
 
+  // 기타 채널 비중 자연 증가 (최대 25%)
   const otherShareForDay = di => clamp(0.14 + di * 0.008, 0.14, 0.25);
 
-  // PS 일별 평균
+  // PS 일별 가중 평균 순위
   const psByDay = {};
   historyData.forEach(h => {
     const di = getDayIndex(h.timestamp);
     if (di < 0) return;
     const avg = h.averages?.combined;
-    if (!avg) return;
-    if (!psByDay[di]) psByDay[di] = {sum:0, cnt:0};
+    if (avg == null || !isFinite(avg)) return;
+    if (!psByDay[di]) psByDay[di] = { sum: 0, cnt: 0 };
     psByDay[di].sum += avg;
     psByDay[di].cnt++;
   });
   const psDayAvg = {};
-  Object.keys(psByDay).forEach(d => psDayAvg[d] = psByDay[d].sum / psByDay[d].cnt);
+  Object.entries(psByDay).forEach(([d, v]) => {
+    psDayAvg[parseInt(d)] = v.sum / v.cnt;
+  });
 
-  // Steam 일별 평균
+  // Steam 일별 가중 평균 순위
   const stByDay = {};
   stsHist.forEach(h => {
     const di = getDayIndex(h.timestamp);
@@ -197,77 +57,103 @@ function renderSalesChart() {
       ts += r * w;
       tw += w;
     });
-    if (tw) {
-      if (!stByDay[di]) stByDay[di] = {sum:0, cnt:0};
-      stByDay[di].sum += ts / tw;
-      stByDay[di].cnt++;
-    }
+    if (!tw) return;
+    if (!stByDay[di]) stByDay[di] = { sum: 0, cnt: 0 };
+    stByDay[di].sum += ts / tw;
+    stByDay[di].cnt++;
   });
   const stDayAvg = {};
-  Object.keys(stByDay).forEach(d => stDayAvg[d] = stByDay[d].sum / stByDay[d].cnt);
+  Object.entries(stByDay).forEach(([d, v]) => {
+    stDayAvg[parseInt(d)] = v.sum / v.cnt;
+  });
 
+  const observedDays = new Set([...Object.keys(psDayAvg), ...Object.keys(stDayAvg)].map(Number));
   const todayDay = Math.max(0, getDayIndex(Date.now()));
-  const maxDay = Math.max(10, todayDay);
-  const days = Array.from({length: maxDay + 1}, (_, i) => i);
+  const maxDay = Math.max(4, todayDay, observedDays.size ? Math.max(...observedDays) : 0);
+  const days = Array.from({ length: maxDay + 1 }, (_, i) => i);
 
-  const psBase = Object.values(psDayAvg)[0] || 4.0;
-  const stBase = Object.values(stDayAvg)[0] || 3.0;
+  const psBase = psDayAvg[Object.keys(psDayAvg)[0]] || 4.0;
+  const stBase = stDayAvg[Object.keys(stDayAvg)[0]] || 3.0;
 
   const labels = [];
   const psRankSeries = [], stRankSeries = [];
-  let psLast = psBase, stLast = stBase;
+  let psLastRank = psBase, stLastRank = stBase;
 
   days.forEach(di => {
-    labels.push(`${Math.floor(di/30)+3}/${(di%30)+1}`);
-    const psR = psDayAvg[di] !== undefined ? psDayAvg[di] : clamp(psLast * 1.05, 1, 80);
-    const stR = stDayAvg[di] !== undefined ? stDayAvg[di] : clamp(stLast * 1.06, 1, 80);
-    psLast = psR; stLast = stR;
+    const date = new Date(LAUNCH_DATE.getTime() + di * 86400000);
+    labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
+    const psR = psDayAvg[di] != null ? psDayAvg[di] : clamp(psLastRank * 1.05, 1, 80);
+    const stR = stDayAvg[di] != null ? stDayAvg[di] : clamp(stLastRank * 1.06, 1, 80);
+    psLastRank = psR;
+    stLastRank = stR;
     psRankSeries.push(psR);
     stRankSeries.push(stR);
   });
 
+  // 개선된 신호 계산 (Steam 영향력 강화 + 탄성 상향)
   const psSignal = psRankSeries.map(r => (psBaseRatio / 100) * sig(psBase, r, 0.35));
   const stSignal = stRankSeries.map(r => (stBaseRatio / 100) * sig(stBase, r, 0.40));
-  const xbSignal = days.map((_,i) => (xbBaseRatio / 100) * sig((psBase+stBase)/2, (psRankSeries[i]+stRankSeries[i])/2, 0.18));
+  const xbSignal = days.map((_, i) => {
+    const combinedBase = (psBase + stBase) / 2;
+    const combinedRank = (psRankSeries[i] + stRankSeries[i]) / 2;
+    return (xbBaseRatio / 100) * sig(combinedBase, combinedRank, 0.18);
+  });
 
-  const comboSignal = days.map((_,i) => 0.45 * psSignal[i] + 0.55 * stSignal[i]);
+  const comboSignal = days.map((_, i) => 
+    0.45 * psSignal[i] + 0.55 * stSignal[i]   // Steam 비중 상향
+  );
 
+  // 총 판매량 분배
   const totalDaily = Array(days.length).fill(0);
   totalDaily[0] = soldThroughD0;
 
+  // Day 1~4 분배 (300만 앵커)
   const day14Weights = [];
   for (let di = 1; di <= 4; di++) {
     const decay = Math.pow(0.89, di - 1);
     const momentum = clamp(comboSignal[di] / (comboSignal[0] || 1), 0.72, 1.18);
     day14Weights.push(Math.max(0.12, decay * momentum));
   }
-  const wSum = day14Weights.reduce((a,b) => a+b, 0) || 1;
+  const wSum = day14Weights.reduce((a, b) => a + b, 0) || 1;
   for (let di = 1; di <= 4; di++) {
-    totalDaily[di] = Math.round(Math.max(180000, PRE4_INCREMENT * (day14Weights[di-1] / wSum)));
+    totalDaily[di] = Math.round(Math.max(180000, PRE4_INCREMENT * (day14Weights[di - 1] / wSum)));
   }
 
+  // Day 5 이후
   for (let di = 5; di < days.length; di++) {
-    const ref = comboSignal[4] || comboSignal[0] || 1;
-    const rel = clamp((comboSignal[di] || ref) / ref, 0.75, 1.20);
-    totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[4] * Math.pow(POST_D4_DECAY, di-4) * rel));
+    const signalRef = comboSignal[4] || comboSignal[0] || 1;
+    const rel = clamp((comboSignal[di] || signalRef) / signalRef, 0.75, 1.20);
+    totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[4] * Math.pow(POST_D4_DECAY, di - 4) * rel));
   }
 
+  // 플랫폼별 분배
   const psDaily = [], stDaily = [], xbDaily = [], otherDaily = [];
   days.forEach(di => {
     const gross = totalDaily[di] || 0;
     const otherPool = gross * otherShareForDay(di);
-    const visible = gross - otherPool;
+    const visiblePool = gross - otherPool;
 
     const rawPs = psSignal[di] || 0.01;
     const rawSt = stSignal[di] || 0.01;
     const rawXb = xbSignal[di] || 0.01;
     const rawSum = rawPs + rawSt + rawXb || 1;
 
-    let ps = Math.round(visible * rawPs / rawSum + otherPool * OTHER_ALLOC.ps);
-    let st = Math.round(visible * rawSt / rawSum + otherPool * OTHER_ALLOC.st);
-    let xb = Math.round(visible * rawXb / rawSum + otherPool * OTHER_ALLOC.xb);
+    const psCore = visiblePool * rawPs / rawSum;
+    const stCore = visiblePool * rawSt / rawSum;
+    const xbCore = visiblePool * rawXb / rawSum;
+
+    const psAdj = otherPool * OTHER_ALLOC.ps;
+    const stAdj = otherPool * OTHER_ALLOC.st;
+    const xbAdj = otherPool * OTHER_ALLOC.xb;
+
+    let ps = Math.round(psCore + psAdj);
+    let st = Math.round(stCore + stAdj);
+    let xb = Math.round(xbCore + xbAdj);
     let other = Math.round(gross - ps - st - xb);
-    if (other < 0) { xb += other; other = 0; }
+    if (other < 0) {
+      xb = Math.max(0, xb + other);
+      other = 0;
+    }
 
     psDaily.push(ps);
     stDaily.push(st);
@@ -275,83 +161,97 @@ function renderSalesChart() {
     otherDaily.push(other);
   });
 
+  // 누적 계산
   const psCum = [], stCum = [], xbCum = [], otherCum = [], totCum = [];
-  let p=0, s=0, x=0, o=0;
-  days.forEach((_,i) => {
-    p += psDaily[i]; s += stDaily[i]; x += xbDaily[i]; o += otherDaily[i];
-    psCum.push(p); stCum.push(s); xbCum.push(x); otherCum.push(o); totCum.push(p+s+x+o);
+  let psAcc = 0, stAcc = 0, xbAcc = 0, otherAcc = 0;
+  days.forEach((_, i) => {
+    psAcc += psDaily[i];
+    stAcc += stDaily[i];
+    xbAcc += xbDaily[i];
+    otherAcc += otherDaily[i];
+    psCum.push(psAcc);
+    stCum.push(stAcc);
+    xbCum.push(xbAcc);
+    otherCum.push(otherAcc);
+    totCum.push(psAcc + stAcc + xbAcc + otherAcc);
   });
 
-  const todayIdx = Math.min(todayDay, totCum.length-1);
-  const totalGross = totCum[todayIdx] || 0;
-  const psTotal = psCum[todayIdx] || 0;
-  const stTotal = stCum[todayIdx] || 0;
+  const todayIdx = Math.min(todayDay, totCum.length - 1);
+  const totalGross = totCum[todayIdx] || totCum[totCum.length - 1] || 0;
+  const psTotal = psCum[todayIdx] || psCum[psCum.length - 1] || 0;
+  const stTotal = stCum[todayIdx] || stCum[stCum.length - 1] || 0;
+  const xbTotal = xbCum[todayIdx] || xbCum[xbCum.length - 1] || 0;
+  const otherTotal = otherCum[todayIdx] || otherCum[otherCum.length - 1] || 0;
 
-  const refundable = stTotal + (totCum[todayIdx] - psTotal - stTotal) * 0.65;
-  const totalNet = Math.round(totalGross - refundable * (refundPct / 100));
+  // 순보유량 (환불은 Steam + 기타 PC 중심)
+  const refundableBase = stTotal + otherTotal * 0.65;
+  const totalNet = Math.round(totalGross - refundableBase * (refundPct / 100));
 
-  // 요약 카드
-  document.getElementById('sales-summary-cards').innerHTML = `
-    <div style="background:var(--bg-2);border:1px solid var(--bd);border-left:3px solid var(--gold);padding:12px;border-radius:8px">
-      <div style="font-size:11px;color:var(--tx-4)">전체 누적</div>
-      <div style="font-size:26px;font-family:'Cinzel';color:var(--gold)">${fmtSales(totalGross)}</div>
-    </div>
-    <div style="background:var(--bg-2);border:1px solid var(--bd);border-left:3px solid #c0c0c0;padding:12px;border-radius:8px">
-      <div style="font-size:11px;color:var(--tx-4)">순보유량</div>
-      <div style="font-size:26px;font-family:'Cinzel';color:#c0c0c0">${fmtSales(totalNet)}</div>
-    </div>
-    <div style="background:var(--bg-2);border:1px solid var(--bd);border-left:3px solid var(--blood);padding:12px;border-radius:8px">
-      <div style="font-size:11px;color:var(--tx-4)">PS5 누적</div>
-      <div style="font-size:26px;font-family:'Cinzel';color:var(--blood)">${fmtSales(psTotal)}</div>
-    </div>
-  `;
+  // 요약 카드 업데이트
+  const cards = document.getElementById('sales-summary-cards');
+  if (cards) {
+    cards.innerHTML = `
+      <div style="background:var(--bg-2);border:1px solid var(--bd);border-left:3px solid var(--gold);border-radius:var(--radius);padding:12px">
+        <div style="font-size:11px;color:var(--tx-4)">전체 누적 판매량</div>
+        <div style="font-family:'Cinzel',serif;font-size:24px;color:var(--gold)">${fmtSales(totalGross)}</div>
+      </div>
+      <div style="background:var(--bg-2);border:1px solid var(--bd);border-left:3px solid #c0c0c0;border-radius:var(--radius);padding:12px">
+        <div style="font-size:11px;color:var(--tx-4)">순보유량 추정</div>
+        <div style="font-family:'Cinzel',serif;font-size:24px;color:#c0c0c0">${fmtSales(totalNet)}</div>
+        <div style="font-size:10px;color:var(--tx-4)">환불 ${refundPct}% 적용</div>
+      </div>
+      <div style="background:var(--bg-2);border:1px solid var(--bd);border-left:3px solid var(--blood);border-radius:var(--radius);padding:12px">
+        <div style="font-size:11px;color:var(--tx-4)">PS5 누적</div>
+        <div style="font-family:'Cinzel',serif;font-size:24px;color:var(--blood)">${fmtSales(psTotal)}</div>
+      </div>
+      <div style="background:var(--bg-2);border:1px solid var(--bd);border-left:3px solid var(--steam);border-radius:var(--radius);padding:12px">
+        <div style="font-size:11px;color:var(--tx-4)">Steam 누적</div>
+        <div style="font-family:'Cinzel',serif;font-size:24px;color:var(--steam)">${fmtSales(stTotal)}</div>
+      </div>
+    `;
+  }
 
-  // 차트
+  // 차트 렌더링 (기존 Chart.js 코드 유지)
+  const chartOpts = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: { ticks: { color: '#aaa' }, grid: { color: '#222' } },
+      y: { ticks: { color: '#aaa', callback: v => fmtSales(v) }, grid: { color: '#222' } }
+    }
+  };
+
+  // 일별 차트
+  const ctx1 = document.getElementById('salesDailyChart').getContext('2d');
   if (salesDailyCI) salesDailyCI.destroy();
-  salesDailyCI = new Chart(document.getElementById('salesDailyChart'), {
+  salesDailyCI = new Chart(ctx1, {
     type: 'bar',
-    data: { labels, datasets: [
-      { label: 'PS5', data: psDaily, backgroundColor: 'rgba(255,71,87,0.8)' },
-      { label: 'Steam', data: stDaily, backgroundColor: 'rgba(74,158,255,0.8)' },
-      { label: '기타', data: otherDaily, backgroundColor: 'rgba(155,89,182,0.7)' }
-    ]},
-    options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } }}
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'PS5',   data: psDaily,    backgroundColor: 'rgba(255,71,87,0.75)', stack: 'stack1' },
+        { label: 'Steam', data: stDaily,    backgroundColor: 'rgba(74,158,255,0.75)', stack: 'stack1' },
+        { label: '기타',   data: otherDaily, backgroundColor: 'rgba(155,89,182,0.7)', stack: 'stack1' }
+      ]
+    },
+    options: { ...chartOpts, scales: { ...chartOpts.scales, x: { stacked: true }, y: { stacked: true } } }
   });
 
+  // 누적 차트
+  const ctx2 = document.getElementById('salesCumChart').getContext('2d');
   if (salesCumCI) salesCumCI.destroy();
-  salesCumCI = new Chart(document.getElementById('salesCumChart'), {
+  salesCumCI = new Chart(ctx2, {
     type: 'line',
-    data: { labels, datasets: [
-      { label: '전체', data: totCum, borderColor: '#f1c40f', borderWidth: 3, tension: 0.3 },
-      { label: 'PS5', data: psCum, borderColor: '#ff4757', borderWidth: 2, tension: 0.3 }
-    ]},
-    options: { responsive: true, maintainAspectRatio: false }
+    data: {
+      labels: labels,
+      datasets: [
+        { label: '전체', data: totCum, borderColor: '#f1c40f', borderWidth: 3, tension: 0.3 },
+        { label: 'PS5',  data: psCum,  borderColor: '#ff4757', borderWidth: 2, tension: 0.3 },
+        { label: 'Steam',data: stCum,  borderColor: '#4a9eff', borderWidth: 2, tension: 0.3 }
+      ]
+    },
+    options: chartOpts
   });
+
+  console.log(`✅ 판매량 모델 업데이트 완료 (Today Day ${todayDay}, 총 ${fmtSales(totalGross)})`);
 }
-
-// 간단한 기타 함수
-function switchTab(tab) {
-  document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active-section'));
-  document.getElementById(tab.dataset.section).classList.add('active-section');
-}
-
-function refreshData() {
-  alert("데이터 새로고침 (실제 JSON 로드 필요)");
-}
-
-function dispatchWorkflow(type) {
-  alert(type.toUpperCase() + " 실행 요청됨");
-}
-
-// 초기 실행
-window.onload = () => {
-  // 더미 데이터
-  historyData = [{ timestamp: "2026-03-28T12:00:00", averages: {combined: 4.2} }];
-  stsHist = [{ timestamp: "2026-03-28T12:00:00", results: {"미국":{rank:1}, "한국":{rank:5}} }];
-
-  document.getElementById('update-time').textContent = "LAST SNAPSHOT: " + new Date().toLocaleString('ko-KR');
-  renderSalesChart();
-};
-</script>
-</body>
-</html>
