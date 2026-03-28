@@ -868,7 +868,12 @@
 
 <header>
   <div class="container" style="display:flex;justify-content:space-between;align-items:center;padding-top:0;padding-bottom:0;max-width:1400px">
-    <div class="logo"><h1><span>CRIMSON</span> DESERT</h1></div>
+    <div class="logo">
+  <h1 style="display:flex;align-items:center;gap:8px">
+    <span>CRIMSON</span> DESERT
+    <span id="d-day-badge" style="font-size:14px;font-family:'Rajdhani',sans-serif;color:var(--gold);background:rgba(241,196,15,0.15);border:1px solid rgba(241,196,15,0.4);padding:2px 8px;border-radius:6px;font-weight:800;letter-spacing:1px;white-space:nowrap;"></span>
+  </h1>
+</div>
     <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
       <!-- GitHub Actions 수동 실행 버튼 -->
       <div class="gh-dispatch-wrap">
@@ -3990,6 +3995,22 @@ window.addEventListener('DOMContentLoaded', () => {
     new ResizeObserver(setOffset).observe(header);
     new ResizeObserver(setOffset).observe(navBar);
     window.addEventListener('resize', setOffset);
+    // 출시일 기준 D-Day 계산 (2026년 3월 20일 07:00 KST)
+const launchDate = new Date('2026-03-20T07:00:00+09:00').getTime();
+const dDayBadge = document.getElementById('d-day-badge');
+
+if (dDayBadge) {
+  const now = Date.now();
+  const diffDays = Math.floor((now - launchDate) / 86400000);
+  
+  if (diffDays < 0) {
+    dDayBadge.textContent = 'D' + diffDays; // 출시 전: D-358 등
+  } else if (diffDays === 0) {
+    dDayBadge.textContent = 'D-DAY';      // 출시 당일
+  } else {
+    dDayBadge.textContent = 'D+' + diffDays + '일'; // 출시 후: D+8일 등
+  }
+}
   }
 });
 
