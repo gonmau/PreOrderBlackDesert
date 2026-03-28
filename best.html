@@ -544,6 +544,33 @@
     .rank-group-arrow { font-size: 16px; }
   }
 
+  /* ══ GitHub Token 모달 ════════════════════════════════════════ */
+  .gh-modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; align-items: center; justify-content: center; }
+  .gh-modal-bg.open { display: flex; }
+  .gh-modal-box { background: var(--bg-2); border: 1px solid var(--bd-hi); border-radius: var(--radius); padding: 24px; width: 90%; max-width: 400px; position: relative; }
+  .gh-modal-title { font-size: 16px; font-weight: 800; color: var(--tx-1); margin-bottom: 6px; }
+  .gh-modal-desc  { font-size: 14px; color: var(--tx-4); margin-bottom: 14px; line-height: 1.6; }
+  .gh-modal-desc a { color: var(--steam); }
+  .gh-modal-label { font-size: 10px; color: var(--tx-4); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .gh-modal-input {
+    width: 100%; background: var(--bg-1); border: 1px solid var(--bd-hi);
+    border-radius: var(--radius); color: var(--tx-1); font-size: 15px;
+    padding: 9px 12px; margin-bottom: 10px; box-sizing: border-box; font-family: monospace;
+  }
+  .gh-modal-input:focus { outline: none; border-color: var(--tx-4); }
+  .gh-modal-save {
+    width: 100%; padding: 9px; border-radius: var(--radius);
+    background: rgba(241,196,15,0.10); border: 1px solid rgba(241,196,15,0.25);
+    color: var(--gold); font-size: 15px; font-weight: 800; cursor: pointer;
+    transition: background var(--trans);
+  }
+  .gh-modal-save:hover { background: rgba(241,196,15,0.20); }
+  .gh-modal-close { position: absolute; top: 12px; right: 14px; font-size: 22px; color: var(--tx-4); cursor: pointer; }
+  .gh-modal-close:hover { color: var(--tx-1); }
+  .gh-status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 3px; vertical-align: middle; }
+  .gh-status-dot.ok   { background: var(--up); }
+  .gh-status-dot.none { background: var(--tx-4); }
+
   /* ══ PS Store 링크 팝오버 ═══════════════════════════════════ */
   .ps-links-btn {
     display: inline-flex; align-items: center; gap: 4px;
@@ -2611,6 +2638,63 @@ function renderSTS() {
 
   // PS+Steam 데이터 모두 로드 후 차트 렌더
   if (historyData.length > 0) setTimeout(renderSummaryCharts, 150);
+
+  // ── Steam 요약: 최고/최하 순위 카드 + 순위별 국가 그룹 ──
+  const entries = Object.keys(STS_W).map(n => {
+    const r  = lat.results?.[n]?.rank ?? null;
+    const pr = prv?.results?.[n]?.rank ?? null;
+    const ch = (r && pr) ? pr - r : 0;
+    return { name: n, rank: r, change: ch };
+  }).sort((a, b) => {
+    const ar = a.rank ?? 99999, br = b.rank ?? 99999;
+    return ar !== br ? ar - br : (STS_W[b.name]||0) - (STS_W[a.name]||0);
+  });
+
+  const ranked = entries.filter(d => d.rank != null);
+
+  // 순위별 카운트 + 변동 뱃지
+  function makeStsChgBadge(items) {
+    const up = items.filter(x => x.change > 0).length;
+    const dn = items.filter(x => x.change < 0).length;
+    if (!up && !dn) return '';
+    return `<span style="font-size:9px;display:inline-flex;gap:3px;margin-left:4px;vertical-align:middle">
+      ${up ? `<span style="color:var(--up);font-weight:800">▲${up}</span>` : ''}
+      ${dn ? `<span style="color:var(--down);font-weight:800">▼${dn}</span>` : ''}
+    </span>`;
+  }
+  const setTH = (id, num, items) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = num + makeStsChgBadge(items);
+  };
+  const setT = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  const _cnt1   = ranked.filter(d => d.rank === 1).length;
+  const _cnt23  = ranked.filter(d => d.rank >= 2 && d.rank <= 3).length;
+  const _cnt410 = ranked.filter(d => d.rank >= 4 && d.rank <= 10).length;
+  const _cntRest= ranked.filter(d => d.rank >= 11).length;
+  setTH('sts-cnt-1',   _cnt1,  ranked.filter(d => d.rank === 1));
+  setTH('sts-cnt-3',   _cnt23, ranked.filter(d => d.rank >= 2 && d.rank <= 3));
+  setTH('sts-cnt-10',  _cnt410,ranked.filter(d => d.rank >= 4 && d.rank <= 10));
+  setT('sts-cnt-rest', _cntRest + '개 / ' + ranked.length + '개국');
+
+  // 최고/최하 순위 카드
+  if (ranked.length) {
+    const stsBest  = ranked.reduce((a, b) => a.rank < b.rank ? a : b);
+    const stsWorst = ranked.reduce((a, b) => a.rank > b.rank ? a : b);
+    setT('sts-best-rank-val',  stsBest.rank + '위');
+    setT('sts-best-rank-name', (STS_F[stsBest.name] || '') + ' ' + stsBest.name);
+    setT('sts-worst-rank-val', stsWorst.rank + '위');
+    setT('sts-worst-rank-name',(STS_F[stsWorst.name] || '') + ' ' + stsWorst.name);
+  }
+
+  // 순위별 전체 국가 그룹 렌더
+  const stsListForSum = entries.map(d => ({ name: d.name, rank: d.rank ?? 999, change: d.change }));
+  renderSummaryRankGroups(
+    stsListForSum,
+    'sts-summary-rank-groups',
+    n => STS_F[n] || '',
+    n => { const cc = STS_CC[n] || 'us'; return `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`; },
+    false
+  );
 }
 
 
