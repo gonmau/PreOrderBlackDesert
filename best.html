@@ -1102,7 +1102,7 @@
             • 공식 2M은 <b style="color:var(--gold)">출시 직후 24시간 내 sold through</b>로 보는 편이 맞고, KST 기준으로는 <b style="color:var(--gold)">3/20(출시일) 앵커</b>로 두는 것이 가장 자연스럽습니다.<br>
             • 공식 3M은 해외 기사 기준 5일 / 국내 기사 기준 4일 표현이 혼재하지만, <b style="color:var(--gold)">보수적으로 출시 4일차 300만</b> 앵커로 반영했습니다.<br>
             • PS는 <b style="color:var(--gold)">WEIGHTS 기반 가중 평균 순위</b>, Steam은 <b style="color:var(--gold)">STS_W 기반 국가별 가중 평균 순위</b>를 일별 신호로 사용합니다.<br>
-            • 기존처럼 Day0에 바로 환불을 빼지 않고, <b style="color:var(--gold)">공식 sold-through(총량)</b>를 먼저 맞춘 뒤 Steam·PC 기타 중심으로만 순보유량을 별도 계산합니다.<br>
+            • 기존처럼 Day0에 바로 환불을 빼지 않고, <b style="color:var(--gold)">공식 sold-through(총량)</b>를 먼저 맞춘 뒤 Steam·PC 기타 100%, PS5 30% 가중으로 순보유량을 별도 계산합니다.<br>
             • Epic Games Store / Mac / 오프라인(물리) / AMD 번들은 순위 데이터에 직접 안 잡히므로, <b style="color:var(--gold)">기타 채널 보정</b>으로 별도 반영합니다.<br>
             • 기타 채널 보정은 <b style="color:var(--gold)">EGS·Mac·AMD 중심 50%</b>, <b style="color:var(--gold)">PS 물리 30%</b>, <b style="color:var(--gold)">Xbox 리테일 15%</b>, <b style="color:var(--gold)">Steam 지연 반영 5%</b> 가정입니다.
           </div>
@@ -1112,7 +1112,7 @@
               <input id="sales-day1-total" type="number" value="2000000" step="100000"
                 style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:110px;margin-left:6px">
             </label>
-            <label style="font-size:12px;color:var(--tx-3)">PC 환불율(%):
+            <label style="font-size:12px;color:var(--tx-3)">환불율(%):
               <input id="sales-refund-pct" type="number" value="8" min="0" max="25" step="1"
                 style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:55px;margin-left:6px">
             </label>
@@ -2101,12 +2101,14 @@ function closePsLinksPopover() {
    - Steam 사전 판매 363K / 총 2M → Steam 비율 최소 18%
    - 대형 AAA 통상: PS5 45~55%, PC 30~40%, Xbox 10~20%
    - Pearl Abyss 특성상 아시아·콘솔 비중 높아 PS 비중 높게 설정
-   - 기본값: PS5 55%, Steam 33%, Xbox 12%
+   - 기본값: PS5 36%, Steam 40%, Xbox 10%, 기타 14%
+     (입력 UI에서 조정 가능 — 주석은 코드 기본값 기준)
 
    [2M 수치 보수적 해석]
    - "sold through" = 사전 판매 포함 (Steam 363K 이미 포함)
    - 환불 추정: 10~15% (Intel Arc 1%, 혼합 원인 환불 추가)
-   - 순 판매량 보정: 입력값 × (1 - 환불율)
+   - 순 판매량 보정: Steam·기타PC 100% + PS5 30% 가중 환불 적용
+     (PS5 디지털 환불율은 PC 대비 현저히 낮아 보수적으로 반영)
 
    [일별 감소 모델]
    - Day 0(출시 당일): 전체 판매의 큰 비중 (통상 AAA 첫날 25~35%)
@@ -2208,8 +2210,9 @@ function renderSalesChart() {
   days.forEach(di => {
     const date = new Date(LAUNCH_DATE.getTime() + di * 86400000);
     labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
-    const psR = psDayAvg[di] != null ? psDayAvg[di] : clamp(psLastRank * 1.05, 1, 80);
-    const stR = stDayAvg[di] != null ? stDayAvg[di] : clamp(stLastRank * 1.06, 1, 80);
+    // 데이터 있는 날: 실측값 사용 / 없는 날: 마지막 실측값 유지 (강제 하락 제거)
+    const psR = psDayAvg[di] != null ? psDayAvg[di] : psLastRank;
+    const stR = stDayAvg[di] != null ? stDayAvg[di] : stLastRank;
     psLastRank = psR;
     stLastRank = stR;
     psRankSeries.push(psR);
@@ -2313,14 +2316,15 @@ function renderSalesChart() {
   const stCoreTotal = Math.max(0, stTotal - stAdjTotal);
   const xbCoreTotal = Math.max(0, xbTotal - xbAdjTotal);
 
-  // 환불은 Steam + 기타 PC 중심으로만 보수적으로 반영
-  const refundableBase = stTotal + otherTotal * 0.65;
+  // 환불: Steam·기타 PC 중심, PS5는 낮은 비율(30%)로 보수적 반영
+  // PS5도 환불 가능하나 디지털 콘솔 환불율은 PC 대비 현저히 낮음
+  const refundableBase = stTotal + otherTotal * 0.65 + psTotal * 0.30;
   const totalNet = Math.round(totalGross - refundableBase * (refundPct / 100));
 
   const cards = document.getElementById('sales-summary-cards');
   if (cards) cards.innerHTML = [
     { label: '📦 전체 누적 (총)', val: fmtSales(totalGross), sub: '공식 2M·3M 앵커 보정', color: 'var(--gold)' },
-    { label: '🧾 순보유량 추정',   val: fmtSales(totalNet),   sub: `환불 ${refundPct}% (Steam·PC 기타 중심)`, color: '#c0c0c0' },
+    { label: '🧾 순보유량 추정',   val: fmtSales(totalNet),   sub: `환불 ${refundPct}% (Steam·PC 전량, PS5 30% 가중)`, color: '#c0c0c0' },
     { label: '🎮 PS5 누적',        val: fmtSales(psTotal),    sub: `기본 ${fmtSales(psCoreTotal)} + 추가 ${fmtSales(psAdjTotal)}`, color: 'var(--blood)' },
     { label: '🖥 Steam 누적',      val: fmtSales(stTotal),    sub: `기본 ${fmtSales(stCoreTotal)} + 추가 ${fmtSales(stAdjTotal)}`, color: 'var(--steam)' },
     { label: '🎮 Xbox 누적',       val: fmtSales(xbTotal),    sub: `기본 ${fmtSales(xbCoreTotal)} + 추가 ${fmtSales(xbAdjTotal)}`, color: '#107C10' },
