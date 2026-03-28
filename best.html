@@ -2313,6 +2313,7 @@ function renderSalesChart() {
   const psAdjTotal = psAdjDaily.slice(0, todayDay + 1).reduce((a, b) => a + b, 0);
   const stAdjTotal = stAdjDaily.slice(0, todayDay + 1).reduce((a, b) => a + b, 0);
   const xbAdjTotal = xbAdjDaily.slice(0, todayDay + 1).reduce((a, b) => a + b, 0);
+  const totalAdjTotal = psAdjTotal + stAdjTotal + xbAdjTotal; // 전체 추가량 합산
   const psCoreTotal = Math.max(0, psTotal - psAdjTotal);
   const stCoreTotal = Math.max(0, stTotal - stAdjTotal);
   const xbCoreTotal = Math.max(0, xbTotal - xbAdjTotal);
@@ -2324,7 +2325,7 @@ function renderSalesChart() {
 
   const cards = document.getElementById('sales-summary-cards');
   if (cards) cards.innerHTML = [
-    { label: '📦 전체 누적 (총)', val: fmtSales(totalGross), adj: null,                    sub: '공식 2M·3M 앵커 보정',                             color: 'var(--gold)' },
+    { label: '📦 전체 누적 (총)', val: fmtSales(totalGross), adj: fmtSales(totalAdjTotal), sub: '공식 2M·3M 앵커 보정',                             color: 'var(--gold)' },
     { label: '🧾 순보유량 추정',   val: fmtSales(totalNet),   adj: null,                    sub: `환불 ${refundPct}% (Steam·PC 전량, PS5 30% 가중)`, color: '#c0c0c0' },
     { label: '🎮 PS5 누적',        val: fmtSales(psTotal),    adj: fmtSales(psAdjTotal),   sub: null,                                               color: 'var(--blood)' },
     { label: '🖥 Steam 누적',      val: fmtSales(stTotal),    adj: fmtSales(stAdjTotal),   sub: null,                                               color: 'var(--steam)' },
