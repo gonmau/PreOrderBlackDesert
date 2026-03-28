@@ -1126,7 +1126,7 @@
           <!-- 요약 카드 -->
           <div id="sales-summary-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px"></div>
           <!-- 마일스톤 예측 -->
-          <div id="sales-milestone-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px"></div>
+          <div id="sales-milestone-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>
           <!-- 일별 차트 -->
           <div style="font-size:11px;color:var(--tx-4);margin-bottom:4px;font-weight:800;letter-spacing:1px;text-transform:uppercase">📊 일별 판매량 추정 (누적 막대)</div>
           <div style="height:220px;margin-bottom:16px"><canvas id="salesDailyChart"></canvas></div>
@@ -2382,13 +2382,23 @@ function renderSalesChart() {
       return `D+${diffDays}`;
     };
 
-    const m3 = findMilestone(3_000_000);
-    const m5 = findMilestone(5_000_000);
+    const m3  = findMilestone(3_000_000);
+    const m4  = findMilestone(4_000_000);
+    const m5  = findMilestone(5_000_000);
+    const m6  = findMilestone(6_000_000);
+    const m7  = findMilestone(7_000_000);
+    const m8  = findMilestone(8_000_000);
+    const m9  = findMilestone(9_000_000);
     const m10 = findMilestone(10_000_000);
     const mCards = [
-      { label: '🎯 300만 달성', ms: m3, color: '#2ecc71' },
-      { label: '🚀 500만 달성', ms: m5, color: '#f1c40f' },
-      { label: '💎 1000만 달성', ms: m10, color: '#e74c3c' },
+      { label: '🎯 300만 달성',  ms: m3,  color: '#2ecc71' },
+      { label: '🎯 400만 달성',  ms: m4,  color: '#1abc9c' },
+      { label: '🚀 500만 달성',  ms: m5,  color: '#f1c40f' },
+      { label: '🚀 600만 달성',  ms: m6,  color: '#e67e22' },
+      { label: '🔥 700만 달성',  ms: m7,  color: '#e74c3c' },
+      { label: '🔥 800만 달성',  ms: m8,  color: '#c0392b' },
+      { label: '💎 900만 달성',  ms: m9,  color: '#9b59b6' },
+      { label: '💎 1000만 달성', ms: m10, color: '#8e44ad' },
     ];
 
     msEl.innerHTML = mCards.map(({ label, ms, color }) => {
