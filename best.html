@@ -1104,7 +1104,8 @@
             • PS는 <b style="color:var(--gold)">WEIGHTS 기반 가중 평균 순위</b>, Steam은 <b style="color:var(--gold)">STS_W 기반 국가별 가중 평균 순위</b>를 일별 신호로 사용합니다.<br>
             • 기존처럼 Day0에 바로 환불을 빼지 않고, <b style="color:var(--gold)">공식 sold-through(총량)</b>를 먼저 맞춘 뒤 Steam·PC 기타 100%, PS5 30% 가중으로 순보유량을 별도 계산합니다.<br>
             • Epic Games Store / Mac / 오프라인(물리) / AMD 번들은 순위 데이터에 직접 안 잡히므로, <b style="color:var(--gold)">기타 채널 보정</b>으로 별도 반영합니다.<br>
-            • 기타 채널 보정은 <b style="color:var(--gold)">EGS·Mac·AMD 중심 40%</b>, <b style="color:var(--gold)">Steam 지연·EGS 반영 35%</b>, <b style="color:var(--gold)">PS 물리 20%</b>, <b style="color:var(--gold)">Xbox 리테일 5%</b> 가정입니다. (EGS·AMD 번들 등 PC 채널 비중 반영)
+            • 기타 채널 보정은 <b style="color:var(--gold)">EGS·Mac·AMD 중심 40%</b>, <b style="color:var(--gold)">Steam 지연·EGS 반영 35%</b>, <b style="color:var(--gold)">PS 물리 20%</b>, <b style="color:var(--gold)">Xbox 리테일 5%</b> 가정입니다. (EGS·AMD 번들 등 PC 채널 비중 반영)<br>
+            • 각 플랫폼 카드의 <b style="color:var(--tx-2)">+숫자(추가)</b>는 <b style="color:var(--gold)">순위 미반영 채널의 고정 비율 추정치</b>입니다 — 순위 역산값이 아닌 참고용이며, AMD 번들 등 초기 한정 프로모션도 포함되어 실제보다 과대 추정될 수 있습니다.
           </div>
           <!-- 컨트롤 -->
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
@@ -2334,7 +2335,7 @@ function renderSalesChart() {
       <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">${label}</div>
       <div style="display:flex;align-items:baseline;gap:5px;flex-wrap:nowrap">
         <span style="font-family:'Cinzel',serif;font-size:20px;color:${color};font-weight:900">${val}</span>
-        ${adj ? `<span style="font-size:14px;color:var(--tx-3);font-weight:700">+${adj}</span>` : ''}
+        ${adj ? `<span style="font-size:14px;color:var(--tx-3);font-weight:700" title="순위 미반영 채널 고정비율 추정 (참고용)">+${adj}*</span>` : ''}
       </div>
       ${sub ? `<div style="font-size:10px;color:var(--tx-4);margin-top:3px">${sub}</div>` : ''}
     </div>`).join('');
