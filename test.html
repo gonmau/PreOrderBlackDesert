@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crimson Desert — Global Heatmap & Trend</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+  /* ══ 디자인 토큰 ══════════════════════════════════════════════ */
+  :root {
+    --blood:  #ff4757;
+    --gold:   #f1c40f;
+    --steam:  #4a9eff;
+    --up:     #2ecc71;
+    --down:   #e74c3c;
+    --bg-0:   #000000;
+    --bg-1:   #0a0a0a;
+    --bg-2:   #111111;
+    --bg-3:   #181818;
+    --bg-4:   #222222;
+    --border: rgba(255,255,255,0.08);
+    --text:   #e0e0e0;
+    --text-dim: #888;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; outline:none; }
+  body {
+    background: var(--bg-0);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.4;
+  }
+
+  /* ══ 헤더 ══════════════════════════════════════════════════ */
+  header {
+    background: linear-gradient(to bottom, #1a1a1a, #000);
+    padding: 20px;
+    border-bottom: 2px solid var(--gold);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  header h1 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(241,196,15,0.3);
+  }
+
+  /* ══ 메인 레이아웃 ═════════════════════════════════════════ */
+  main { padding: 20px; max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+  @media (max-width: 1100px) { main { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-family: 'Cinzel';
+    color: var(--gold);
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* ══ 요약 섹션 및 국가 리스트 ══════════════════════════════ */
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .country-item {
+    background: var(--bg-3);
+    padding: 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+  }
+  .country-item:hover { background: var(--bg-4); border-left-color: var(--gold); transform: translateX(5px); }
+  .country-name { display: block; font-weight: 700; color: var(--text); font-size: 0.95rem; }
+  .country-rank { font-size: 0.8rem; color: var(--text-dim); }
+
+  /* ══ 그래프 상세 섹션 ══════════════════════════════════════ */
+  #country-detail-container {
+    position: sticky;
+    top: 100px;
+  }
+  .chart-box {
+    background: #0a0a0a;
+    border: 1px solid #222;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 4px;
+  }
+  .chart-label {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* ══ 판매량 분석 섹션 ══════════════════════════════════════ */
+  .sales-box {
+    background: linear-gradient(45deg, #111, #181818);
+    border: 1px solid var(--gold);
+    padding: 25px;
+    text-align: center;
+  }
+  .sales-val { font-size: 2.5rem; font-family: 'Cinzel'; color: var(--gold); font-weight: 900; margin: 10px 0; }
+  .sales-label { color: var(--text-dim); font-size: 0.9rem; letter-spacing: 2px; }
+
+  footer { text-align: center; padding: 40px; color: #444; font-size: 0.8rem; border-top: 1px solid #111; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<header>
+  <h1>CRIMSON DESERT <span style="font-size:0.6em; vertical-align:middle; color:#555;">ANALYTICS</span></h1>
+  <div id="top-price-box" style="text-align:right; cursor:pointer;">
+    <div style="font-size:10px; color:#666; letter-spacing:1px;">PEARL ABYSS (263750)</div>
+    <span id="pa-price" style="font-size:1.2rem; font-weight:700; color:var(--text);">---</span>
+    <span id="pa-change" style="font-size:0.9rem; margin-left:5px;">---</span>
+  </div>
+</header>
+
+<main>
+  <section>
+    <div class="card sales-box">
+      <div class="sales-label">ESTIMATED COPIES SOLD</div>
+      <div id="total-sales" class="sales-val">0</div>
+      <div style="font-size:0.8rem; color:#666;">Based on PS/Steam Weighted Market Share & Rank Decay</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🌐 MARKET SUMMARY (CLICK FOR DETAIL)</div>
+      <div id="summary-list" class="summary-grid">
+        </div>
+    </div>
+  </section>
+
+  <aside>
+    <div id="country-detail-container" class="card" style="display:none;">
+      <h3 id="selected-country-name" style="font-family:'Cinzel'; color:var(--gold); margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:10px;">COUNTRY NAME</h3>
+      
+      <div class="chart-box">
+        <div class="chart-label">
+          <span>Historical Trend</span>
+          <span>Daily Avg</span>
+        </div>
+        <div style="height:180px;"><canvas id="historyChart"></canvas></div>
+      </div>
+
+      <div class="chart-box">
+        <div class="chart-label">
+          <span>Today's Momentum</span>
+          <span style="color:var(--steam)">Hourly Update</span>
+        </div>
+        <div style="height:150px;"><canvas id="todayChart"></canvas></div>
+      </div>
+
+      <div id="country-stats" style="margin-top:20px; font-size:0.85rem; color:#aaa;">
+        </div>
+    </div>
+
+    <div id="detail-placeholder" class="card" style="text-align:center; color:#444; padding:60px 20px;">
+      <p>좌측 국가 이름을 클릭하여<br>상세 순위 변동 추이를 확인하세요.</p>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  &copy; 2025 CRIMSON DESERT ANALYTICS ENGINE v2.5. <br>
+  DATA UPDATED EVERY 1 HOUR. NON-OFFICIAL ESTIMATION.
+</footer>
+
+<script>
+/* ══ 데이터 시뮬레이션 및 로직 ════════════════════════════════ */
+
+// 1. 가중치 및 설정
+const WEIGHTS = { "United States": 0.30, "United Kingdom": 0.08, "Germany": 0.07, "France": 0.06, "Japan": 0.05, "South Korea": 0.04 };
+const STS_W = { "United States": 0.25, "China": 0.20, "Germany": 0.08, "South Korea": 0.07, "Japan": 0.04 };
+
+// 2. 가상 데이터 생성 (최근 7일분)
+let history = [];
+const countries = Array.from(new Set([...Object.keys(WEIGHTS), ...Object.keys(STS_W)]));
+const now = new Date();
+
+for(let i=7; i>=0; i--) {
+  let d = new Date();
+  d.setDate(now.getDate() - i);
+  let dateStr = d.toISOString().split('T')[0];
+  
+  countries.forEach(c => {
+    // 하루 4번 데이터 수집 가정
+    ["06:00", "12:00", "18:00", "23:00"].forEach(t => {
+      // 오늘 날짜인데 현재 시각보다 미래면 패스
+      if(i === 0 && parseInt(t) > now.getHours()) return;
+      
+      history.push({
+        date: dateStr,
+        time: t,
+        country: c,
+        rank: Math.floor(Math.random() * 20) + 1 + (i * 2) // 날짜가 지날수록 순위 하락 가정
+      });
+    });
+  });
+}
+
+// 3. 차트 인스턴스 변수
+let historyChartInst = null;
+let todayChartInst = null;
+
+// 4. 초기화
+window.onload = () => {
+  renderSummary();
+  updateSales();
+  fetchPAPrice();
+};
+
+// 5. 국가별 요약 리스트 렌더링
+function renderSummary() {
+  const list = document.getElementById('summary-list');
+  const today = new Date().toISOString().split('T')[0];
+  
+  countries.forEach(c => {
+    const latest = history.filter(h => h.country === c).slice(-1)[0];
+    const div = document.createElement('div');
+    div.className = 'country-item';
+    div.onclick = () => showCountryDetail(c);
+    div.innerHTML = `
+      <span class="country-name">${c}</span>
+      <span class="country-rank">Current: #${latest.rank}</span>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// 6. 상세 차트 표시 (방법 A)
+function showCountryDetail(countryName) {
+  document.getElementById('detail-placeholder').style.display = 'none';
+  const container = document.getElementById('country-detail-container');
+  container.style.display = 'block';
+  document.getElementById('selected-country-name').textContent = countryName;
+
+  const countryData = history.filter(h => h.country === countryName);
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  // [데이터 1: 전체 기간 일별 평균]
+  const dailyMap = {};
+  countryData.forEach(d => {
+    if(!dailyMap[d.date]) dailyMap[d.date] = { sum:0, count:0 };
+    dailyMap[d.date].sum += d.rank;
+    dailyMap[d.date].count++;
+  });
+  const hLabels = Object.keys(dailyMap).sort();
+  const hValues = hLabels.map(d => (dailyMap[d].sum / dailyMap[d].count).toFixed(1));
+
+  // [데이터 2: 오늘 상세 시간대별]
+  const todayData = countryData.filter(d => d.date === todayStr).sort((a,b) => a.time.localeCompare(b.time));
+  const tLabels = todayData.map(d => d.time);
+  const tValues = todayData.map(d => d.rank);
+
+  // 차트 업데이트
+  renderHistoryChart(hLabels, hValues);
+  renderTodayChart(tLabels, tValues);
+}
+
+function renderHistoryChart(labels, values) {
+  const ctx = document.getElementById('historyChart').getContext('2d');
+  if(historyChartInst) historyChartInst.destroy();
+  historyChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Avg Rank',
+        data: values,
+        borderColor: '#f1c40f',
+        backgroundColor: 'rgba(241,196,15,0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 2
+      }]
+    },
+    options: getChartOptions(true)
+  });
+}
+
+function renderTodayChart(labels, values) {
+  const ctx = document.getElementById('todayChart').getContext('2d');
+  if(todayChartInst) todayChartInst.destroy();
+  
+  if(labels.length === 0) {
+      // 오늘 데이터 없을 경우 처리
+      return;
+  }
+
+  todayChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Hourly Rank',
+        data: values,
+        borderColor: '#4a9eff',
+        borderDash: [5, 5],
+        pointBackgroundColor: '#4a9eff',
+        pointRadius: 4,
+        tension: 0.2,
+        fill: false
+      }]
+    },
+    options: getChartOptions(true)
+  });
+}
+
+function getChartOptions(isReverse) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { 
+        reverse: isReverse, 
+        grid: { color: '#222' }, 
+        ticks: { color: '#666', font: { size: 10 } },
+        beginAtZero: false
+      },
+      x: { 
+        grid: { display: false }, 
+        ticks: { color: '#666', font: { size: 10 } } 
+      }
+    }
+  };
+}
+
+// 7. 판매량 계산 (간이 버전)
+function updateSales() {
+    const base = 2154800; // 기초값
+    document.getElementById('total-sales').textContent = base.toLocaleString();
+}
+
+// 8. 주가 정보 (생략 가능 - 기존 코드 유지용)
+async function fetchPAPrice() {
+    const el = document.getElementById('pa-price');
+    if(el) el.textContent = "42,500";
+    const ch = document.getElementById('pa-change');
+    if(ch) { ch.textContent = "+1.2%"; ch.style.color = "var(--up)"; }
+}
+
+</script>
+</body>
+</html>
