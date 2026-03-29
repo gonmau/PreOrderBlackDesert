@@ -903,20 +903,10 @@
         <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span id="ps-data-time" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div class="stats">
           <div class="card"><div class="lbl">가중 평균</div><div class="val" id="stat-avg">—</div></div>
-          <!-- 최고/최하 합친 카드 -->
-          <div class="card" style="grid-column:span 1">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-              <div>
-                <div class="lbl" style="margin-bottom:4px">최고 순위</div>
-                <div class="val" id="stat-best-val" style="font-size:22px">—</div>
-                <div class="sub" id="stat-best-name" style="font-size:13px">...</div>
-              </div>
-              <div style="border-left:1px solid var(--bd);padding-left:10px">
-                <div class="lbl" style="margin-bottom:4px">최하 순위</div>
-                <div class="val" id="stat-worst-val" style="font-size:22px;color:var(--down)">—</div>
-                <div class="sub" id="stat-worst-name" style="font-size:13px">...</div>
-              </div>
-            </div>
+          <!-- 점유율 Top5 순위 카드 -->
+          <div class="card" style="grid-column:span 1;padding:10px 12px">
+            <div class="lbl" style="margin-bottom:8px">점유율 Top5 현재 순위</div>
+            <div id="ps-top5-rank-list" style="display:flex;flex-direction:column;gap:5px"></div>
           </div>
           <!-- 숨김 유지 (JS 참조용) -->
           <span id="stat-cnt-1" style="display:none">0</span>
@@ -944,20 +934,10 @@
             <div class="lbl">가중 평균</div>
             <div class="val" id="sts-avg" style="color:var(--steam)">—</div>
           </div>
-          <!-- 최고/최하 합친 카드 -->
-          <div class="card" style="border-left-color:var(--steam);grid-column:span 1">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-              <div>
-                <div class="lbl" style="margin-bottom:4px">최고 순위</div>
-                <div class="val" id="sts-best-rank-val" style="font-size:22px;color:var(--gold)">—</div>
-                <div class="sub" id="sts-best-rank-name" style="font-size:13px">...</div>
-              </div>
-              <div style="border-left:1px solid var(--bd);padding-left:10px">
-                <div class="lbl" style="margin-bottom:4px">최하 순위</div>
-                <div class="val" id="sts-worst-rank-val" style="font-size:22px;color:var(--down)">—</div>
-                <div class="sub" id="sts-worst-rank-name" style="font-size:13px">...</div>
-              </div>
-            </div>
+          <!-- 점유율 Top5 순위 카드 -->
+          <div class="card" style="border-left-color:var(--steam);grid-column:span 1;padding:10px 12px">
+            <div class="lbl" style="margin-bottom:8px">점유율 Top5 현재 순위</div>
+            <div id="sts-top5-rank-list" style="display:flex;flex-direction:column;gap:5px"></div>
           </div>
           <!-- 숨김 유지 (JS 참조용) -->
           <span id="sts-cnt-1" style="display:none">0</span>
@@ -1470,10 +1450,43 @@ function render() {
     list.push({ name, rank: r, change: (p === 999 || r === 999) ? 0 : p - r, weight: WEIGHTS[name] || 1.0, best: countryBest[name], avg: countryAvg[name], days: daysR });
   });
 
-  document.getElementById('stat-best-val').innerText = best.r + '위';
-  document.getElementById('stat-best-name').innerText = (FLAGS[best.n] || '') + ' ' + best.n;
-  document.getElementById('stat-worst-val').innerText = worst.r === 0 ? '—' : worst.r + '위';
-  document.getElementById('stat-worst-name').innerText = worst.n ? (FLAGS[worst.n] || '') + ' ' + worst.n : '...';
+  // 점유율 Top5 현재 순위 카드
+  const psTop5Countries = Object.entries(WEIGHTS)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([name, w]) => {
+      const item = list.find(x => x.name === name);
+      return { name, w, rank: item?.rank ?? 999, change: item?.change ?? 0 };
+    });
+  const psTop5El = document.getElementById('ps-top5-rank-list');
+  if (psTop5El) {
+    const totalW = psTop5Countries.reduce((s, x) => s + x.w, 0);
+    psTop5El.innerHTML = psTop5Countries.map(({ name, w, rank, change }) => {
+      const pct = Math.round(w / totalW * 100);
+      const rankColor = rank === 1 ? 'var(--gold)' : rank <= 3 ? '#c0c0c0' : rank <= 10 ? '#4a9eff' : rank < 999 ? 'var(--tx-2)' : 'var(--tx-4)';
+      const rankStr = rank >= 999
+        ? `<span style="color:var(--tx-4);font-size:12px;font-weight:700">순위 밖</span>`
+        : `<span style="color:${rankColor};font-weight:900;font-size:17px;line-height:1">${rank}<span style="font-size:10px;font-weight:700">위</span></span>`;
+      let chgHtml = '';
+      if (change > 0)      chgHtml = `<span style="color:var(--up);font-size:11px;font-weight:800;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px">▲${change}</span>`;
+      else if (change < 0) chgHtml = `<span style="color:var(--down);font-size:11px;font-weight:800;background:rgba(231,76,60,0.12);padding:1px 5px;border-radius:3px">▼${Math.abs(change)}</span>`;
+      else                 chgHtml = `<span style="color:var(--tx-4);font-size:11px;padding:1px 5px">—</span>`;
+      return `<div style="padding:5px 0;border-bottom:1px solid var(--bd)">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          <span style="font-size:15px">${FLAGS[name] || ''}</span>
+          <span style="flex:1;font-size:13px;font-weight:700;color:var(--tx-2)">${name}</span>
+          <span style="min-width:32px;text-align:right">${chgHtml}</span>
+          <span style="min-width:36px;text-align:right">${rankStr}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <div style="flex:1;height:3px;background:var(--bg-4);border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:var(--blood);border-radius:2px;opacity:0.6"></div>
+          </div>
+          <span style="font-size:9px;color:var(--tx-4);font-weight:700;min-width:28px;text-align:right">점유 ${pct}%</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
   // 순위별 국가 수 집계 + 증감
   const cnt1   = list.filter(x => x.rank === 1).length;
   const cnt23  = list.filter(x => x.rank >= 2 && x.rank <= 3).length;
@@ -3341,14 +3354,45 @@ function renderStsTable(lat, prv) {
     n => { const cc = STS_CC[n] || 'us'; return `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`; },
     false
   );
-  // 최고/최하 순위 카드
-  if (ranked.length) {
-    const stsBest  = ranked.reduce((a,b)=>a.rank<b.rank?a:b);
-    const stsWorst = ranked.reduce((a,b)=>a.rank>b.rank?a:b);
-    setT('sts-best-rank-val',  stsBest.rank+'위');
-    setT('sts-best-rank-name', (STS_F[stsBest.name]||'')+' '+stsBest.name);
-    setT('sts-worst-rank-val', stsWorst.rank+'위');
-    setT('sts-worst-rank-name',(STS_F[stsWorst.name]||'')+' '+stsWorst.name);
+  // 점유율 Top5 현재 순위 카드
+  const stsTop5Countries = Object.entries(STS_W)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([name, w]) => {
+      const item = ranked.find(x => x.name === name);
+      const pr = prv?.results?.[name]?.rank ?? null;
+      const r  = lat.results?.[name]?.rank ?? null;
+      const change = (r && pr) ? pr - r : 0;
+      return { name, w, rank: r ?? 999, change };
+    });
+  const stsTop5El = document.getElementById('sts-top5-rank-list');
+  if (stsTop5El) {
+    const totalSW = stsTop5Countries.reduce((s, x) => s + x.w, 0);
+    stsTop5El.innerHTML = stsTop5Countries.map(({ name, w, rank, change }) => {
+      const pct = Math.round(w / totalSW * 100);
+      const rankColor = rank === 1 ? 'var(--gold)' : rank <= 3 ? '#c0c0c0' : rank <= 10 ? '#4a9eff' : rank < 999 ? 'var(--tx-2)' : 'var(--tx-4)';
+      const rankStr = rank >= 999
+        ? `<span style="color:var(--tx-4);font-size:12px;font-weight:700">순위 밖</span>`
+        : `<span style="color:${rankColor};font-weight:900;font-size:17px;line-height:1">${rank}<span style="font-size:10px;font-weight:700">위</span></span>`;
+      let chgHtml = '';
+      if (change > 0)      chgHtml = `<span style="color:var(--up);font-size:11px;font-weight:800;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px">▲${change}</span>`;
+      else if (change < 0) chgHtml = `<span style="color:var(--down);font-size:11px;font-weight:800;background:rgba(231,76,60,0.12);padding:1px 5px;border-radius:3px">▼${Math.abs(change)}</span>`;
+      else                 chgHtml = `<span style="color:var(--tx-4);font-size:11px;padding:1px 5px">—</span>`;
+      return `<div style="padding:5px 0;border-bottom:1px solid var(--bd)">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          <span style="font-size:15px">${STS_F[name] || ''}</span>
+          <span style="flex:1;font-size:13px;font-weight:700;color:var(--tx-2)">${name}</span>
+          <span style="min-width:32px;text-align:right">${chgHtml}</span>
+          <span style="min-width:36px;text-align:right">${rankStr}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <div style="flex:1;height:3px;background:var(--bg-4);border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:var(--steam);border-radius:2px;opacity:0.6"></div>
+          </div>
+          <span style="font-size:9px;color:var(--tx-4);font-weight:700;min-width:28px;text-align:right">점유 ${pct}%</span>
+        </div>
+      </div>`;
+    }).join('');
   }
 
   // 그룹화
