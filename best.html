@@ -1572,9 +1572,14 @@ function render() {
   // 지역별 순위 렌더
   const _psListMap = {};
   list.forEach(x => { _psListMap[x.name] = x; });
+  // 지역별 렌더는 FLAGS 전체 국가 기준 (WEIGHTS 없는 나라는 w=0.1 부여)
+  const psRegionWeightMap = {};
+  Object.keys(FLAGS).forEach(name => {
+    psRegionWeightMap[name] = WEIGHTS[name] || 0.1;
+  });
   renderRegionSummary(
     'ps-region-summary',
-    WEIGHTS,
+    psRegionWeightMap,
     FLAGS,
     name => { const x = _psListMap[name]; return x ? x.rank : 999; },
     name => { const x = _psListMap[name]; return x ? x.change : 0; },
