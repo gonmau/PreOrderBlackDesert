@@ -2747,7 +2747,7 @@ function renderRegionSummary(containerId, weightMap, flagMap, rankGetter, change
     const chartId = containerId + '-reg-chart-' + ri;
 
     return `<div class="reg-section">
-      <div class="reg-header" onclick="toggleRegion('${bodyId}','${arrowId}','${chartId}','${containerId}',${JSON.stringify(reg.countries.map(x=>x.name))})">
+      <div class="reg-header" onclick="toggleRegion('${bodyId}','${arrowId}','${chartId}','${containerId}')">
         <span class="reg-icon">${m.icon}</span>
         <span class="reg-name">${regName}</span>
         <span class="reg-share">점유 ${pct}%</span>
@@ -2795,7 +2795,7 @@ function renderRegionSummary(containerId, weightMap, flagMap, rankGetter, change
   }
 }
 
-function toggleRegion(bodyId, arrowId, chartId, containerId, countryNames) {
+function toggleRegion(bodyId, arrowId, chartId, containerId) {
   const body  = document.getElementById(bodyId);
   const arrow = document.getElementById(arrowId);
   if (!body) return;
