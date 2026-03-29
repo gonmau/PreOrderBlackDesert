@@ -1022,19 +1022,19 @@
       </div>
     </div>
 
-    <!-- 요약 섹션 하단 추가: Top5+한국 일자별 최고순위 차트 -->
+    <!-- 요약 섹션 하단 추가: Top5+한국 일자별 평균순위 차트 -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
       <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--blood);border-radius:var(--radius)">
-        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--blood);letter-spacing:1px;border-bottom:1px solid var(--bd)">📉 PS Store Top5 + 한국 일자별 최고순위</div>
+        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--blood);letter-spacing:1px;border-bottom:1px solid var(--bd)">📉 PS Store Top5 + 한국 일자별 평균순위</div>
         <div style="padding:14px">
-          <div style="font-size:11px;color:var(--tx-4);margin-bottom:10px">각 날짜에서 기록한 최고(최소) 순위를 국가별 라인으로 표시합니다.</div>
+          <div style="font-size:11px;color:var(--tx-4);margin-bottom:10px">각 날짜에서 수집된 스냅샷의 평균 순위를 국가별 라인으로 표시합니다.</div>
           <div style="width:100%;overflow:hidden"><canvas id="summaryPsTop5KrChart" style="display:block"></canvas></div>
         </div>
       </div>
       <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--steam);border-radius:var(--radius)">
-        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--steam);letter-spacing:1px;border-bottom:1px solid var(--bd)">📉 Steam Top5 + 한국 일자별 최고순위</div>
+        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--steam);letter-spacing:1px;border-bottom:1px solid var(--bd)">📉 Steam Top5 + 한국 일자별 평균순위</div>
         <div style="padding:14px">
-          <div style="font-size:11px;color:var(--tx-4);margin-bottom:10px">각 날짜에서 기록한 최고(최소) 순위를 국가별 라인으로 표시합니다.</div>
+          <div style="font-size:11px;color:var(--tx-4);margin-bottom:10px">각 날짜에서 수집된 스냅샷의 평균 순위를 국가별 라인으로 표시합니다.</div>
           <div style="width:100%;overflow:hidden"><canvas id="summaryStTop5KrChart" style="display:block"></canvas></div>
         </div>
       </div>
@@ -2584,13 +2584,13 @@ function buildDailyBestSeries(entries, countries, rankGetter) {
     const dayKey = getKstDayKey(entry.timestamp);
     if (!dayMap[dayKey]) {
       dayMap[dayKey] = {};
-      countries.forEach(name => { dayMap[dayKey][name] = null; });
+      countries.forEach(name => { dayMap[dayKey][name] = { sum: 0, cnt: 0 }; });
     }
     countries.forEach(name => {
       const rank = rankGetter(entry, name);
       if (rank == null || rank >= 999) return;
-      const prev = dayMap[dayKey][name];
-      dayMap[dayKey][name] = prev == null ? rank : Math.min(prev, rank);
+      dayMap[dayKey][name].sum += rank;
+      dayMap[dayKey][name].cnt += 1;
     });
   });
   const dayKeys = Object.keys(dayMap).sort();
@@ -2598,7 +2598,10 @@ function buildDailyBestSeries(entries, countries, rankGetter) {
     labels: dayKeys.map(getDayLabel),
     series: countries.map(name => ({
       name,
-      data: dayKeys.map(dayKey => dayMap[dayKey][name])
+      data: dayKeys.map(dayKey => {
+        const e = dayMap[dayKey][name];
+        return e.cnt > 0 ? Math.round(e.sum / e.cnt) : null;
+      })
     }))
   };
 }
@@ -2800,7 +2803,7 @@ function renderSummaryCharts() {
     });
   }
 
-  // ── PS Top5 + 한국 일자별 최고순위 차트 ──
+  // ── PS Top5 + 한국 일자별 평균순위 차트 ──
   const psTop5KrEl = document.getElementById('summaryPsTop5KrChart');
   if (psTop5KrEl && historyData.length > 0) {
     const countries = getTop5PlusKorea(WEIGHTS);
@@ -2832,7 +2835,7 @@ function renderSummaryCharts() {
     }
   }
 
-  // ── Steam Top5 + 한국 일자별 최고순위 차트 ──
+  // ── Steam Top5 + 한국 일자별 평균순위 차트 ──
   const stTop5KrEl = document.getElementById('summaryStTop5KrChart');
   if (stTop5KrEl && stsHist.length > 0) {
     const countries = getTop5PlusKorea(STS_W);
