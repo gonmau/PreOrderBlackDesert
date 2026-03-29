@@ -2759,7 +2759,7 @@ function renderRegionSummary(containerId, weightMap, flagMap, rankGetter, change
         <span class="reg-avg">${avgStr}</span>
         <span class="reg-arrow" id="${arrowId}">▼</span>
       </div>
-      <div class="reg-body collapsed" id="${bodyId}" style="max-height:1000px">
+      <div class="reg-body collapsed" id="${bodyId}" style="max-height:${reg.countries.length * 52 + 200}px">
         ${countriesHtml}
         <div style="padding:8px 12px 10px 12px;border-top:1px solid var(--bd)">
           <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">지역 평균순위 추이</div>
