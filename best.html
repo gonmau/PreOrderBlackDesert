@@ -1471,10 +1471,11 @@ function render() {
       if (change > 0)      chgHtml = `<span style="color:var(--up);font-size:11px;font-weight:800;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px">▲${change}</span>`;
       else if (change < 0) chgHtml = `<span style="color:var(--down);font-size:11px;font-weight:800;background:rgba(231,76,60,0.12);padding:1px 5px;border-radius:3px">▼${Math.abs(change)}</span>`;
       else                 chgHtml = `<span style="color:var(--tx-4);font-size:11px;padding:1px 5px">—</span>`;
+      const psUrl = getStoreUrl(name);
       return `<div style="padding:5px 0;border-bottom:1px solid var(--bd)">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-          <span style="font-size:15px">${FLAGS[name] || ''}</span>
-          <span style="flex:1;font-size:13px;font-weight:700;color:var(--tx-2)">${name}</span>
+          <span class="flag" style="font-size:15px">${FLAGS[name] || ''}</span>
+          <a href="${psUrl}" target="_blank" style="flex:1;font-size:13px;font-weight:700;color:var(--tx-2);text-decoration:none;display:flex;align-items:center;gap:4px" onmouseover="this.style.color='var(--blood)'" onmouseout="this.style.color='var(--tx-2)'">${name}<span style="font-size:10px;opacity:0.5">🔗</span></a>
           <span style="min-width:32px;text-align:right">${chgHtml}</span>
           <span style="min-width:36px;text-align:right">${rankStr}</span>
         </div>
@@ -3378,10 +3379,11 @@ function renderStsTable(lat, prv) {
       if (change > 0)      chgHtml = `<span style="color:var(--up);font-size:11px;font-weight:800;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px">▲${change}</span>`;
       else if (change < 0) chgHtml = `<span style="color:var(--down);font-size:11px;font-weight:800;background:rgba(231,76,60,0.12);padding:1px 5px;border-radius:3px">▼${Math.abs(change)}</span>`;
       else                 chgHtml = `<span style="color:var(--tx-4);font-size:11px;padding:1px 5px">—</span>`;
+      const stsUrl = `https://store.steampowered.com/charts/topselling/${(STS_CC[name] || 'us').toUpperCase()}`;
       return `<div style="padding:5px 0;border-bottom:1px solid var(--bd)">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-          <span style="font-size:15px">${STS_F[name] || ''}</span>
-          <span style="flex:1;font-size:13px;font-weight:700;color:var(--tx-2)">${name}</span>
+          <span class="flag" style="font-size:15px">${STS_F[name] || ''}</span>
+          <a href="${stsUrl}" target="_blank" style="flex:1;font-size:13px;font-weight:700;color:var(--tx-2);text-decoration:none;display:flex;align-items:center;gap:4px" onmouseover="this.style.color='var(--steam)'" onmouseout="this.style.color='var(--tx-2)'">${name}<span style="font-size:10px;opacity:0.5">🔗</span></a>
           <span style="min-width:32px;text-align:right">${chgHtml}</span>
           <span style="min-width:36px;text-align:right">${rankStr}</span>
         </div>
