@@ -1372,6 +1372,7 @@ const FLAGS = {
 };
 
 let historyData = [];
+let _psCountryBest = {}, _psCountryAvg = {}; // 캐시: loadPsData 시 계산
 let scheduleSlots = [  // fallback: JSON schedule 없을 시 KST 09~19시 사용
   {hour:9},{hour:10},{hour:11},{hour:12},{hour:13},{hour:14},{hour:15},{hour:16},{hour:17},{hour:18},{hour:19}
 ];
@@ -1381,21 +1382,36 @@ let sortKey = 'rank'; let sortAsc = true;
 let mainChart = null; let countryChart = null;
 
 async function loadPsData() {
-  const res = await fetch('./bestseller_history.json?t=' + Date.now());
-  const payload = await res.json();
-  if (Array.isArray(payload)) {
-    historyData = payload;
-  } else {
-    historyData = payload.history || [];
-    if (payload.schedule && Array.isArray(payload.schedule.slots_kst)) {
-      scheduleSlots = payload.schedule.slots_kst.map(h => ({
-        hour: h,
-        label: h < 12 ? 'AM' : 'PM'
-      }));
-      window._scheduleCron = payload.schedule.cron || '';
+  try {
+    const res = await fetch('./bestseller_history.json?t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const payload = await res.json();
+    if (Array.isArray(payload)) {
+      historyData = payload;
+    } else {
+      historyData = payload.history || [];
+      if (payload.schedule && Array.isArray(payload.schedule.slots_kst)) {
+        scheduleSlots = payload.schedule.slots_kst.map(h => ({
+          hour: h,
+          label: h < 12 ? 'AM' : 'PM'
+        }));
+        window._scheduleCron = payload.schedule.cron || '';
+      }
     }
+    // countryBest/Avg 캐시 갱신 (render()에서 매번 전체 순회 방지)
+    _psCountryBest = {}; _psCountryAvg = {};
+    if (historyData.length > 0) {
+      const curr0 = historyData[historyData.length - 1];
+      Object.keys(curr0.raw_results || {}).forEach(name => {
+        const ranks = historyData.map(h => getRank(h, name)).filter(r => r !== 999);
+        _psCountryBest[name] = ranks.length > 0 ? ranks.reduce((m,v) => v < m ? v : m, 999) : 999;
+        _psCountryAvg[name]  = ranks.length > 0 ? ranks.reduce((a,b) => a+b, 0) / ranks.length : 999;
+      });
+    }
+    render();
+  } catch(e) {
+    console.warn('PS data load fail', e);
   }
-  render();
 }
 
 async function init() {
@@ -1463,6 +1479,11 @@ function getStsDaysAtRank(name, currentRank) {
 }
 
 function render() {
+  // 지역 차트 인스턴스 초기화 (데이터 갱신 시 재렌더를 위해)
+  Object.keys(_regCharts).forEach(k => {
+    if (!k.endsWith('_data') && _regCharts[k]?.destroy) _regCharts[k].destroy();
+    delete _regCharts[k];
+  });
   const curr = historyData[historyData.length - 1];
   const prev = historyData.length > 1 ? historyData[historyData.length - 2] : null;
 
@@ -1476,13 +1497,9 @@ function render() {
   let list = [];
   let best = { r: 999, n: '' }; let worst = { r: 0, n: '' };
 
-  // 국가별 best/avg 계산
-  const countryBest = {}; const countryAvg = {};
-  Object.keys(curr.raw_results).forEach(name => {
-    const allRanks = historyData.map(h => getRank(h, name)).filter(r => r !== 999);
-    countryBest[name] = allRanks.length > 0 ? Math.min(...allRanks) : 999;
-    countryAvg[name] = allRanks.length > 0 ? (allRanks.reduce((a,b)=>a+b,0) / allRanks.length) : 999;
-  });
+  // 국가별 best/avg — loadPsData에서 미리 계산된 캐시 사용
+  const countryBest = _psCountryBest;
+  const countryAvg  = _psCountryAvg;
 
   Object.keys(curr.raw_results).forEach(name => {
     const r = getRank(curr, name);
@@ -1557,9 +1574,6 @@ function render() {
   document.getElementById('stat-cnt-3').innerHTML  = cnt23 + makeChgBadge(g23items);
   document.getElementById('stat-cnt-10').innerHTML = cnt410+ makeChgBadge(g10items);
   document.getElementById('stat-cnt-rest').innerText = cntRest + '개 / ' + cntAll + '개국';
-  // 1위 국가명
-  const rank1Countries = list.filter(x => x.rank === 1).map(x => x.name);
-  const namesEl = document.getElementById('stat-cnt-1-names');
   // 요약 순위별 전체 국가 그룹 렌더
   renderSummaryRankGroups(
     list,
@@ -1659,7 +1673,7 @@ function render() {
   renderPsHeatmap(list);
 
   // 모든 이모지를 Twemoji 이미지로 변환 (PC/모바일 크로스 플랫폼)
-  twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
+  // twemoji는 각 섹션 렌더 후 개별 호출하여 전체 body 재파싱 방지
 }
 
 function renderPsTable(list) {
@@ -1851,7 +1865,7 @@ function downloadCSV() {
   Object.keys(curr.raw_results).forEach(name => {
     const r = getRank(curr, name);
     const allRanks = historyData.map(h => getRank(h, name)).filter(v => v !== 999);
-    const bestR = allRanks.length > 0 ? Math.min(...allRanks) : null;
+    const bestR = allRanks.length > 0 ? allRanks.reduce((m, v) => v < m ? v : m, Infinity) : null;
     const avgR = allRanks.length > 0 ? (allRanks.reduce((a,b)=>a+b,0)/allRanks.length) : null;
     rows.push({ name, rank: r, best: bestR, avg: avgR, url: getStoreUrl(name) });
   });
@@ -2030,8 +2044,6 @@ function switchTab(tabEl) {
 }
 
 /* ── stToggle: collapsible helper ── */
-
-/* ── stToggle: collapsible helper ── */
 function stToggle(bodyId, headerEl) {
   const body = document.getElementById(bodyId);
   if (!body) return;
@@ -2101,7 +2113,7 @@ function openStsModal(n) {
   if (!h.length) {
     ['sts-modal-current','sts-modal-best','sts-modal-avg'].forEach(id => document.getElementById(id).textContent = '—');
   } else {
-    const cur = h[h.length-1].r, best = Math.min(...h.map(x=>x.r)), avg = Math.round(h.reduce((s,x)=>s+x.r,0)/h.length*10)/10;
+    const cur = h[h.length-1].r, best = h.reduce((m,x) => x.r < m ? x.r : m, Infinity), avg = Math.round(h.reduce((s,x)=>s+x.r,0)/h.length*10)/10;
     document.getElementById('sts-modal-current').textContent = cur + '위';
     document.getElementById('sts-modal-best').textContent    = best + '위';
     document.getElementById('sts-modal-avg').textContent     = avg + '위';
@@ -3481,7 +3493,7 @@ function renderSTS() {
   renderStsHeatmap(lat, prv);
   renderStsLeaderboard(lat, prv);
   // PS+Steam 데이터 모두 로드 후 차트 렌더
-  if (historyData.length > 0) setTimeout(renderSummaryCharts, 150);
+  if (historyData.length > 0 && document.getElementById('sec-summary')?.classList.contains('active-section')) setTimeout(renderSummaryCharts, 150);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -3643,9 +3655,6 @@ function renderStsTable(lat, prv) {
   setTH('sts-cnt-10', _cnt410,ranked.filter(d=>d.rank>=4&&d.rank<=10));
   const setT = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
   setT('sts-cnt-rest', _cntRest+'개 / '+ranked.length+'개국');
-  // 1위 국가명
-  const stsRank1Names = ranked.filter(d=>d.rank===1).map(d=>d.name);
-  const stsNamesEl = document.getElementById('sts-cnt-1-names');
   // Steam 요약 순위별 전체 국가 그룹 렌더
   const stsListForSum = Object.keys(STS_W).map(n => ({
     name: n,
