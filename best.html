@@ -1578,7 +1578,9 @@ function render() {
     FLAGS,
     name => { const x = _psListMap[name]; return x ? x.rank : 999; },
     name => { const x = _psListMap[name]; return x ? x.change : 0; },
-    'var(--blood)'
+    'var(--blood)',
+    historyData,
+    (entry, name) => getRank(entry, name)
   );
 
   // 리더보드 PS - 순위별 그룹
@@ -2630,28 +2632,49 @@ let summaryPsTop5KrCI = null, summaryStTop5KrCI = null;
 
 /* ── 지역 매핑 & 지역별 순위 렌더 ── */
 const PS_REGION = {
-  '미국':'북미', '캐나다':'북미',
+  // 북미
+  '미국':'북미', '캐나다':'북미', '멕시코':'북미',
+  // 중남미
+  '브라질':'중남미', '아르헨티나':'중남미', '칠레':'중남미', '콜롬비아':'중남미',
+  '페루':'중남미', '우루과이':'중남미', '볼리비아':'중남미', '에콰도르':'중남미',
+  '파라과이':'중남미', '과테말라':'중남미', '온두라스':'중남미', '코스타리카':'중남미',
+  '엘살바도르':'중남미', '니카라과':'중남미', '파나마':'중남미',
+  // 유럽
   '영국':'유럽', '독일':'유럽', '프랑스':'유럽', '스페인':'유럽',
   '이탈리아':'유럽', '네덜란드':'유럽', '스웨덴':'유럽', '노르웨이':'유럽',
   '덴마크':'유럽', '핀란드':'유럽', '오스트리아':'유럽', '스위스':'유럽',
-  '벨기에':'유럽', '폴란드':'유럽', '체코':'유럽',
+  '벨기에':'유럽', '폴란드':'유럽', '체코':'유럽', '포르투갈':'유럽',
+  '그리스':'유럽', '헝가리':'유럽', '루마니아':'유럽', '슬로바키아':'유럽',
+  '슬로베니아':'유럽', '크로아티아':'유럽', '불가리아':'유럽', '우크라이나':'유럽',
+  '아이슬란드':'유럽', '아일랜드':'유럽', '룩셈부르크':'유럽', '몰타':'유럽',
+  '키프로스':'유럽',
+  // 중동/아프리카
+  '터키':'중동/아프리카', '사우디아라비아':'중동/아프리카', '아랍에미리트':'중동/아프리카',
+  '이스라엘':'중동/아프리카', '쿠웨이트':'중동/아프리카', '레바논':'중동/아프리카',
+  '오만':'중동/아프리카', '카타르':'중동/아프리카', '바레인':'중동/아프리카',
+  '남아공':'중동/아프리카',
+  // 아시아
   '일본':'아시아', '한국':'아시아', '중국':'아시아', '홍콩':'아시아',
-  '대만':'아시아', '싱가포르':'아시아', '태국':'아시아',
+  '대만':'아시아', '싱가포르':'아시아', '태국':'아시아', '인도':'아시아',
+  '말레이시아':'아시아', '인도네시아':'아시아', '필리핀':'아시아', '베트남':'아시아',
+  // 오세아니아
   '호주':'오세아니아', '뉴질랜드':'오세아니아',
-  '브라질':'남미', '터키':'중동/기타',
 };
 const STS_REGION = PS_REGION; // 동일 매핑 재사용
 
 const REGION_META = {
-  '북미':      { icon: '🌎', color: '#ff4757' },
-  '유럽':      { icon: '🌍', color: '#4a9eff' },
-  '아시아':    { icon: '🌏', color: '#f1c40f' },
-  '오세아니아':{ icon: '🌏', color: '#2ecc71' },
-  '남미':      { icon: '🌎', color: '#ff9f43' },
-  '중동/기타': { icon: '🌐', color: '#a55eea' },
+  '북미':        { icon: '🌎', color: '#ff4757' },
+  '중남미':      { icon: '🌎', color: '#ff9f43' },
+  '유럽':        { icon: '🌍', color: '#4a9eff' },
+  '아시아':      { icon: '🌏', color: '#f1c40f' },
+  '오세아니아':  { icon: '🌏', color: '#2ecc71' },
+  '중동/아프리카':{ icon: '🌍', color: '#a55eea' },
 };
 
-function renderRegionSummary(containerId, weightMap, flagMap, rankGetter, changeGetter, accentColor) {
+/* 지역별 차트 인스턴스 저장 */
+const _regCharts = {};
+
+function renderRegionSummary(containerId, weightMap, flagMap, rankGetter, changeGetter, accentColor, histEntries, histRankGetter) {
   const el = document.getElementById(containerId);
   if (!el) return;
 
@@ -2721,27 +2744,129 @@ function renderRegionSummary(containerId, weightMap, flagMap, rankGetter, change
       </div>`;
     }).join('');
 
+    const chartId = containerId + '-reg-chart-' + ri;
+
     return `<div class="reg-section">
-      <div class="reg-header" onclick="toggleRegion('${bodyId}','${arrowId}')">
+      <div class="reg-header" onclick="toggleRegion('${bodyId}','${arrowId}','${chartId}','${containerId}',${JSON.stringify(reg.countries.map(x=>x.name))})">
         <span class="reg-icon">${m.icon}</span>
         <span class="reg-name">${regName}</span>
         <span class="reg-share">점유 ${pct}%</span>
         <span class="reg-avg">${avgStr}</span>
         <span class="reg-arrow" id="${arrowId}">▼</span>
       </div>
-      <div class="reg-body collapsed" id="${bodyId}" style="max-height:600px">
+      <div class="reg-body collapsed" id="${bodyId}" style="max-height:1000px">
         ${countriesHtml}
+        <div style="padding:8px 12px 10px 12px;border-top:1px solid var(--bd)">
+          <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">지역 평균순위 추이</div>
+          <div style="width:100%;overflow:hidden"><canvas id="${chartId}" height="110" style="display:block;width:100%"></canvas></div>
+        </div>
       </div>
     </div>`;
   }).join('') + '</div>';
+
+  // 히스토리 기반 지역별 시계열 미리 계산해서 저장
+  if (histEntries && histRankGetter) {
+    const RMAP2 = containerId.startsWith('ps') ? PS_REGION : STS_REGION;
+    // dayKey → { regionName → {ws,wt} }
+    const dayRegMap = {};
+    histEntries.forEach(entry => {
+      const dk = getKstDayKey(entry.timestamp);
+      if (!dayRegMap[dk]) dayRegMap[dk] = {};
+      Object.entries(weightMap).forEach(([name, w]) => {
+        const reg = RMAP2[name] || '기타';
+        const r   = histRankGetter(entry, name);
+        if (r == null || r >= 999) return;
+        if (!dayRegMap[dk][reg]) dayRegMap[dk][reg] = { ws: 0, wt: 0 };
+        dayRegMap[dk][reg].ws += r * w;
+        dayRegMap[dk][reg].wt += w;
+      });
+    });
+    const dayKeys = Object.keys(dayRegMap).sort();
+    const labels  = dayKeys.map(getDayLabel);
+    // 각 region 데이터 저장
+    sortedRegions.forEach(([regName], ri2) => {
+      const chartId2 = containerId + '-reg-chart-' + ri2;
+      const data = dayKeys.map(dk => {
+        const e = dayRegMap[dk]?.[regName];
+        return (e && e.wt > 0) ? Math.round(e.ws / e.wt * 10) / 10 : null;
+      });
+      _regCharts[chartId2 + '_data'] = { labels, data };
+    });
+  }
 }
 
-function toggleRegion(bodyId, arrowId) {
+function toggleRegion(bodyId, arrowId, chartId, containerId, countryNames) {
   const body  = document.getElementById(bodyId);
   const arrow = document.getElementById(arrowId);
   if (!body) return;
   const collapsed = body.classList.toggle('collapsed');
   if (arrow) arrow.classList.toggle('open', !collapsed);
+
+  // 펼칠 때 차트 렌더
+  if (!collapsed && chartId) {
+    const canvasEl = document.getElementById(chartId);
+    if (!canvasEl) return;
+
+    // 이미 렌더된 경우 skip
+    if (_regCharts[chartId]) return;
+
+    const cached = _regCharts[chartId + '_data'];
+    if (!cached || !cached.labels.length) return;
+
+    const { labels, data } = cached;
+    const isPs = containerId.startsWith('ps');
+    const lineColor = isPs ? '#ff4757' : '#4a9eff';
+
+    canvasEl.width  = canvasEl.parentElement.offsetWidth || 400;
+    canvasEl.height = 110;
+
+    _regCharts[chartId] = new Chart(canvasEl.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          borderColor: lineColor,
+          backgroundColor: lineColor === '#ff4757' ? 'rgba(255,71,87,0.08)' : 'rgba(74,158,255,0.08)',
+          borderWidth: 2,
+          pointRadius: data.map((v, i) => (i === 0 || i === data.length - 1) ? 4 : 0),
+          pointBackgroundColor: lineColor,
+          fill: true,
+          tension: 0.3,
+          spanGaps: true
+        }]
+      },
+      options: {
+        responsive: false,
+        animation: false,
+        layout: { padding: { top: 6, right: 4 } },
+        scales: {
+          x: {
+            ticks: { color: '#777', maxTicksLimit: 10, font: { size: 9 } },
+            grid: { color: '#1a1a1a' }
+          },
+          y: {
+            reverse: true,
+            suggestedMin: 1,
+            ticks: {
+              color: '#777',
+              font: { size: 9 },
+              callback: v => v > 0 ? v + '위' : ''
+            },
+            grid: { color: '#1a1a1a' }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` 평균 ${ctx.parsed.y}위`
+            }
+          }
+        }
+      }
+    });
+  }
 }
 
 function getTop5PlusKorea(weightMap) {
@@ -3536,7 +3661,9 @@ function renderStsTable(lat, prv) {
     STS_F,
     name => lat.results?.[name]?.rank ?? 999,
     name => { const r = lat.results?.[name]?.rank; const p = prv?.results?.[name]?.rank; return (r && p) ? p - r : 0; },
-    'var(--steam)'
+    'var(--steam)',
+    stsHist,
+    (entry, name) => entry.results?.[name]?.rank ?? null
   );
 
   // 점유율 Top5 현재 순위 카드
