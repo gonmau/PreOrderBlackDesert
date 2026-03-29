@@ -834,6 +834,39 @@
   .sum-rank-body  { overflow: hidden; transition: max-height 0.3s ease; }
   .sum-rank-body.collapsed { max-height: 0 !important; }
   .sum-rank-grid  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px 14px 12px; }
+
+  /* 지역별 순위 */
+  .reg-wrap { background: var(--bg-1); border: 1px solid var(--bd); border-radius: var(--radius); overflow: hidden; }
+  .reg-section { border-bottom: 1px solid var(--bd); }
+  .reg-section:last-child { border-bottom: none; }
+  .reg-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; cursor: pointer;
+    background: var(--bg-2); transition: background var(--trans); user-select: none;
+  }
+  .reg-header:hover { background: var(--bg-3); }
+  .reg-icon  { font-size: 14px; }
+  .reg-name  { font-size: 13px; font-weight: 800; flex: 1; color: var(--tx-2); letter-spacing: 0.5px; }
+  .reg-avg   { font-size: 15px; font-weight: 900; min-width: 36px; text-align: right; }
+  .reg-share { font-size: 10px; color: var(--tx-4); font-weight: 700; min-width: 42px; text-align: right; }
+  .reg-arrow { font-size: 11px; color: var(--tx-4); transition: transform 0.2s; margin-left: 4px; }
+  .reg-arrow.open { transform: rotate(180deg); }
+  .reg-body  { overflow: hidden; transition: max-height 0.3s ease; }
+  .reg-body.collapsed { max-height: 0 !important; }
+  .reg-country-row {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 12px 4px 28px;
+    border-bottom: 1px solid var(--bd);
+    font-size: 12px;
+  }
+  .reg-country-row:last-child { border-bottom: none; }
+  .reg-c-flag { font-size: 13px; font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif; }
+  .reg-c-name { flex: 1; color: var(--tx-3); font-weight: 600; }
+  .reg-c-share { font-size: 10px; color: var(--tx-4); min-width: 32px; text-align: right; }
+  .reg-c-rank { font-weight: 800; min-width: 32px; text-align: right; }
+  .reg-c-chg  { font-size: 10px; min-width: 24px; text-align: right; }
+  .reg-bar-wrap { height: 2px; background: var(--bg-4); border-radius: 1px; overflow: hidden; margin: 0 12px 5px 28px; }
+  .reg-bar-fill { height: 100%; border-radius: 1px; opacity: 0.5; }
 </style>
 </head>
 <body>
@@ -999,6 +1032,18 @@
             <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#555;border-radius:2px;display:inline-block"></span>11위+</span>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- 지역별 순위 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+      <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--blood);border-radius:var(--radius)">
+        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--blood);letter-spacing:1px;border-bottom:1px solid var(--bd)">🌏 PS Store 지역별 평균 순위</div>
+        <div id="ps-region-summary" style="padding:8px"></div>
+      </div>
+      <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--steam);border-radius:var(--radius)">
+        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--steam);letter-spacing:1px;border-bottom:1px solid var(--bd)">🌏 Steam 지역별 평균 순위</div>
+        <div id="sts-region-summary" style="padding:8px"></div>
       </div>
     </div>
 
@@ -1522,6 +1567,18 @@ function render() {
     n => FLAGS[n] || '',
     n => getStoreUrl(n),
     true
+  );
+
+  // 지역별 순위 렌더
+  const _psListMap = {};
+  list.forEach(x => { _psListMap[x.name] = x; });
+  renderRegionSummary(
+    'ps-region-summary',
+    WEIGHTS,
+    FLAGS,
+    name => { const x = _psListMap[name]; return x ? x.rank : 999; },
+    name => { const x = _psListMap[name]; return x ? x.change : 0; },
+    'var(--blood)'
   );
 
   // 리더보드 PS - 순위별 그룹
@@ -2571,6 +2628,122 @@ function renderSalesChart() {
 let summaryPsCI = null, summaryStCI = null;
 let summaryPsTop5KrCI = null, summaryStTop5KrCI = null;
 
+/* ── 지역 매핑 & 지역별 순위 렌더 ── */
+const PS_REGION = {
+  '미국':'북미', '캐나다':'북미',
+  '영국':'유럽', '독일':'유럽', '프랑스':'유럽', '스페인':'유럽',
+  '이탈리아':'유럽', '네덜란드':'유럽', '스웨덴':'유럽', '노르웨이':'유럽',
+  '덴마크':'유럽', '핀란드':'유럽', '오스트리아':'유럽', '스위스':'유럽',
+  '벨기에':'유럽', '폴란드':'유럽', '체코':'유럽',
+  '일본':'아시아', '한국':'아시아', '중국':'아시아', '홍콩':'아시아',
+  '대만':'아시아', '싱가포르':'아시아', '태국':'아시아',
+  '호주':'오세아니아', '뉴질랜드':'오세아니아',
+  '브라질':'남미', '터키':'중동/기타',
+};
+const STS_REGION = PS_REGION; // 동일 매핑 재사용
+
+const REGION_META = {
+  '북미':      { icon: '🌎', color: '#ff4757' },
+  '유럽':      { icon: '🌍', color: '#4a9eff' },
+  '아시아':    { icon: '🌏', color: '#f1c40f' },
+  '오세아니아':{ icon: '🌏', color: '#2ecc71' },
+  '남미':      { icon: '🌎', color: '#ff9f43' },
+  '중동/기타': { icon: '🌐', color: '#a55eea' },
+};
+
+function renderRegionSummary(containerId, weightMap, flagMap, rankGetter, changeGetter, accentColor) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+
+  const totalW = Object.values(weightMap).reduce((s, w) => s + w, 0);
+  const RMAP = containerId.startsWith('ps') ? PS_REGION : STS_REGION;
+
+  // 지역별 집계
+  const regions = {};
+  Object.entries(weightMap).forEach(([name, w]) => {
+    const reg = RMAP[name] || '기타';
+    if (!regions[reg]) regions[reg] = { countries: [], totalW: 0 };
+    const rank   = rankGetter(name);
+    const change = changeGetter(name);
+    regions[reg].countries.push({ name, w, rank, change });
+    regions[reg].totalW += w;
+  });
+
+  // 지역 내 국가: 점유율(w) 내림차순 정렬
+  Object.values(regions).forEach(reg => {
+    reg.countries.sort((a, b) => b.w - a.w);
+  });
+
+  // 지역 가중 평균 순위 계산 (순위 밖 제외)
+  Object.values(regions).forEach(reg => {
+    const ranked = reg.countries.filter(x => x.rank < 999);
+    if (!ranked.length) { reg.avg = null; return; }
+    let ws = 0, wt = 0;
+    ranked.forEach(x => { ws += x.rank * x.w; wt += x.w; });
+    reg.avg = ws / wt;
+  });
+
+  // 지역: 점유율(totalW) 내림차순 정렬
+  const sortedRegions = Object.entries(regions)
+    .sort((a, b) => b[1].totalW - a[1].totalW);
+
+  const meta = REGION_META;
+
+  el.innerHTML = '<div class="reg-wrap">' + sortedRegions.map(([regName, reg], ri) => {
+    const pct    = Math.round(reg.totalW / totalW * 100);
+    const avgStr = reg.avg != null
+      ? `<span style="color:${accentColor}">${reg.avg.toFixed(1)}위</span>`
+      : `<span style="color:var(--tx-4)">—</span>`;
+    const m = meta[regName] || { icon: '🌐', color: '#888' };
+    const bodyId = containerId + '-reg-body-' + ri;
+    const arrowId = containerId + '-reg-arrow-' + ri;
+
+    const countriesHtml = reg.countries.map(({ name, w, rank, change }) => {
+      const cPct = Math.round(w / totalW * 100);
+      const cPctReg = Math.round(w / reg.totalW * 100);
+      const rankColor = rank === 1 ? 'var(--gold)' : rank <= 3 ? '#c0c0c0' : rank <= 10 ? 'var(--steam)' : rank < 999 ? 'var(--tx-2)' : 'var(--tx-4)';
+      const rankTxt = rank < 999 ? `<span style="color:${rankColor}">${rank}위</span>` : `<span style="color:var(--tx-4)">-</span>`;
+      let chgTxt = '';
+      if (change > 0)      chgTxt = `<span style="color:var(--up)">▲${change}</span>`;
+      else if (change < 0) chgTxt = `<span style="color:var(--down)">▼${Math.abs(change)}</span>`;
+      else                 chgTxt = `<span style="color:var(--tx-4)">—</span>`;
+      return `<div>
+        <div class="reg-country-row">
+          <span class="reg-c-flag">${flagMap[name] || ''}</span>
+          <span class="reg-c-name">${name}</span>
+          <span class="reg-c-share">W:${cPct}%</span>
+          <span class="reg-c-rank">${rankTxt}</span>
+          <span class="reg-c-chg">${chgTxt}</span>
+        </div>
+        <div class="reg-bar-wrap">
+          <div class="reg-bar-fill" style="width:${cPctReg}%;background:${m.color}"></div>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div class="reg-section">
+      <div class="reg-header" onclick="toggleRegion('${bodyId}','${arrowId}')">
+        <span class="reg-icon">${m.icon}</span>
+        <span class="reg-name">${regName}</span>
+        <span class="reg-share">점유 ${pct}%</span>
+        <span class="reg-avg">${avgStr}</span>
+        <span class="reg-arrow" id="${arrowId}">▼</span>
+      </div>
+      <div class="reg-body collapsed" id="${bodyId}" style="max-height:600px">
+        ${countriesHtml}
+      </div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+function toggleRegion(bodyId, arrowId) {
+  const body  = document.getElementById(bodyId);
+  const arrow = document.getElementById(arrowId);
+  if (!body) return;
+  const collapsed = body.classList.toggle('collapsed');
+  if (arrow) arrow.classList.toggle('open', !collapsed);
+}
+
 function getTop5PlusKorea(weightMap) {
   const top5 = Object.entries(weightMap || {})
     .sort((a, b) => (b[1] || 0) - (a[1] || 0))
@@ -3355,6 +3528,17 @@ function renderStsTable(lat, prv) {
     n => { const cc = STS_CC[n] || 'us'; return `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`; },
     false
   );
+
+  // 지역별 순위 렌더
+  renderRegionSummary(
+    'sts-region-summary',
+    STS_W,
+    STS_F,
+    name => lat.results?.[name]?.rank ?? 999,
+    name => { const r = lat.results?.[name]?.rank; const p = prv?.results?.[name]?.rank; return (r && p) ? p - r : 0; },
+    'var(--steam)'
+  );
+
   // 점유율 Top5 현재 순위 카드
   const stsTop5Countries = Object.entries(STS_W)
     .sort((a, b) => b[1] - a[1])
