@@ -3241,8 +3241,8 @@ function renderSummaryRankGroups(list, containerId, flagFn, urlFn, isPsFlag) {
       }
       const spark = makeSparkline(histRanks, sparkColor);
 
-      const _chartFn = isPsFlag ? `showCountryChart('${x.name}')` : `openStsModal('${x.name}')`;
-      return `<div class="hm-row${r ? '' : ' hm-notfound'}" onclick="${_chartFn}">`
+      const _onclick = isPsFlag ? `showCountryChart('${x.name}')` : `openStsModal('${x.name}')`;
+      return `<div class="hm-row${r ? '' : ' hm-notfound'}" onclick="${_onclick}">
         <div class="hm-bar ${barCls}"></div>
         <div class="hm-info">
           <div class="hm-name">
