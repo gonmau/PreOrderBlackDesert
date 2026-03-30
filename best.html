@@ -1627,7 +1627,7 @@ function render() {
         const ch = psChangeMap[n] || 0;
         const chTxt = ch > 0 ? `<span style="font-size:9px;color:var(--up);font-weight:800">▲${ch}</span>`
                     : ch < 0 ? `<span style="font-size:9px;color:var(--down);font-weight:800">▼${Math.abs(ch)}</span>` : '';
-        return `<div class="top10-item ${tc}" onclick="showCountryChart('${n}')"><span class="n">${FLAGS[n]||''} ${n}${starBadge(n, true)}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank >= 9999 ? '—' : rank + '위' + (psChangeMap ? (() => { const d = getDaysAtRank(n, rank); return d>1?`(${d}d)`:''; })() : '')}${chTxt}</span></div>`;
+        return `<div class="top10-item ${tc}" onclick="showCountryChart('${n}')"><span class="n">${FLAGS[n]||''} <a href="${getStoreUrl(n)}" target="_blank" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${n}</a>${starBadge(n, true)}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank >= 9999 ? '—' : rank + '위' + (psChangeMap ? (() => { const d = getDaysAtRank(n, rank); return d>1?`(${d}d)`:''; })() : '')}${chTxt}</span></div>`;
       }).join('');
       return `<div>
         <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
@@ -3837,7 +3837,8 @@ function renderStsLeaderboard(lat, prv) {
       const chTxt = ch > 0 ? `<span style="font-size:9px;color:var(--up);font-weight:800">▲${ch}</span>`
                   : ch < 0 ? `<span style="font-size:9px;color:var(--down);font-weight:800">▼${Math.abs(ch)}</span>` : '';
       const dSts = getStsDaysAtRank(n, rank<9999?rank:0);
-      return `<div class="top10-item ${tc}" onclick="openStsModal('${n}')"><span class="n">${flag} ${n}${starBadge(n, false)}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank>=9999?'—':rank+'위'+(dSts>1?`(${dSts}d)`:'')}${chTxt}</span></div>`;
+      const _stsUrl = `https://store.steampowered.com/charts/topselling/${(STS_CC[n]||'us').toUpperCase()}`;
+      return `<div class="top10-item ${tc}" onclick="openStsModal('${n}')"><span class="n">${flag} <a href="${_stsUrl}" target="_blank" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${n}</a>${starBadge(n, false)}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank>=9999?'—':rank+'위'+(dSts>1?`(${dSts}d)`:'')}${chTxt}</span></div>`;
     }).join('');
     return `<div>
       <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
