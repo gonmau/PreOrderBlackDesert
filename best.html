@@ -901,10 +901,8 @@
 <div class="nav-bar" id="nav-bar">
   <div class="nav-group">
     <span class="nav-tab dual-tab active" data-section="sec-summary"    onclick="switchTab(this)">📊 요약</span>
-    <span class="nav-tab dual-tab"        data-section="sec-leaderboard" onclick="switchTab(this)">🏆 리더보드</span>
     <span class="nav-tab dual-tab"        data-section="sec-sched"       onclick="switchTab(this)">⏱ 스케줄</span>
     <span class="nav-tab dual-tab"        data-section="sec-sales"       onclick="switchTab(this)">💰 판매량</span>
-    <span class="nav-tab dual-tab"        data-section="sec-heatmap"     onclick="switchTab(this)">🔥 히트맵</span>
     <span class="nav-tab dual-tab"        data-section="sec-table"       onclick="switchTab(this)">🌍 국가별</span>
   </div>
 </div>
@@ -946,9 +944,9 @@
           <span id="stat-cnt-3" style="display:none">0</span>
           <span id="stat-cnt-10" style="display:none">0</span>
           <span id="stat-cnt-rest" style="display:none">0</span>
-          <!-- 순위별 전체 국가 목록 -->
-          <div class="card" style="grid-column:1/-1;padding:0">
-            <div id="ps-summary-rank-groups"></div>
+          <!-- 순위별 국가 목록 (리더보드 통합) -->
+          <div class="card" style="grid-column:1/-1;padding:8px">
+            <div id="lb-ps-container"></div>
           </div>
 
         </div>
@@ -977,9 +975,9 @@
           <span id="sts-cnt-3" style="display:none">0</span>
           <span id="sts-cnt-10" style="display:none">0</span>
           <span id="sts-cnt-rest" style="display:none">0</span>
-          <!-- 순위별 전체 국가 목록 -->
-          <div class="card" style="border-left-color:var(--steam);grid-column:1/-1;padding:0">
-            <div id="sts-summary-rank-groups"></div>
+          <!-- 순위별 국가 목록 (리더보드 통합) -->
+          <div class="card" style="border-left-color:var(--steam);grid-column:1/-1;padding:8px">
+            <div id="lb-sts-container"></div>
           </div>
 
         </div>
@@ -1066,19 +1064,7 @@
     </div>
   </div><!-- /sec-summary -->
 
-  <!-- ② 리더보드 -->
-  <div id="sec-leaderboard" class="tab-section">
-    <div class="dual-wrap">
-      <div class="dual-col ps-col">
-        <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span class="ps-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
-        <div class="dual-col-body"><div id="lb-ps-container" style="padding:8px"></div></div>
-      </div>
-      <div class="dual-col steam-col">
-        <div class="dual-col-header steam-header">🖥 Steam <a href="https://steamdb.info/app/3321460/charts/" target="_blank" style="font-size:13px;color:var(--steam);opacity:0.7;margin-left:auto;text-decoration:none;font-weight:700;letter-spacing:0;text-transform:none;flex-shrink:0;padding:2px 6px;border:1px solid rgba(74,158,255,0.3);border-radius:4px;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">SteamDB ↗</a><span class="sts-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
-        <div class="dual-col-body"><div id="lb-sts-container" style="padding:8px"></div></div>
-      </div>
-    </div>
-  </div><!-- /sec-leaderboard -->
+
 
   <!-- ③ 스케줄 -->
   <div id="sec-sched" class="tab-section">
@@ -1182,9 +1168,15 @@
     </div>
   </div><!-- /sec-sales -->
 
-  <!-- ⑤ 히트맵 -->
-  <div id="sec-heatmap" class="tab-section">
-    <div class="dual-wrap">
+  <!-- ④ 국가별 (히트맵 통합) -->
+  <div id="sec-table" class="tab-section">
+    <!-- 서브탭 -->
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--bd);margin-bottom:12px;background:var(--bg-1);border-radius:var(--radius) var(--radius) 0 0;overflow:hidden">
+      <button id="subtab-heatmap" onclick="switchSubTab('heatmap')" style="flex:1;padding:9px 0;font-size:13px;font-weight:800;letter-spacing:0.5px;background:var(--blood);color:#fff;border:none;cursor:pointer;transition:all 0.15s">🔥 히트맵</button>
+      <button id="subtab-table"   onclick="switchSubTab('table')"   style="flex:1;padding:9px 0;font-size:13px;font-weight:800;letter-spacing:0.5px;background:var(--bg-2);color:var(--tx-3);border:none;cursor:pointer;transition:all 0.15s">📋 테이블</button>
+    </div>
+    <!-- 히트맵 뷰 -->
+    <div id="subtab-view-heatmap" class="dual-wrap">
       <div class="dual-col ps-col">
         <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span class="ps-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div class="heatmap-legend">
@@ -1206,11 +1198,8 @@
         <div class="heatmap-grid" id="sts-heatmap-grid"></div></div>
       </div>
     </div>
-  </div><!-- /sec-heatmap -->
-
-  <!-- ⑥ 국가별 -->
-  <div id="sec-table" class="tab-section">
-    <div class="dual-wrap">
+    <!-- 테이블 뷰 -->
+    <div id="subtab-view-table" class="dual-wrap" style="display:none">
       <div class="dual-col ps-col">
         <div class="dual-col-header ps-header">🎮 PS Store
           <span class="ps-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span>
@@ -1223,7 +1212,6 @@
           <span class="sts-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span>
           <button class="steam-ts-dl-btn" style="font-size:10px;padding:4px 10px;margin-left:8px" onclick="downloadSteamCSV()">📥 CSV</button>
         </div>
-        <!-- 숨김 원소들 유지 -->
         <div style="display:none">
           <span id="sts-cs-avg"></span><span id="sts-cs-avg-sub"></span>
           <span id="sts-cs-best-flag"></span><span id="sts-cs-best-name"></span>
@@ -1577,7 +1565,7 @@ function render() {
   // 요약 순위별 전체 국가 그룹 렌더
   renderSummaryRankGroups(
     list,
-    'ps-summary-rank-groups',
+    'lb-ps-container',
     n => FLAGS[n] || '',
     n => getStoreUrl(n),
     true
@@ -2041,6 +2029,26 @@ function switchTab(tabEl) {
     }, 50);
   });
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ── 서브탭 (국가별 탭 내 히트맵/테이블 전환) ── */
+function switchSubTab(view) {
+  const heatmap = document.getElementById('subtab-view-heatmap');
+  const table   = document.getElementById('subtab-view-table');
+  const btnHm   = document.getElementById('subtab-heatmap');
+  const btnTbl  = document.getElementById('subtab-table');
+  if (!heatmap || !table) return;
+  if (view === 'heatmap') {
+    heatmap.style.display = '';
+    table.style.display   = 'none';
+    if (btnHm)  { btnHm.style.background  = 'var(--blood)'; btnHm.style.color  = '#fff'; }
+    if (btnTbl) { btnTbl.style.background = 'var(--bg-2)';  btnTbl.style.color = 'var(--tx-3)'; }
+  } else {
+    heatmap.style.display = 'none';
+    table.style.display   = '';
+    if (btnTbl) { btnTbl.style.background = 'var(--steam)'; btnTbl.style.color  = '#fff'; }
+    if (btnHm)  { btnHm.style.background  = 'var(--bg-2)';  btnHm.style.color   = 'var(--tx-3)'; }
+  }
 }
 
 /* ── stToggle: collapsible helper ── */
@@ -3663,7 +3671,7 @@ function renderStsTable(lat, prv) {
   }));
   renderSummaryRankGroups(
     stsListForSum,
-    'sts-summary-rank-groups',
+    'lb-sts-container',
     n => STS_F[n] || '',
     n => { const cc = STS_CC[n] || 'us'; return `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`; },
     false
