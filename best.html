@@ -1160,9 +1160,35 @@
             <span id="sales-chart-mode-lbl" style="font-size:11px;font-weight:800;padding:1px 7px;border-radius:3px;background:var(--bg-3);color:var(--tx-3)"></span>
           </div>
           <div style="height:220px;margin-bottom:16px"><canvas id="salesDailyChart"></canvas></div>
+          <!-- 외부 추정치 입력 -->
+          <div style="background:var(--bg-3);border:1px solid var(--bd);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <span style="font-size:11px;color:var(--tx-2);font-weight:800;letter-spacing:1px;text-transform:uppercase">🔍 외부 Steam 판매량 추정치</span>
+              <span style="font-size:10px;color:var(--tx-4)">(누적 차트에 참조점으로 표시)</span>
+              <button onclick="saveExtData()" style="margin-left:auto;padding:3px 10px;font-size:11px;font-weight:700;background:var(--bg-4);border:1px solid var(--bd);border-radius:4px;color:var(--tx-2);cursor:pointer">저장</button>
+              <button onclick="clearExtData()" style="padding:3px 10px;font-size:11px;font-weight:700;background:var(--bg-4);border:1px solid var(--bd);border-radius:4px;color:var(--tx-4);cursor:pointer">초기화</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+              <div>
+                <div style="font-size:10px;color:#2ecc71;font-weight:800;margin-bottom:4px">VG Insights</div>
+                <div id="ext-vg-rows"></div>
+                <button onclick="addExtRow('vg')" style="width:100%;margin-top:4px;padding:2px 0;font-size:11px;background:transparent;border:1px dashed var(--bd);border-radius:3px;color:var(--tx-4);cursor:pointer">+ 추가</button>
+              </div>
+              <div>
+                <div style="font-size:10px;color:#f1c40f;font-weight:800;margin-bottom:4px">Gamalytic</div>
+                <div id="ext-gm-rows"></div>
+                <button onclick="addExtRow('gm')" style="width:100%;margin-top:4px;padding:2px 0;font-size:11px;background:transparent;border:1px dashed var(--bd);border-radius:3px;color:var(--tx-4);cursor:pointer">+ 추가</button>
+              </div>
+              <div>
+                <div style="font-size:10px;color:#a55eea;font-weight:800;margin-bottom:4px">PlayTracker</div>
+                <div id="ext-pt-rows"></div>
+                <button onclick="addExtRow('pt')" style="width:100%;margin-top:4px;padding:2px 0;font-size:11px;background:transparent;border:1px dashed var(--bd);border-radius:3px;color:var(--tx-4);cursor:pointer">+ 추가</button>
+              </div>
+            </div>
+          </div>
           <!-- 누적 차트 -->
-          <div style="font-size:11px;color:var(--tx-4);margin-bottom:4px;font-weight:800;letter-spacing:1px;text-transform:uppercase">📈 누적 판매량 추정</div>
-          <div style="height:220px"><canvas id="salesCumChart"></canvas></div>
+          <div style="font-size:11px;color:var(--tx-4);margin-bottom:4px;font-weight:800;letter-spacing:1px;text-transform:uppercase">📈 누적 판매량 추정 (Steam 외부 추정치 포함)</div>
+          <div style="height:260px"><canvas id="salesCumChart"></canvas></div>
         </div>
       </div>
     </div>
@@ -2644,12 +2670,118 @@ function renderSalesChart() {
         { label: 'Steam', data: stCum,    borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.05)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
         { label: 'Xbox',  data: xbCum,    borderColor: '#107C10', backgroundColor: 'rgba(16,124,16,0.05)',  borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
         { label: '기타',   data: otherCum, borderColor: '#9b59b6', backgroundColor: 'rgba(155,89,182,0.05)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
+        ...buildExtDatasets(labels),
       ]
     },
     options: chartOpts
   });
 }
 
+
+
+/* ══════════════════════════════════════════════════════════════
+   외부 Steam 판매량 추정치 관리
+══════════════════════════════════════════════════════════════ */
+const EXT_SOURCES = {
+  vg: { label: 'VG Insights', color: '#2ecc71' },
+  gm: { label: 'Gamalytic',   color: '#f1c40f' },
+  pt: { label: 'PlayTracker', color: '#a55eea' },
+};
+
+// 기본 데이터 (스크린샷 기준 3/30 수치)
+let _extData = {
+  vg: [{ date: '2026-03-30', val: 1670000 }],
+  gm: [{ date: '2026-03-30', val: 1930000 }],
+  pt: [{ date: '2026-03-30', val: 2020000 }],
+};
+
+function loadExtData() {
+  try {
+    const saved = localStorage.getItem('cd_ext_sales');
+    if (saved) _extData = JSON.parse(saved);
+  } catch(e) {}
+  renderExtRows();
+}
+
+function saveExtData() {
+  // 입력 필드에서 현재 값을 수집
+  ['vg','gm','pt'].forEach(src => {
+    const rows = document.querySelectorAll(`[data-ext-src="${src}"]`);
+    _extData[src] = [];
+    rows.forEach(row => {
+      const date = row.querySelector('.ext-date')?.value?.trim();
+      const val  = parseInt(row.querySelector('.ext-val')?.value?.replace(/,/g,'') || '0');
+      if (date && val > 0) _extData[src].push({ date, val });
+    });
+  });
+  try { localStorage.setItem('cd_ext_sales', JSON.stringify(_extData)); } catch(e) {}
+  renderSalesChart();
+}
+
+function clearExtData() {
+  _extData = { vg: [], gm: [], pt: [] };
+  try { localStorage.removeItem('cd_ext_sales'); } catch(e) {}
+  renderExtRows();
+  renderSalesChart();
+}
+
+function addExtRow(src, date='', val='') {
+  const container = document.getElementById(`ext-${src}-rows`);
+  if (!container) return;
+  const div = document.createElement('div');
+  div.dataset.extSrc = src;
+  div.style.cssText = 'display:flex;gap:3px;margin-bottom:3px;align-items:center';
+  div.innerHTML = `
+    <input class="ext-date" type="date" value="${date}" style="flex:1;min-width:0;background:var(--bg-4);border:1px solid var(--bd);border-radius:3px;padding:2px 4px;color:var(--tx-1);font-size:10px">
+    <input class="ext-val" type="number" value="${val}" placeholder="판매수" style="width:72px;background:var(--bg-4);border:1px solid var(--bd);border-radius:3px;padding:2px 4px;color:var(--tx-1);font-size:10px">
+    <button onclick="this.parentElement.remove()" style="background:transparent;border:none;color:var(--tx-4);cursor:pointer;font-size:13px;padding:0 2px">✕</button>`;
+  container.appendChild(div);
+}
+
+function renderExtRows() {
+  ['vg','gm','pt'].forEach(src => {
+    const container = document.getElementById(`ext-${src}-rows`);
+    if (!container) return;
+    container.innerHTML = '';
+    (_extData[src] || []).forEach(({ date, val }) => addExtRow(src, date, val));
+  });
+}
+
+function buildExtDatasets(labels) {
+  // labels: ['3/20', '3/21', ...] 형식
+  const LAUNCH = new Date('2026-03-20T07:00:00+09:00');
+  const datasets = [];
+  Object.entries(EXT_SOURCES).forEach(([src, meta]) => {
+    const points = (_extData[src] || []).map(({ date, val }) => {
+      const d = new Date(date + 'T12:00:00+09:00');
+      const dayIdx = Math.round((d - LAUNCH) / 86400000);
+      const m = d.getMonth() + 1, day = d.getDate();
+      const lbl = `${m}/${day}`;
+      const idx = labels.indexOf(lbl);
+      return idx >= 0 ? { x: idx, y: val } : null;
+    }).filter(Boolean);
+
+    if (!points.length) return;
+
+    datasets.push({
+      label: meta.label,
+      type: 'scatter',
+      data: points.map(p => ({ x: labels[p.x], y: p.y })),
+      backgroundColor: meta.color,
+      borderColor: '#111',
+      borderWidth: 1.5,
+      pointRadius: 8,
+      pointHoverRadius: 10,
+      pointStyle: 'triangle',
+      showLine: false,
+      order: -1,
+    });
+  });
+  return datasets;
+}
+
+// 페이지 로드 시 저장된 데이터 복원
+window.addEventListener('DOMContentLoaded', loadExtData);
 
 /* ── 요약 섹션 미니 차트 ── */
 let summaryPsCI = null, summaryStCI = null;
