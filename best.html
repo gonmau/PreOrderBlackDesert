@@ -1104,7 +1104,7 @@
     <div class="dual-wrap">
       <div class="dual-col ps-col" style="flex:1">
         <div class="dual-col-header ps-header">💰 플랫폼별 판매량 추정
-          <span style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0">보수적 추정 모델 · 출시일 3/20 07:00 KST</span>
+          <span style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0">앵커: D0=200만 · D4=300만 · D11=400만 · 출시일 3/20 KST</span>
         </div>
         <div class="dual-col-body" style="padding:12px">
           <!-- 모델 설명 -->
@@ -1112,6 +1112,7 @@
             <b style="color:var(--tx-2)">📌 모델 근거 (재점검 반영)</b><br>
             • 공식 2M은 <b style="color:var(--gold)">출시 직후 24시간 내 sold through</b>로 보는 편이 맞고, KST 기준으로는 <b style="color:var(--gold)">3/20(출시일) 앵커</b>로 두는 것이 가장 자연스럽습니다.<br>
             • 공식 3M은 해외 기사 기준 5일 / 국내 기사 기준 4일 표현이 혼재하지만, <b style="color:var(--gold)">보수적으로 출시 4일차 300만</b> 앵커로 반영했습니다.<br>
+            • <b style="color:var(--gold)">출시 11일차(D11) 400만</b> 공식 발표를 세 번째 앵커로 추가 — D5~D11 구간을 실측 역산 decay(0.89) 기반으로 재분배합니다.<br>
             • PS는 <b style="color:var(--gold)">WEIGHTS 기반 가중 평균 순위</b>, Steam은 <b style="color:var(--gold)">STS_W 기반 국가별 가중 평균 순위</b>를 일별 신호로 사용합니다.<br>
             • 기존처럼 Day0에 바로 환불을 빼지 않고, <b style="color:var(--gold)">공식 sold-through(총량)</b>를 먼저 맞춘 뒤 Steam·PC 기타 100%, PS5 30% 가중으로 순보유량을 별도 계산합니다.<br>
             • Epic Games Store / Mac / 오프라인(물리) / AMD 번들은 순위 데이터에 직접 안 잡히므로, <b style="color:var(--gold)">기타 채널 보정</b>으로 별도 반영합니다.<br>
@@ -2289,7 +2290,7 @@ const SALES_MODES = {
   },
   optimistic: {
     label: '🔴 낙관적',
-    postDecay:    0.92,   // D5+ 감소 완만
+    postDecay:    0.89,   // D5~D11 실측(300만→400만) 역산 보정
     psExp:        0.38,   // 순위 탄성 높음 (순위 유지 시 판매 잘 버팀)
     stExp:        0.40,
     xbExp:        0.25,
@@ -2299,7 +2300,7 @@ const SALES_MODES = {
     d14Decay:     0.93,
   },
 };
-let currentSalesMode = 'normal';
+let currentSalesMode = 'optimistic';
 
 function setSalesMode(mode) {
   currentSalesMode = mode;
@@ -2355,10 +2356,13 @@ function renderSalesChart() {
 
   const MODE = SALES_MODES[currentSalesMode] || SALES_MODES.normal;
 
-  const MILESTONE_DAY4 = 3000000;
-  const PRE4_INCREMENT = Math.max(0, MILESTONE_DAY4 - soldThroughD0);
-  const POST_D4_DECAY  = MODE.postDecay;
-  const DAILY_FLOOR    = MODE.dailyFloor;
+  const MILESTONE_DAY4  = 3000000;
+  const MILESTONE_DAY11 = 4000000;  // ← D11 공식 발표 앵커 추가
+  const PRE4_INCREMENT  = Math.max(0, MILESTONE_DAY4 - soldThroughD0);
+  const D4_TO_D11_INC   = Math.max(0, MILESTONE_DAY11 - MILESTONE_DAY4); // D5~D11 합산 = 100만
+  const POST_D11_DECAY  = MODE.postDecay;  // D12+ 감소율
+  const POST_D4_DECAY   = MODE.postDecay;  // 하위 호환용 (미사용)
+  const DAILY_FLOOR     = MODE.dailyFloor;
   const OTHER_ALLOC    = { ps: 0.20, st: 0.35, xb: 0.05, other: 0.40 };
 
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
@@ -2454,10 +2458,24 @@ function renderSalesChart() {
     totalDaily[di] = Math.round(PRE4_INCREMENT * (day14Weights[di - 1] / wSum));
   }
 
-  for (let di = 5; di < days.length; di++) {
+  // ── D5~D11: D4→D11 앵커(100만) 사이를 순위 신호로 분배 ──
+  const day5_11Weights = [];
+  for (let di = 5; di <= 11; di++) {
     const signalRef = comboSignal[4] || comboSignal[0] || 1;
+    const rel = clamp((comboSignal[di] || signalRef) / signalRef, 0.70, 1.25);
+    const decay = Math.pow(0.89, di - 4); // 실측 역산 decay
+    day5_11Weights.push(Math.max(0.05, decay * rel));
+  }
+  const w5_11Sum = day5_11Weights.reduce((a, b) => a + b, 0) || 1;
+  for (let di = 5; di <= 11; di++) {
+    totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, D4_TO_D11_INC * (day5_11Weights[di - 5] / w5_11Sum)));
+  }
+
+  // ── D12+: D11 앵커 기준으로 POST_D11_DECAY 적용 ──
+  for (let di = 12; di < days.length; di++) {
+    const signalRef = comboSignal[11] || comboSignal[4] || comboSignal[0] || 1;
     const rel = clamp((comboSignal[di] || signalRef) / signalRef, 0.75, 1.20);
-    totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[4] * Math.pow(POST_D4_DECAY, di - 4) * rel));
+    totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[11] * Math.pow(POST_D11_DECAY, di - 11) * rel));
   }
 
   // ── 플랫폼 분배: 순위 신호 + 기타 채널 보정 ──
@@ -2606,14 +2624,14 @@ function renderSalesChart() {
     const m9  = findMilestone(9_000_000);
     const m10 = findMilestone(10_000_000);
     const mCards = [
-      { label: '🎯 300만 달성',  ms: m3,  color: '#2ecc71' },
-      { label: '🎯 400만 달성',  ms: m4,  color: '#1abc9c' },
-      { label: '🚀 500만 달성',  ms: m5,  color: '#f1c40f' },
-      { label: '🚀 600만 달성',  ms: m6,  color: '#e67e22' },
-      { label: '🔥 700만 달성',  ms: m7,  color: '#e74c3c' },
-      { label: '🔥 800만 달성',  ms: m8,  color: '#c0392b' },
-      { label: '💎 900만 달성',  ms: m9,  color: '#9b59b6' },
-      { label: '💎 1000만 달성', ms: m10, color: '#8e44ad' },
+      { label: '🎯 300만 달성 ✅', ms: m3,  color: '#2ecc71' },
+      { label: '🏅 400만 달성 ✅', ms: m4,  color: '#f1c40f' },
+      { label: '🚀 500만 달성',    ms: m5,  color: '#4a9eff' },
+      { label: '🚀 600만 달성',    ms: m6,  color: '#e67e22' },
+      { label: '🔥 700만 달성',    ms: m7,  color: '#e74c3c' },
+      { label: '🔥 800만 달성',    ms: m8,  color: '#c0392b' },
+      { label: '💎 900만 달성',    ms: m9,  color: '#9b59b6' },
+      { label: '💎 1000만 달성',   ms: m10, color: '#8e44ad' },
     ];
 
     msEl.innerHTML = mCards.map(({ label, ms, color }) => {
