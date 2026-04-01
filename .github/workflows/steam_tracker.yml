@@ -35,7 +35,13 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: python steam_concurrent_tracker.py
-
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # 기본 제공
+          GH_OWNER: gonmau
+          GH_REPO:  PreOrderBlackDesert
+          GH_BRANCH: main
+        permissions:
+          contents: write
       - name: 히스토리 캐시 저장
         uses: actions/cache/save@v5
         if: always()
