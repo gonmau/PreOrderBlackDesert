@@ -834,39 +834,6 @@
   .sum-rank-body  { overflow: hidden; transition: max-height 0.3s ease; }
   .sum-rank-body.collapsed { max-height: 0 !important; }
   .sum-rank-grid  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px 14px 12px; }
-
-  /* 지역별 순위 */
-  .reg-wrap { background: var(--bg-1); border: 1px solid var(--bd); border-radius: var(--radius); overflow: hidden; }
-  .reg-section { border-bottom: 1px solid var(--bd); }
-  .reg-section:last-child { border-bottom: none; }
-  .reg-header {
-    display: flex; align-items: center; gap: 8px;
-    padding: 8px 12px; cursor: pointer;
-    background: var(--bg-2); transition: background var(--trans); user-select: none;
-  }
-  .reg-header:hover { background: var(--bg-3); }
-  .reg-icon  { font-size: 14px; }
-  .reg-name  { font-size: 13px; font-weight: 800; flex: 1; color: var(--tx-2); letter-spacing: 0.5px; }
-  .reg-avg   { font-size: 15px; font-weight: 900; min-width: 36px; text-align: right; }
-  .reg-share { font-size: 10px; color: var(--tx-4); font-weight: 700; min-width: 42px; text-align: right; }
-  .reg-arrow { font-size: 11px; color: var(--tx-4); transition: transform 0.2s; margin-left: 4px; }
-  .reg-arrow.open { transform: rotate(180deg); }
-  .reg-body  { overflow: hidden; transition: max-height 0.3s ease; }
-  .reg-body.collapsed { max-height: 0 !important; }
-  .reg-country-row {
-    display: flex; align-items: center; gap: 6px;
-    padding: 4px 12px 4px 28px;
-    border-bottom: 1px solid var(--bd);
-    font-size: 12px;
-  }
-  .reg-country-row:last-child { border-bottom: none; }
-  .reg-c-flag { font-size: 13px; font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif; }
-  .reg-c-name { flex: 1; color: var(--tx-3); font-weight: 600; }
-  .reg-c-share { font-size: 10px; color: var(--tx-4); min-width: 32px; text-align: right; }
-  .reg-c-rank { font-weight: 800; min-width: 32px; text-align: right; }
-  .reg-c-chg  { font-size: 10px; min-width: 24px; text-align: right; }
-  .reg-bar-wrap { height: 2px; background: var(--bg-4); border-radius: 1px; overflow: hidden; margin: 0 12px 5px 28px; }
-  .reg-bar-fill { height: 100%; border-radius: 1px; opacity: 0.5; }
 </style>
 </head>
 <body>
@@ -901,8 +868,10 @@
 <div class="nav-bar" id="nav-bar">
   <div class="nav-group">
     <span class="nav-tab dual-tab active" data-section="sec-summary"    onclick="switchTab(this)">📊 요약</span>
+    <span class="nav-tab dual-tab"        data-section="sec-leaderboard" onclick="switchTab(this)">🏆 리더보드</span>
     <span class="nav-tab dual-tab"        data-section="sec-sched"       onclick="switchTab(this)">⏱ 스케줄</span>
     <span class="nav-tab dual-tab"        data-section="sec-sales"       onclick="switchTab(this)">💰 판매량</span>
+    <span class="nav-tab dual-tab"        data-section="sec-heatmap"     onclick="switchTab(this)">🔥 히트맵</span>
     <span class="nav-tab dual-tab"        data-section="sec-table"       onclick="switchTab(this)">🌍 국가별</span>
   </div>
 </div>
@@ -934,19 +903,29 @@
         <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span id="ps-data-time" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div class="stats">
           <div class="card"><div class="lbl">가중 평균</div><div class="val" id="stat-avg">—</div></div>
-          <!-- 점유율 Top5 순위 카드 -->
-          <div class="card" style="grid-column:span 1;padding:10px 12px">
-            <div class="lbl" style="margin-bottom:8px">점유율 Top5 현재 순위</div>
-            <div id="ps-top5-rank-list" style="display:flex;flex-direction:column;gap:5px"></div>
+          <!-- 최고/최하 합친 카드 -->
+          <div class="card" style="grid-column:span 1">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div>
+                <div class="lbl" style="margin-bottom:4px">최고 순위</div>
+                <div class="val" id="stat-best-val" style="font-size:22px">—</div>
+                <div class="sub" id="stat-best-name" style="font-size:13px">...</div>
+              </div>
+              <div style="border-left:1px solid var(--bd);padding-left:10px">
+                <div class="lbl" style="margin-bottom:4px">최하 순위</div>
+                <div class="val" id="stat-worst-val" style="font-size:22px;color:var(--down)">—</div>
+                <div class="sub" id="stat-worst-name" style="font-size:13px">...</div>
+              </div>
+            </div>
           </div>
           <!-- 숨김 유지 (JS 참조용) -->
           <span id="stat-cnt-1" style="display:none">0</span>
           <span id="stat-cnt-3" style="display:none">0</span>
           <span id="stat-cnt-10" style="display:none">0</span>
           <span id="stat-cnt-rest" style="display:none">0</span>
-          <!-- 순위별 국가 목록 (리더보드 통합) -->
-          <div class="card" style="grid-column:1/-1;padding:8px">
-            <div id="lb-ps-container"></div>
+          <!-- 순위별 전체 국가 목록 -->
+          <div class="card" style="grid-column:1/-1;padding:0">
+            <div id="ps-summary-rank-groups"></div>
           </div>
 
         </div>
@@ -965,19 +944,29 @@
             <div class="lbl">가중 평균</div>
             <div class="val" id="sts-avg" style="color:var(--steam)">—</div>
           </div>
-          <!-- 점유율 Top5 순위 카드 -->
-          <div class="card" style="border-left-color:var(--steam);grid-column:span 1;padding:10px 12px">
-            <div class="lbl" style="margin-bottom:8px">점유율 Top5 현재 순위</div>
-            <div id="sts-top5-rank-list" style="display:flex;flex-direction:column;gap:5px"></div>
+          <!-- 최고/최하 합친 카드 -->
+          <div class="card" style="border-left-color:var(--steam);grid-column:span 1">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div>
+                <div class="lbl" style="margin-bottom:4px">최고 순위</div>
+                <div class="val" id="sts-best-rank-val" style="font-size:22px;color:var(--gold)">—</div>
+                <div class="sub" id="sts-best-rank-name" style="font-size:13px">...</div>
+              </div>
+              <div style="border-left:1px solid var(--bd);padding-left:10px">
+                <div class="lbl" style="margin-bottom:4px">최하 순위</div>
+                <div class="val" id="sts-worst-rank-val" style="font-size:22px;color:var(--down)">—</div>
+                <div class="sub" id="sts-worst-rank-name" style="font-size:13px">...</div>
+              </div>
+            </div>
           </div>
           <!-- 숨김 유지 (JS 참조용) -->
           <span id="sts-cnt-1" style="display:none">0</span>
           <span id="sts-cnt-3" style="display:none">0</span>
           <span id="sts-cnt-10" style="display:none">0</span>
           <span id="sts-cnt-rest" style="display:none">0</span>
-          <!-- 순위별 국가 목록 (리더보드 통합) -->
-          <div class="card" style="border-left-color:var(--steam);grid-column:1/-1;padding:8px">
-            <div id="lb-sts-container"></div>
+          <!-- 순위별 전체 국가 목록 -->
+          <div class="card" style="border-left-color:var(--steam);grid-column:1/-1;padding:0">
+            <div id="sts-summary-rank-groups"></div>
           </div>
 
         </div>
@@ -1033,38 +1022,38 @@
       </div>
     </div>
 
-    <!-- 지역별 순위 -->
+    <!-- 요약 섹션 하단 추가: Top5+한국 일자별 최고순위 차트 -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
       <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--blood);border-radius:var(--radius)">
-        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--blood);letter-spacing:1px;border-bottom:1px solid var(--bd)">🌏 PS Store 지역별 평균 순위</div>
-        <div id="ps-region-summary" style="padding:8px"></div>
-      </div>
-      <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--steam);border-radius:var(--radius)">
-        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--steam);letter-spacing:1px;border-bottom:1px solid var(--bd)">🌏 Steam 지역별 평균 순위</div>
-        <div id="sts-region-summary" style="padding:8px"></div>
-      </div>
-    </div>
-
-    <!-- 요약 섹션 하단 추가: Top5+한국 일자별 평균순위 차트 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
-      <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--blood);border-radius:var(--radius)">
-        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--blood);letter-spacing:1px;border-bottom:1px solid var(--bd)">📉 PS Store Top5 + 한국 일자별 평균순위</div>
+        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--blood);letter-spacing:1px;border-bottom:1px solid var(--bd)">📉 PS Store Top5 + 한국 일자별 최고순위</div>
         <div style="padding:14px">
-          <div style="font-size:11px;color:var(--tx-4);margin-bottom:10px">각 날짜에서 수집된 스냅샷의 평균 순위를 국가별 라인으로 표시합니다.</div>
+          <div style="font-size:11px;color:var(--tx-4);margin-bottom:10px">각 날짜에서 기록한 최고(최소) 순위를 국가별 라인으로 표시합니다.</div>
           <div style="width:100%;overflow:hidden"><canvas id="summaryPsTop5KrChart" style="display:block"></canvas></div>
         </div>
       </div>
       <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--steam);border-radius:var(--radius)">
-        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--steam);letter-spacing:1px;border-bottom:1px solid var(--bd)">📉 Steam Top5 + 한국 일자별 평균순위</div>
+        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--steam);letter-spacing:1px;border-bottom:1px solid var(--bd)">📉 Steam Top5 + 한국 일자별 최고순위</div>
         <div style="padding:14px">
-          <div style="font-size:11px;color:var(--tx-4);margin-bottom:10px">각 날짜에서 수집된 스냅샷의 평균 순위를 국가별 라인으로 표시합니다.</div>
+          <div style="font-size:11px;color:var(--tx-4);margin-bottom:10px">각 날짜에서 기록한 최고(최소) 순위를 국가별 라인으로 표시합니다.</div>
           <div style="width:100%;overflow:hidden"><canvas id="summaryStTop5KrChart" style="display:block"></canvas></div>
         </div>
       </div>
     </div>
   </div><!-- /sec-summary -->
 
-
+  <!-- ② 리더보드 -->
+  <div id="sec-leaderboard" class="tab-section">
+    <div class="dual-wrap">
+      <div class="dual-col ps-col">
+        <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span class="ps-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-body"><div id="lb-ps-container" style="padding:8px"></div></div>
+      </div>
+      <div class="dual-col steam-col">
+        <div class="dual-col-header steam-header">🖥 Steam <a href="https://steamdb.info/app/3321460/charts/" target="_blank" style="font-size:13px;color:var(--steam);opacity:0.7;margin-left:auto;text-decoration:none;font-weight:700;letter-spacing:0;text-transform:none;flex-shrink:0;padding:2px 6px;border:1px solid rgba(74,158,255,0.3);border-radius:4px;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">SteamDB ↗</a><span class="sts-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
+        <div class="dual-col-body"><div id="lb-sts-container" style="padding:8px"></div></div>
+      </div>
+    </div>
+  </div><!-- /sec-leaderboard -->
 
   <!-- ③ 스케줄 -->
   <div id="sec-sched" class="tab-section">
@@ -1104,7 +1093,7 @@
     <div class="dual-wrap">
       <div class="dual-col ps-col" style="flex:1">
         <div class="dual-col-header ps-header">💰 플랫폼별 판매량 추정
-          <span style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0">앵커: D0=200만 · D4=300만 · D12=400만 · 출시일 3/20 KST</span>
+          <span style="font-size:9px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0">보수적 추정 모델 · 출시일 3/20 07:00 KST</span>
         </div>
         <div class="dual-col-body" style="padding:12px">
           <!-- 모델 설명 -->
@@ -1112,12 +1101,11 @@
             <b style="color:var(--tx-2)">📌 모델 근거 (재점검 반영)</b><br>
             • 공식 2M은 <b style="color:var(--gold)">출시 직후 24시간 내 sold through</b>로 보는 편이 맞고, KST 기준으로는 <b style="color:var(--gold)">3/20(출시일) 앵커</b>로 두는 것이 가장 자연스럽습니다.<br>
             • 공식 3M은 해외 기사 기준 5일 / 국내 기사 기준 4일 표현이 혼재하지만, <b style="color:var(--gold)">보수적으로 출시 4일차 300만</b> 앵커로 반영했습니다.<br>
-            • <b style="color:var(--gold)">출시 12일차(D12, 4/1) 400만</b> 공식 발표를 세 번째 앵커로 추가 — D5~D12 구간을 실측 역산 decay(0.89) 기반으로 재분배합니다.<br>
             • PS는 <b style="color:var(--gold)">WEIGHTS 기반 가중 평균 순위</b>, Steam은 <b style="color:var(--gold)">STS_W 기반 국가별 가중 평균 순위</b>를 일별 신호로 사용합니다.<br>
             • 기존처럼 Day0에 바로 환불을 빼지 않고, <b style="color:var(--gold)">공식 sold-through(총량)</b>를 먼저 맞춘 뒤 Steam·PC 기타 100%, PS5 30% 가중으로 순보유량을 별도 계산합니다.<br>
-            • Epic Games Store / Mac / 오프라인(물리) / AMD 번들은 순위 데이터에 직접 안 잡히므로, <b style="color:var(--gold)">기타 채널 보정</b>으로 별도 반영합니다.<br>
-            • 기타 채널 보정은 <b style="color:var(--gold)">EGS·Mac·AMD 중심 40%</b>, <b style="color:var(--gold)">Steam 지연·EGS 반영 35%</b>, <b style="color:var(--gold)">PS 물리 20%</b>, <b style="color:var(--gold)">Xbox 리테일 5%</b> 가정입니다. (EGS·AMD 번들 등 PC 채널 비중 반영)<br>
-            • 각 플랫폼 카드의 <b style="color:var(--tx-2)">+숫자(추가)</b>는 <b style="color:var(--gold)">순위 미반영 채널의 고정 비율 추정치</b>입니다 — 순위 역산값이 아닌 참고용이며, AMD 번들 등 초기 한정 프로모션도 포함되어 실제보다 과대 추정될 수 있습니다.
+            • 기타 채널 보정은 <b style="color:var(--gold)">EGS·Mac·AMD 중심 40%</b>, <b style="color:var(--gold)">Steam 지연·EGS 반영 35%</b>, <b style="color:var(--gold)">PS 물리 20%</b>, <b style="color:var(--gold)">Xbox 리테일 5%</b> 가정입니다.<br>
+            • 각 플랫폼 카드의 <b style="color:var(--tx-2)">+숫자(추가)</b>는 <b style="color:var(--gold)">순위 미반영 채널의 고정 비율 추정치</b>입니다 — 순위 역산값이 아닌 참고용이며, AMD 번들 등 초기 한정 프로모션도 포함되어 실제보다 과대 추정될 수 있습니다.<br>
+            • <b style="color:#f1c40f">📌 공지기반 모드</b>: 공식 발표 3개 시각(<b style="color:#f1c40f">200만 3/20 23:46 · 300만 3/24 19:19 · 400만 4/1 11:00</b>)을 앵커로 역산. D5~D12 일별 감소율 <b style="color:#f1c40f">0.913</b> (Elden Ring 수준). D13+ 동일 감소율 유지. 순위 신호 미반영, 순수 decay 기반.
           </div>
           <!-- 모드 탭 -->
           <div style="display:flex;gap:6px;margin-bottom:12px">
@@ -1133,6 +1121,30 @@
               style="flex:1;padding:7px 0;border-radius:6px;border:1px solid var(--bd);background:var(--bg-3);color:var(--tx-3);font-size:13px;font-weight:800;cursor:pointer;letter-spacing:0.5px;transition:all 0.15s">
               🔴 낙관적
             </button>
+            <button id="sales-mode-anchored" onclick="setSalesMode('anchored')"
+              style="flex:1;padding:7px 0;border-radius:6px;border:1px solid var(--bd);background:var(--bg-3);color:var(--tx-3);font-size:13px;font-weight:800;cursor:pointer;letter-spacing:0.5px;transition:all 0.15s">
+              📌 공지기반
+            </button>
+          </div>
+          <!-- 📌 공지기반 전용 슬라이더 (공지기반 탭 선택 시만 표시) -->
+          <div id="anchored-controls" style="display:none;background:rgba(241,196,15,0.05);border:1px solid rgba(241,196,15,0.2);border-radius:6px;padding:10px 14px;margin-bottom:10px">
+            <div style="font-size:11px;color:#f1c40f;font-weight:800;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase">📌 공지기반 — D13+ 감소율 설정</div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px">
+                <input id="anchored-decay-slider" type="range" min="0.860" max="0.930" step="0.001" value="0.893"
+                  style="flex:1;accent-color:#f1c40f;cursor:pointer"
+                  oninput="updateAnchoredDecayLabel()">
+                <span style="font-size:18px;font-weight:900;color:#f1c40f;font-family:'Cinzel',serif;min-width:44px" id="anchored-decay-lbl">0.893</span>
+              </div>
+              <div style="font-size:11px;color:var(--tx-4);display:flex;gap:12px">
+                <span>0.860 <span style="color:#e74c3c">FF XVI</span></span>
+                <span>0.880 <span style="color:#e67e22">Black Myth</span></span>
+                <span>0.893 <span style="color:#f1c40f">MHW평균</span></span>
+                <span>0.913 <span style="color:#2ecc71">Elden Ring</span></span>
+                <span>0.930 <span style="color:#4a9eff">MHW낙관</span></span>
+              </div>
+            </div>
+            <div id="anchored-ref-lbl" style="font-size:11px;color:var(--tx-3);margin-top:6px"></div>
           </div>
           <!-- 컨트롤 -->
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
@@ -1161,49 +1173,17 @@
             <span id="sales-chart-mode-lbl" style="font-size:11px;font-weight:800;padding:1px 7px;border-radius:3px;background:var(--bg-3);color:var(--tx-3)"></span>
           </div>
           <div style="height:220px;margin-bottom:16px"><canvas id="salesDailyChart"></canvas></div>
-          <!-- 외부 추정치 입력 -->
-          <div style="background:var(--bg-3);border:1px solid var(--bd);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-              <span style="font-size:11px;color:var(--tx-2);font-weight:800;letter-spacing:1px;text-transform:uppercase">🔍 외부 Steam 판매량 추정치</span>
-              <span style="font-size:10px;color:var(--tx-4)">(누적 차트에 참조점으로 표시)</span>
-              <button onclick="saveExtData()" style="margin-left:auto;padding:3px 10px;font-size:11px;font-weight:700;background:var(--bg-4);border:1px solid var(--bd);border-radius:4px;color:var(--tx-2);cursor:pointer">저장</button>
-              <button onclick="clearExtData()" style="padding:3px 10px;font-size:11px;font-weight:700;background:var(--bg-4);border:1px solid var(--bd);border-radius:4px;color:var(--tx-4);cursor:pointer">초기화</button>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-              <div>
-                <div style="font-size:10px;color:#2ecc71;font-weight:800;margin-bottom:4px">VG Insights</div>
-                <div id="ext-vg-rows"></div>
-                <button onclick="addExtRow('vg')" style="width:100%;margin-top:4px;padding:2px 0;font-size:11px;background:transparent;border:1px dashed var(--bd);border-radius:3px;color:var(--tx-4);cursor:pointer">+ 추가</button>
-              </div>
-              <div>
-                <div style="font-size:10px;color:#f1c40f;font-weight:800;margin-bottom:4px">Gamalytic</div>
-                <div id="ext-gm-rows"></div>
-                <button onclick="addExtRow('gm')" style="width:100%;margin-top:4px;padding:2px 0;font-size:11px;background:transparent;border:1px dashed var(--bd);border-radius:3px;color:var(--tx-4);cursor:pointer">+ 추가</button>
-              </div>
-              <div>
-                <div style="font-size:10px;color:#a55eea;font-weight:800;margin-bottom:4px">PlayTracker</div>
-                <div id="ext-pt-rows"></div>
-                <button onclick="addExtRow('pt')" style="width:100%;margin-top:4px;padding:2px 0;font-size:11px;background:transparent;border:1px dashed var(--bd);border-radius:3px;color:var(--tx-4);cursor:pointer">+ 추가</button>
-              </div>
-            </div>
-          </div>
           <!-- 누적 차트 -->
-          <div style="font-size:11px;color:var(--tx-4);margin-bottom:4px;font-weight:800;letter-spacing:1px;text-transform:uppercase">📈 누적 판매량 추정 (Steam 외부 추정치 포함)</div>
-          <div style="height:260px"><canvas id="salesCumChart"></canvas></div>
+          <div style="font-size:11px;color:var(--tx-4);margin-bottom:4px;font-weight:800;letter-spacing:1px;text-transform:uppercase">📈 누적 판매량 추정</div>
+          <div style="height:220px"><canvas id="salesCumChart"></canvas></div>
         </div>
       </div>
     </div>
   </div><!-- /sec-sales -->
 
-  <!-- ④ 국가별 (히트맵 통합) -->
-  <div id="sec-table" class="tab-section">
-    <!-- 서브탭 -->
-    <div style="display:flex;gap:0;border-bottom:1px solid var(--bd);margin-bottom:12px;background:var(--bg-1);border-radius:var(--radius) var(--radius) 0 0;overflow:hidden">
-      <button id="subtab-heatmap" onclick="switchSubTab('heatmap')" style="flex:1;padding:9px 0;font-size:13px;font-weight:800;letter-spacing:0.5px;background:var(--blood);color:#fff;border:none;cursor:pointer;transition:all 0.15s">🔥 히트맵</button>
-      <button id="subtab-table"   onclick="switchSubTab('table')"   style="flex:1;padding:9px 0;font-size:13px;font-weight:800;letter-spacing:0.5px;background:var(--bg-2);color:var(--tx-3);border:none;cursor:pointer;transition:all 0.15s">📋 테이블</button>
-    </div>
-    <!-- 히트맵 뷰 -->
-    <div id="subtab-view-heatmap" class="dual-wrap">
+  <!-- ⑤ 히트맵 -->
+  <div id="sec-heatmap" class="tab-section">
+    <div class="dual-wrap">
       <div class="dual-col ps-col">
         <div class="dual-col-header ps-header">🎮 PS Store <button class="ps-links-btn" onclick="openPsLinksPopover(event)">🔗 PS Store 링크</button><span class="ps-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span></div>
         <div class="dual-col-body"><div class="heatmap-legend">
@@ -1225,8 +1205,11 @@
         <div class="heatmap-grid" id="sts-heatmap-grid"></div></div>
       </div>
     </div>
-    <!-- 테이블 뷰 -->
-    <div id="subtab-view-table" class="dual-wrap" style="display:none">
+  </div><!-- /sec-heatmap -->
+
+  <!-- ⑥ 국가별 -->
+  <div id="sec-table" class="tab-section">
+    <div class="dual-wrap">
       <div class="dual-col ps-col">
         <div class="dual-col-header ps-header">🎮 PS Store
           <span class="ps-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span>
@@ -1239,6 +1222,7 @@
           <span class="sts-ts-badge" style="font-size:17px;color:var(--tx-4);font-weight:400;margin-left:auto;text-transform:none;letter-spacing:0"></span>
           <button class="steam-ts-dl-btn" style="font-size:10px;padding:4px 10px;margin-left:8px" onclick="downloadSteamCSV()">📥 CSV</button>
         </div>
+        <!-- 숨김 원소들 유지 -->
         <div style="display:none">
           <span id="sts-cs-avg"></span><span id="sts-cs-avg-sub"></span>
           <span id="sts-cs-best-flag"></span><span id="sts-cs-best-name"></span>
@@ -1387,7 +1371,6 @@ const FLAGS = {
 };
 
 let historyData = [];
-let _psCountryBest = {}, _psCountryAvg = {}; // 캐시: loadPsData 시 계산
 let scheduleSlots = [  // fallback: JSON schedule 없을 시 KST 09~19시 사용
   {hour:9},{hour:10},{hour:11},{hour:12},{hour:13},{hour:14},{hour:15},{hour:16},{hour:17},{hour:18},{hour:19}
 ];
@@ -1397,36 +1380,21 @@ let sortKey = 'rank'; let sortAsc = true;
 let mainChart = null; let countryChart = null;
 
 async function loadPsData() {
-  try {
-    const res = await fetch('./bestseller_history.json?t=' + Date.now());
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const payload = await res.json();
-    if (Array.isArray(payload)) {
-      historyData = payload;
-    } else {
-      historyData = payload.history || [];
-      if (payload.schedule && Array.isArray(payload.schedule.slots_kst)) {
-        scheduleSlots = payload.schedule.slots_kst.map(h => ({
-          hour: h,
-          label: h < 12 ? 'AM' : 'PM'
-        }));
-        window._scheduleCron = payload.schedule.cron || '';
-      }
+  const res = await fetch('./bestseller_history.json?t=' + Date.now());
+  const payload = await res.json();
+  if (Array.isArray(payload)) {
+    historyData = payload;
+  } else {
+    historyData = payload.history || [];
+    if (payload.schedule && Array.isArray(payload.schedule.slots_kst)) {
+      scheduleSlots = payload.schedule.slots_kst.map(h => ({
+        hour: h,
+        label: h < 12 ? 'AM' : 'PM'
+      }));
+      window._scheduleCron = payload.schedule.cron || '';
     }
-    // countryBest/Avg 캐시 갱신 (render()에서 매번 전체 순회 방지)
-    _psCountryBest = {}; _psCountryAvg = {};
-    if (historyData.length > 0) {
-      const curr0 = historyData[historyData.length - 1];
-      Object.keys(curr0.raw_results || {}).forEach(name => {
-        const ranks = historyData.map(h => getRank(h, name)).filter(r => r !== 999);
-        _psCountryBest[name] = ranks.length > 0 ? ranks.reduce((m,v) => v < m ? v : m, 999) : 999;
-        _psCountryAvg[name]  = ranks.length > 0 ? ranks.reduce((a,b) => a+b, 0) / ranks.length : 999;
-      });
-    }
-    render();
-  } catch(e) {
-    console.warn('PS data load fail', e);
   }
+  render();
 }
 
 async function init() {
@@ -1494,11 +1462,6 @@ function getStsDaysAtRank(name, currentRank) {
 }
 
 function render() {
-  // 지역 차트 인스턴스 초기화 (데이터 갱신 시 재렌더를 위해)
-  Object.keys(_regCharts).forEach(k => {
-    if (!k.endsWith('_data') && _regCharts[k]?.destroy) _regCharts[k].destroy();
-    delete _regCharts[k];
-  });
   const curr = historyData[historyData.length - 1];
   const prev = historyData.length > 1 ? historyData[historyData.length - 2] : null;
 
@@ -1512,9 +1475,13 @@ function render() {
   let list = [];
   let best = { r: 999, n: '' }; let worst = { r: 0, n: '' };
 
-  // 국가별 best/avg — loadPsData에서 미리 계산된 캐시 사용
-  const countryBest = _psCountryBest;
-  const countryAvg  = _psCountryAvg;
+  // 국가별 best/avg 계산
+  const countryBest = {}; const countryAvg = {};
+  Object.keys(curr.raw_results).forEach(name => {
+    const allRanks = historyData.map(h => getRank(h, name)).filter(r => r !== 999);
+    countryBest[name] = allRanks.length > 0 ? Math.min(...allRanks) : 999;
+    countryAvg[name] = allRanks.length > 0 ? (allRanks.reduce((a,b)=>a+b,0) / allRanks.length) : 999;
+  });
 
   Object.keys(curr.raw_results).forEach(name => {
     const r = getRank(curr, name);
@@ -1527,44 +1494,10 @@ function render() {
     list.push({ name, rank: r, change: (p === 999 || r === 999) ? 0 : p - r, weight: WEIGHTS[name] || 1.0, best: countryBest[name], avg: countryAvg[name], days: daysR });
   });
 
-  // 점유율 Top5 현재 순위 카드
-  const psTop5Countries = Object.entries(WEIGHTS)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([name, w]) => {
-      const item = list.find(x => x.name === name);
-      return { name, w, rank: item?.rank ?? 999, change: item?.change ?? 0 };
-    });
-  const psTop5El = document.getElementById('ps-top5-rank-list');
-  if (psTop5El) {
-    const totalW = psTop5Countries.reduce((s, x) => s + x.w, 0);
-    psTop5El.innerHTML = psTop5Countries.map(({ name, w, rank, change }) => {
-      const pct = Math.round(w / totalW * 100);
-      const rankColor = rank === 1 ? 'var(--gold)' : rank <= 3 ? '#c0c0c0' : rank <= 10 ? '#4a9eff' : rank < 999 ? 'var(--tx-2)' : 'var(--tx-4)';
-      const rankStr = rank >= 999
-        ? `<span style="color:var(--tx-4);font-size:12px;font-weight:700">순위 밖</span>`
-        : `<span style="color:${rankColor};font-weight:900;font-size:17px;line-height:1">${rank}<span style="font-size:10px;font-weight:700">위</span></span>`;
-      let chgHtml = '';
-      if (change > 0)      chgHtml = `<span style="color:var(--up);font-size:11px;font-weight:800;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px">▲${change}</span>`;
-      else if (change < 0) chgHtml = `<span style="color:var(--down);font-size:11px;font-weight:800;background:rgba(231,76,60,0.12);padding:1px 5px;border-radius:3px">▼${Math.abs(change)}</span>`;
-      else                 chgHtml = `<span style="color:var(--tx-4);font-size:11px;padding:1px 5px">—</span>`;
-      const psUrl = getStoreUrl(name);
-      return `<div style="padding:5px 0;border-bottom:1px solid var(--bd)">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-          <span class="flag" style="font-size:15px">${FLAGS[name] || ''}</span>
-          <a href="${psUrl}" target="_blank" style="flex:1;font-size:13px;font-weight:700;color:var(--tx-2);text-decoration:none;display:flex;align-items:center;gap:4px" onmouseover="this.style.color='var(--blood)'" onmouseout="this.style.color='var(--tx-2)'">${name}<span style="font-size:10px;opacity:0.5">🔗</span></a>
-          <span style="min-width:32px;text-align:right">${chgHtml}</span>
-          <span style="min-width:36px;text-align:right">${rankStr}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:5px">
-          <div style="flex:1;height:3px;background:var(--bg-4);border-radius:2px;overflow:hidden">
-            <div style="height:100%;width:${pct}%;background:var(--blood);border-radius:2px;opacity:0.6"></div>
-          </div>
-          <span style="font-size:9px;color:var(--tx-4);font-weight:700;min-width:28px;text-align:right">점유 ${pct}%</span>
-        </div>
-      </div>`;
-    }).join('');
-  }
+  document.getElementById('stat-best-val').innerText = best.r + '위';
+  document.getElementById('stat-best-name').innerText = (FLAGS[best.n] || '') + ' ' + best.n;
+  document.getElementById('stat-worst-val').innerText = worst.r === 0 ? '—' : worst.r + '위';
+  document.getElementById('stat-worst-name').innerText = worst.n ? (FLAGS[worst.n] || '') + ' ' + worst.n : '...';
   // 순위별 국가 수 집계 + 증감
   const cnt1   = list.filter(x => x.rank === 1).length;
   const cnt23  = list.filter(x => x.rank >= 2 && x.rank <= 3).length;
@@ -1589,32 +1522,16 @@ function render() {
   document.getElementById('stat-cnt-3').innerHTML  = cnt23 + makeChgBadge(g23items);
   document.getElementById('stat-cnt-10').innerHTML = cnt410+ makeChgBadge(g10items);
   document.getElementById('stat-cnt-rest').innerText = cntRest + '개 / ' + cntAll + '개국';
+  // 1위 국가명
+  const rank1Countries = list.filter(x => x.rank === 1).map(x => x.name);
+  const namesEl = document.getElementById('stat-cnt-1-names');
   // 요약 순위별 전체 국가 그룹 렌더
   renderSummaryRankGroups(
     list,
-    'lb-ps-container',
+    'ps-summary-rank-groups',
     n => FLAGS[n] || '',
     n => getStoreUrl(n),
     true
-  );
-
-  // 지역별 순위 렌더
-  const _psListMap = {};
-  list.forEach(x => { _psListMap[x.name] = x; });
-  // 지역별 렌더는 FLAGS 전체 국가 기준 (WEIGHTS 없는 나라는 w=0.1 부여)
-  const psRegionWeightMap = {};
-  Object.keys(FLAGS).forEach(name => {
-    psRegionWeightMap[name] = WEIGHTS[name] || 0.1;
-  });
-  renderRegionSummary(
-    'ps-region-summary',
-    psRegionWeightMap,
-    FLAGS,
-    name => { const x = _psListMap[name]; return x ? x.rank : 999; },
-    name => { const x = _psListMap[name]; return x ? x.change : 0; },
-    'var(--blood)',
-    historyData,
-    (entry, name) => getRank(entry, name)
   );
 
   // 리더보드 PS - 순위별 그룹
@@ -1654,7 +1571,7 @@ function render() {
         const ch = psChangeMap[n] || 0;
         const chTxt = ch > 0 ? `<span style="font-size:9px;color:var(--up);font-weight:800">▲${ch}</span>`
                     : ch < 0 ? `<span style="font-size:9px;color:var(--down);font-weight:800">▼${Math.abs(ch)}</span>` : '';
-        return `<div class="top10-item ${tc}" onclick="showCountryChart('${n}')"><span class="n">${FLAGS[n]||''} <a href="${getStoreUrl(n)}" target="_blank" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${n}</a>${starBadge(n, true)}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank >= 9999 ? '—' : rank + '위' + (psChangeMap ? (() => { const d = getDaysAtRank(n, rank); return d>1?`(${d}d)`:''; })() : '')}${chTxt}</span></div>`;
+        return `<div class="top10-item ${tc}" onclick="showCountryChart('${n}')"><span class="n">${FLAGS[n]||''} ${n}${starBadge(n, true)}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank >= 9999 ? '—' : rank + '위' + (psChangeMap ? (() => { const d = getDaysAtRank(n, rank); return d>1?`(${d}d)`:''; })() : '')}${chTxt}</span></div>`;
       }).join('');
       return `<div>
         <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
@@ -1688,7 +1605,7 @@ function render() {
   renderPsHeatmap(list);
 
   // 모든 이모지를 Twemoji 이미지로 변환 (PC/모바일 크로스 플랫폼)
-  // twemoji는 각 섹션 렌더 후 개별 호출하여 전체 body 재파싱 방지
+  twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
 }
 
 function renderPsTable(list) {
@@ -1880,7 +1797,7 @@ function downloadCSV() {
   Object.keys(curr.raw_results).forEach(name => {
     const r = getRank(curr, name);
     const allRanks = historyData.map(h => getRank(h, name)).filter(v => v !== 999);
-    const bestR = allRanks.length > 0 ? allRanks.reduce((m, v) => v < m ? v : m, Infinity) : null;
+    const bestR = allRanks.length > 0 ? Math.min(...allRanks) : null;
     const avgR = allRanks.length > 0 ? (allRanks.reduce((a,b)=>a+b,0)/allRanks.length) : null;
     rows.push({ name, rank: r, best: bestR, avg: avgR, url: getStoreUrl(name) });
   });
@@ -2058,25 +1975,7 @@ function switchTab(tabEl) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-/* ── 서브탭 (국가별 탭 내 히트맵/테이블 전환) ── */
-function switchSubTab(view) {
-  const heatmap = document.getElementById('subtab-view-heatmap');
-  const table   = document.getElementById('subtab-view-table');
-  const btnHm   = document.getElementById('subtab-heatmap');
-  const btnTbl  = document.getElementById('subtab-table');
-  if (!heatmap || !table) return;
-  if (view === 'heatmap') {
-    heatmap.style.display = '';
-    table.style.display   = 'none';
-    if (btnHm)  { btnHm.style.background  = 'var(--blood)'; btnHm.style.color  = '#fff'; }
-    if (btnTbl) { btnTbl.style.background = 'var(--bg-2)';  btnTbl.style.color = 'var(--tx-3)'; }
-  } else {
-    heatmap.style.display = 'none';
-    table.style.display   = '';
-    if (btnTbl) { btnTbl.style.background = 'var(--steam)'; btnTbl.style.color  = '#fff'; }
-    if (btnHm)  { btnHm.style.background  = 'var(--bg-2)';  btnHm.style.color   = 'var(--tx-3)'; }
-  }
-}
+/* ── stToggle: collapsible helper ── */
 
 /* ── stToggle: collapsible helper ── */
 function stToggle(bodyId, headerEl) {
@@ -2148,7 +2047,7 @@ function openStsModal(n) {
   if (!h.length) {
     ['sts-modal-current','sts-modal-best','sts-modal-avg'].forEach(id => document.getElementById(id).textContent = '—');
   } else {
-    const cur = h[h.length-1].r, best = h.reduce((m,x) => x.r < m ? x.r : m, Infinity), avg = Math.round(h.reduce((s,x)=>s+x.r,0)/h.length*10)/10;
+    const cur = h[h.length-1].r, best = Math.min(...h.map(x=>x.r)), avg = Math.round(h.reduce((s,x)=>s+x.r,0)/h.length*10)/10;
     document.getElementById('sts-modal-current').textContent = cur + '위';
     document.getElementById('sts-modal-best').textContent    = best + '위';
     document.getElementById('sts-modal-avg').textContent     = avg + '위';
@@ -2290,7 +2189,7 @@ const SALES_MODES = {
   },
   optimistic: {
     label: '🔴 낙관적',
-    postDecay:    0.89,   // D5~D11 실측(300만→400만) 역산 보정
+    postDecay:    0.92,   // D5+ 감소 완만
     psExp:        0.38,   // 순위 탄성 높음 (순위 유지 시 판매 잘 버팀)
     stExp:        0.40,
     xbExp:        0.25,
@@ -2299,22 +2198,76 @@ const SALES_MODES = {
     dailyFloor:   30000,
     d14Decay:     0.93,
   },
+  anchored: {
+    label: '📌 공지기반',
+    // 공식 발표 3개 앵커로 역산한 파라미터
+    // 200만(3/20 23:46) → 300만(3/24 19:19) → 400만(4/1 11:00)
+    // 300→400만 구간 일별 감소율 역산: 0.913 (Elden Ring 수준)
+    postDecay:    0.913,
+    psExp:        0.28,   // 플랫폼 분배는 중간 모드 동일
+    stExp:        0.30,
+    xbExp:        0.18,
+    otherMin:     0.14,
+    otherMax:     0.18,
+    dailyFloor:   20000,
+    d14Decay:     0.87,
+    // 공지 기반 전용 앵커
+    anchor400:    { sales: 4_000_000, ms: new Date('2026-04-01T11:00:00+09:00') },
+  },
 };
-let currentSalesMode = 'optimistic';
+let currentSalesMode = 'normal';
 
 function setSalesMode(mode) {
   currentSalesMode = mode;
-  // 탭 버튼 스타일 업데이트
-  const colors = { conservative: '#4a9eff', normal: '#aaaaaa', optimistic: '#ff4757' };
-  ['conservative', 'normal', 'optimistic'].forEach(m => {
+  const colors = {
+    conservative: '#4a9eff',
+    normal:       '#aaaaaa',
+    optimistic:   '#ff4757',
+    anchored:     '#f1c40f',
+  };
+  const rgbs = {
+    conservative: '74,158,255',
+    normal:       '170,170,170',
+    optimistic:   '255,71,87',
+    anchored:     '241,196,15',
+  };
+  ['conservative', 'normal', 'optimistic', 'anchored'].forEach(m => {
     const btn = document.getElementById(`sales-mode-${m}`);
     if (!btn) return;
     const active = m === mode;
     const c = colors[m];
-    btn.style.border      = `1px solid ${active ? c : 'var(--bd)'}`;
-    btn.style.background  = active ? `rgba(${m==='conservative'?'74,158,255':m==='normal'?'170,170,170':'255,71,87'},0.15)` : 'var(--bg-3)';
-    btn.style.color       = active ? c : 'var(--tx-3)';
+    btn.style.border     = `1px solid ${active ? c : 'var(--bd)'}`;
+    btn.style.background = active ? `rgba(${rgbs[m]},0.15)` : 'var(--bg-3)';
+    btn.style.color      = active ? c : 'var(--tx-3)';
   });
+  // 공지기반 슬라이더 패널 토글
+  const ancCtrl = document.getElementById('anchored-controls');
+  if (ancCtrl) ancCtrl.style.display = mode === 'anchored' ? 'block' : 'none';
+  if (mode === 'anchored') updateAnchoredDecayLabel();
+  renderSalesChart();
+}
+
+function updateAnchoredDecayLabel() {
+  const slider = document.getElementById('anchored-decay-slider');
+  const lbl    = document.getElementById('anchored-decay-lbl');
+  const refLbl = document.getElementById('anchored-ref-lbl');
+  if (!slider) return;
+  const v = parseFloat(slider.value);
+  if (lbl) lbl.textContent = v.toFixed(3);
+
+  // 참조 타이틀 힌트
+  const refs = [
+    { max: 0.865, name: 'FF XVI 수준', desc: 'PS독점·빠른 포화', color: '#e74c3c' },
+    { max: 0.875, name: 'Cyberpunk~FF XVI', desc: '논란·빠른 하락', color: '#e67e22' },
+    { max: 0.888, name: 'Black Myth 수준', desc: '강한 피크 후 빠른 하락', color: '#e67e22' },
+    { max: 0.900, name: 'MHW·BM 중간', desc: '멀티플랫폼 평균', color: '#f1c40f' },
+    { max: 0.916, name: 'Elden Ring 수준', desc: 'GOTY급 스테디셀러', color: '#2ecc71' },
+    { max: 0.931, name: 'MHW 낙관', desc: '멀티플랫폼 장기판매 최상', color: '#4a9eff' },
+  ];
+  const ref = refs.find(r => v <= r.max) || refs[refs.length - 1];
+  if (refLbl) refLbl.innerHTML =
+    `→ <b style="color:${ref.color}">${ref.name}</b> <span style="color:var(--tx-4)">(${ref.desc})</span>`;
+
   renderSalesChart();
 }
 
@@ -2344,25 +2297,27 @@ function renderSalesChart() {
   if (lbl) lbl.textContent = stBaseRatio;
 
   // 차트 모드 라벨 업데이트
-  const modeColors = { conservative: '#4a9eff', normal: '#aaaaaa', optimistic: '#ff4757' };
+  const modeColors = { conservative: '#4a9eff', normal: '#aaaaaa', optimistic: '#ff4757', anchored: '#f1c40f' };
   const modeLbl = document.getElementById('sales-chart-mode-lbl');
   if (modeLbl) {
     const MODE_INFO = SALES_MODES[currentSalesMode];
-    modeLbl.textContent = MODE_INFO.label;
-    modeLbl.style.color = modeColors[currentSalesMode];
-    modeLbl.style.border = `1px solid ${modeColors[currentSalesMode]}55`;
-    modeLbl.style.background = `${modeColors[currentSalesMode]}11`;
+    let modeText = MODE_INFO.label;
+    if (currentSalesMode === 'anchored') {
+      const slEl = document.getElementById('anchored-decay-slider');
+      if (slEl) modeText += ` decay:${parseFloat(slEl.value).toFixed(3)}`;
+    }
+    modeLbl.textContent = modeText;
+    modeLbl.style.color = modeColors[currentSalesMode] || '#aaaaaa';
+    modeLbl.style.border = `1px solid ${modeColors[currentSalesMode] || '#aaa'}55`;
+    modeLbl.style.background = `${modeColors[currentSalesMode] || '#aaa'}11`;
   }
 
   const MODE = SALES_MODES[currentSalesMode] || SALES_MODES.normal;
 
-  const MILESTONE_DAY4  = 3000000;
-  const MILESTONE_DAY12 = 4000000;  // ← D12(4/1) 공식 발표 앵커
-  const PRE4_INCREMENT  = Math.max(0, MILESTONE_DAY4 - soldThroughD0);
-  const D4_TO_D12_INC   = Math.max(0, MILESTONE_DAY12 - MILESTONE_DAY4); // D5~D12 합산 = 100만
-  const POST_D12_DECAY  = MODE.postDecay;  // D13+ 감소율
-  const POST_D4_DECAY   = MODE.postDecay;  // 하위 호환용 (미사용)
-  const DAILY_FLOOR     = MODE.dailyFloor;
+  const MILESTONE_DAY4 = 3000000;
+  const PRE4_INCREMENT = Math.max(0, MILESTONE_DAY4 - soldThroughD0);
+  const POST_D4_DECAY  = MODE.postDecay;
+  const DAILY_FLOOR    = MODE.dailyFloor;
   const OTHER_ALLOC    = { ps: 0.20, st: 0.35, xb: 0.05, other: 0.40 };
 
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
@@ -2443,39 +2398,60 @@ function renderSalesChart() {
   });
   const comboSignal = days.map((_, i) => 0.52 * psSignal[i] + 0.48 * stSignal[i]);
 
-  // ── 일별 총 판매량: D0=2M, D4=3M을 하드 앵커로 맞추고 사이를 순위 기반으로 분배 ──
+  // ── 일별 총 판매량 계산 ──
   const totalDaily = Array(days.length).fill(0);
   totalDaily[0] = soldThroughD0;
 
-  const day14Weights = [];
-  for (let di = 1; di <= 4; di++) {
-    const decay = Math.pow(MODE.d14Decay, di - 1);
-    const momentum = clamp(comboSignal[di] / (comboSignal[0] || 1), 0.72, 1.18);
-    day14Weights.push(Math.max(0.12, decay * momentum));
-  }
-  const wSum = day14Weights.reduce((a, b) => a + b, 0) || 1;
-  for (let di = 1; di <= 4; di++) {
-    totalDaily[di] = Math.round(PRE4_INCREMENT * (day14Weights[di - 1] / wSum));
-  }
+  if (currentSalesMode === 'anchored') {
+    // ── 📌 공지기반: 3개 앵커(200만/300만/400만) 시각 기준 역산 ──
+    // 200만: D0 (3/20 23:46) → D1~D4 구간에 100만 분배
+    // 300만: D4 후반 (3/24 19:19)
+    // 400만: D12 오전 (4/1 11:00) → D5~D12 구간에 100만 분배
+    // 역산 postDecay = 0.913 (Elden Ring과 동일 수준)
 
-  // ── D5~D12: D4→D12 앵커(100만) 사이를 순위 신호로 분배 ──
-  const day5_12Weights = [];
-  for (let di = 5; di <= 12; di++) {
-    const signalRef = comboSignal[4] || comboSignal[0] || 1;
-    const rel = clamp((comboSignal[di] || signalRef) / signalRef, 0.70, 1.25);
-    const decay = Math.pow(0.89, di - 4); // 실측 역산 decay
-    day5_12Weights.push(Math.max(0.05, decay * rel));
-  }
-  const w5_12Sum = day5_12Weights.reduce((a, b) => a + b, 0) || 1;
-  for (let di = 5; di <= 12; di++) {
-    totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, D4_TO_D12_INC * (day5_12Weights[di - 5] / w5_12Sum)));
-  }
+    // D1~D4: 200→300만 구간 (실제 3.81일) — d14Decay 기준 분배
+    const w14 = Array.from({length:4}, (_,i) => Math.pow(MODE.d14Decay, i));
+    const w14sum = w14.reduce((a,b)=>a+b,0);
+    for (let di = 1; di <= 4; di++) {
+      totalDaily[di] = Math.round(PRE4_INCREMENT * (w14[di-1] / w14sum));
+    }
 
-  // ── D13+: D12 앵커 기준으로 POST_D12_DECAY 적용 ──
-  for (let di = 13; di < days.length; di++) {
-    const signalRef = comboSignal[12] || comboSignal[4] || comboSignal[0] || 1;
-    const rel = clamp((comboSignal[di] || signalRef) / signalRef, 0.75, 1.20);
-    totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[12] * Math.pow(POST_D12_DECAY, di - 12) * rel));
+    // D5~D12: 300→400만 구간 (실제 7.65일) — 역산 decay 0.913으로 100만 정확히 분배
+    const ANC_POST_DECAY = 0.913;
+    const d5Base = totalDaily[4]; // D4 값에서 연속
+    // D5~D12 비율 합산
+    const ancWeights = Array.from({length:8}, (_,i) => Math.pow(ANC_POST_DECAY, i+1));
+    const ancWsum = ancWeights.reduce((a,b)=>a+b,0);
+    const ancPool = 1_000_000; // 300만→400만 = 100만
+    for (let di = 5; di <= 12; di++) {
+      totalDaily[di] = Math.round(ancPool * (ancWeights[di-5] / ancWsum));
+    }
+
+    // D13+: 슬라이더 decay 값 사용 (업계 유사 타이틀 보정)
+    const sliderEl = document.getElementById('anchored-decay-slider');
+    const ANC_D13_DECAY = sliderEl ? parseFloat(sliderEl.value) : 0.893;
+    for (let di = 13; di < days.length; di++) {
+      totalDaily[di] = Math.round(Math.max(MODE.dailyFloor, totalDaily[12] * Math.pow(ANC_D13_DECAY, di - 12)));
+    }
+
+  } else {
+    // ── 기존 3모드: D0=2M, D4=3M 앵커 + 순위 신호 기반 ──
+    const day14Weights = [];
+    for (let di = 1; di <= 4; di++) {
+      const decay = Math.pow(MODE.d14Decay, di - 1);
+      const momentum = clamp(comboSignal[di] / (comboSignal[0] || 1), 0.72, 1.18);
+      day14Weights.push(Math.max(0.12, decay * momentum));
+    }
+    const wSum = day14Weights.reduce((a, b) => a + b, 0) || 1;
+    for (let di = 1; di <= 4; di++) {
+      totalDaily[di] = Math.round(PRE4_INCREMENT * (day14Weights[di - 1] / wSum));
+    }
+
+    for (let di = 5; di < days.length; di++) {
+      const signalRef = comboSignal[4] || comboSignal[0] || 1;
+      const rel = clamp((comboSignal[di] || signalRef) / signalRef, 0.75, 1.20);
+      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[4] * Math.pow(POST_D4_DECAY, di - 4) * rel));
+    }
   }
 
   // ── 플랫폼 분배: 순위 신호 + 기타 채널 보정 ──
@@ -2586,20 +2562,35 @@ function renderSalesChart() {
       return Math.max(DAILY_FLOOR, lastDaily * Math.pow(0.90, offset - 1) * rel);
     }
 
+    // ── 공식 발표 하드 앵커 (모드 무관 고정) ──
+    const HARD_ANCHORS = [
+      { target: 2_000_000, date: new Date('2026-03-20T23:46:00+09:00'), day: 0  }, // 200만
+      { target: 3_000_000, date: new Date('2026-03-24T19:19:00+09:00'), day: 4  }, // 300만
+      { target: 4_000_000, date: new Date('2026-04-01T11:00:00+09:00'), day: 12 }, // 400만
+    ];
+
     function findMilestone(target) {
-      if (cumNow >= target) {
-        for (let i = 0; i < totCum.length; i++) {
-          if (totCum[i] >= target) {
-            return { date: new Date(LAUNCH.getTime() + i * 86400000), day: i, achieved: true };
-          }
-        }
-        return { date: new Date(nowMs), day: currentDay, achieved: true };
+      // 공식 앵커는 모드/계산식 무관하게 고정 반환
+      const anchor = HARD_ANCHORS.find(a => a.target === target);
+      if (anchor) {
+        return { date: anchor.date, day: anchor.day, achieved: true };
       }
-      let c = cumNow;
+
+      // 앵커 이후: totCum에서 달성 여부 탐색
+      for (let i = 0; i < totCum.length; i++) {
+        if (totCum[i] >= target) {
+          const achieved = i <= currentDay;
+          return { date: new Date(LAUNCH.getTime() + i * 86400000), day: i, achieved };
+        }
+      }
+
+      // 미달성: 미래 추정
+      let c = totCum[totCum.length - 1] || cumNow;
+      const startDay = totCum.length - 1;
       for (let d = 1; d <= 730; d++) {
-        c += projectedDaily(d);
+        c += projectedDaily(startDay + d - currentDay);
         if (c >= target) {
-          return { date: new Date(nowMs + d * 86400000), day: currentDay + d, achieved: false };
+          return { date: new Date(LAUNCH.getTime() + (startDay + d) * 86400000), day: startDay + d, achieved: false };
         }
       }
       return null;
@@ -2615,7 +2606,11 @@ function renderSalesChart() {
       return `D+${diffDays}`;
     };
 
-    const m3  = findMilestone(3_000_000);
+    // ── 공식 발표 하드 앵커 (모드 무관 고정) ──
+    // D0=200만(3/20), D4=300만(3/24) — 공식 발표 기준, findMilestone 계산 결과와 무관하게 고정
+    const ANCHOR_3M = { date: new Date('2026-03-24T07:00:00+09:00'), day: 4, achieved: true };
+
+    const m3  = ANCHOR_3M;  // 300만: 항상 3/24 고정
     const m4  = findMilestone(4_000_000);
     const m5  = findMilestone(5_000_000);
     const m6  = findMilestone(6_000_000);
@@ -2624,14 +2619,14 @@ function renderSalesChart() {
     const m9  = findMilestone(9_000_000);
     const m10 = findMilestone(10_000_000);
     const mCards = [
-      { label: '🎯 300만 달성 ✅', ms: m3,  color: '#2ecc71' },
-      { label: '🏅 400만 달성 ✅', ms: m4,  color: '#f1c40f' },
-      { label: '🚀 500만 달성',    ms: m5,  color: '#4a9eff' },
-      { label: '🚀 600만 달성',    ms: m6,  color: '#e67e22' },
-      { label: '🔥 700만 달성',    ms: m7,  color: '#e74c3c' },
-      { label: '🔥 800만 달성',    ms: m8,  color: '#c0392b' },
-      { label: '💎 900만 달성',    ms: m9,  color: '#9b59b6' },
-      { label: '💎 1000만 달성',   ms: m10, color: '#8e44ad' },
+      { label: '🎯 300만 달성',  ms: m3,  color: '#2ecc71' },
+      { label: '🎯 400만 달성',  ms: m4,  color: '#1abc9c' },
+      { label: '🚀 500만 달성',  ms: m5,  color: '#f1c40f' },
+      { label: '🚀 600만 달성',  ms: m6,  color: '#e67e22' },
+      { label: '🔥 700만 달성',  ms: m7,  color: '#e74c3c' },
+      { label: '🔥 800만 달성',  ms: m8,  color: '#c0392b' },
+      { label: '💎 900만 달성',  ms: m9,  color: '#9b59b6' },
+      { label: '💎 1000만 달성', ms: m10, color: '#8e44ad' },
     ];
 
     msEl.innerHTML = mCards.map(({ label, ms, color }) => {
@@ -2688,7 +2683,6 @@ function renderSalesChart() {
         { label: 'Steam', data: stCum,    borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.05)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
         { label: 'Xbox',  data: xbCum,    borderColor: '#107C10', backgroundColor: 'rgba(16,124,16,0.05)',  borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
         { label: '기타',   data: otherCum, borderColor: '#9b59b6', backgroundColor: 'rgba(155,89,182,0.05)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0 },
-        ...buildExtDatasets(labels),
       ]
     },
     options: chartOpts
@@ -2696,353 +2690,9 @@ function renderSalesChart() {
 }
 
 
-
-/* ══════════════════════════════════════════════════════════════
-   외부 Steam 판매량 추정치 관리
-══════════════════════════════════════════════════════════════ */
-const EXT_SOURCES = {
-  vg: { label: 'VG Insights', color: '#2ecc71' },
-  gm: { label: 'Gamalytic',   color: '#f1c40f' },
-  pt: { label: 'PlayTracker', color: '#a55eea' },
-};
-
-// 기본 데이터 (스크린샷 기준 3/30 수치)
-let _extData = {
-  vg: [{ date: '2026-03-30', val: 1670000 }],
-  gm: [{ date: '2026-03-30', val: 1930000 }],
-  pt: [{ date: '2026-03-30', val: 2020000 }],
-};
-
-function loadExtData() {
-  try {
-    const saved = localStorage.getItem('cd_ext_sales');
-    if (saved) _extData = JSON.parse(saved);
-  } catch(e) {}
-  renderExtRows();
-}
-
-function saveExtData() {
-  // 입력 필드에서 현재 값을 수집
-  ['vg','gm','pt'].forEach(src => {
-    const rows = document.querySelectorAll(`[data-ext-src="${src}"]`);
-    _extData[src] = [];
-    rows.forEach(row => {
-      const date = row.querySelector('.ext-date')?.value?.trim();
-      const val  = parseInt(row.querySelector('.ext-val')?.value?.replace(/,/g,'') || '0');
-      if (date && val > 0) _extData[src].push({ date, val });
-    });
-  });
-  try { localStorage.setItem('cd_ext_sales', JSON.stringify(_extData)); } catch(e) {}
-  renderSalesChart();
-}
-
-function clearExtData() {
-  _extData = { vg: [], gm: [], pt: [] };
-  try { localStorage.removeItem('cd_ext_sales'); } catch(e) {}
-  renderExtRows();
-  renderSalesChart();
-}
-
-function addExtRow(src, date='', val='') {
-  const container = document.getElementById(`ext-${src}-rows`);
-  if (!container) return;
-  const div = document.createElement('div');
-  div.dataset.extSrc = src;
-  div.style.cssText = 'display:flex;gap:3px;margin-bottom:3px;align-items:center';
-  div.innerHTML = `
-    <input class="ext-date" type="date" value="${date}" style="flex:1;min-width:0;background:var(--bg-4);border:1px solid var(--bd);border-radius:3px;padding:2px 4px;color:var(--tx-1);font-size:10px">
-    <input class="ext-val" type="number" value="${val}" placeholder="판매수" style="width:72px;background:var(--bg-4);border:1px solid var(--bd);border-radius:3px;padding:2px 4px;color:var(--tx-1);font-size:10px">
-    <button onclick="this.parentElement.remove()" style="background:transparent;border:none;color:var(--tx-4);cursor:pointer;font-size:13px;padding:0 2px">✕</button>`;
-  container.appendChild(div);
-}
-
-function renderExtRows() {
-  ['vg','gm','pt'].forEach(src => {
-    const container = document.getElementById(`ext-${src}-rows`);
-    if (!container) return;
-    container.innerHTML = '';
-    (_extData[src] || []).forEach(({ date, val }) => addExtRow(src, date, val));
-  });
-}
-
-function buildExtDatasets(labels) {
-  // labels: ['3/20', '3/21', ...] 형식
-  const LAUNCH = new Date('2026-03-20T07:00:00+09:00');
-  const datasets = [];
-  Object.entries(EXT_SOURCES).forEach(([src, meta]) => {
-    const points = (_extData[src] || []).map(({ date, val }) => {
-      const d = new Date(date + 'T12:00:00+09:00');
-      const dayIdx = Math.round((d - LAUNCH) / 86400000);
-      const m = d.getMonth() + 1, day = d.getDate();
-      const lbl = `${m}/${day}`;
-      const idx = labels.indexOf(lbl);
-      return idx >= 0 ? { x: idx, y: val } : null;
-    }).filter(Boolean);
-
-    if (!points.length) return;
-
-    datasets.push({
-      label: meta.label,
-      type: 'scatter',
-      data: points.map(p => ({ x: labels[p.x], y: p.y })),
-      backgroundColor: meta.color,
-      borderColor: '#111',
-      borderWidth: 1.5,
-      pointRadius: 8,
-      pointHoverRadius: 10,
-      pointStyle: 'triangle',
-      showLine: false,
-      order: -1,
-    });
-  });
-  return datasets;
-}
-
-// 페이지 로드 시 저장된 데이터 복원
-window.addEventListener('DOMContentLoaded', loadExtData);
-
 /* ── 요약 섹션 미니 차트 ── */
 let summaryPsCI = null, summaryStCI = null;
 let summaryPsTop5KrCI = null, summaryStTop5KrCI = null;
-
-/* ── 지역 매핑 & 지역별 순위 렌더 ── */
-const PS_REGION = {
-  // 북미
-  '미국':'북미', '캐나다':'북미', '멕시코':'북미',
-  // 중남미
-  '브라질':'중남미', '아르헨티나':'중남미', '칠레':'중남미', '콜롬비아':'중남미',
-  '페루':'중남미', '우루과이':'중남미', '볼리비아':'중남미', '에콰도르':'중남미',
-  '파라과이':'중남미', '과테말라':'중남미', '온두라스':'중남미', '코스타리카':'중남미',
-  '엘살바도르':'중남미', '니카라과':'중남미', '파나마':'중남미',
-  // 유럽
-  '영국':'유럽', '독일':'유럽', '프랑스':'유럽', '스페인':'유럽',
-  '이탈리아':'유럽', '네덜란드':'유럽', '스웨덴':'유럽', '노르웨이':'유럽',
-  '덴마크':'유럽', '핀란드':'유럽', '오스트리아':'유럽', '스위스':'유럽',
-  '벨기에':'유럽', '폴란드':'유럽', '체코':'유럽', '포르투갈':'유럽',
-  '그리스':'유럽', '헝가리':'유럽', '루마니아':'유럽', '슬로바키아':'유럽',
-  '슬로베니아':'유럽', '크로아티아':'유럽', '불가리아':'유럽', '우크라이나':'유럽',
-  '아이슬란드':'유럽', '아일랜드':'유럽', '룩셈부르크':'유럽', '몰타':'유럽',
-  '키프로스':'유럽',
-  // 중동/아프리카
-  '터키':'중동/아프리카', '사우디아라비아':'중동/아프리카', '아랍에미리트':'중동/아프리카',
-  '이스라엘':'중동/아프리카', '쿠웨이트':'중동/아프리카', '레바논':'중동/아프리카',
-  '오만':'중동/아프리카', '카타르':'중동/아프리카', '바레인':'중동/아프리카',
-  '남아공':'중동/아프리카',
-  // 아시아
-  '일본':'아시아', '한국':'아시아', '중국':'아시아', '홍콩':'아시아',
-  '대만':'아시아', '싱가포르':'아시아', '태국':'아시아', '인도':'아시아',
-  '말레이시아':'아시아', '인도네시아':'아시아', '필리핀':'아시아', '베트남':'아시아',
-  // 오세아니아
-  '호주':'오세아니아', '뉴질랜드':'오세아니아',
-};
-const STS_REGION = PS_REGION; // 동일 매핑 재사용
-
-const REGION_META = {
-  '북미':        { icon: '🌎', color: '#ff4757' },
-  '중남미':      { icon: '🌎', color: '#ff9f43' },
-  '유럽':        { icon: '🌍', color: '#4a9eff' },
-  '아시아':      { icon: '🌏', color: '#f1c40f' },
-  '오세아니아':  { icon: '🌏', color: '#2ecc71' },
-  '중동/아프리카':{ icon: '🌍', color: '#a55eea' },
-};
-
-/* 지역별 차트 인스턴스 저장 */
-const _regCharts = {};
-
-function renderRegionSummary(containerId, weightMap, flagMap, rankGetter, changeGetter, accentColor, histEntries, histRankGetter) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-
-  const totalW = Object.values(weightMap).reduce((s, w) => s + w, 0);
-  const RMAP = containerId.startsWith('ps') ? PS_REGION : STS_REGION;
-
-  // 지역별 집계
-  const regions = {};
-  Object.entries(weightMap).forEach(([name, w]) => {
-    const reg = RMAP[name] || '기타';
-    if (!regions[reg]) regions[reg] = { countries: [], totalW: 0 };
-    const rank   = rankGetter(name);
-    const change = changeGetter(name);
-    regions[reg].countries.push({ name, w, rank, change });
-    regions[reg].totalW += w;
-  });
-
-  // 지역 내 국가: 점유율(w) 내림차순 정렬
-  Object.values(regions).forEach(reg => {
-    reg.countries.sort((a, b) => b.w - a.w);
-  });
-
-  // 지역 가중 평균 순위 계산 (순위 밖 제외)
-  Object.values(regions).forEach(reg => {
-    const ranked = reg.countries.filter(x => x.rank < 999);
-    if (!ranked.length) { reg.avg = null; return; }
-    let ws = 0, wt = 0;
-    ranked.forEach(x => { ws += x.rank * x.w; wt += x.w; });
-    reg.avg = ws / wt;
-  });
-
-  // 지역: 점유율(totalW) 내림차순 정렬
-  const sortedRegions = Object.entries(regions)
-    .sort((a, b) => b[1].totalW - a[1].totalW);
-
-  const meta = REGION_META;
-
-  el.innerHTML = '<div class="reg-wrap">' + sortedRegions.map(([regName, reg], ri) => {
-    const pct    = Math.round(reg.totalW / totalW * 100);
-    const avgStr = reg.avg != null
-      ? `<span style="color:${accentColor}">${reg.avg.toFixed(1)}위</span>`
-      : `<span style="color:var(--tx-4)">—</span>`;
-    const m = meta[regName] || { icon: '🌐', color: '#888' };
-    const bodyId = containerId + '-reg-body-' + ri;
-    const arrowId = containerId + '-reg-arrow-' + ri;
-
-    const countriesHtml = reg.countries.map(({ name, w, rank, change }) => {
-      const cPct = Math.round(w / totalW * 100);
-      const cPctReg = Math.round(w / reg.totalW * 100);
-      const rankColor = rank === 1 ? 'var(--gold)' : rank <= 3 ? '#c0c0c0' : rank <= 10 ? 'var(--steam)' : rank < 999 ? 'var(--tx-2)' : 'var(--tx-4)';
-      const rankTxt = rank < 999 ? `<span style="color:${rankColor}">${rank}위</span>` : `<span style="color:var(--tx-4)">-</span>`;
-      let chgTxt = '';
-      if (change > 0)      chgTxt = `<span style="color:var(--up)">▲${change}</span>`;
-      else if (change < 0) chgTxt = `<span style="color:var(--down)">▼${Math.abs(change)}</span>`;
-      else                 chgTxt = `<span style="color:var(--tx-4)">—</span>`;
-      return `<div>
-        <div class="reg-country-row">
-          <span class="reg-c-flag">${flagMap[name] || ''}</span>
-          <span class="reg-c-name">${name}</span>
-          <span class="reg-c-share">W:${cPct}%</span>
-          <span class="reg-c-rank">${rankTxt}</span>
-          <span class="reg-c-chg">${chgTxt}</span>
-        </div>
-        <div class="reg-bar-wrap">
-          <div class="reg-bar-fill" style="width:${cPctReg}%;background:${m.color}"></div>
-        </div>
-      </div>`;
-    }).join('');
-
-    const chartId = containerId + '-reg-chart-' + ri;
-
-    return `<div class="reg-section">
-      <div class="reg-header" onclick="toggleRegion('${bodyId}','${arrowId}','${chartId}','${containerId}')">
-        <span class="reg-icon">${m.icon}</span>
-        <span class="reg-name">${regName}</span>
-        <span class="reg-share">점유 ${pct}%</span>
-        <span class="reg-avg">${avgStr}</span>
-        <span class="reg-arrow" id="${arrowId}">▼</span>
-      </div>
-      <div class="reg-body collapsed" id="${bodyId}" style="max-height:${reg.countries.length * 52 + 200}px">
-        ${countriesHtml}
-        <div style="padding:8px 12px 10px 12px;border-top:1px solid var(--bd)">
-          <div style="font-size:10px;color:var(--tx-4);font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">지역 평균순위 추이</div>
-          <div style="width:100%;overflow:hidden"><canvas id="${chartId}" height="110" style="display:block;width:100%"></canvas></div>
-        </div>
-      </div>
-    </div>`;
-  }).join('') + '</div>';
-
-  // 히스토리 기반 지역별 시계열 미리 계산해서 저장
-  if (histEntries && histRankGetter) {
-    const RMAP2 = containerId.startsWith('ps') ? PS_REGION : STS_REGION;
-    // dayKey → { regionName → {ws,wt} }
-    const dayRegMap = {};
-    histEntries.forEach(entry => {
-      const dk = getKstDayKey(entry.timestamp);
-      if (!dayRegMap[dk]) dayRegMap[dk] = {};
-      Object.entries(weightMap).forEach(([name, w]) => {
-        const reg = RMAP2[name] || '기타';
-        const r   = histRankGetter(entry, name);
-        if (r == null || r >= 999) return;
-        if (!dayRegMap[dk][reg]) dayRegMap[dk][reg] = { ws: 0, wt: 0 };
-        dayRegMap[dk][reg].ws += r * w;
-        dayRegMap[dk][reg].wt += w;
-      });
-    });
-    const dayKeys = Object.keys(dayRegMap).sort();
-    const labels  = dayKeys.map(getDayLabel);
-    // 각 region 데이터 저장
-    sortedRegions.forEach(([regName], ri2) => {
-      const chartId2 = containerId + '-reg-chart-' + ri2;
-      const data = dayKeys.map(dk => {
-        const e = dayRegMap[dk]?.[regName];
-        return (e && e.wt > 0) ? Math.round(e.ws / e.wt * 10) / 10 : null;
-      });
-      _regCharts[chartId2 + '_data'] = { labels, data };
-    });
-  }
-}
-
-function toggleRegion(bodyId, arrowId, chartId, containerId) {
-  const body  = document.getElementById(bodyId);
-  const arrow = document.getElementById(arrowId);
-  if (!body) return;
-  const collapsed = body.classList.toggle('collapsed');
-  if (arrow) arrow.classList.toggle('open', !collapsed);
-
-  // 펼칠 때 차트 렌더
-  if (!collapsed && chartId) {
-    const canvasEl = document.getElementById(chartId);
-    if (!canvasEl) return;
-
-    // 이미 렌더된 경우 skip
-    if (_regCharts[chartId]) return;
-
-    const cached = _regCharts[chartId + '_data'];
-    if (!cached || !cached.labels.length) return;
-
-    const { labels, data } = cached;
-    const isPs = containerId.startsWith('ps');
-    const lineColor = isPs ? '#ff4757' : '#4a9eff';
-
-    canvasEl.width  = canvasEl.parentElement.offsetWidth || 400;
-    canvasEl.height = 110;
-
-    _regCharts[chartId] = new Chart(canvasEl.getContext('2d'), {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          data,
-          borderColor: lineColor,
-          backgroundColor: lineColor === '#ff4757' ? 'rgba(255,71,87,0.08)' : 'rgba(74,158,255,0.08)',
-          borderWidth: 2,
-          pointRadius: data.map((v, i) => (i === 0 || i === data.length - 1) ? 4 : 0),
-          pointBackgroundColor: lineColor,
-          fill: true,
-          tension: 0.3,
-          spanGaps: true
-        }]
-      },
-      options: {
-        responsive: false,
-        animation: false,
-        layout: { padding: { top: 6, right: 4 } },
-        scales: {
-          x: {
-            ticks: { color: '#777', maxTicksLimit: 10, font: { size: 9 } },
-            grid: { color: '#1a1a1a' }
-          },
-          y: {
-            reverse: true,
-            suggestedMin: 1,
-            ticks: {
-              color: '#777',
-              font: { size: 9 },
-              callback: v => v > 0 ? v + '위' : ''
-            },
-            grid: { color: '#1a1a1a' }
-          }
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: ctx => ` 평균 ${ctx.parsed.y}위`
-            }
-          }
-        }
-      }
-    });
-  }
-}
 
 function getTop5PlusKorea(weightMap) {
   const top5 = Object.entries(weightMap || {})
@@ -3071,13 +2721,13 @@ function buildDailyBestSeries(entries, countries, rankGetter) {
     const dayKey = getKstDayKey(entry.timestamp);
     if (!dayMap[dayKey]) {
       dayMap[dayKey] = {};
-      countries.forEach(name => { dayMap[dayKey][name] = { sum: 0, cnt: 0 }; });
+      countries.forEach(name => { dayMap[dayKey][name] = null; });
     }
     countries.forEach(name => {
       const rank = rankGetter(entry, name);
       if (rank == null || rank >= 999) return;
-      dayMap[dayKey][name].sum += rank;
-      dayMap[dayKey][name].cnt += 1;
+      const prev = dayMap[dayKey][name];
+      dayMap[dayKey][name] = prev == null ? rank : Math.min(prev, rank);
     });
   });
   const dayKeys = Object.keys(dayMap).sort();
@@ -3085,10 +2735,7 @@ function buildDailyBestSeries(entries, countries, rankGetter) {
     labels: dayKeys.map(getDayLabel),
     series: countries.map(name => ({
       name,
-      data: dayKeys.map(dayKey => {
-        const e = dayMap[dayKey][name];
-        return e.cnt > 0 ? Math.round(e.sum / e.cnt) : null;
-      })
+      data: dayKeys.map(dayKey => dayMap[dayKey][name])
     }))
   };
 }
@@ -3290,7 +2937,7 @@ function renderSummaryCharts() {
     });
   }
 
-  // ── PS Top5 + 한국 일자별 평균순위 차트 ──
+  // ── PS Top5 + 한국 일자별 최고순위 차트 ──
   const psTop5KrEl = document.getElementById('summaryPsTop5KrChart');
   if (psTop5KrEl && historyData.length > 0) {
     const countries = getTop5PlusKorea(WEIGHTS);
@@ -3322,7 +2969,7 @@ function renderSummaryCharts() {
     }
   }
 
-  // ── Steam Top5 + 한국 일자별 평균순위 차트 ──
+  // ── Steam Top5 + 한국 일자별 최고순위 차트 ──
   const stTop5KrEl = document.getElementById('summaryStTop5KrChart');
   if (stTop5KrEl && stsHist.length > 0) {
     const countries = getTop5PlusKorea(STS_W);
@@ -3411,8 +3058,7 @@ function renderSummaryRankGroups(list, containerId, flagFn, urlFn, isPsFlag) {
       }
       const spark = makeSparkline(histRanks, sparkColor);
 
-      const _onclick = isPsFlag ? `showCountryChart('${x.name}')` : `openStsModal('${x.name}')`;
-      return `<div class="hm-row${r ? '' : ' hm-notfound'}" onclick="${_onclick}">
+      return `<div class="hm-row${r ? '' : ' hm-notfound'}" onclick="showCountryChart('${x.name}')">
         <div class="hm-bar ${barCls}"></div>
         <div class="hm-info">
           <div class="hm-name">
@@ -3651,7 +3297,7 @@ function renderSTS() {
   renderStsHeatmap(lat, prv);
   renderStsLeaderboard(lat, prv);
   // PS+Steam 데이터 모두 로드 후 차트 렌더
-  if (historyData.length > 0 && document.getElementById('sec-summary')?.classList.contains('active-section')) setTimeout(renderSummaryCharts, 150);
+  if (historyData.length > 0) setTimeout(renderSummaryCharts, 150);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -3813,6 +3459,9 @@ function renderStsTable(lat, prv) {
   setTH('sts-cnt-10', _cnt410,ranked.filter(d=>d.rank>=4&&d.rank<=10));
   const setT = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
   setT('sts-cnt-rest', _cntRest+'개 / '+ranked.length+'개국');
+  // 1위 국가명
+  const stsRank1Names = ranked.filter(d=>d.rank===1).map(d=>d.name);
+  const stsNamesEl = document.getElementById('sts-cnt-1-names');
   // Steam 요약 순위별 전체 국가 그룹 렌더
   const stsListForSum = Object.keys(STS_W).map(n => ({
     name: n,
@@ -3821,64 +3470,19 @@ function renderStsTable(lat, prv) {
   }));
   renderSummaryRankGroups(
     stsListForSum,
-    'lb-sts-container',
+    'sts-summary-rank-groups',
     n => STS_F[n] || '',
     n => { const cc = STS_CC[n] || 'us'; return `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`; },
     false
   );
-
-  // 지역별 순위 렌더
-  renderRegionSummary(
-    'sts-region-summary',
-    STS_W,
-    STS_F,
-    name => lat.results?.[name]?.rank ?? 999,
-    name => { const r = lat.results?.[name]?.rank; const p = prv?.results?.[name]?.rank; return (r && p) ? p - r : 0; },
-    'var(--steam)',
-    stsHist,
-    (entry, name) => entry.results?.[name]?.rank ?? null
-  );
-
-  // 점유율 Top5 현재 순위 카드
-  const stsTop5Countries = Object.entries(STS_W)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([name, w]) => {
-      const item = ranked.find(x => x.name === name);
-      const pr = prv?.results?.[name]?.rank ?? null;
-      const r  = lat.results?.[name]?.rank ?? null;
-      const change = (r && pr) ? pr - r : 0;
-      return { name, w, rank: r ?? 999, change };
-    });
-  const stsTop5El = document.getElementById('sts-top5-rank-list');
-  if (stsTop5El) {
-    const totalSW = stsTop5Countries.reduce((s, x) => s + x.w, 0);
-    stsTop5El.innerHTML = stsTop5Countries.map(({ name, w, rank, change }) => {
-      const pct = Math.round(w / totalSW * 100);
-      const rankColor = rank === 1 ? 'var(--gold)' : rank <= 3 ? '#c0c0c0' : rank <= 10 ? '#4a9eff' : rank < 999 ? 'var(--tx-2)' : 'var(--tx-4)';
-      const rankStr = rank >= 999
-        ? `<span style="color:var(--tx-4);font-size:12px;font-weight:700">순위 밖</span>`
-        : `<span style="color:${rankColor};font-weight:900;font-size:17px;line-height:1">${rank}<span style="font-size:10px;font-weight:700">위</span></span>`;
-      let chgHtml = '';
-      if (change > 0)      chgHtml = `<span style="color:var(--up);font-size:11px;font-weight:800;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px">▲${change}</span>`;
-      else if (change < 0) chgHtml = `<span style="color:var(--down);font-size:11px;font-weight:800;background:rgba(231,76,60,0.12);padding:1px 5px;border-radius:3px">▼${Math.abs(change)}</span>`;
-      else                 chgHtml = `<span style="color:var(--tx-4);font-size:11px;padding:1px 5px">—</span>`;
-      const stsUrl = `https://store.steampowered.com/charts/topselling/${(STS_CC[name] || 'us').toUpperCase()}`;
-      return `<div style="padding:5px 0;border-bottom:1px solid var(--bd)">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-          <span class="flag" style="font-size:15px">${STS_F[name] || ''}</span>
-          <a href="${stsUrl}" target="_blank" style="flex:1;font-size:13px;font-weight:700;color:var(--tx-2);text-decoration:none;display:flex;align-items:center;gap:4px" onmouseover="this.style.color='var(--steam)'" onmouseout="this.style.color='var(--tx-2)'">${name}<span style="font-size:10px;opacity:0.5">🔗</span></a>
-          <span style="min-width:32px;text-align:right">${chgHtml}</span>
-          <span style="min-width:36px;text-align:right">${rankStr}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:5px">
-          <div style="flex:1;height:3px;background:var(--bg-4);border-radius:2px;overflow:hidden">
-            <div style="height:100%;width:${pct}%;background:var(--steam);border-radius:2px;opacity:0.6"></div>
-          </div>
-          <span style="font-size:9px;color:var(--tx-4);font-weight:700;min-width:28px;text-align:right">점유 ${pct}%</span>
-        </div>
-      </div>`;
-    }).join('');
+  // 최고/최하 순위 카드
+  if (ranked.length) {
+    const stsBest  = ranked.reduce((a,b)=>a.rank<b.rank?a:b);
+    const stsWorst = ranked.reduce((a,b)=>a.rank>b.rank?a:b);
+    setT('sts-best-rank-val',  stsBest.rank+'위');
+    setT('sts-best-rank-name', (STS_F[stsBest.name]||'')+' '+stsBest.name);
+    setT('sts-worst-rank-val', stsWorst.rank+'위');
+    setT('sts-worst-rank-name',(STS_F[stsWorst.name]||'')+' '+stsWorst.name);
   }
 
   // 그룹화
@@ -3987,8 +3591,7 @@ function renderStsLeaderboard(lat, prv) {
       const chTxt = ch > 0 ? `<span style="font-size:9px;color:var(--up);font-weight:800">▲${ch}</span>`
                   : ch < 0 ? `<span style="font-size:9px;color:var(--down);font-weight:800">▼${Math.abs(ch)}</span>` : '';
       const dSts = getStsDaysAtRank(n, rank<9999?rank:0);
-      const _stsUrl = `https://store.steampowered.com/charts/topselling/${(STS_CC[n]||'us').toUpperCase()}`;
-      return `<div class="top10-item ${tc}" onclick="openStsModal('${n}')"><span class="n">${flag} <a href="${_stsUrl}" target="_blank" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${n}</a>${starBadge(n, false)}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank>=9999?'—':rank+'위'+(dSts>1?`(${dSts}d)`:'')}${chTxt}</span></div>`;
+      return `<div class="top10-item ${tc}" onclick="openStsModal('${n}')"><span class="n">${flag} ${n}${starBadge(n, false)}</span><span class="r" style="display:flex;align-items:center;gap:3px">${rank>=9999?'—':rank+'위'+(dSts>1?`(${dSts}d)`:'')}${chTxt}</span></div>`;
     }).join('');
     return `<div>
       <div class="rank-group-header" onclick="toggleRankGroup('${groupId}')">
