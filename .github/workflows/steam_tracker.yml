@@ -35,7 +35,8 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: python steam_concurrent_tracker.py
-
+        permissions:
+          contents: write
       - name: 히스토리 캐시 저장
         uses: actions/cache/save@v5
         if: always()
