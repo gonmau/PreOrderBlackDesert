@@ -1,6 +1,2210 @@
 [
   {
-    "timestamp": "2026-04-02T19:21:51.288694+09:00",
-    "players": 111458
+    "timestamp": "2026-03-20T07:18:00+09:00",
+    "players": 19035,
+    "alltime_peak": 19035,
+    "peak_24h": 19035
+  },
+  {
+    "timestamp": "2026-03-20T07:37:00+09:00",
+    "players": 207196,
+    "alltime_peak": 207196,
+    "peak_24h": 207196
+  },
+  {
+    "timestamp": "2026-03-20T07:39:00+09:00",
+    "players": 194260,
+    "alltime_peak": 207196,
+    "peak_24h": 207196
+  },
+  {
+    "timestamp": "2026-03-20T07:40:00+09:00",
+    "players": 207196,
+    "alltime_peak": 207196,
+    "peak_24h": 207196
+  },
+  {
+    "timestamp": "2026-03-20T07:42:00+09:00",
+    "players": 207196,
+    "alltime_peak": 207196,
+    "peak_24h": 207196
+  },
+  {
+    "timestamp": "2026-03-20T07:46:00+09:00",
+    "players": 194260,
+    "alltime_peak": 207196,
+    "peak_24h": 207196
+  },
+  {
+    "timestamp": "2026-03-20T07:50:00+09:00",
+    "players": 216944,
+    "alltime_peak": 216944,
+    "peak_24h": 216944
+  },
+  {
+    "timestamp": "2026-03-20T07:54:00+09:00",
+    "players": 216944,
+    "alltime_peak": 216944,
+    "peak_24h": 216944
+  },
+  {
+    "timestamp": "2026-03-20T07:59:00+09:00",
+    "players": 224180,
+    "alltime_peak": 224180,
+    "peak_24h": 224180
+  },
+  {
+    "timestamp": "2026-03-20T08:08:00+09:00",
+    "players": 235875,
+    "alltime_peak": 235875,
+    "peak_24h": 235875
+  },
+  {
+    "timestamp": "2026-03-20T08:17:00+09:00",
+    "players": 238211,
+    "alltime_peak": 238211,
+    "peak_24h": 238211
+  },
+  {
+    "timestamp": "2026-03-20T08:47:00+09:00",
+    "players": 238488,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T09:32:00+09:00",
+    "players": 223006,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T09:55:00+09:00",
+    "players": 217265,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T10:23:00+09:00",
+    "players": 206717,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T12:28:00+09:00",
+    "players": 163290,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T14:04:00+09:00",
+    "players": 131147,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T15:02:00+09:00",
+    "players": 118128,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T16:09:00+09:00",
+    "players": 108561,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T16:53:00+09:00",
+    "players": 108083,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T17:33:00+09:00",
+    "players": 110086,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T18:09:00+09:00",
+    "players": 112185,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T18:57:00+09:00",
+    "players": 117836,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T19:26:00+09:00",
+    "players": 121934,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T19:42:00+09:00",
+    "players": 123582,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T20:18:00+09:00",
+    "players": 130231,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T20:47:00+09:00",
+    "players": 136891,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T21:25:00+09:00",
+    "players": 145127,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T22:39:00+09:00",
+    "players": 164070,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-20T23:27:00+09:00",
+    "players": 173971,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-21T00:12:00+09:00",
+    "players": 181968,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-21T00:58:00+09:00",
+    "players": 187429,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-21T01:52:00+09:00",
+    "players": 190020,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-21T02:29:00+09:00",
+    "players": 190544,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-21T03:03:00+09:00",
+    "players": 191384,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-21T04:03:00+09:00",
+    "players": 191077,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-21T04:45:00+09:00",
+    "players": 192282,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-21T05:03:00+09:00",
+    "players": 193654,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-21T05:47:00+09:00",
+    "players": 196032,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-21T06:16:00+09:00",
+    "players": 196055,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-21T06:47:00+09:00",
+    "players": 195092,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-21T07:02:00+09:00",
+    "players": 194043,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-21T07:40:00+09:00",
+    "players": 190403,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-21T08:01:00+09:00",
+    "players": 185228,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-21T08:38:00+09:00",
+    "players": 180456,
+    "alltime_peak": 238488,
+    "peak_24h": 238488
+  },
+  {
+    "timestamp": "2026-03-21T08:57:00+09:00",
+    "players": 177223,
+    "alltime_peak": 238488,
+    "peak_24h": 223006
+  },
+  {
+    "timestamp": "2026-03-21T11:12:00+09:00",
+    "players": 163982,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T13:14:00+09:00",
+    "players": 144965,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T14:13:00+09:00",
+    "players": 135185,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T14:55:00+09:00",
+    "players": 128033,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T15:41:00+09:00",
+    "players": 123662,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T16:22:00+09:00",
+    "players": 122823,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T16:49:00+09:00",
+    "players": 123683,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T17:15:00+09:00",
+    "players": 125724,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T17:51:00+09:00",
+    "players": 130772,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T18:20:00+09:00",
+    "players": 132483,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T18:49:00+09:00",
+    "players": 138517,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T19:12:00+09:00",
+    "players": 140953,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T19:46:00+09:00",
+    "players": 146260,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T20:02:00+09:00",
+    "players": 151113,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T20:32:00+09:00",
+    "players": 154651,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T20:50:00+09:00",
+    "players": 160341,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T21:00:00+09:00",
+    "players": 163763,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T22:08:00+09:00",
+    "players": 182065,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T22:50:00+09:00",
+    "players": 195586,
+    "alltime_peak": 238488,
+    "peak_24h": 196055
+  },
+  {
+    "timestamp": "2026-03-21T23:14:00+09:00",
+    "players": 202330,
+    "alltime_peak": 238488,
+    "peak_24h": 202330
+  },
+  {
+    "timestamp": "2026-03-21T23:46:00+09:00",
+    "players": 206722,
+    "alltime_peak": 238488,
+    "peak_24h": 206722
+  },
+  {
+    "timestamp": "2026-03-22T00:02:00+09:00",
+    "players": 210221,
+    "alltime_peak": 238488,
+    "peak_24h": 210221
+  },
+  {
+    "timestamp": "2026-03-22T00:36:00+09:00",
+    "players": 217234,
+    "alltime_peak": 238488,
+    "peak_24h": 217234
+  },
+  {
+    "timestamp": "2026-03-22T00:53:00+09:00",
+    "players": 218059,
+    "alltime_peak": 238488,
+    "peak_24h": 218059
+  },
+  {
+    "timestamp": "2026-03-22T01:21:00+09:00",
+    "players": 221044,
+    "alltime_peak": 238488,
+    "peak_24h": 221044
+  },
+  {
+    "timestamp": "2026-03-22T01:50:00+09:00",
+    "players": 222951,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T02:14:00+09:00",
+    "players": 222820,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T02:44:00+09:00",
+    "players": 222228,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T02:58:00+09:00",
+    "players": 221789,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T03:47:00+09:00",
+    "players": 219863,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T04:13:00+09:00",
+    "players": 219134,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T04:38:00+09:00",
+    "players": 218707,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T04:52:00+09:00",
+    "players": 219030,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T05:15:00+09:00",
+    "players": 218879,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T05:44:00+09:00",
+    "players": 218141,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T06:01:00+09:00",
+    "players": 217661,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T06:34:00+09:00",
+    "players": 214893,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T06:52:00+09:00",
+    "players": 213040,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T07:13:00+09:00",
+    "players": 208597,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T07:44:00+09:00",
+    "players": 204190,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T08:00:00+09:00",
+    "players": 201429,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T08:34:00+09:00",
+    "players": 195722,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T08:53:00+09:00",
+    "players": 190129,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T10:23:00+09:00",
+    "players": 178215,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T12:58:00+09:00",
+    "players": 162634,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T14:20:00+09:00",
+    "players": 146603,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T15:08:00+09:00",
+    "players": 140844,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T16:07:00+09:00",
+    "players": 0,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T16:48:00+09:00",
+    "players": 140276,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T17:17:00+09:00",
+    "players": 142206,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T17:53:00+09:00",
+    "players": 147160,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T18:24:00+09:00",
+    "players": 152450,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T18:53:00+09:00",
+    "players": 157855,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T19:20:00+09:00",
+    "players": 164860,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T19:50:00+09:00",
+    "players": 169842,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T20:12:00+09:00",
+    "players": 174625,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T20:37:00+09:00",
+    "players": 179832,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T20:54:00+09:00",
+    "players": 181091,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T21:36:00+09:00",
+    "players": 191571,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T22:30:00+09:00",
+    "players": 212464,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T23:01:00+09:00",
+    "players": 220126,
+    "alltime_peak": 238488,
+    "peak_24h": 222951
+  },
+  {
+    "timestamp": "2026-03-22T23:38:00+09:00",
+    "players": 231451,
+    "alltime_peak": 238488,
+    "peak_24h": 231451
+  },
+  {
+    "timestamp": "2026-03-22T23:42:00+09:00",
+    "players": 231451,
+    "alltime_peak": 238488,
+    "peak_24h": 231451
+  },
+  {
+    "timestamp": "2026-03-22T23:45:00+09:00",
+    "players": 232690,
+    "alltime_peak": 238488,
+    "peak_24h": 232690
+  },
+  {
+    "timestamp": "2026-03-22T23:59:00+09:00",
+    "players": 234962,
+    "alltime_peak": 238488,
+    "peak_24h": 234962
+  },
+  {
+    "timestamp": "2026-03-23T00:03:00+09:00",
+    "players": 234962,
+    "alltime_peak": 238488,
+    "peak_24h": 234962
+  },
+  {
+    "timestamp": "2026-03-23T00:33:00+09:00",
+    "players": 241221,
+    "alltime_peak": 241221,
+    "peak_24h": 241221
+  },
+  {
+    "timestamp": "2026-03-23T00:53:00+09:00",
+    "players": 242983,
+    "alltime_peak": 242983,
+    "peak_24h": 242983
+  },
+  {
+    "timestamp": "2026-03-23T01:20:00+09:00",
+    "players": 243680,
+    "alltime_peak": 243680,
+    "peak_24h": 243680
+  },
+  {
+    "timestamp": "2026-03-23T01:51:00+09:00",
+    "players": 245677,
+    "alltime_peak": 245677,
+    "peak_24h": 245677
+  },
+  {
+    "timestamp": "2026-03-23T02:14:00+09:00",
+    "players": 246492,
+    "alltime_peak": 246492,
+    "peak_24h": 246492
+  },
+  {
+    "timestamp": "2026-03-23T02:44:00+09:00",
+    "players": 247896,
+    "alltime_peak": 247896,
+    "peak_24h": 247896
+  },
+  {
+    "timestamp": "2026-03-23T03:00:00+09:00",
+    "players": 248307,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T03:50:00+09:00",
+    "players": 247624,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T04:16:00+09:00",
+    "players": 246830,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T04:41:00+09:00",
+    "players": 246058,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T04:56:00+09:00",
+    "players": 245674,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T05:28:00+09:00",
+    "players": 241982,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T05:53:00+09:00",
+    "players": 238487,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T06:19:00+09:00",
+    "players": 232368,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T06:45:00+09:00",
+    "players": 226440,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T06:59:00+09:00",
+    "players": 222306,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T07:35:00+09:00",
+    "players": 213010,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T07:57:00+09:00",
+    "players": 201818,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T08:32:00+09:00",
+    "players": 191343,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T08:55:00+09:00",
+    "players": 184309,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T11:06:00+09:00",
+    "players": 154510,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T13:36:00+09:00",
+    "players": 122304,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T14:58:00+09:00",
+    "players": 104731,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T16:21:00+09:00",
+    "players": 94844,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T17:10:00+09:00",
+    "players": 96323,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T18:13:00+09:00",
+    "players": 102371,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T19:14:00+09:00",
+    "players": 111982,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T20:10:00+09:00",
+    "players": 122165,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T20:55:00+09:00",
+    "players": 134455,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T21:59:00+09:00",
+    "players": 152685,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-23T23:18:00+09:00",
+    "players": 170039,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-24T00:31:00+09:00",
+    "players": 180314,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-24T01:31:00+09:00",
+    "players": 186251,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-24T02:28:00+09:00",
+    "players": 191953,
+    "alltime_peak": 248307,
+    "peak_24h": 248307
+  },
+  {
+    "timestamp": "2026-03-24T03:10:00+09:00",
+    "players": 197079,
+    "alltime_peak": 248307,
+    "peak_24h": 247624
+  },
+  {
+    "timestamp": "2026-03-24T04:13:00+09:00",
+    "players": 201653,
+    "alltime_peak": 248307,
+    "peak_24h": 246830
+  },
+  {
+    "timestamp": "2026-03-24T04:56:00+09:00",
+    "players": 204872,
+    "alltime_peak": 248307,
+    "peak_24h": 245674
+  },
+  {
+    "timestamp": "2026-03-24T05:37:00+09:00",
+    "players": 205593,
+    "alltime_peak": 248307,
+    "peak_24h": 238487
+  },
+  {
+    "timestamp": "2026-03-24T06:07:00+09:00",
+    "players": 202849,
+    "alltime_peak": 248307,
+    "peak_24h": 232368
+  },
+  {
+    "timestamp": "2026-03-24T06:49:00+09:00",
+    "players": 196977,
+    "alltime_peak": 248307,
+    "peak_24h": 222306
+  },
+  {
+    "timestamp": "2026-03-24T07:17:00+09:00",
+    "players": 193817,
+    "alltime_peak": 248307,
+    "peak_24h": 213010
+  },
+  {
+    "timestamp": "2026-03-24T07:54:00+09:00",
+    "players": 186840,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-24T08:28:00+09:00",
+    "players": 180242,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-24T08:57:00+09:00",
+    "players": 177264,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-24T11:21:00+09:00",
+    "players": 155515,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-24T13:29:00+09:00",
+    "players": 120844,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-24T14:44:00+09:00",
+    "players": 103685,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-24T15:44:00+09:00",
+    "players": 95790,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-24T16:42:00+09:00",
+    "players": 94795,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-24T17:32:00+09:00",
+    "players": 96405,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-24T18:32:00+09:00",
+    "players": 103051,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-24T19:29:00+09:00",
+    "players": 111831,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-24T20:26:00+09:00",
+    "players": 123163,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-24T21:03:00+09:00",
+    "players": 134874,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-24T22:46:00+09:00",
+    "players": 164458,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-24T23:46:00+09:00",
+    "players": 175721,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-25T00:49:00+09:00",
+    "players": 179134,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-25T01:45:00+09:00",
+    "players": 182185,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-25T02:42:00+09:00",
+    "players": 187271,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-25T03:39:00+09:00",
+    "players": 191853,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-25T04:40:00+09:00",
+    "players": 195916,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-25T05:22:00+09:00",
+    "players": 196880,
+    "alltime_peak": 248307,
+    "peak_24h": 205593
+  },
+  {
+    "timestamp": "2026-03-25T06:01:00+09:00",
+    "players": 196649,
+    "alltime_peak": 248307,
+    "peak_24h": 202849
+  },
+  {
+    "timestamp": "2026-03-25T06:48:00+09:00",
+    "players": 190422,
+    "alltime_peak": 248307,
+    "peak_24h": 196977
+  },
+  {
+    "timestamp": "2026-03-25T07:16:00+09:00",
+    "players": 185192,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-25T07:52:00+09:00",
+    "players": 178481,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-25T08:21:00+09:00",
+    "players": 172879,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-25T08:51:00+09:00",
+    "players": 168869,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-25T09:58:00+09:00",
+    "players": 163052,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-25T12:40:00+09:00",
+    "players": 132579,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-25T14:14:00+09:00",
+    "players": 109891,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-25T15:15:00+09:00",
+    "players": 98141,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-25T16:30:00+09:00",
+    "players": 93644,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-25T17:08:00+09:00",
+    "players": 95034,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-25T18:07:00+09:00",
+    "players": 100630,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-25T19:07:00+09:00",
+    "players": 110114,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-25T20:52:00+09:00",
+    "players": 132970,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-25T21:43:00+09:00",
+    "players": 147415,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-25T23:05:00+09:00",
+    "players": 166617,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-26T00:17:00+09:00",
+    "players": 177134,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-26T01:38:00+09:00",
+    "players": 179381,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-26T02:41:00+09:00",
+    "players": 183841,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-26T03:35:00+09:00",
+    "players": 186602,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-26T04:30:00+09:00",
+    "players": 188598,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-26T05:03:00+09:00",
+    "players": 190555,
+    "alltime_peak": 248307,
+    "peak_24h": 196880
+  },
+  {
+    "timestamp": "2026-03-26T05:53:00+09:00",
+    "players": 189323,
+    "alltime_peak": 248307,
+    "peak_24h": 196649
+  },
+  {
+    "timestamp": "2026-03-26T06:30:00+09:00",
+    "players": 185259,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-26T07:04:00+09:00",
+    "players": 179549,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-26T07:52:00+09:00",
+    "players": 172312,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-26T08:24:00+09:00",
+    "players": 166456,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-26T08:56:00+09:00",
+    "players": 161555,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-26T11:25:00+09:00",
+    "players": 146122,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-26T13:44:00+09:00",
+    "players": 111640,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-26T15:03:00+09:00",
+    "players": 97234,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-26T16:23:00+09:00",
+    "players": 91742,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-26T17:10:00+09:00",
+    "players": 94116,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-26T18:13:00+09:00",
+    "players": 99204,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-26T19:13:00+09:00",
+    "players": 108979,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-26T20:12:00+09:00",
+    "players": 120920,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-26T21:00:00+09:00",
+    "players": 132466,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-26T22:51:00+09:00",
+    "players": 161791,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-26T23:54:00+09:00",
+    "players": 170023,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-27T01:08:00+09:00",
+    "players": 172974,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-27T02:17:00+09:00",
+    "players": 173447,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-27T03:13:00+09:00",
+    "players": 176402,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-27T04:33:00+09:00",
+    "players": 180749,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-27T05:02:00+09:00",
+    "players": 181754,
+    "alltime_peak": 248307,
+    "peak_24h": 190555
+  },
+  {
+    "timestamp": "2026-03-27T05:47:00+09:00",
+    "players": 180161,
+    "alltime_peak": 248307,
+    "peak_24h": 189323
+  },
+  {
+    "timestamp": "2026-03-27T06:18:00+09:00",
+    "players": 177149,
+    "alltime_peak": 248307,
+    "peak_24h": 185259
+  },
+  {
+    "timestamp": "2026-03-27T06:49:00+09:00",
+    "players": 173829,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-27T07:13:00+09:00",
+    "players": 0,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-27T07:51:00+09:00",
+    "players": 166144,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-27T08:17:00+09:00",
+    "players": 160581,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-27T08:51:00+09:00",
+    "players": 157068,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-27T10:03:00+09:00",
+    "players": 151984,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-27T13:03:00+09:00",
+    "players": 119843,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-27T14:47:00+09:00",
+    "players": 100572,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-27T15:50:00+09:00",
+    "players": 94622,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-27T16:49:00+09:00",
+    "players": 94814,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-27T17:34:00+09:00",
+    "players": 99074,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-27T18:34:00+09:00",
+    "players": 104842,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-27T19:27:00+09:00",
+    "players": 113075,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-27T20:23:00+09:00",
+    "players": 124838,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-27T21:00:00+09:00",
+    "players": 135268,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-27T22:26:00+09:00",
+    "players": 159843,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-27T23:31:00+09:00",
+    "players": 175331,
+    "alltime_peak": 248307,
+    "peak_24h": 181754
+  },
+  {
+    "timestamp": "2026-03-28T00:27:00+09:00",
+    "players": 184150,
+    "alltime_peak": 248307,
+    "peak_24h": 184150
+  },
+  {
+    "timestamp": "2026-03-28T01:27:00+09:00",
+    "players": 187560,
+    "alltime_peak": 248307,
+    "peak_24h": 187560
+  },
+  {
+    "timestamp": "2026-03-28T02:27:00+09:00",
+    "players": 188053,
+    "alltime_peak": 248307,
+    "peak_24h": 188053
+  },
+  {
+    "timestamp": "2026-03-28T03:10:00+09:00",
+    "players": 187945,
+    "alltime_peak": 248307,
+    "peak_24h": 188053
+  },
+  {
+    "timestamp": "2026-03-28T04:11:00+09:00",
+    "players": 187692,
+    "alltime_peak": 248307,
+    "peak_24h": 188053
+  },
+  {
+    "timestamp": "2026-03-28T04:51:00+09:00",
+    "players": 189607,
+    "alltime_peak": 248307,
+    "peak_24h": 189607
+  },
+  {
+    "timestamp": "2026-03-28T05:22:00+09:00",
+    "players": 190165,
+    "alltime_peak": 248307,
+    "peak_24h": 190165
+  },
+  {
+    "timestamp": "2026-03-28T06:01:00+09:00",
+    "players": 191926,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T06:48:00+09:00",
+    "players": 190861,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T07:16:00+09:00",
+    "players": 189195,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T07:54:00+09:00",
+    "players": 184718,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T08:27:00+09:00",
+    "players": 178090,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T08:53:00+09:00",
+    "players": 175392,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T10:23:00+09:00",
+    "players": 167855,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T12:56:00+09:00",
+    "players": 156152,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T14:20:00+09:00",
+    "players": 142716,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T15:13:00+09:00",
+    "players": 137508,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T16:15:00+09:00",
+    "players": 135886,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T16:55:00+09:00",
+    "players": 138893,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T17:36:00+09:00",
+    "players": 141979,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T18:07:00+09:00",
+    "players": 146822,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T18:52:00+09:00",
+    "players": 156050,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T19:21:00+09:00",
+    "players": 160454,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T19:54:00+09:00",
+    "players": 165920,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T20:25:00+09:00",
+    "players": 174851,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T20:50:00+09:00",
+    "players": 180099,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T21:24:00+09:00",
+    "players": 188534,
+    "alltime_peak": 248307,
+    "peak_24h": 191926
+  },
+  {
+    "timestamp": "2026-03-28T22:30:00+09:00",
+    "players": 212842,
+    "alltime_peak": 248307,
+    "peak_24h": 212842
+  },
+  {
+    "timestamp": "2026-03-28T23:05:00+09:00",
+    "players": 224554,
+    "alltime_peak": 248307,
+    "peak_24h": 224554
+  },
+  {
+    "timestamp": "2026-03-28T23:48:00+09:00",
+    "players": 237261,
+    "alltime_peak": 248307,
+    "peak_24h": 237261
+  },
+  {
+    "timestamp": "2026-03-29T00:16:00+09:00",
+    "players": 241355,
+    "alltime_peak": 248307,
+    "peak_24h": 241355
+  },
+  {
+    "timestamp": "2026-03-29T00:49:00+09:00",
+    "players": 243145,
+    "alltime_peak": 248307,
+    "peak_24h": 243145
+  },
+  {
+    "timestamp": "2026-03-29T01:17:00+09:00",
+    "players": 244415,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T01:53:00+09:00",
+    "players": 244224,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T02:23:00+09:00",
+    "players": 241137,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T02:52:00+09:00",
+    "players": 239079,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T03:26:00+09:00",
+    "players": 236474,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T04:06:00+09:00",
+    "players": 233214,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T04:41:00+09:00",
+    "players": 230957,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T04:59:00+09:00",
+    "players": 230405,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T05:41:00+09:00",
+    "players": 228945,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T06:03:00+09:00",
+    "players": 227077,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T06:40:00+09:00",
+    "players": 223140,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T06:59:00+09:00",
+    "players": 220839,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T07:37:00+09:00",
+    "players": 212138,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T08:00:00+09:00",
+    "players": 208993,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T08:40:00+09:00",
+    "players": 198146,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T09:00:00+09:00",
+    "players": 195213,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T12:29:00+09:00",
+    "players": 168322,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T14:24:00+09:00",
+    "players": 153243,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T15:40:00+09:00",
+    "players": 152503,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T16:38:00+09:00",
+    "players": 157211,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T17:05:00+09:00",
+    "players": 161173,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T17:55:00+09:00",
+    "players": 170788,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T18:35:00+09:00",
+    "players": 180617,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T19:03:00+09:00",
+    "players": 185758,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T19:49:00+09:00",
+    "players": 192248,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T20:16:00+09:00",
+    "players": 199155,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T20:46:00+09:00",
+    "players": 207189,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T21:01:00+09:00",
+    "players": 214652,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T22:16:00+09:00",
+    "players": 243890,
+    "alltime_peak": 248307,
+    "peak_24h": 244415
+  },
+  {
+    "timestamp": "2026-03-29T23:01:00+09:00",
+    "players": 260576,
+    "alltime_peak": 260576,
+    "peak_24h": 260576
+  },
+  {
+    "timestamp": "2026-03-29T23:44:00+09:00",
+    "players": 271302,
+    "alltime_peak": 271302,
+    "peak_24h": 271302
+  },
+  {
+    "timestamp": "2026-03-30T00:15:00+09:00",
+    "players": 275583,
+    "alltime_peak": 275583,
+    "peak_24h": 275583
+  },
+  {
+    "timestamp": "2026-03-30T00:48:00+09:00",
+    "players": 276103,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T01:18:00+09:00",
+    "players": 274781,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T01:56:00+09:00",
+    "players": 273367,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T02:31:00+09:00",
+    "players": 269486,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T02:59:00+09:00",
+    "players": 268677,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T03:56:00+09:00",
+    "players": 266649,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T04:33:00+09:00",
+    "players": 262800,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T04:57:00+09:00",
+    "players": 261018,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T05:36:00+09:00",
+    "players": 253553,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T06:02:00+09:00",
+    "players": 244628,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T06:42:00+09:00",
+    "players": 226744,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T07:01:00+09:00",
+    "players": 221029,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T07:44:00+09:00",
+    "players": 205131,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T08:17:00+09:00",
+    "players": 193303,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T08:50:00+09:00",
+    "players": 184473,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T10:06:00+09:00",
+    "players": 172244,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T13:15:00+09:00",
+    "players": 131172,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T15:10:00+09:00",
+    "players": 106856,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T17:01:00+09:00",
+    "players": 103695,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T18:24:00+09:00",
+    "players": 112676,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T19:43:00+09:00",
+    "players": 126813,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T20:41:00+09:00",
+    "players": 143405,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T21:40:00+09:00",
+    "players": 163756,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-30T23:12:00+09:00",
+    "players": 188997,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-31T00:41:00+09:00",
+    "players": 197223,
+    "alltime_peak": 276103,
+    "peak_24h": 276103
+  },
+  {
+    "timestamp": "2026-03-31T01:39:00+09:00",
+    "players": 198319,
+    "alltime_peak": 276103,
+    "peak_24h": 273367
+  },
+  {
+    "timestamp": "2026-03-31T02:36:00+09:00",
+    "players": 198931,
+    "alltime_peak": 276103,
+    "peak_24h": 268677
+  },
+  {
+    "timestamp": "2026-03-31T03:36:00+09:00",
+    "players": 200248,
+    "alltime_peak": 276103,
+    "peak_24h": 266649
+  },
+  {
+    "timestamp": "2026-03-31T04:38:00+09:00",
+    "players": 198789,
+    "alltime_peak": 276103,
+    "peak_24h": 261018
+  },
+  {
+    "timestamp": "2026-03-31T05:24:00+09:00",
+    "players": 191889,
+    "alltime_peak": 276103,
+    "peak_24h": 253553
+  },
+  {
+    "timestamp": "2026-03-31T06:07:00+09:00",
+    "players": 186255,
+    "alltime_peak": 276103,
+    "peak_24h": 226744
+  },
+  {
+    "timestamp": "2026-03-31T06:55:00+09:00",
+    "players": 173539,
+    "alltime_peak": 276103,
+    "peak_24h": 221029
+  },
+  {
+    "timestamp": "2026-03-31T07:33:00+09:00",
+    "players": 165400,
+    "alltime_peak": 276103,
+    "peak_24h": 205131
+  },
+  {
+    "timestamp": "2026-03-31T08:06:00+09:00",
+    "players": 160215,
+    "alltime_peak": 276103,
+    "peak_24h": 200248
+  },
+  {
+    "timestamp": "2026-03-31T08:49:00+09:00",
+    "players": 156094,
+    "alltime_peak": 276103,
+    "peak_24h": 200248
+  },
+  {
+    "timestamp": "2026-03-31T10:04:00+09:00",
+    "players": 154231,
+    "alltime_peak": 276103,
+    "peak_24h": 200248
+  },
+  {
+    "timestamp": "2026-03-31T13:04:00+09:00",
+    "players": 125251,
+    "alltime_peak": 276103,
+    "peak_24h": 200248
+  },
+  {
+    "timestamp": "2026-03-31T14:50:00+09:00",
+    "players": 103557,
+    "alltime_peak": 276103,
+    "peak_24h": 200248
+  },
+  {
+    "timestamp": "2026-03-31T15:57:00+09:00",
+    "players": 98346,
+    "alltime_peak": 276103,
+    "peak_24h": 200248
+  },
+  {
+    "timestamp": "2026-03-31T17:10:00+09:00",
+    "players": 101079,
+    "alltime_peak": 276103,
+    "peak_24h": 200248
+  },
+  {
+    "timestamp": "2026-03-31T18:17:00+09:00",
+    "players": 107794,
+    "alltime_peak": 276103,
+    "peak_24h": 200248
+  },
+  {
+    "timestamp": "2026-03-31T19:16:00+09:00",
+    "players": 113753,
+    "alltime_peak": 276103,
+    "peak_24h": 200248
+  },
+  {
+    "timestamp": "2026-03-31T20:13:00+09:00",
+    "players": 128701,
+    "alltime_peak": 276103,
+    "peak_24h": 200248
+  },
+  {
+    "timestamp": "2026-03-31T21:01:00+09:00",
+    "players": 143407,
+    "alltime_peak": 276103,
+    "peak_24h": 200248
+  },
+  {
+    "timestamp": "2026-03-31T22:56:00+09:00",
+    "players": 177692,
+    "alltime_peak": 276103,
+    "peak_24h": 200248
+  },
+  {
+    "timestamp": "2026-04-01T00:01:00+09:00",
+    "players": 185884,
+    "alltime_peak": 276103,
+    "peak_24h": 200248
+  },
+  {
+    "timestamp": "2026-04-01T01:11:00+09:00",
+    "players": 185841,
+    "alltime_peak": 276103,
+    "peak_24h": 200248
+  },
+  {
+    "timestamp": "2026-04-01T02:14:00+09:00",
+    "players": 184383,
+    "alltime_peak": 276103,
+    "peak_24h": 200248
+  },
+  {
+    "timestamp": "2026-04-01T03:07:00+09:00",
+    "players": 185362,
+    "alltime_peak": 276103,
+    "peak_24h": 200248
+  },
+  {
+    "timestamp": "2026-04-01T04:18:00+09:00",
+    "players": 183998,
+    "alltime_peak": 276103,
+    "peak_24h": 198789
+  },
+  {
+    "timestamp": "2026-04-01T05:02:00+09:00",
+    "players": 181839,
+    "alltime_peak": 276103,
+    "peak_24h": 191889
+  },
+  {
+    "timestamp": "2026-04-01T05:53:00+09:00",
+    "players": 173416,
+    "alltime_peak": 276103,
+    "peak_24h": 186255
+  },
+  {
+    "timestamp": "2026-04-01T06:32:00+09:00",
+    "players": 165201,
+    "alltime_peak": 276103,
+    "peak_24h": 185884
+  },
+  {
+    "timestamp": "2026-04-01T07:05:00+09:00",
+    "players": 158611,
+    "alltime_peak": 276103,
+    "peak_24h": 185884
+  },
+  {
+    "timestamp": "2026-04-01T07:50:00+09:00",
+    "players": 151074,
+    "alltime_peak": 276103,
+    "peak_24h": 185884
+  },
+  {
+    "timestamp": "2026-04-01T08:20:00+09:00",
+    "players": 147711,
+    "alltime_peak": 276103,
+    "peak_24h": 185884
+  },
+  {
+    "timestamp": "2026-04-01T08:53:00+09:00",
+    "players": 145341,
+    "alltime_peak": 276103,
+    "peak_24h": 185884
+  },
+  {
+    "timestamp": "2026-04-01T10:45:00+09:00",
+    "players": 141529,
+    "alltime_peak": 276103,
+    "peak_24h": 185884
+  },
+  {
+    "timestamp": "2026-04-01T13:35:00+09:00",
+    "players": 110227,
+    "alltime_peak": 276103,
+    "peak_24h": 185884
+  },
+  {
+    "timestamp": "2026-04-01T15:15:00+09:00",
+    "players": 96293,
+    "alltime_peak": 276103,
+    "peak_24h": 185884
+  },
+  {
+    "timestamp": "2026-04-01T16:56:00+09:00",
+    "players": 95515,
+    "alltime_peak": 276103,
+    "peak_24h": 185884
+  },
+  {
+    "timestamp": "2026-04-01T18:03:00+09:00",
+    "players": 102056,
+    "alltime_peak": 276103,
+    "peak_24h": 185884
+  },
+  {
+    "timestamp": "2026-04-01T19:14:00+09:00",
+    "players": 110673,
+    "alltime_peak": 276103,
+    "peak_24h": 185884
+  },
+  {
+    "timestamp": "2026-04-01T20:14:00+09:00",
+    "players": 121788,
+    "alltime_peak": 276103,
+    "peak_24h": 185884
+  },
+  {
+    "timestamp": "2026-04-01T21:02:00+09:00",
+    "players": 136498,
+    "alltime_peak": 276103,
+    "peak_24h": 185884
+  },
+  {
+    "timestamp": "2026-04-02T19:21:51+09:00",
+    "players": 111458,
+    "alltime_peak": 276103,
+    "peak_24h": null
   }
 ]
