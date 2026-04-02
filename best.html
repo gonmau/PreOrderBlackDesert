@@ -2437,21 +2437,113 @@ function renderCCUChart() {
       const dt = new Date(d.ts);
       return `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
     });
+
+    // 일별 최고/최저/평균 — x는 인덱스 기반
+    const byDay = {};
+    CCU_HOURLY.forEach((d, idx) => {
+      const day = d.ts.slice(0, 10);
+      if (!byDay[day]) byDay[day] = [];
+      byDay[day].push({ idx, v: d.v });
+    });
+
+    const peakPts = [], minPts = [], avgPts = [];
+    Object.values(byDay).forEach(pts => {
+      const peak = pts.reduce((a, b) => b.v > a.v ? b : a);
+      const min  = pts.reduce((a, b) => b.v < a.v ? b : a);
+      const avg  = pts.reduce((s, b) => s + b.v, 0) / pts.length;
+      const avgPt = pts.reduce((a, b) => Math.abs(b.v - avg) < Math.abs(a.v - avg) ? b : a);
+      peakPts.push({ x: peak.idx, y: peak.v });
+      minPts.push({  x: min.idx,  y: min.v  });
+      avgPts.push({  x: avgPt.idx, y: Math.round(avg) });
+    });
+
+    // afterDraw 플러그인으로 xx.x만 라벨 직접 그리기
+    const ccuLabelPlugin = {
+      id: 'ccuDayLabel',
+      afterDatasetsDraw(chart) {
+        const { ctx } = chart;
+        // dataset 1=peak(위), 2=avg(위), 3=min(아래)
+        const configs = [
+          { di: 1, color: '#f1c40f', pos: 'above' },
+          { di: 2, color: '#2ecc71', pos: 'above' },
+          { di: 3, color: '#e74c3c', pos: 'below' },
+        ];
+        ctx.save();
+        configs.forEach(({ di, color, pos }) => {
+          const meta = chart.getDatasetMeta(di);
+          if (!meta || meta.hidden) return;
+          meta.data.forEach((pt, i) => {
+            const raw = chart.data.datasets[di].data[i];
+            if (raw == null) return;
+            const { x, y } = pt.getProps(['x', 'y'], true);
+            const txt = (raw.y / 10000).toFixed(1) + '만';
+            ctx.font = 'bold 9px Rajdhani,sans-serif';
+            const tw = ctx.measureText(txt).width;
+            const px = x - tw / 2;
+            const py = pos === 'above' ? y - 10 : y + 3;
+            // 반투명 배경
+            ctx.fillStyle = color + '33';
+            ctx.fillRect(px - 2, py - 1, tw + 4, 11);
+            ctx.fillStyle = color;
+            ctx.textBaseline = 'top';
+            ctx.fillText(txt, px, py);
+          });
+        });
+        ctx.restore();
+      }
+    };
+
     ccuCI = new Chart(el.getContext('2d'), {
       type: 'line',
+      plugins: [ccuLabelPlugin],
       data: {
         labels,
-        datasets: [{
-          label: '동접수',
-          data: CCU_HOURLY.map(d => d.v),
-          borderColor: '#4a9eff',
-          backgroundColor: 'rgba(74,158,255,0.08)',
-          borderWidth: 1.5,
-          fill: true,
-          tension: 0.2,
-          pointRadius: 0,
-          pointHoverRadius: 4,
-        }]
+        datasets: [
+          {
+            label: '동접수',
+            data: CCU_HOURLY.map(d => d.v),
+            borderColor: '#4a9eff',
+            backgroundColor: 'rgba(74,158,255,0.08)',
+            borderWidth: 1.5,
+            fill: true,
+            tension: 0.2,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+          },
+          {
+            label: '일 최고',
+            data: peakPts.map(p => ({ x: p.x, y: p.y })),
+            pointStyle: 'triangle',
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            backgroundColor: '#f1c40f',
+            borderColor: '#f1c40f',
+            showLine: false,
+            parsing: false,
+          },
+          {
+            label: '일 평균',
+            data: avgPts.map(p => ({ x: p.x, y: p.y })),
+            pointStyle: 'circle',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            backgroundColor: '#2ecc71',
+            borderColor: '#2ecc71',
+            showLine: false,
+            parsing: false,
+          },
+          {
+            label: '일 최저',
+            data: minPts.map(p => ({ x: p.x, y: p.y })),
+            pointStyle: 'rectRot',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            backgroundColor: '#e74c3c',
+            borderColor: '#e74c3c',
+            showLine: false,
+            parsing: false,
+          },
+        ]
       },
       options: {
         responsive: false, animation: false,
@@ -2460,8 +2552,18 @@ function renderCCUChart() {
           y: { ticks: { color: '#aaa', font: { size: 10 }, callback: v => v >= 10000 ? (v/10000).toFixed(0)+'만' : v }, grid: { color: '#1a1a1a' }, suggestedMin: 0 }
         },
         plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: { label: ctx => ' 동접: ' + ctx.parsed.y.toLocaleString() + '명' } }
+          legend: {
+            display: true,
+            labels: { color: '#aaa', font: { size: 10 }, boxWidth: 8, padding: 10,
+              filter: item => item.datasetIndex > 0 }
+          },
+          tooltip: { callbacks: {
+            label: ctx => {
+              const v = ctx.raw?.y ?? ctx.parsed?.y;
+              if (v == null) return '';
+              return ` ${ctx.dataset.label}: ${(v/10000).toFixed(1)}만명`;
+            }
+          }}
         }
       }
     });
