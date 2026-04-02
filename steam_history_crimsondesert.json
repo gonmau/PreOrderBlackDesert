@@ -558,12 +558,6 @@
     "peak_24h": 222951
   },
   {
-    "timestamp": "2026-03-22T16:07:00+09:00",
-    "players": 0,
-    "alltime_peak": 238488,
-    "peak_24h": 222951
-  },
-  {
     "timestamp": "2026-03-22T16:48:00+09:00",
     "players": 140276,
     "alltime_peak": 238488,
@@ -1328,12 +1322,6 @@
   {
     "timestamp": "2026-03-27T06:49:00+09:00",
     "players": 173829,
-    "alltime_peak": 248307,
-    "peak_24h": 181754
-  },
-  {
-    "timestamp": "2026-03-27T07:13:00+09:00",
-    "players": 0,
     "alltime_peak": 248307,
     "peak_24h": 181754
   },
