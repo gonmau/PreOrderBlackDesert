@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crimson Desert — Steam 동접 트래커</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+  :root {
+    --blood:  #ff4757;
+    --gold:   #f1c40f;
+    --steam:  #4a9eff;
+    --up:     #2ecc71;
+    --down:   #e74c3c;
+    --bg-0:   #000000;
+    --bg-1:   #0a0a0a;
+    --bg-2:   #111111;
+    --bg-3:   #181818;
+    --bg-4:   #222222;
+    --bd:     #252525;
+    --bd-hi:  #333333;
+    --tx-1:   #ffffff;
+    --tx-2:   #cccccc;
+    --tx-3:   #888888;
+    --tx-4:   #555555;
+    --radius: 8px;
+    --gap:    16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: var(--bg-0);
+    color: var(--tx-1);
+    font-family: 'Rajdhani','Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* ── 헤더 ── */
+  #header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 20px;
+    background: var(--bg-1);
+    border-bottom: 2px solid var(--steam);
+  }
+  #header .title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: var(--steam);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  #header .sub {
+    font-size: 12px;
+    color: var(--tx-4);
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  #ccu-fetch-status {
+    font-size: 11px;
+    color: var(--tx-4);
+    font-weight: 700;
+  }
+  .hdr-btn {
+    padding: 4px 11px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid var(--bd-hi);
+    background: var(--bg-3);
+    color: var(--tx-3);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .hdr-btn:hover { background: var(--bg-4); color: var(--tx-1); }
+  .hdr-btn.active {
+    border-color: rgba(74,158,255,0.5);
+    background: rgba(74,158,255,0.15);
+    color: var(--steam);
+  }
+  .hdr-sep { width: 1px; height: 20px; background: var(--bd-hi); flex-shrink: 0; }
+
+  /* ── 요약 카드 행 ── */
+  #card-row {
+    flex-shrink: 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    padding: 12px 20px;
+    background: var(--bg-1);
+    border-bottom: 1px solid var(--bd);
+  }
+  .stat-card {
+    background: var(--bg-2);
+    border: 1px solid var(--bd);
+    border-left-width: 3px;
+    border-radius: var(--radius);
+    padding: 10px 14px;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: var(--tx-4);
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .stat-val {
+    font-family: 'Cinzel', serif;
+    font-size: 1.9rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .stat-sub {
+    font-size: 11px;
+    color: var(--tx-4);
+    margin-top: 3px;
+    font-weight: 600;
+  }
+
+  /* ── 차트 영역 ── */
+  #chart-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 14px 20px 10px;
+    gap: 10px;
+  }
+
+  .chart-block {
+    flex: 1;
+    min-height: 0;
+    background: var(--bg-1);
+    border: 1px solid var(--bd);
+    border-top: 2px solid var(--steam);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .chart-block.daily { flex: 0 0 auto; height: 30%; min-height: 120px; }
+
+  .chart-title {
+    flex-shrink: 0;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--steam);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--bd);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chart-title a {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--steam);
+    opacity: 0.65;
+    text-decoration: none;
+    padding: 2px 7px;
+    border: 1px solid rgba(74,158,255,0.3);
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .chart-title a:hover { opacity: 1; }
+
+  .chart-canvas-wrap {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    padding: 8px 10px 6px;
+  }
+  .chart-canvas-wrap canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* ── 하단 메모 ── */
+  #footer-note {
+    flex-shrink: 0;
+    padding: 5px 20px 8px;
+    font-size: 10px;
+    color: var(--tx-4);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    border-top: 1px solid var(--bd);
+  }
+  #footer-note b { color: var(--steam); }
+  #footer-note span { color: var(--tx-3); }
+
+  @media (max-width: 700px) {
+    #card-row { grid-template-columns: repeat(3, 1fr); }
+    .stat-val { font-size: 1.4rem; }
+    #header .title { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── 헤더 ── -->
+<div id="header">
+  <div>
+    <div class="title">🖥 Crimson Desert</div>
+    <div class="sub">Steam 동접 트래커</div>
+  </div>
+  <div class="hdr-sep"></div>
+  <span id="ccu-fetch-status">⏳ 로딩 중…</span>
+  <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+    <button class="hdr-btn active" id="ccu-btn-hourly" onclick="setCCUView('hourly')">시간별</button>
+    <button class="hdr-btn" id="ccu-btn-daily"  onclick="setCCUView('daily')">일별 피크</button>
+    <button class="hdr-btn" onclick="loadCCUHistory()" title="최신 데이터 새로고침">↻ 새로고침</button>
+  </div>
+</div>
+
+<!-- ── 요약 카드 ── -->
+<div id="card-row">
+  <div class="stat-card" style="border-left-color:var(--gold)">
+    <div class="stat-label">역대 최고 동접</div>
+    <div class="stat-val" id="sc-peak" style="color:var(--gold)">—</div>
+    <div class="stat-sub" id="sc-peak-sub">—</div>
+  </div>
+  <div class="stat-card" style="border-left-color:var(--steam)">
+    <div class="stat-label">출시 첫날 피크</div>
+    <div class="stat-val" id="sc-launch" style="color:var(--steam)">—</div>
+    <div class="stat-sub" id="sc-launch-sub">3/20</div>
+  </div>
+  <div class="stat-card" style="border-left-color:#2ecc71">
+    <div class="stat-label">최신 기록</div>
+    <div class="stat-val" id="sc-latest" style="color:#2ecc71">—</div>
+    <div class="stat-sub" id="sc-latest-sub">—</div>
+  </div>
+  <div class="stat-card" style="border-left-color:var(--tx-3)">
+    <div class="stat-label">전체 일평균</div>
+    <div class="stat-val" id="sc-avg" style="color:var(--tx-2)">—</div>
+    <div class="stat-sub" id="sc-avg-sub">3/20~현재</div>
+  </div>
+  <div class="stat-card" style="border-left-color:#a55eea">
+    <div class="stat-label">수집 스냅샷</div>
+    <div class="stat-val" id="sc-cnt" style="color:#a55eea">—</div>
+    <div class="stat-sub" id="sc-cnt-sub">건</div>
+  </div>
+</div>
+
+<!-- ── 차트 영역 ── -->
+<div id="chart-area">
+  <!-- 시간별 / 일별 메인 차트 -->
+  <div class="chart-block" id="main-block">
+    <div class="chart-title">
+      <span id="main-chart-label">📈 시간별 동접 추이 (3/20 출시~현재)</span>
+      <a href="https://steamdb.info/app/3321460/charts/" target="_blank">SteamDB ↗</a>
+    </div>
+    <div class="chart-canvas-wrap">
+      <canvas id="ccuMainChart"></canvas>
+    </div>
+  </div>
+  <!-- 일별 바 차트 (항상 표시) -->
+  <div class="chart-block daily" id="daily-block">
+    <div class="chart-title">📊 일별 피크 / 평균</div>
+    <div class="chart-canvas-wrap">
+      <canvas id="ccuDailyChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ── 하단 메모 ── -->
+<div id="footer-note">
+  역대 피크 <b>276,103명</b> (3/30) &nbsp;·&nbsp;
+  출시 첫날 피크 <span>238,488명</span> &nbsp;·&nbsp;
+  데이터: <span id="data-source-note">GitHub Pages JSON 자동 수집</span>
+</div>
+
+<script>
+// ── 폴백 데이터 ──
+const CCU_FALLBACK = [
+  {"ts":"2026-03-20T07:18","v":19035},{"ts":"2026-03-20T07:37","v":207196},
+  {"ts":"2026-03-20T18:00","v":238488},{"ts":"2026-03-21T00:10","v":206722},
+  {"ts":"2026-03-22T10:59","v":234962},{"ts":"2026-03-23T05:15","v":248307},
+  {"ts":"2026-03-24T04:28","v":205593},{"ts":"2026-03-25T03:41","v":196880},
+  {"ts":"2026-03-26T01:53","v":190555},{"ts":"2026-03-27T00:04","v":181754},
+  {"ts":"2026-03-28T00:16","v":237261},{"ts":"2026-03-29T00:29","v":271302},
+  {"ts":"2026-03-30T10:49","v":276103},{"ts":"2026-03-31T01:39","v":200248},
+  {"ts":"2026-04-01T15:15","v":96293}, {"ts":"2026-04-01T21:02","v":136498}
+];
+
+let CCU_HOURLY = [...CCU_FALLBACK];
+let CCU_DAILY  = [];
+let mainCI = null, dailyCI = null;
+let currentView = 'hourly';
+
+const CCU_JSON_URL = 'https://gonmau.github.io/PreOrderBlackDesert/steam_history_crimsondesert.json';
+
+function fmt(n) {
+  if (n >= 10000) return (n / 10000).toFixed(1) + '만';
+  return n.toLocaleString();
+}
+function fmtFull(n) {
+  return n.toLocaleString() + '명';
+}
+
+function buildDailyFromHourly(hourly) {
+  const byDay = {};
+  hourly.forEach(d => {
+    const day = d.ts.slice(0, 10);
+    if (!byDay[day]) byDay[day] = [];
+    byDay[day].push(d.v);
+  });
+  return Object.entries(byDay).sort().map(([date, vals]) => ({
+    date,
+    peak: Math.max(...vals),
+    avg:  Math.round(vals.reduce((a,b)=>a+b,0) / vals.length),
+    cnt:  vals.length,
+  }));
+}
+
+async function loadCCUHistory() {
+  const statusEl = document.getElementById('ccu-fetch-status');
+  statusEl.textContent = '⏳ 동접 데이터 로딩…';
+  statusEl.style.color = '';
+  try {
+    const r = await fetch(CCU_JSON_URL + '?_=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const raw = await r.json();
+    if (!Array.isArray(raw) || raw.length === 0) throw new Error('빈 데이터');
+
+    CCU_HOURLY = raw.map(d => ({
+      ts: d.timestamp.slice(0, 16),
+      v:  d.players,
+    })).sort((a, b) => a.ts.localeCompare(b.ts));
+
+    CCU_DAILY = buildDailyFromHourly(CCU_HOURLY);
+
+    const latest = CCU_HOURLY[CCU_HOURLY.length - 1];
+    statusEl.textContent = `✅ ${raw.length}건 · 최신 ${latest?.ts?.slice(5,16) || '?'}`;
+    statusEl.style.color = '#2ecc71';
+    document.getElementById('data-source-note').textContent = `GitHub Pages JSON · ${raw.length}건`;
+  } catch(e) {
+    console.warn('CCU fetch 실패, 폴백 사용:', e.message);
+    CCU_HOURLY = [...CCU_FALLBACK];
+    CCU_DAILY  = buildDailyFromHourly(CCU_FALLBACK);
+    statusEl.textContent = `⚠️ fetch 실패 — 수동 데이터 사용 (3/20~4/1)`;
+    statusEl.style.color = '#e67e22';
+    document.getElementById('data-source-note').textContent = '엑셀 수동 수집 기준 (폴백)';
+  }
+  updateCards();
+  renderCharts();
+}
+
+function updateCards() {
+  const allTime = Math.max(...CCU_DAILY.map(d => d.peak));
+  const peakDay = CCU_DAILY.reduce((a, d) => d.peak > a.peak ? d : a, CCU_DAILY[0]);
+  const latest  = CCU_HOURLY[CCU_HOURLY.length - 1];
+  const avgAll  = Math.round(CCU_DAILY.reduce((a, d) => a + d.avg, 0) / CCU_DAILY.length);
+
+  // 출시 첫날
+  const launchDay = CCU_DAILY.find(d => d.date === '2026-03-20');
+
+  document.getElementById('sc-peak').textContent     = fmt(allTime);
+  document.getElementById('sc-peak-sub').textContent = peakDay.date.slice(5) + ' · ' + fmtFull(peakDay.peak);
+
+  document.getElementById('sc-launch').textContent     = launchDay ? fmt(launchDay.peak) : '238,488';
+  document.getElementById('sc-launch-sub').textContent = '3/20 출시일';
+
+  document.getElementById('sc-latest').textContent     = latest ? fmt(latest.v) : '—';
+  document.getElementById('sc-latest-sub').textContent = latest ? latest.ts.slice(5,16) : '—';
+
+  document.getElementById('sc-avg').textContent     = fmt(avgAll);
+  document.getElementById('sc-avg-sub').textContent = `${CCU_DAILY[0]?.date.slice(5)}~${CCU_DAILY[CCU_DAILY.length-1]?.date.slice(5)}`;
+
+  document.getElementById('sc-cnt').textContent     = CCU_HOURLY.length.toLocaleString();
+  document.getElementById('sc-cnt-sub').textContent = '스냅샷 수집';
+}
+
+function setCCUView(view) {
+  currentView = view;
+  const bH = document.getElementById('ccu-btn-hourly');
+  const bD = document.getElementById('ccu-btn-daily');
+  bH.classList.toggle('active', view === 'hourly');
+  bD.classList.toggle('active', view === 'daily');
+  document.getElementById('main-chart-label').textContent =
+    view === 'hourly'
+      ? '📈 시간별 동접 추이 (3/20 출시~현재)'
+      : '📊 일별 피크 추이';
+  // daily-block 숨기기 (daily 뷰일 때 중복이므로)
+  document.getElementById('daily-block').style.display =
+    view === 'daily' ? 'none' : 'flex';
+  renderMainChart();
+}
+
+function renderCharts() {
+  renderMainChart();
+  renderDailyChart();
+}
+
+/* ── 플러그인: 일별 피크/평균/최저 레이블 ── */
+const ccuLabelPlugin = {
+  id: 'ccuDayLabel',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    const configs = [
+      { di: 1, color: '#f1c40f', pos: 'above' },
+      { di: 2, color: '#2ecc71', pos: 'above' },
+      { di: 3, color: '#e74c3c', pos: 'below' },
+    ];
+    ctx.save();
+    configs.forEach(({ di, color, pos }) => {
+      const meta = chart.getDatasetMeta(di);
+      if (!meta || meta.hidden) return;
+      meta.data.forEach((pt, i) => {
+        const raw = chart.data.datasets[di].data[i];
+        if (raw == null) return;
+        const { x, y } = pt.getProps(['x', 'y'], true);
+        const txt = (raw.y / 10000).toFixed(1) + '만';
+        ctx.font = 'bold 10px Rajdhani,sans-serif';
+        const tw = ctx.measureText(txt).width;
+        const px = x - tw / 2;
+        const py = pos === 'above' ? y - 14 : y + 4;
+        ctx.fillStyle = color + '33';
+        ctx.fillRect(px - 2, py - 1, tw + 4, 12);
+        ctx.fillStyle = color;
+        ctx.textBaseline = 'top';
+        ctx.fillText(txt, px, py);
+      });
+    });
+    ctx.restore();
+  }
+};
+
+function renderMainChart() {
+  if (mainCI) { mainCI.destroy(); mainCI = null; }
+  const el = document.getElementById('ccuMainChart');
+  if (!el) return;
+
+  const commonOpts = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+  };
+  const axisStyle = {
+    x: {
+      ticks: { color: '#888', font: { size: 11 }, maxTicksLimit: 14 },
+      grid: { color: '#1a1a1a' }
+    },
+    y: {
+      ticks: {
+        color: '#888', font: { size: 11 },
+        callback: v => v >= 10000 ? (v/10000).toFixed(0)+'만' : v
+      },
+      grid: { color: '#1a1a1a' },
+      suggestedMin: 0
+    }
+  };
+
+  if (currentView === 'hourly') {
+    const labels = CCU_HOURLY.map(d => {
+      const dt = new Date(d.ts);
+      return `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+    });
+
+    const byDay = {};
+    CCU_HOURLY.forEach((d, idx) => {
+      const day = d.ts.slice(0, 10);
+      if (!byDay[day]) byDay[day] = [];
+      byDay[day].push({ idx, v: d.v });
+    });
+
+    const peakPts = [], minPts = [], avgPts = [];
+    Object.values(byDay).forEach(pts => {
+      const peak = pts.reduce((a, b) => b.v > a.v ? b : a);
+      const min  = pts.reduce((a, b) => b.v < a.v ? b : a);
+      const avg  = pts.reduce((s, b) => s + b.v, 0) / pts.length;
+      const avgPt = pts.reduce((a, b) => Math.abs(b.v - avg) < Math.abs(a.v - avg) ? b : a);
+      peakPts.push({ x: peak.idx, y: peak.v });
+      minPts.push({  x: min.idx,  y: min.v  });
+      avgPts.push({  x: avgPt.idx, y: Math.round(avg) });
+    });
+
+    mainCI = new Chart(el.getContext('2d'), {
+      type: 'line',
+      plugins: [ccuLabelPlugin],
+      data: {
+        labels,
+        datasets: [
+          {
+            label: '동접수',
+            data: CCU_HOURLY.map(d => d.v),
+            borderColor: '#4a9eff',
+            backgroundColor: 'rgba(74,158,255,0.07)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.2,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+          },
+          {
+            label: '일 피크',
+            data: peakPts.map(p => ({ x: p.x, y: p.y })),
+            pointStyle: 'triangle',
+            pointRadius: 8,
+            pointHoverRadius: 10,
+            backgroundColor: '#f1c40f',
+            borderColor: '#f1c40f',
+            showLine: false,
+            parsing: false,
+          },
+          {
+            label: '일 평균',
+            data: avgPts.map(p => ({ x: p.x, y: p.y })),
+            pointStyle: 'circle',
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            backgroundColor: '#2ecc71',
+            borderColor: '#2ecc71',
+            showLine: false,
+            parsing: false,
+          },
+          {
+            label: '일 최저',
+            data: minPts.map(p => ({ x: p.x, y: p.y })),
+            pointStyle: 'rectRot',
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            backgroundColor: '#e74c3c',
+            borderColor: '#e74c3c',
+            showLine: false,
+            parsing: false,
+          },
+        ]
+      },
+      options: {
+        ...commonOpts,
+        scales: axisStyle,
+        plugins: {
+          legend: {
+            display: true,
+            labels: {
+              color: '#aaa', font: { size: 12 }, boxWidth: 10, padding: 14,
+              filter: item => item.datasetIndex > 0
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const v = ctx.raw?.y ?? ctx.parsed?.y;
+                if (v == null) return '';
+                return ` ${ctx.dataset.label}: ${(v/10000).toFixed(1)}만명 (${v.toLocaleString()})`;
+              }
+            }
+          }
+        }
+      }
+    });
+  } else {
+    // daily view — 메인 차트도 bar
+    mainCI = new Chart(el.getContext('2d'), {
+      type: 'bar',
+      plugins: [barLabelPlugin],
+      data: {
+        labels: CCU_DAILY.map(d => d.date.slice(5)),
+        datasets: [
+          {
+            label: '일 피크',
+            data: CCU_DAILY.map(d => d.peak),
+            backgroundColor: 'rgba(74,158,255,0.80)',
+            borderColor: '#4a9eff',
+            borderWidth: 1,
+            borderRadius: 3,
+          },
+          {
+            label: '일 평균',
+            data: CCU_DAILY.map(d => d.avg),
+            backgroundColor: 'rgba(74,158,255,0.25)',
+            borderColor: '#4a9effaa',
+            borderWidth: 1,
+            borderRadius: 3,
+          },
+        ]
+      },
+      options: {
+        ...commonOpts,
+        scales: axisStyle,
+        plugins: {
+          legend: { labels: { color: '#ccc', font: { size: 12 }, boxWidth: 12, padding: 14 } },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}명`
+            }
+          }
+        }
+      }
+    });
+  }
+}
+
+/* ── 바 차트 위 숫자 레이블 플러그인 ── */
+const barLabelPlugin = {
+  id: 'barLabel',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    // dataset 0 = 일 피크 (bar) 만 표기
+    const meta = chart.getDatasetMeta(0);
+    if (!meta || meta.hidden) return;
+    const maxPeak = Math.max(...chart.data.datasets[0].data);
+    ctx.save();
+    meta.data.forEach((bar, i) => {
+      const v = chart.data.datasets[0].data[i];
+      if (v == null) return;
+      const txt = v >= 10000 ? (v/10000).toFixed(1)+'만' : v.toLocaleString();
+      const isMax = v === maxPeak;
+      ctx.font = `bold ${isMax ? 11 : 10}px Rajdhani,sans-serif`;
+      ctx.fillStyle = isMax ? '#f1c40f' : 'rgba(74,158,255,0.85)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(txt, bar.x, bar.y - 2);
+    });
+    ctx.restore();
+  }
+};
+
+function renderDailyChart() {
+  if (dailyCI) { dailyCI.destroy(); dailyCI = null; }
+  const el = document.getElementById('ccuDailyChart');
+  if (!el) return;
+
+  dailyCI = new Chart(el.getContext('2d'), {
+    type: 'bar',
+    plugins: [barLabelPlugin],
+    data: {
+      labels: CCU_DAILY.map(d => d.date.slice(5)),
+      datasets: [
+        {
+          label: '일 피크',
+          data: CCU_DAILY.map(d => d.peak),
+          backgroundColor: CCU_DAILY.map(d =>
+            d.peak === Math.max(...CCU_DAILY.map(x=>x.peak))
+              ? 'rgba(241,196,15,0.85)'
+              : 'rgba(74,158,255,0.70)'
+          ),
+          borderColor: CCU_DAILY.map(d =>
+            d.peak === Math.max(...CCU_DAILY.map(x=>x.peak)) ? '#f1c40f' : '#4a9eff'
+          ),
+          borderWidth: 1,
+          borderRadius: 3,
+        },
+        {
+          label: '일 평균',
+          data: CCU_DAILY.map(d => d.avg),
+          backgroundColor: 'rgba(46,204,113,0.20)',
+          borderColor: '#2ecc71aa',
+          borderWidth: 1,
+          type: 'line',
+          tension: 0.3,
+          pointRadius: 3,
+          pointBackgroundColor: '#2ecc71',
+          fill: false,
+          yAxisID: 'y',
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      scales: {
+        x: {
+          ticks: { color: '#777', font: { size: 10 }, maxRotation: 0 },
+          grid: { color: '#1a1a1a' }
+        },
+        y: {
+          ticks: {
+            color: '#777', font: { size: 10 },
+            callback: v => v >= 10000 ? (v/10000).toFixed(0)+'만' : v
+          },
+          grid: { color: '#1a1a1a' },
+          suggestedMin: 0
+        }
+      },
+      plugins: {
+        legend: { labels: { color: '#aaa', font: { size: 11 }, boxWidth: 10, padding: 12 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${(ctx.parsed.y||0).toLocaleString()}명`
+          }
+        }
+      }
+    }
+  });
+}
+
+// 초기 로드
+CCU_DAILY = buildDailyFromHourly(CCU_FALLBACK);
+updateCards();
+renderCharts();
+loadCCUHistory();
+</script>
+</body>
+</html>
