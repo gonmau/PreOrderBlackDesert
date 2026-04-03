@@ -32,22 +32,44 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 CONCEPT_ID = "10002363"  # Crimson Desert
 
+LOCALE_MAP = {
+    "미국": "en-us", "캐나다": "en-ca", "브라질": "pt-br", "멕시코": "es-mx",
+    "아르헨티나": "es-ar", "칠레": "es-cl", "콜롬비아": "es-co", "페루": "es-pe",
+    "우루과이": "es-uy", "볼리비아": "es-bo", "과테말라": "es-gt", "온두라스": "es-hn",
+    "코스타리카": "es-cr", "에콰도르": "es-ec", "엘살바도르": "es-sv",
+    "니카라과": "es-ni", "파나마": "es-pa", "파라과이": "es-py",
+    "영국": "en-gb", "독일": "de-de", "프랑스": "fr-fr", "스페인": "es-es",
+    "이탈리아": "it-it", "네덜란드": "nl-nl", "폴란드": "pl-pl", "스위스": "de-ch",
+    "스웨덴": "sv-se", "노르웨이": "no-no", "덴마크": "en-dk", "핀란드": "fi-fi",
+    "포르투갈": "pt-pt", "그리스": "en-gr", "체코": "en-cz", "헝가리": "en-hu",
+    "루마니아": "en-ro", "슬로바키아": "en-sk", "슬로베니아": "en-si",
+    "우크라이나": "ru-ua", "사우디아라비아": "en-sa", "아랍에미리트": "en-ae",
+    "남아공": "en-za", "터키": "en-tr", "벨기에": "nl-be", "오스트리아": "de-at",
+    "이스라엘": "en-il", "크로아티아": "en-hr", "불가리아": "en-bg",
+    "키프로스": "en-cy", "아이슬란드": "en-is", "아일랜드": "en-ie",
+    "쿠웨이트": "en-kw", "레바논": "en-lb", "룩셈부르크": "de-lu",
+    "몰타": "en-mt", "오만": "en-om", "카타르": "en-qa", "바레인": "en-bh",
+    "일본": "ja-jp", "한국": "ko-kr", "중국": "zh-cn", "호주": "en-au",
+    "인도": "en-in", "태국": "en-th", "싱가포르": "en-sg", "말레이시아": "en-my",
+    "인도네시아": "en-id", "필리핀": "en-ph", "베트남": "en-vn",
+    "홍콩": "en-hk", "대만": "zh-hant-tw", "뉴질랜드": "en-nz",
+}
+
 REGIONS = {
-    "Americas": ["미국", "캐나다", "브라질", "멕시코", "아르헨티나", "칠레", "콜롬비아", "페루", "우루과이"],
-    "Europe & Middle East": ["영국", "독일", "프랑스", "스페인", "이탈리아", "네덜란드", "폴란드", "사우디아라비아", "아랍에미리트", "남아공", "터키"],
-    "Asia & Oceania": ["일본", "한국", "중국", "호주", "인도", "대만", "싱가포르", "태국", "홍콩", "말레이시아"]
+    "Americas": ["미국", "캐나다", "브라질", "멕시코", "아르헨티나", "칠레", "콜롬비아", "페루", "우루과이", "볼리비아", "과테말라", "온두라스", "코스타리카", "에콰도르", "엘살바도르", "니카라과", "파나마", "파라과이"],
+    "Europe & Middle East": ["영국", "독일", "프랑스", "스페인", "이탈리아", "네덜란드", "폴란드", "스위스", "스웨덴", "노르웨이", "덴마크", "핀란드", "포르투갈", "그리스", "체코", "헝가리", "루마니아", "슬로바키아", "슬로베니아", "우크라이나", "벨기에", "오스트리아", "이스라엘", "크로아티아", "불가리아", "키프로스", "아이슬란드", "아일랜드", "룩셈부르크", "몰타", "사우디아라비아", "아랍에미리트", "남아공", "터키", "쿠웨이트", "레바논", "오만", "카타르", "바레인"],
+    "Asia & Oceania": ["일본", "한국", "중국", "호주", "인도", "태국", "싱가포르", "말레이시아", "인도네시아", "필리핀", "베트남", "홍콩", "대만", "뉴질랜드"],
 }
 
 FLAGS = {
     "미국": "🇺🇸", "캐나다": "🇨🇦", "브라질": "🇧🇷", "멕시코": "🇲🇽", "아르헨티나": "🇦🇷", "칠레": "🇨🇱", "콜롬비아": "🇨🇴", "페루": "🇵🇪", "우루과이": "🇺🇾",
-    "영국": "🇬🇧", "독일": "🇩🇪", "프랑스": "🇫🇷", "스페인": "🇪🇸", "이탈리아": "🇮🇹", "네덜란드": "🇳🇱", "폴란드": "🇵🇱", "사우디아라비아": "🇸🇦", "아랍에미리트": "🇦🇪", "남아공": "🇿🇦", "터키": "🇹🇷",
-    "일본": "🇯🇵", "한국": "🇰🇷", "중국": "🇨🇳", "호주": "🇦🇺", "인도": "🇮🇳", "대만": "🇹🇼", "싱가포르": "🇸🇬", "태국": "🇹🇭", "홍콩": "🇭🇰", "말레이시아": "🇲🇾"
-}
-
-LOCALE_MAP = {
-    "미국": "en-us", "캐나다": "en-ca", "브라질": "pt-br", "멕시코": "es-mx", "아르헨티나": "es-ar", "칠레": "es-cl", "콜롬비아": "es-co", "페루": "es-pe", "우루과이": "es-uy",
-    "영국": "en-gb", "독일": "de-de", "프랑스": "fr-fr", "스페인": "es-es", "이탈리아": "it-it", "네덜란드": "nl-nl", "폴란드": "pl-pl", "사우디아라비아": "en-sa", "아랍에미리트": "en-ae", "남아공": "en-za", "터키": "en-tr",
-    "일본": "ja-jp", "한국": "ko-kr", "중국": "zh-cn", "호주": "en-au", "인도": "en-in", "대만": "zh-hant-tw", "싱가포르": "en-sg", "태국": "en-th", "홍콩": "en-hk", "말레이시아": "en-my"
+    "볼리비아": "🇧🇴", "과테말라": "🇬🇹", "온두라스": "🇭🇳", "코스타리카": "🇨🇷", "에콰도르": "🇪🇨", "엘살바도르": "🇸🇻", "니카라과": "🇳🇮", "파나마": "🇵🇦", "파라과이": "🇵🇾",
+    "영국": "🇬🇧", "독일": "🇩🇪", "프랑스": "🇫🇷", "스페인": "🇪🇸", "이탈리아": "🇮🇹", "네덜란드": "🇳🇱", "폴란드": "🇵🇱", "스위스": "🇨🇭", "스웨덴": "🇸🇪", "노르웨이": "🇳🇴",
+    "덴마크": "🇩🇰", "핀란드": "🇫🇮", "포르투갈": "🇵🇹", "그리스": "🇬🇷", "체코": "🇨🇿", "헝가리": "🇭🇺", "루마니아": "🇷🇴", "슬로바키아": "🇸🇰", "슬로베니아": "🇸🇮", "우크라이나": "🇺🇦",
+    "벨기에": "🇧🇪", "오스트리아": "🇦🇹", "이스라엘": "🇮🇱", "크로아티아": "🇭🇷", "불가리아": "🇧🇬", "키프로스": "🇨🇾", "아이슬란드": "🇮🇸", "아일랜드": "🇮🇪", "룩셈부르크": "🇱🇺", "몰타": "🇲🇹",
+    "사우디아라비아": "🇸🇦", "아랍에미리트": "🇦🇪", "남아공": "🇿🇦", "터키": "🇹🇷", "쿠웨이트": "🇰🇼", "레바논": "🇱🇧", "오만": "🇴🇲", "카타르": "🇶🇦", "바레인": "🇧🇭",
+    "일본": "🇯🇵", "한국": "🇰🇷", "중국": "🇨🇳", "호주": "🇦🇺", "인도": "🇮🇳", "태국": "🇹🇭", "싱가포르": "🇸🇬", "말레이시아": "🇲🇾", "인도네시아": "🇮🇩", "필리핀": "🇵🇭",
+    "베트남": "🇻🇳", "홍콩": "🇭🇰", "대만": "🇹🇼", "뉴질랜드": "🇳🇿",
 }
 
 SKIP_COUNTRIES = {"중국"}
@@ -176,18 +198,19 @@ def parse_browse_page(driver):
 
 def get_discount_deadline(driver, url):
     """
-    상세 페이지에서 "Offer ends ..." 텍스트 추출 (Selenium DOM).
+    상세 페이지에서 "Offer ends ..." 텍스트 추출.
+    data-qa 기반 타깃 셀렉터만 사용 (전체 span/p 순회 제거 → 빠름).
     """
     try:
         driver.get(url)
         try:
-            WebDriverWait(driver, 8).until(
+            WebDriverWait(driver, 7).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, '[data-qa*="mfe-purchase"], [data-qa*="price"]'))
             )
         except:
-            time.sleep(3)
+            time.sleep(2)
 
-        # 전략 1: data-qa에 purchase/price/offer/discount 포함 요소
+        # 구매/가격 블록 전체 텍스트에서 줄 단위 탐색
         candidates = driver.find_elements(By.CSS_SELECTOR,
             '[data-qa*="mfe-purchase"], [data-qa*="price"], [data-qa*="offer"], [data-qa*="discount"]')
 
@@ -199,19 +222,11 @@ def get_discount_deadline(driver, url):
                 line = line.strip()
                 if OFFER_ENDS_PATTERNS.search(line) and len(line) > 5:
                     return line
-            # 패턴은 있지만 줄 분리 안 된 경우
             if OFFER_ENDS_PATTERNS.search(text) and len(text) < 150:
                 return text
 
-        # 전략 2: 페이지 전체 span/p 중 짧고 날짜 포함된 텍스트
-        for elem in driver.find_elements(By.CSS_SELECTOR, 'span, p'):
-            text = elem.text.strip()
-            if len(text) < 150 and OFFER_ENDS_PATTERNS.search(text):
-                if re.search(r'\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}|\d{4}년|\d+월', text):
-                    return text
-
-        # 전략 3: "Save X%" 텍스트 (종료일 없어도 할인 확인)
-        for elem in driver.find_elements(By.CSS_SELECTOR, 'span, p'):
+        # fallback: Save X% (종료일 없어도 할인 확인)
+        for elem in candidates:
             text = elem.text.strip()
             if re.search(r'save\s+\d+%', text, re.IGNORECASE) and len(text) < 200:
                 return text
@@ -233,6 +248,7 @@ def crawl_competitors(driver, country):
     all_tiles = []   # Crimson Desert 도달 전 전체 타일
     page = 1
     found_target = False
+    cd_rank = None
 
     print(f"🔍 {country} 탐색 중...", end="", flush=True)
 
@@ -250,7 +266,6 @@ def crawl_competitors(driver, country):
         tiles = parse_browse_page(driver)
 
         if not tiles:
-            # 타일 파싱 실패 → 짧게 재대기 후 재시도
             time.sleep(2)
             tiles = parse_browse_page(driver)
             if not tiles:
@@ -259,21 +274,21 @@ def crawl_competitors(driver, country):
         for tile in tiles:
             if f"/concept/{CONCEPT_ID}" in tile['url']:
                 found_target = True
-                print(f" → {len(all_tiles)+1}위에서 발견!", flush=True)
+                cd_rank = len(all_tiles) + 1
+                print(f" → 붉사 {cd_rank}위!", flush=True)
                 break
             all_tiles.append(tile)
 
         if not found_target:
             page += 1
-            time.sleep(1.5)  # 페이지 간 최소 대기
+            time.sleep(1.5)
 
     if not found_target:
         print(f" → 미발견 (최대 {MAX_PAGES}페이지)", flush=True)
 
     if not all_tiles:
-        return []
+        return {"cd_rank": cd_rank, "games": []}
 
-    # all_tiles 내 순서를 rank로 사용 (tile_idx는 페이지 내 0-based라 누적 rank와 다름)
     for i, tile in enumerate(all_tiles):
         tile['rank'] = i + 1
 
@@ -284,7 +299,6 @@ def crawl_competitors(driver, country):
 
     final_results = []
 
-    # 할인 뱃지 있는 게임: 상세 페이지 방문
     for tile in discounted:
         rank = tile['rank']
         print(f"   ↳ [{rank}위] {tile['title'][:40]} → Offer ends 확인...")
@@ -296,7 +310,6 @@ def crawl_competitors(driver, country):
             "has_badge": True
         })
 
-    # 할인 뱃지 없는 게임: 상세 방문 없이 기록
     for tile in non_discounted:
         final_results.append({
             "rank": tile['rank'],
@@ -305,9 +318,8 @@ def crawl_competitors(driver, country):
             "has_badge": False
         })
 
-    # rank 순 정렬
     final_results.sort(key=lambda x: x['rank'])
-    return final_results
+    return {"cd_rank": cd_rank, "games": final_results}
 
 
 # =============================================================================
@@ -324,40 +336,41 @@ def send_discord(country_results):
         print("⚠️ DISCORD_WEBHOOK이 설정되지 않았습니다.")
         return
 
-    report_lines = []
-    total_discounted = 0
+    # 국가별 embed 생성 (나라 하나 = embed 하나 → 잘림 없음)
+    embeds = []
+    total_countries = 0
 
-    for country, comps in country_results.items():
-        if not comps:
-            continue
+    for country, data in country_results.items():
+        cd_rank = data.get("cd_rank")
+        comps = data.get("games", [])
 
-        # 할인 뱃지 있고, 종료일 정보가 있는 것만
-        active = [g for g in comps if g.get('has_badge') and g['discount_info'] not in ("종료일 정보 없음", "확인 불가", "할인 없음") and not g['discount_info'].startswith("확인 불가")]
-        # 뱃지는 있지만 종료일 파싱 못한 것 (할인 중이긴 함)
-        badge_only = [g for g in comps if g.get('has_badge') and g['discount_info'] in ("종료일 정보 없음",)]
+        active = [g for g in comps if g.get('has_badge') and not g['discount_info'].startswith("할인 없음") and not g['discount_info'].startswith("확인 불가")]
+        badge_only = [g for g in comps if g.get('has_badge') and g['discount_info'] == "종료일 정보 없음"]
 
         if not active and not badge_only:
             continue
 
+        total_countries += 1
         flag = FLAGS.get(country, "")
-        lines_for_country = []
+        lines = []
 
-        for game in active:
-            total_discounted += 1
-            lines_for_country.append(f"> `{game['rank']}위` {game['title']} — ⏰ {game['discount_info']}")
+        for game in sorted(active + badge_only, key=lambda x: x['rank']):
+            if game['discount_info'] == "종료일 정보 없음":
+                lines.append(f"`{game['rank']}위` {game['title']} — 💸 할인 중 (종료일 미확인)")
+            else:
+                lines.append(f"`{game['rank']}위` {game['title']} — ⏰ {game['discount_info']}")
 
-        for game in badge_only:
-            total_discounted += 1
-            lines_for_country.append(f"> `{game['rank']}위` {game['title']} — 💸 할인 중 (종료일 미확인)")
+        cd_str = f" | 붉사 **{cd_rank}위**" if cd_rank else " | 붉사 미진입(8p↓)"
+        title_str = f"{flag} {country}{cd_str}"
 
-        if lines_for_country:
-            report_lines.append(f"**{flag} {country}**")
-            report_lines.extend(lines_for_country)
-            report_lines.append("")
+        embeds.append({
+            "title": title_str,
+            "description": "\n".join(lines),
+            "color": 0xFFD700,
+        })
 
-    if not report_lines:
+    if not embeds:
         print("ℹ️ 현재 할인 중인 경쟁작이 없습니다.")
-        # 빈 알림도 발송 (확인용)
         requests.post(DISCORD_WEBHOOK, json={"embeds": [{
             "title": "⚔️ Crimson Desert 경쟁작 할인 추적",
             "description": "현재 할인 중인 경쟁작이 없습니다.",
@@ -366,19 +379,20 @@ def send_discord(country_results):
         }]})
         return
 
-    desc = f"📊 **{total_discounted}개 경쟁작 할인 중**\n\n" + "\n".join(report_lines)
+    # 헤더 embed
+    header = {
+        "title": "⚔️ Crimson Desert 경쟁작 할인 추적 리포트",
+        "description": f"📊 **{total_countries}개국**에서 할인 경쟁작 발견",
+        "color": 0xFF4500,
+        "timestamp": datetime.now(KST).isoformat()
+    }
 
-    CHUNK_LIMIT = 4000
-    chunks = [desc[i:i+CHUNK_LIMIT] for i in range(0, len(desc), CHUNK_LIMIT)]
-
-    for chunk in chunks:
-        requests.post(DISCORD_WEBHOOK, json={"embeds": [{
-            "title": "⚔️ Crimson Desert 경쟁작 할인 추적 리포트",
-            "description": chunk,
-            "color": 0xFFD700,
-            "timestamp": datetime.now(KST).isoformat()
-        }]})
-        time.sleep(1)
+    # Discord: 한 번에 최대 10개 embed
+    all_embeds = [header] + embeds
+    for i in range(0, len(all_embeds), 10):
+        chunk = all_embeds[i:i+10]
+        requests.post(DISCORD_WEBHOOK, json={"embeds": chunk})
+        time.sleep(0.5)
 
 
 # =============================================================================
@@ -387,9 +401,8 @@ def send_discord(country_results):
 
 def main():
     print("=" * 70)
-    print("⚔️ Crimson Desert 경쟁작 추적기 v3.0 (고속화)")
+    print("⚔️ Crimson Desert 경쟁작 추적기 v3.1")
     print("=" * 70)
-    print("예상 실행 시간: 3~7분 (할인작 수에 따라 변동)")
 
     t0 = time.time()
     driver = setup_driver()
@@ -400,9 +413,8 @@ def main():
         for i, country in enumerate(all_countries):
             if country in SKIP_COUNTRIES:
                 continue
-            competitors = crawl_competitors(driver, country)
-            if competitors:
-                country_results[country] = competitors
+            result = crawl_competitors(driver, country)
+            country_results[country] = result
             elapsed = time.time() - t0
             remaining = len(all_countries) - i - 1
             print(f"   ⏱ 경과 {elapsed:.0f}s | 남은 국가 {remaining}개")
