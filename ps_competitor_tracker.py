@@ -75,8 +75,7 @@ def get_browse_url(country, page=1):
 
 def crawl_competitors(driver, country):
     """
-    붉은사막(CONCEPT_ID)이 나올 때까지의 상위 게임들을 수집하며,
-    % 기호나 할인 키워드가 포함된 모든 가격 정보를 추출합니다.
+    붉은사막 발견 전까지 상위 게임의 모든 상태(할인, 무료, 구독 포함)를 정밀 추적합니다.
     """
     total_rank = 0
     target = f"/concept/{CONCEPT_ID}"
@@ -89,58 +88,60 @@ def crawl_competitors(driver, country):
 
         try:
             driver.get(url)
-            time.sleep(3)
+            time.sleep(4) # 로딩 대기 시간 약간 증가
 
-            # 게임 카드 요소들을 가져옴
-            links = driver.find_elements(By.CSS_SELECTOR, "a[href*='/concept/']")
-            if not links:
+            # 각 게임 아이템을 담고 있는 컨테이너 추출
+            items = driver.find_elements(By.CSS_SELECTOR, "li[data-qa^='grid#']")
+            
+            if not items:
                 break
 
-            for link in links:
-                href = link.get_attribute("href") or ""
-                if "/concept/" not in href:
-                    continue
-                
-                total_rank += 1
-
-                # 붉은사막 발견 시 즉시 종료
-                if target in href:
-                    print(f"    ✅ {country}: 붉은사막 {total_rank}위 발견. 상위 {len(competitors)}개 추적 완료.")
-                    return competitors, "found"
-
-                # 텍스트 파싱 (줄바꿈 제거 및 정리)
-                raw_text = [t.strip() for t in link.text.split('\n') if t.strip()]
-                title = raw_text[0] if raw_text else "Unknown"
-                
-                discount_info = "할인 없음"
-                
-                # 할인 여부 판단: % 기호가 있거나, 특정 할인 키워드가 포함된 경우
-                # 단, PS4/PS5 같은 플랫폼 명칭은 무시
-                info_parts = []
-                is_discounted = False
-                
-                for idx, t in enumerate(raw_text):
-                    if idx == 0: continue # 첫 줄은 제목이므로 패스
+            for item in items:
+                try:
+                    # 1. 붉은사막(Target) 여부 확인
+                    link_element = item.find_element(By.TAG_NAME, "a")
+                    href = link_element.get_attribute("href") or ""
                     
-                    # 플랫폼 및 유형 키워드 제외
-                    if t.upper() in ["PS4", "PS5", "PS4 & PS5", "FULL GAME", "GAME BUNDLE", "PREMIUM EDITION"]:
+                    total_rank += 1
+                    
+                    if target in href:
+                        print(f"    ✅ {country}: 붉은사막 {total_rank}위 발견. 추적 종료.")
+                        return competitors, "found"
+
+                    # 2. 게임 정보 정밀 파싱
+                    # 카드 내의 모든 텍스트를 가져오되, 빈 줄은 제거
+                    raw_info = [t.strip() for t in item.text.split('\n') if t.strip()]
+                    
+                    if not raw_info:
                         continue
-                    
-                    # 할인 징후(% 기호 또는 가격 변동 텍스트) 발견 시
-                    if "%" in t or any(kw in t.lower() for kw in ["종료", "ends", "off", "save"]):
-                        is_discounted = True
-                    
-                    info_parts.append(t)
+                        
+                    title = raw_info[0] # 첫 번째 줄은 보통 제목
+                    status_details = []
+                    is_special_state = False
 
-                if is_discounted:
-                    # 추출된 가격 및 할인 정보를 한 줄로 병합
-                    discount_info = " | ".join(info_parts)
+                    # 제목 제외하고 나머지 텍스트 검사 (할인율, 가격, 무료여부 등)
+                    for info in raw_info[1:]:
+                        # 플랫폼명(PS5 등)은 스킵
+                        if info.upper() in ["PS4", "PS5", "PS4 & PS5"]:
+                            continue
+                            
+                        # 할인율(%), 가격($/₩), 무료(Gratuito/Free), 구독(Incluido) 등 핵심 키워드 포착
+                        if any(key in info.lower() for key in ["%", "$", "₩", "gratuito", "free", "incluido", "off", "save"]):
+                            is_special_state = True
+                            
+                        status_details.append(info)
 
-                competitors.append({
-                    "rank": total_rank,
-                    "title": title,
-                    "discount_info": discount_info
-                })
+                    # 3. 데이터 저장 (특별한 상태가 없으면 '상시가'로 표시)
+                    competitors.append({
+                        "rank": total_rank,
+                        "title": title,
+                        "discount_info": " | ".join(status_details) if is_special_state else "상시가"
+                    })
+
+                except Exception as e:
+                    continue
+
+            print(f"    {country}: page {page} 완료 (현재 {total_rank}위)...")
 
         except Exception as e:
             print(f"    ⚠️ {country} 오류: {e}")
