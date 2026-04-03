@@ -75,7 +75,7 @@ def get_browse_url(country, page=1):
 
 def crawl_competitors(driver, country):
     """
-    붉은사막 발견 전까지 상위 게임의 모든 상태(할인, 무료, 구독 포함)를 정밀 추적합니다.
+    innerText를 사용하여 숨겨진 할인 텍스트와 가격 정보를 강제로 추출합니다.
     """
     total_rank = 0
     target = f"/concept/{CONCEPT_ID}"
@@ -88,12 +88,13 @@ def crawl_competitors(driver, country):
 
         try:
             driver.get(url)
-            time.sleep(4) # 로딩 대기 시간 약간 증가
+            time.sleep(5) # 스토어 데이터 로딩을 위해 대기 시간 충분히 확보
 
-            # 각 게임 아이템을 담고 있는 컨테이너 추출
+            # 게임 카드 리스트 요소 찾기
             items = driver.find_elements(By.CSS_SELECTOR, "li[data-qa^='grid#']")
             
             if not items:
+                print(f"    ⚠️ {country}: 아이템을 찾을 수 없습니다. (페이지: {page})")
                 break
 
             for item in items:
@@ -105,46 +106,47 @@ def crawl_competitors(driver, country):
                     total_rank += 1
                     
                     if target in href:
-                        print(f"    ✅ {country}: 붉은사막 {total_rank}위 발견. 추적 종료.")
+                        print(f"    ✅ {country}: 붉은사막 {total_rank}위 발견. (상위 {len(competitors)}개 수집)")
                         return competitors, "found"
 
-                    # 2. 게임 정보 정밀 파싱
-                    # 카드 내의 모든 텍스트를 가져오되, 빈 줄은 제거
-                    raw_info = [t.strip() for t in item.text.split('\n') if t.strip()]
+                    # 2. innerText를 활용한 정밀 텍스트 추출 (가장 강력한 방법)
+                    full_text = item.get_attribute("innerText")
+                    raw_info = [t.strip() for t in full_text.split('\n') if t.strip()]
                     
                     if not raw_info:
                         continue
                         
-                    title = raw_info[0] # 첫 번째 줄은 보통 제목
+                    title = raw_info[0]
                     status_details = []
-                    is_special_state = False
+                    is_tracking_target = False
 
-                    # 제목 제외하고 나머지 텍스트 검사 (할인율, 가격, 무료여부 등)
+                    # 제목 제외 나머지 데이터 분석
                     for info in raw_info[1:]:
-                        # 플랫폼명(PS5 등)은 스킵
+                        info_lower = info.lower()
+                        # 플랫폼 이름 제외
                         if info.upper() in ["PS4", "PS5", "PS4 & PS5"]:
                             continue
                             
-                        # 할인율(%), 가격($/₩), 무료(Gratuito/Free), 구독(Incluido) 등 핵심 키워드 포착
-                        if any(key in info.lower() for key in ["%", "$", "₩", "gratuito", "free", "incluido", "off", "save"]):
-                            is_special_state = True
+                        # 할인율(%), 가격($/₩), 무료/구독(Gratuito, Free, Incluido, Add-on) 등 감지
+                        # 특히 '%' 기호를 최우선으로 잡습니다.
+                        keywords = ["%", "$", "₩", "free", "gratuito", "incluido", "off", "save", "sale"]
+                        if any(key in info_lower for key in keywords):
+                            is_tracking_target = True
                             
                         status_details.append(info)
 
-                    # 3. 데이터 저장 (특별한 상태가 없으면 '상시가'로 표시)
+                    # 3. 데이터 추가 (무료 게임이나 할인 게임 위주로 저장)
                     competitors.append({
                         "rank": total_rank,
                         "title": title,
-                        "discount_info": " | ".join(status_details) if is_special_state else "상시가"
+                        "discount_info": " | ".join(status_details) if is_tracking_target else "상시가"
                     })
 
                 except Exception as e:
                     continue
 
-            print(f"    {country}: page {page} 완료 (현재 {total_rank}위)...")
-
         except Exception as e:
-            print(f"    ⚠️ {country} 오류: {e}")
+            print(f"    ⚠️ {country} 시스템 오류: {e}")
             break
 
     return competitors, "not_found"
