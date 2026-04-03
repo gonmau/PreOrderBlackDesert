@@ -78,11 +78,6 @@ MAX_PAGES = 8
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 HISTORY_FILE = "competitor_history.json"
 
-# "Offer ends" 패턴 - 다국어 지원
-OFFER_ENDS_PATTERNS = re.compile(
-    r'(offer ends?|ends?|sale ends?|종료|까지|fin\s*le|endet am|termina el|scade il|終了|有効期限)',
-    re.IGNORECASE
-)
 
 # =============================================================================
 # 드라이버 설정
@@ -124,61 +119,48 @@ def parse_browse_page(driver):
     browse 페이지에서 타일 정보 추출.
     DOM 구조:
       - 타일 루트: data-qa="ems-sdk-grid#productTileN" (div)
-      - 링크:      <a href="/concept/..."> (data-qa 없음, 타일 내부)
+      - 링크:      <a href="/concept/..."> (data-qa 없음, 페이지 순서대로)
       - 타이틀:    data-qa="ems-sdk-grid#productTileN#product-name" (span)
       - 할인 뱃지: data-qa="ems-sdk-grid#productTileN#discount-badge"
     반환: list of {tile_idx, url, title, has_discount}
     """
     tile_map = {}
 
-    # 타일 루트 div만 수집 (하위 요소 제외하기 위해 정확히 "#productTileN" 끝나는 것)
+    # 1) 타일 루트 div 수집 (data-qa가 정확히 "...#productTileN"으로 끝나는 것만)
     root_elems = driver.find_elements(By.CSS_SELECTOR, '[data-qa*="productTile"]')
     for elem in root_elems:
         qa = elem.get_attribute('data-qa') or ''
-        # "ems-sdk-grid#productTileN" 형태만 (하위 #product-name 등 제외)
-        match = re.search(r'productTile(\d+)$', qa)
-        if not match:
+        if not re.search(r'productTile(\d+)$', qa):
             continue
-        tile_idx = int(match.group(1))
+        tile_idx = int(re.search(r'productTile(\d+)$', qa).group(1))
         if tile_idx not in tile_map:
-            tile_map[tile_idx] = {'url': None, 'title': None, 'has_discount': False}
+            text = elem.text.strip()
+            tile_map[tile_idx] = {
+                'url': None,
+                'title': text.split('\n')[0].strip() if text else None,
+                'has_discount': False
+            }
 
-        # 타일 div 텍스트 첫 줄 = 게임명 (fallback)
-        text = elem.text.strip()
-        if text and not tile_map[tile_idx]['title']:
-            tile_map[tile_idx]['title'] = text.split('\n')[0].strip()
-
-    # 링크: /concept/ href를 가진 <a> 태그 → 타일과 매칭
-    # <a>는 data-qa가 없으므로 텍스트(게임명)로 타일과 연결
+    # 2) 링크: /concept/ href <a> 태그를 페이지 순서대로 수집
     links = driver.find_elements(By.CSS_SELECTOR, 'a[href*="/concept/"]')
-    for a in links:
+    # 타일 인덱스 오름차순으로 url 없는 슬롯에 순서대로 1:1 배정
+    empty_slots = sorted([idx for idx, d in tile_map.items() if not d['url']])
+    for a, idx in zip(links, empty_slots):
         href = a.get_attribute('href') or ''
         title = a.text.strip()
-        # 타일맵에서 같은 게임명 찾기
-        for idx, d in tile_map.items():
-            if d['url']:
-                continue
-            if d['title'] and title and d['title'].startswith(title[:20]):
-                d['url'] = href
-                break
-        else:
-            # 매칭 실패 시 순서대로 빈 슬롯에 채우기
-            for idx in sorted(tile_map.keys()):
-                if not tile_map[idx]['url']:
-                    tile_map[idx]['url'] = href
-                    if title:
-                        tile_map[idx]['title'] = title
-                    break
+        tile_map[idx]['url'] = href
+        if title and not tile_map[idx]['title']:
+            tile_map[idx]['title'] = title
 
-    # 할인 뱃지: data-qa*="discount-badge" 요소
+    # 3) 할인 뱃지: data-qa*="discount-badge" 로 tile 인덱스 추출
     badge_elems = driver.find_elements(By.CSS_SELECTOR, '[data-qa*="discount-badge"]')
     for elem in badge_elems:
         qa = elem.get_attribute('data-qa') or ''
-        match = re.search(r'productTile(\d+)', qa)
-        if match:
-            tile_idx = int(match.group(1))
-            if tile_idx in tile_map:
-                tile_map[tile_idx]['has_discount'] = True
+        m = re.search(r'productTile(\d+)', qa)
+        if m:
+            idx = int(m.group(1))
+            if idx in tile_map:
+                tile_map[idx]['has_discount'] = True
 
     results = []
     for idx in sorted(tile_map.keys()):
@@ -199,36 +181,30 @@ def parse_browse_page(driver):
 def get_discount_deadline(driver, url):
     """
     상세 페이지에서 "Offer ends ..." 텍스트 추출.
-    data-qa 기반 타깃 셀렉터만 사용 (전체 span/p 순회 제거 → 빠름).
+    정확한 셀렉터: data-qa*="discountDescriptor" → "Offer ends ..."
+    fallback: data-qa*="discountInfo" → "Save 75%"
     """
     try:
         driver.get(url)
         try:
             WebDriverWait(driver, 7).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, '[data-qa*="mfe-purchase"], [data-qa*="price"]'))
+                EC.presence_of_element_located((By.CSS_SELECTOR, '[data-qa*="discountDescriptor"], [data-qa*="discountInfo"]'))
             )
         except:
-            time.sleep(2)
+            time.sleep(3)
 
-        # 구매/가격 블록 전체 텍스트에서 줄 단위 탐색
-        candidates = driver.find_elements(By.CSS_SELECTOR,
-            '[data-qa*="mfe-purchase"], [data-qa*="price"], [data-qa*="offer"], [data-qa*="discount"]')
-
-        for elem in candidates:
-            text = elem.text.strip()
-            if not text:
-                continue
-            for line in text.split('\n'):
-                line = line.strip()
-                if OFFER_ENDS_PATTERNS.search(line) and len(line) > 5:
-                    return line
-            if OFFER_ENDS_PATTERNS.search(text) and len(text) < 150:
+        # 1순위: discountDescriptor = "Offer ends 4/9/2026 ..."
+        elems = driver.find_elements(By.CSS_SELECTOR, '[data-qa*="discountDescriptor"]')
+        for e in elems:
+            text = e.text.strip()
+            if text:
                 return text
 
-        # fallback: Save X% (종료일 없어도 할인 확인)
-        for elem in candidates:
-            text = elem.text.strip()
-            if re.search(r'save\s+\d+%', text, re.IGNORECASE) and len(text) < 200:
+        # 2순위: discountInfo = "Save 75%" (종료일 없어도 할인 확인)
+        elems = driver.find_elements(By.CSS_SELECTOR, '[data-qa*="discountInfo"]')
+        for e in elems:
+            text = e.text.strip()
+            if text and re.search(r'save\s+\d+%', text, re.IGNORECASE):
                 return text
 
         return "종료일 정보 없음"
