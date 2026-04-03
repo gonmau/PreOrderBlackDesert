@@ -206,6 +206,56 @@
   #footer-note b { color: var(--steam); }
   #footer-note span { color: var(--tx-3); }
 
+  /* ── 디스패치 버튼 ── */
+  .dispatch-btn {
+    background: rgba(74,158,255,0.08) !important;
+    border-color: rgba(74,158,255,0.35) !important;
+    color: var(--steam) !important;
+  }
+  .dispatch-btn:hover:not(:disabled) { background: rgba(74,158,255,0.18) !important; }
+  .dispatch-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .dispatch-btn .spin { display: inline-block; animation: ghSpin 0.7s linear infinite; }
+  @keyframes ghSpin { to { transform: rotate(360deg); } }
+
+  .token-btn { font-size: 12px !important; }
+  #gh-status-dot { font-size: 8px; line-height: 1; }
+  #gh-status-dot.dot-ok   { color: #2ecc71; }
+  #gh-status-dot.dot-none { color: var(--tx-4); }
+
+  /* ── 모달 ── */
+  .gh-modal-bg {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .gh-modal-bg.open { display: flex; }
+  .gh-modal-box {
+    background: var(--bg-2); border: 1px solid var(--bd-hi);
+    border-radius: var(--radius); padding: 24px;
+    width: 90%; max-width: 400px; position: relative;
+  }
+  .gh-modal-title { font-size: 16px; font-weight: 800; color: var(--tx-1); margin-bottom: 6px; }
+  .gh-modal-desc  { font-size: 13px; color: var(--tx-4); margin-bottom: 14px; line-height: 1.6; }
+  .gh-modal-desc a { color: var(--steam); }
+  .gh-modal-label { font-size: 10px; color: var(--tx-4); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .gh-modal-input {
+    width: 100%; background: var(--bg-3); border: 1px solid var(--bd-hi);
+    border-radius: 5px; color: var(--tx-1); font-size: 13px;
+    padding: 8px 10px; margin-bottom: 10px; font-family: monospace;
+  }
+  .gh-modal-input:focus { outline: none; border-color: var(--tx-4); }
+  .gh-modal-save {
+    width: 100%; padding: 8px; font-size: 13px; font-weight: 800;
+    background: rgba(241,196,15,0.10); border: 1px solid rgba(241,196,15,0.35);
+    color: var(--gold); border-radius: 5px; cursor: pointer;
+  }
+  .gh-modal-save:hover { background: rgba(241,196,15,0.20); }
+  .gh-modal-close {
+    position: absolute; top: 12px; right: 14px;
+    font-size: 22px; color: var(--tx-4); cursor: pointer; background: none; border: none;
+  }
+  .gh-modal-close:hover { color: var(--tx-1); }
+
   @media (max-width: 700px) {
     #card-row { grid-template-columns: repeat(3, 1fr); }
     .stat-val { font-size: 1.4rem; }
@@ -227,6 +277,28 @@
     <button class="hdr-btn active" id="ccu-btn-hourly" onclick="setCCUView('hourly')">시간별</button>
     <button class="hdr-btn" id="ccu-btn-daily"  onclick="setCCUView('daily')">일별 피크</button>
     <button class="hdr-btn" onclick="loadCCUHistory()" title="최신 데이터 새로고침">↻ 새로고침</button>
+    <div class="hdr-sep"></div>
+    <button class="hdr-btn dispatch-btn" id="btn-dispatch-conc" onclick="dispatchWorkflow()">
+      <span class="btn-icon">▶</span> 동접 실행
+    </button>
+    <button class="hdr-btn token-btn" id="btn-gh-token" onclick="openGhModal()">
+      <span id="gh-status-dot" class="dot-none">●</span>&nbsp;⚙
+    </button>
+  </div>
+</div>
+
+<!-- ── GitHub Token 모달 ── -->
+<div class="gh-modal-bg" id="gh-modal">
+  <div class="gh-modal-box">
+    <span class="gh-modal-close" onclick="closeGhModal()">×</span>
+    <div class="gh-modal-title">⚙ GitHub Token 설정</div>
+    <div class="gh-modal-desc">
+      GitHub <a href="https://github.com/settings/tokens" target="_blank">Personal Access Token</a>
+      (workflow 권한 필요)<br>입력한 토큰은 브라우저 localStorage에만 저장됩니다.
+    </div>
+    <div class="gh-modal-label">Personal Access Token</div>
+    <input class="gh-modal-input" id="gh-token-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+    <button class="gh-modal-save" onclick="saveGhToken()">저장</button>
   </div>
 </div>
 
@@ -704,11 +776,183 @@ function renderDailyChart() {
   });
 }
 
+// ── GitHub Actions 디스패치 ──
+const GH_OWNER = 'gonmau';
+const GH_REPO  = 'PreOrderBlackDesert';
+const GH_WF_CONC = 'steam_concurrent_tracker.yml';
+
+function ghGetToken() { return localStorage.getItem('gh_token') || ''; }
+
+function updateTokenDot() {
+  const dot = document.getElementById('gh-status-dot');
+  if (!dot) return;
+  if (ghGetToken()) {
+    dot.className = 'dot-ok';
+    dot.title = 'Token 설정됨';
+  } else {
+    dot.className = 'dot-none';
+    dot.title = 'Token 미설정';
+  }
+}
+
+function openGhModal() {
+  document.getElementById('gh-token-input').value = ghGetToken();
+  document.getElementById('gh-modal').classList.add('open');
+}
+function closeGhModal() { document.getElementById('gh-modal').classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGhModal(); });
+document.getElementById('gh-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('gh-modal')) closeGhModal();
+});
+function saveGhToken() {
+  localStorage.setItem('gh_token', document.getElementById('gh-token-input').value.trim());
+  closeGhModal();
+  updateTokenDot();
+  showToast('✅ Token이 저장되었습니다', '#2ecc71');
+}
+
+let _concPoller = null;
+
+function setDispatchBtn(state) {
+  const btn = document.getElementById('btn-dispatch-conc');
+  if (!btn) return;
+  const states = {
+    idle:    { icon: '▶', text: '동접 실행',  disabled: false, spin: false },
+    waiting: { icon: '⏳', text: '대기 중…',   disabled: true,  spin: false },
+    running: { icon: '↻', text: '실행 중…',   disabled: true,  spin: true  },
+    success: { icon: '✓', text: '완료',       disabled: false, spin: false },
+    failure: { icon: '✗', text: '실패',       disabled: false, spin: false },
+  };
+  const s = states[state] || states.idle;
+  btn.innerHTML = s.spin
+    ? `<span class="spin">${s.icon}</span> ${s.text}`
+    : `<span class="btn-icon">${s.icon}</span> ${s.text}`;
+  btn.disabled = s.disabled;
+  if (state === 'success' || state === 'failure') {
+    clearTimeout(btn._reset);
+    btn._reset = setTimeout(() => {
+      if (_concPoller) { clearTimeout(_concPoller); _concPoller = null; }
+      setDispatchBtn('idle');
+    }, 4000);
+  }
+}
+
+async function pollRunStatus(wf, since) {
+  const token = ghGetToken();
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+  let attempts = 0;
+  const MAX = 60;
+
+  setDispatchBtn('waiting');
+
+  const poll = async () => {
+    attempts++;
+    if (attempts > MAX) { setDispatchBtn('idle'); _concPoller = null; return; }
+    try {
+      const r = await fetch(
+        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${wf}/runs?per_page=5&created=>=${since}`,
+        { headers }
+      );
+      if (!r.ok) { setDispatchBtn('idle'); return; }
+      const data = await r.json();
+      const run = data.workflow_runs?.[0];
+      if (!run) { _concPoller = setTimeout(poll, 3000); return; }
+
+      const { status, conclusion } = run;
+      if (status === 'queued' || status === 'waiting') {
+        setDispatchBtn('waiting');
+        _concPoller = setTimeout(poll, 3000);
+      } else if (status === 'in_progress') {
+        setDispatchBtn('running');
+        _concPoller = setTimeout(poll, 5000);
+      } else {
+        if (conclusion === 'success') {
+          setDispatchBtn('success');
+          showToast('✅ 동접 수집 완료! 데이터 갱신 중…', '#2ecc71');
+          setTimeout(() => loadCCUHistory(), 8000); // Pages 배포 대기 후 갱신
+        } else if (conclusion === 'failure') {
+          setDispatchBtn('failure');
+          showToast(`❌ 실패 — <a href="${run.html_url}" target="_blank">로그 보기</a>`, '#e74c3c');
+        } else {
+          setDispatchBtn('idle');
+        }
+        _concPoller = null;
+      }
+    } catch(e) {
+      _concPoller = setTimeout(poll, 6000);
+    }
+  };
+  _concPoller = setTimeout(poll, 4000);
+}
+
+async function dispatchWorkflow() {
+  const token = ghGetToken();
+  if (!token) {
+    openGhModal();
+    showToast('⚙ 먼저 GitHub Token을 입력해주세요', '#f1c40f');
+    return;
+  }
+  if (_concPoller) return;
+
+  const since = new Date(Date.now() - 5000).toISOString().slice(0, 19) + 'Z';
+  setDispatchBtn('waiting');
+
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${GH_WF_CONC}/dispatches`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ref: 'main' })
+      }
+    );
+    if (res.status === 204) {
+      showToast('🚀 동접 트래커 실행 요청됨', '#4a9eff');
+      pollRunStatus(GH_WF_CONC, since);
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(`❌ 실패 (${res.status}): ${err.message || '알 수 없는 오류'}`, '#e74c3c');
+      setDispatchBtn('idle');
+    }
+  } catch(e) {
+    showToast(`❌ 네트워크 오류: ${e.message}`, '#e74c3c');
+    setDispatchBtn('idle');
+  }
+}
+
+function showToast(msg, color) {
+  let t = document.getElementById('gh-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'gh-toast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;z-index:300;transition:opacity 0.4s;white-space:nowrap;pointer-events:none';
+    document.body.appendChild(t);
+  }
+  t.innerHTML = msg;
+  t.style.background = color + '22';
+  t.style.border = `1px solid ${color}66`;
+  t.style.color = color;
+  t.style.opacity = '1';
+  t.style.pointerEvents = msg.includes('<a') ? 'auto' : 'none';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; t.style.pointerEvents = 'none'; }, 5000);
+}
+
 // 초기 로드
 CCU_DAILY = buildDailyFromHourly(CCU_FALLBACK);
 updateCards();
 renderCharts();
 loadCCUHistory();
+updateTokenDot();
 </script>
 </body>
 </html>
