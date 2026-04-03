@@ -15,7 +15,6 @@ import json
 import requests
 import re
 from datetime import datetime, timezone, timedelta
-from bs4 import BeautifulSoup
 
 KST = timezone(timedelta(hours=9))
 
@@ -98,17 +97,16 @@ def wait_for_tiles(driver, timeout=8):
 # browse 페이지 파싱 (BeautifulSoup, 빠름)
 # =============================================================================
 
-def parse_browse_page(page_source):
+def parse_browse_page(driver):
     """
-    browse 페이지 HTML에서 타일 정보 추출.
+    browse 페이지에서 타일 정보 추출 (Selenium DOM 직접 사용).
     반환: list of {tile_idx, url, title, has_discount}
     """
-    soup = BeautifulSoup(page_source, 'html.parser')
     tile_map = {}
+    elements = driver.find_elements(By.CSS_SELECTOR, '[data-qa*="productTile"]')
 
-    # data-qa에 "productTile숫자" 포함된 모든 요소
-    for elem in soup.find_all(attrs={"data-qa": re.compile(r'productTile\d+')}):
-        qa = elem.get('data-qa', '')
+    for elem in elements:
+        qa = elem.get_attribute('data-qa') or ''
         match = re.search(r'productTile(\d+)', qa)
         if not match:
             continue
@@ -117,19 +115,17 @@ def parse_browse_page(page_source):
         if tile_idx not in tile_map:
             tile_map[tile_idx] = {'url': None, 'title': None, 'has_discount': False}
 
-        # 링크 추출 (<a href="/concept/...">)
-        if elem.name == 'a':
-            href = elem.get('href', '')
-            if '/concept/' in href:
-                if not tile_map[tile_idx]['url']:
-                    tile_map[tile_idx]['url'] = href
-                # 타이틀: 텍스트 첫 줄
-                text = elem.get_text(separator='\n').strip()
-                if text and not tile_map[tile_idx]['title']:
+        # 링크 + 타이틀
+        if elem.tag_name.lower() == 'a':
+            href = elem.get_attribute('href') or ''
+            if '/concept/' in href and not tile_map[tile_idx]['url']:
+                tile_map[tile_idx]['url'] = href
+                text = elem.text.strip()
+                if text:
                     tile_map[tile_idx]['title'] = text.split('\n')[0].strip()
 
-        # 할인 뱃지 감지: "-숫자%" 패턴 텍스트 또는 data-qa에 discount 포함
-        elem_text = elem.get_text()
+        # 할인 뱃지 감지: 텍스트에 "-숫자%" 또는 data-qa에 discount
+        elem_text = elem.text or ''
         if re.search(r'-\d+%', elem_text) or 'discount' in qa.lower():
             tile_map[tile_idx]['has_discount'] = True
 
@@ -151,12 +147,10 @@ def parse_browse_page(page_source):
 
 def get_discount_deadline(driver, url):
     """
-    상세 페이지에서 "Offer ends ..." 텍스트 추출.
-    이미지 2 기준: data-qa*="mfe-purchase" 하위 또는 가격 블록 내 텍스트
+    상세 페이지에서 "Offer ends ..." 텍스트 추출 (Selenium DOM).
     """
     try:
         driver.get(url)
-        # 구매 블록 로드 대기
         try:
             WebDriverWait(driver, 8).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, '[data-qa*="mfe-purchase"], [data-qa*="price"]'))
@@ -164,30 +158,32 @@ def get_discount_deadline(driver, url):
         except:
             time.sleep(3)
 
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        # 전략 1: data-qa에 purchase/price/offer/discount 포함 요소
+        candidates = driver.find_elements(By.CSS_SELECTOR,
+            '[data-qa*="mfe-purchase"], [data-qa*="price"], [data-qa*="offer"], [data-qa*="discount"]')
 
-        # 전략 1: data-qa에 purchase/price/offer 포함된 요소의 텍스트
-        for elem in soup.find_all(attrs={"data-qa": re.compile(r'(purchase|price|offer|discount)', re.I)}):
-            text = elem.get_text(separator=' ').strip()
-            if OFFER_ENDS_PATTERNS.search(text):
-                # 해당 텍스트에서 "Offer ends ..." 줄만 추출
-                for line in text.split('\n'):
-                    line = line.strip()
-                    if OFFER_ENDS_PATTERNS.search(line) and len(line) > 5:
-                        return line
-                return text[:120]  # 패턴 있는 전체 텍스트 앞부분
+        for elem in candidates:
+            text = elem.text.strip()
+            if not text:
+                continue
+            for line in text.split('\n'):
+                line = line.strip()
+                if OFFER_ENDS_PATTERNS.search(line) and len(line) > 5:
+                    return line
+            # 패턴은 있지만 줄 분리 안 된 경우
+            if OFFER_ENDS_PATTERNS.search(text) and len(text) < 150:
+                return text
 
-        # 전략 2: 페이지 전체에서 "Offer ends" / "Save X%" 포함 짧은 텍스트 블록
-        for elem in soup.find_all(['p', 'span', 'div']):
-            text = elem.get_text(separator=' ').strip()
+        # 전략 2: 페이지 전체 span/p 중 짧고 날짜 포함된 텍스트
+        for elem in driver.find_elements(By.CSS_SELECTOR, 'span, p'):
+            text = elem.text.strip()
             if len(text) < 150 and OFFER_ENDS_PATTERNS.search(text):
-                # 날짜 패턴이 같이 있으면 더 신뢰
                 if re.search(r'\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}|\d{4}년|\d+월', text):
                     return text
 
-        # 전략 3: "Save X%" 텍스트 (종료일은 없지만 할인 확인)
-        for elem in soup.find_all(['p', 'span']):
-            text = elem.get_text(separator=' ').strip()
+        # 전략 3: "Save X%" 텍스트 (종료일 없어도 할인 확인)
+        for elem in driver.find_elements(By.CSS_SELECTOR, 'span, p'):
+            text = elem.text.strip()
             if re.search(r'save\s+\d+%', text, re.IGNORECASE) and len(text) < 200:
                 return text
 
@@ -222,12 +218,12 @@ def crawl_competitors(driver, country):
         except Exception:
             break
 
-        tiles = parse_browse_page(driver.page_source)
+        tiles = parse_browse_page(driver)
 
         if not tiles:
             # 타일 파싱 실패 → 짧게 재대기 후 재시도
             time.sleep(2)
-            tiles = parse_browse_page(driver.page_source)
+            tiles = parse_browse_page(driver)
             if not tiles:
                 break
 
