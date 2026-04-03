@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crimson Desert — 판매량 추정</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+  :root {
+    --blood: #ff4757; --gold: #f1c40f; --steam: #4a9eff;
+    --up: #2ecc71; --down: #e74c3c;
+    --bg-0: #000000; --bg-1: #0a0a0a; --bg-2: #111111; --bg-3: #181818; --bg-4: #222222;
+    --bd: #252525; --bd-hi: #333333;
+    --tx-1: #ffffff; --tx-2: #cccccc; --tx-3: #888888; --tx-4: #555555;
+    --radius: 8px; --gap: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { overflow-y: auto; }
+  body { background: var(--bg-0); color: var(--tx-1);
+    font-family: 'Rajdhani','Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif; }
+
+  /* ── 헤더 ── */
+  #header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 20px;
+    background: var(--bg-1); border-bottom: 2px solid var(--gold);
+    position: sticky; top: 0; z-index: 10;
+  }
+  #header .title { font-family: 'Cinzel',serif; font-size: 1.1rem; font-weight: 900; color: var(--gold); letter-spacing: 2px; }
+  #header .sub   { font-size: 11px; color: var(--tx-4); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+  #fetch-status  { font-size: 11px; color: var(--tx-4); font-weight: 700; margin-left: auto; }
+
+  /* ── 본문 ── */
+  .page-body { max-width: 1200px; margin: 0 auto; padding: 16px 20px 40px; }
+
+  /* ── 모델 근거 박스 ── */
+  .model-note {
+    background: var(--bg-3); border: 1px solid var(--bd); border-radius: var(--radius);
+    padding: 10px 14px; margin-bottom: 14px; font-size: 11px; color: var(--tx-4); line-height: 1.7;
+  }
+  .model-note b { color: var(--tx-2); }
+
+  /* ── 모드 탭 ── */
+  .mode-row { display: flex; gap: 6px; margin-bottom: 12px; }
+  .mode-btn {
+    flex: 1; padding: 7px 0; border-radius: 6px; border: 1px solid var(--bd);
+    background: var(--bg-3); color: var(--tx-3); font-size: 13px; font-weight: 800;
+    cursor: pointer; letter-spacing: 0.5px; transition: all 0.15s;
+  }
+
+  /* ── anchored 슬라이더 ── */
+  #anchored-controls {
+    display: none; background: rgba(241,196,15,0.05);
+    border: 1px solid rgba(241,196,15,0.2); border-radius: 6px;
+    padding: 10px 14px; margin-bottom: 10px;
+  }
+
+  /* ── 컨트롤 행 ── */
+  .ctrl-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
+  .ctrl-row label { font-size: 12px; color: var(--tx-3); }
+  .ctrl-input {
+    background: var(--bg-3); border: 1px solid var(--bd); border-radius: 4px;
+    padding: 3px 8px; color: var(--tx-1); font-size: 13px; margin-left: 6px;
+  }
+  .calc-btn {
+    background: var(--bg-3); border: 1px solid var(--bd); border-radius: 4px;
+    padding: 5px 14px; color: var(--tx-2); font-size: 13px; cursor: pointer; font-weight: 700;
+  }
+  .calc-btn:hover { background: var(--bg-4); }
+
+  /* ── 요약 카드 ── */
+  .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+  .s-card {
+    background: var(--bg-2); border: 1px solid var(--bd); border-left-width: 3px;
+    border-radius: var(--radius); padding: 10px 12px;
+  }
+  .s-label { font-size: 10px; color: var(--tx-4); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+  .s-val   { font-family: 'Cinzel',serif; font-size: 20px; font-weight: 900; line-height: 1; display: flex; align-items: baseline; gap: 5px; }
+  .s-adj   { font-size: 14px; color: var(--tx-3); font-weight: 700; }
+  .s-sub   { font-size: 10px; color: var(--tx-4); margin-top: 3px; }
+
+  /* ── 마일스톤 ── */
+  .milestone-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+  .m-card {
+    background: var(--bg-2); border: 1px solid var(--bd); border-left-width: 3px;
+    border-radius: var(--radius); padding: 10px 14px;
+  }
+  .m-label { font-size: 10px; color: var(--tx-4); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+  .m-date  { font-family: 'Cinzel',serif; font-size: 22px; font-weight: 900; line-height: 1; }
+  .m-day   { font-size: 11px; color: var(--tx-3); margin-top: 4px; }
+  .m-diff  { font-size: 12px; font-weight: 800; margin-top: 3px; }
+
+  /* ── 차트 섹션 ── */
+  .chart-section { margin-bottom: 16px; }
+  .chart-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .chart-title-lbl { font-size: 11px; color: var(--tx-4); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+  .chart-mode-badge {
+    font-size: 11px; font-weight: 800; padding: 1px 7px; border-radius: 3px;
+    background: var(--bg-3); color: var(--tx-3);
+  }
+  .chart-wrap { border-radius: var(--radius); overflow: hidden; }
+
+  /* ── 외부 추정치 ── */
+  .ext-box {
+    background: var(--bg-3); border: 1px solid var(--bd); border-radius: var(--radius);
+    padding: 10px 12px; margin-bottom: 14px;
+  }
+  .ext-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .ext-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .ext-src-label { font-size: 10px; font-weight: 800; margin-bottom: 4px; }
+  .ext-row { display: flex; gap: 3px; margin-bottom: 3px; align-items: center; }
+  .ext-input {
+    background: var(--bg-4); border: 1px solid var(--bd); border-radius: 3px;
+    padding: 2px 4px; color: var(--tx-1); font-size: 10px;
+  }
+  .ext-add-btn {
+    width: 100%; margin-top: 4px; padding: 2px 0; font-size: 11px;
+    background: transparent; border: 1px dashed var(--bd); border-radius: 3px;
+    color: var(--tx-4); cursor: pointer;
+  }
+  .action-btn {
+    padding: 3px 10px; font-size: 11px; font-weight: 700;
+    background: var(--bg-4); border: 1px solid var(--bd); border-radius: 4px;
+    color: var(--tx-2); cursor: pointer;
+  }
+  .action-btn.muted { color: var(--tx-4); }
+
+  @media (max-width: 700px) {
+    .summary-grid   { grid-template-columns: repeat(2, 1fr); }
+    .milestone-grid { grid-template-columns: repeat(2, 1fr); }
+    .ext-grid       { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div>
+    <div class="title">💰 Crimson Desert</div>
+    <div class="sub">판매량 추정 대시보드</div>
+  </div>
+  <span id="fetch-status">⏳ 데이터 로딩 중…</span>
+</div>
+
+<div class="page-body">
+
+  <!-- 모델 근거 -->
+  <div class="model-note">
+    <b>📌 모델 근거</b><br>
+    • 공식 앵커: <b style="color:var(--gold)">D0=200만 (3/20)</b> · <b style="color:var(--gold)">D4=300만 (3/24)</b> · <b style="color:var(--gold)">D12=400만 (4/1)</b><br>
+    • PS는 WEIGHTS 기반 가중 평균 순위, Steam은 STS_W 기반 국가별 가중 평균 순위를 일별 신호로 사용합니다.<br>
+    • D13+는 모델 decay 또는 📌공지기반 슬라이더 값 적용. 기타 채널(EGS·Mac·AMD·오프라인)은 고정비율 보정.<br>
+    • 각 플랫폼 <b style="color:var(--tx-2)">+숫자*</b>는 순위 미반영 채널 고정비율 추정치 (참고용).
+  </div>
+
+  <!-- 모드 탭 -->
+  <div class="mode-row">
+    <button class="mode-btn" id="sales-mode-conservative" onclick="setSalesMode('conservative')">🔵 보수적</button>
+    <button class="mode-btn" id="sales-mode-normal"       onclick="setSalesMode('normal')">⚪ 중간</button>
+    <button class="mode-btn" id="sales-mode-optimistic"   onclick="setSalesMode('optimistic')">🔴 낙관적</button>
+    <button class="mode-btn" id="sales-mode-anchored"     onclick="setSalesMode('anchored')">📌 공지기반</button>
+  </div>
+
+  <!-- anchored 슬라이더 -->
+  <div id="anchored-controls">
+    <div style="font-size:11px;color:#f1c40f;font-weight:800;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase">📌 공지기반 — D13+ 감소율</div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px">
+        <input id="anchored-decay-slider" type="range" min="0.860" max="0.930" step="0.001" value="0.893"
+          style="flex:1;accent-color:#f1c40f;cursor:pointer" oninput="updateAnchoredDecayLabel()">
+        <span style="font-size:18px;font-weight:900;color:#f1c40f;font-family:'Cinzel',serif;min-width:44px" id="anchored-decay-lbl">0.893</span>
+      </div>
+      <div style="font-size:11px;color:var(--tx-4);display:flex;gap:10px;flex-wrap:wrap">
+        <span>0.860 <span style="color:#e74c3c">FF XVI</span></span>
+        <span>0.880 <span style="color:#e67e22">Black Myth</span></span>
+        <span>0.893 <span style="color:#f1c40f">MHW평균</span></span>
+        <span>0.913 <span style="color:#2ecc71">Elden Ring</span></span>
+        <span>0.930 <span style="color:#4a9eff">MHW낙관</span></span>
+      </div>
+    </div>
+    <div id="anchored-ref-lbl" style="font-size:11px;color:var(--tx-3);margin-top:6px"></div>
+    <div style="font-size:10px;color:var(--tx-4);margin-top:5px">D0~D12: 공식 발표 앵커 고정 — D13+: 슬라이더 감소율 적용</div>
+  </div>
+
+  <!-- 컨트롤 -->
+  <div class="ctrl-row">
+    <label>발표 판매량:
+      <input id="sales-day1-total" class="ctrl-input" type="number" value="2000000" step="100000" style="width:110px">
+    </label>
+    <label>환불율(%):
+      <input id="sales-refund-pct" class="ctrl-input" type="number" value="8" min="0" max="25" step="1" style="width:55px">
+    </label>
+    <label>PS5 기본(%):
+      <input id="sales-ps-ratio" class="ctrl-input" type="number" value="36" min="10" max="60" step="1" style="width:55px">
+      <span style="color:var(--tx-4);font-size:11px"> Steam <span id="sales-steam-ratio-lbl">40</span>% / Xbox 10% / 기타 14%</span>
+    </label>
+    <button class="calc-btn" onclick="renderSalesChart()">재계산</button>
+  </div>
+
+  <!-- 요약 카드 -->
+  <div class="summary-grid" id="sales-summary-cards"></div>
+
+  <!-- 마일스톤 -->
+  <div class="milestone-grid" id="sales-milestone-cards"></div>
+
+  <!-- 일별 차트 -->
+  <div class="chart-section">
+    <div class="chart-title-row">
+      <span class="chart-title-lbl">📊 일별 판매량 추정 (누적 막대)</span>
+      <span class="chart-mode-badge" id="sales-chart-mode-lbl"></span>
+    </div>
+    <div class="chart-wrap" style="height:240px"><canvas id="salesDailyChart"></canvas></div>
+  </div>
+
+  <!-- 외부 추정치 입력 -->
+  <div class="ext-box">
+    <div class="ext-header">
+      <span style="font-size:11px;color:var(--tx-2);font-weight:800;letter-spacing:1px;text-transform:uppercase">🔍 외부 Steam 판매량 추정치</span>
+      <span style="font-size:10px;color:var(--tx-4)">(누적 차트 참조점)</span>
+      <button class="action-btn" style="margin-left:auto" onclick="saveExtData()">저장</button>
+      <button class="action-btn muted" onclick="clearExtData()">초기화</button>
+    </div>
+    <div class="ext-grid">
+      <div>
+        <div class="ext-src-label" style="color:#2ecc71">VG Insights</div>
+        <div id="ext-vg-rows"></div>
+        <button class="ext-add-btn" onclick="addExtRow('vg')">+ 추가</button>
+      </div>
+      <div>
+        <div class="ext-src-label" style="color:#f1c40f">Gamalytic</div>
+        <div id="ext-gm-rows"></div>
+        <button class="ext-add-btn" onclick="addExtRow('gm')">+ 추가</button>
+      </div>
+      <div>
+        <div class="ext-src-label" style="color:#a55eea">PlayTracker</div>
+        <div id="ext-pt-rows"></div>
+        <button class="ext-add-btn" onclick="addExtRow('pt')">+ 추가</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 누적 차트 -->
+  <div class="chart-section">
+    <div class="chart-title-row">
+      <span class="chart-title-lbl">📈 누적 판매량 추정 (Steam 외부 추정치 포함)</span>
+    </div>
+    <div class="chart-wrap" style="height:280px"><canvas id="salesCumChart"></canvas></div>
+  </div>
+
+</div><!-- /page-body -->
+
+<script>
+/* ══ 데이터 소스 ══ */
+const PS_JSON  = './bestseller_history.json';
+const STS_JSON = './steam_topseller_history.json';
+
+const STS_W  = {"미국":30.0,"중국":28.0,"러시아":6.0,"독일":5.5,"영국":5.0,"브라질":4.5,"한국":4.2,"프랑스":4.0,"일본":3.5,"캐나다":3.5,"호주":2.5,"터키":2.0,"폴란드":2.0,"스페인":2.0,"이탈리아":1.8,"네덜란드":0.8,"스웨덴":0.7,"노르웨이":0.5,"덴마크":0.5,"핀란드":0.4,"오스트리아":0.6,"스위스":0.7,"체코":0.4,"싱가포르":0.5,"태국":0.8,"벨기에":0.8,"홍콩":0.7,"뉴질랜드":0.4,"대만":0.8};
+
+const LAUNCH_DATE = new Date('2026-03-20T07:00:00+09:00');
+
+let historyData = [];
+let stsHist     = [];
+
+/* ══ 데이터 fetch ══ */
+async function loadData() {
+  const statusEl = document.getElementById('fetch-status');
+  let psOk = false, stsOk = false;
+
+  try {
+    const r = await fetch(PS_JSON + '?t=' + Date.now());
+    if (r.ok) {
+      const payload = await r.json();
+      historyData = Array.isArray(payload) ? payload : (payload.history || []);
+      psOk = true;
+    }
+  } catch(e) { console.warn('PS fetch 실패:', e); }
+
+  try {
+    const r = await fetch(STS_JSON + '?t=' + Date.now());
+    if (r.ok) {
+      const payload = await r.json();
+      stsHist = Array.isArray(payload) ? payload : (payload.history || []);
+      stsOk = true;
+    }
+  } catch(e) { console.warn('STS fetch 실패:', e); }
+
+  if (psOk && stsOk) {
+    statusEl.textContent = `✅ PS ${historyData.length}건 · Steam ${stsHist.length}건`;
+    statusEl.style.color = '#2ecc71';
+  } else if (!psOk && !stsOk) {
+    statusEl.textContent = '⚠️ 데이터 fetch 실패 — 순위 신호 없이 앵커만 사용';
+    statusEl.style.color = '#e67e22';
+  } else {
+    statusEl.textContent = `⚠️ PS:${psOk?'✓':'✗'} Steam:${stsOk?'✓':'✗'}`;
+    statusEl.style.color = '#e67e22';
+  }
+
+  renderSalesChart();
+}
+
+/* ══ 판매량 모델 ══ */
+const SALES_MODES = {
+  conservative: { label:'🔵 보수적', postDecay:0.82, psExp:0.20, stExp:0.22, xbExp:0.13, otherMin:0.12, otherMax:0.15, dailyFloor:15000, d14Decay:0.85 },
+  normal:       { label:'⚪ 중간',   postDecay:0.87, psExp:0.28, stExp:0.30, xbExp:0.18, otherMin:0.14, otherMax:0.18, dailyFloor:20000, d14Decay:0.89 },
+  optimistic:   { label:'🔴 낙관적', postDecay:0.89, psExp:0.38, stExp:0.40, xbExp:0.25, otherMin:0.16, otherMax:0.22, dailyFloor:30000, d14Decay:0.93 },
+  anchored:     { label:'📌 공지기반', postDecay:0.893, psExp:0.28, stExp:0.30, xbExp:0.18, otherMin:0.14, otherMax:0.18, dailyFloor:20000, d14Decay:0.87 },
+};
+
+let currentSalesMode = 'optimistic';
+
+const modeColors = { conservative:'#4a9eff', normal:'#aaaaaa', optimistic:'#ff4757', anchored:'#f1c40f' };
+const modeRgbs   = { conservative:'74,158,255', normal:'170,170,170', optimistic:'255,71,87', anchored:'241,196,15' };
+
+function setSalesMode(mode) {
+  currentSalesMode = mode;
+  ['conservative','normal','optimistic','anchored'].forEach(m => {
+    const btn = document.getElementById(`sales-mode-${m}`);
+    if (!btn) return;
+    const active = m === mode, c = modeColors[m];
+    btn.style.border     = `1px solid ${active ? c : 'var(--bd)'}`;
+    btn.style.background = active ? `rgba(${modeRgbs[m]},0.15)` : 'var(--bg-3)';
+    btn.style.color      = active ? c : 'var(--tx-3)';
+  });
+  const ancCtrl = document.getElementById('anchored-controls');
+  if (ancCtrl) ancCtrl.style.display = mode === 'anchored' ? 'block' : 'none';
+  if (mode === 'anchored') updateAnchoredDecayLabel();
+  renderSalesChart();
+}
+
+function updateAnchoredDecayLabel() {
+  const slider = document.getElementById('anchored-decay-slider');
+  const lbl    = document.getElementById('anchored-decay-lbl');
+  const refLbl = document.getElementById('anchored-ref-lbl');
+  if (!slider) return;
+  const v = parseFloat(slider.value);
+  if (lbl) lbl.textContent = v.toFixed(3);
+  const refs = [
+    { max:0.865, name:'FF XVI 수준',    desc:'PS독점·빠른 포화',       color:'#e74c3c' },
+    { max:0.885, name:'Black Myth 수준', desc:'강한 피크 후 빠른 하락', color:'#e67e22' },
+    { max:0.900, name:'MHW·BM 중간',    desc:'멀티플랫폼 평균',         color:'#f1c40f' },
+    { max:0.916, name:'Elden Ring 수준', desc:'GOTY급 스테디셀러',       color:'#2ecc71' },
+    { max:0.931, name:'MHW 낙관',       desc:'멀티플랫폼 장기판매 최상',color:'#4a9eff' },
+  ];
+  const ref = refs.find(r => v <= r.max) || refs[refs.length-1];
+  if (refLbl) refLbl.innerHTML = `→ <b style="color:${ref.color}">${ref.name}</b> <span style="color:var(--tx-4)">(${ref.desc})</span>`;
+  renderSalesChart();
+}
+
+function getDayIndex(ts) {
+  return Math.floor((new Date(ts) - LAUNCH_DATE) / 86400000);
+}
+
+function fmtSales(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(2)+'M';
+  if (n >= 1000)    return (n/1000).toFixed(1)+'K';
+  return Math.round(n).toLocaleString();
+}
+
+let salesDailyCI = null, salesCumCI = null;
+
+function renderSalesChart() {
+  const soldThroughD0 = parseInt(document.getElementById('sales-day1-total').value) || 2000000;
+  const refundPct     = parseFloat(document.getElementById('sales-refund-pct').value) || 8;
+  const psBaseRatio   = parseInt(document.getElementById('sales-ps-ratio').value) || 36;
+  const xbBaseRatio   = 10, otherBaseRatio = 14;
+  const stBaseRatio   = Math.max(5, 100 - psBaseRatio - xbBaseRatio - otherBaseRatio);
+  const lbl = document.getElementById('sales-steam-ratio-lbl');
+  if (lbl) lbl.textContent = stBaseRatio;
+
+  const modeLbl = document.getElementById('sales-chart-mode-lbl');
+  if (modeLbl) {
+    let modeText = SALES_MODES[currentSalesMode].label;
+    if (currentSalesMode === 'anchored') {
+      const sl = document.getElementById('anchored-decay-slider');
+      if (sl) modeText += ` decay:${parseFloat(sl.value).toFixed(3)}`;
+    }
+    modeLbl.textContent = modeText;
+    modeLbl.style.color      = modeColors[currentSalesMode];
+    modeLbl.style.border     = `1px solid ${modeColors[currentSalesMode]}55`;
+    modeLbl.style.background = `${modeColors[currentSalesMode]}11`;
+  }
+
+  const MODE = SALES_MODES[currentSalesMode] || SALES_MODES.normal;
+  const MILESTONE_DAY4  = 3000000;
+  const MILESTONE_DAY12 = 4000000;
+  const PRE4_INCREMENT  = Math.max(0, MILESTONE_DAY4 - soldThroughD0);
+  const D4_TO_D12_INC   = Math.max(0, MILESTONE_DAY12 - MILESTONE_DAY4);
+  const DAILY_FLOOR     = MODE.dailyFloor;
+  const OTHER_ALLOC     = { ps:0.20, st:0.35, xb:0.05, other:0.40 };
+  const clamp = (v,mn,mx) => Math.max(mn, Math.min(mx, v));
+  const sig = (base, rank, exp) => Math.pow(Math.max(1, base||1) / clamp(rank||base||1, 1, 80), exp);
+  const otherShareForDay = di => clamp(MODE.otherMin + di*0.005, MODE.otherMin, MODE.otherMax);
+
+  // ── PS 일별 가중 평균 순위 ──
+  const psByDay = {};
+  historyData.forEach(h => {
+    const di = getDayIndex(h.timestamp);
+    if (di < 0) return;
+    const avg = h.averages?.combined;
+    if (avg == null || !isFinite(avg)) return;
+    if (!psByDay[di]) psByDay[di] = { sum:0, cnt:0 };
+    psByDay[di].sum += avg; psByDay[di].cnt++;
+  });
+  const psDayAvg = {};
+  Object.entries(psByDay).forEach(([d,v]) => { psDayAvg[parseInt(d)] = v.sum/v.cnt; });
+
+  // ── Steam 일별 가중 평균 순위 ──
+  const stByDay = {};
+  stsHist.forEach(h => {
+    const di = getDayIndex(h.timestamp);
+    if (di < 0) return;
+    let tw=0, ts=0;
+    Object.entries(h.results||{}).forEach(([name,d]) => {
+      const r = d?.rank; if (!r || r>=100) return;
+      const w = STS_W[name]||1; ts += r*w; tw += w;
+    });
+    if (!tw) return;
+    if (!stByDay[di]) stByDay[di] = { sum:0, cnt:0 };
+    stByDay[di].sum += ts/tw; stByDay[di].cnt++;
+  });
+  const stDayAvg = {};
+  Object.entries(stByDay).forEach(([d,v]) => { stDayAvg[parseInt(d)] = v.sum/v.cnt; });
+
+  const todayDay = Math.max(0, Math.floor((Date.now()-LAUNCH_DATE.getTime())/86400000));
+  const observedDays = new Set([...Object.keys(psDayAvg),...Object.keys(stDayAvg)].map(Number));
+  const maxDay = Math.max(4, todayDay, observedDays.size ? Math.max(...observedDays) : 0);
+  const days = Array.from({length: maxDay+1}, (_,i)=>i);
+
+  const psKeys = Object.keys(psDayAvg).map(Number).sort((a,b)=>a-b);
+  const stKeys = Object.keys(stDayAvg).map(Number).sort((a,b)=>a-b);
+  const psBase = psDayAvg[psKeys[0]] || 4.0;
+  const stBase = stDayAvg[stKeys[0]] || 3.0;
+
+  const labels = [];
+  const psRankSeries = [], stRankSeries = [];
+  let psLastRank = psBase, stLastRank = stBase;
+  days.forEach(di => {
+    const date = new Date(LAUNCH_DATE.getTime() + di*86400000);
+    labels.push(`${date.getMonth()+1}/${date.getDate()}`);
+    const psR = psDayAvg[di]!=null ? psDayAvg[di] : psLastRank;
+    const stR = stDayAvg[di]!=null ? stDayAvg[di] : stLastRank;
+    psLastRank = psR; stLastRank = stR;
+    psRankSeries.push(psR); stRankSeries.push(stR);
+  });
+
+  const psSignal  = psRankSeries.map(r => (psBaseRatio/100)*sig(psBase, r, MODE.psExp));
+  const stSignal  = stRankSeries.map(r => (stBaseRatio/100)*sig(stBase, r, MODE.stExp));
+  const xbSignal  = days.map((_,i) => {
+    const cb = (psBase+stBase)/2, cr = (psRankSeries[i]+stRankSeries[i])/2;
+    return (xbBaseRatio/100)*sig(cb, cr, MODE.xbExp);
+  });
+  const comboSignal = days.map((_,i) => 0.52*psSignal[i] + 0.48*stSignal[i]);
+
+  // ── 일별 총 판매량 계산 ──
+  const totalDaily = Array(days.length).fill(0);
+  totalDaily[0] = soldThroughD0;
+
+  // D1~D4
+  const day14Weights = [];
+  for (let di=1; di<=4; di++) {
+    const decay    = Math.pow(MODE.d14Decay, di-1);
+    const momentum = clamp(comboSignal[di]/(comboSignal[0]||1), 0.72, 1.18);
+    day14Weights.push(Math.max(0.12, decay*momentum));
+  }
+  const wSum = day14Weights.reduce((a,b)=>a+b,0)||1;
+  for (let di=1; di<=4; di++) totalDaily[di] = Math.round(PRE4_INCREMENT*(day14Weights[di-1]/wSum));
+
+  // D5~D12
+  const day5_12W = [];
+  for (let di=5; di<=12; di++) {
+    const sRef = comboSignal[4]||comboSignal[0]||1;
+    const rel  = clamp((comboSignal[di]||sRef)/sRef, 0.70, 1.25);
+    day5_12W.push(Math.max(0.05, Math.pow(0.89, di-4)*rel));
+  }
+  const w5_12Sum = day5_12W.reduce((a,b)=>a+b,0)||1;
+  for (let di=5; di<=12; di++) totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, D4_TO_D12_INC*(day5_12W[di-5]/w5_12Sum)));
+
+  // D13+
+  if (currentSalesMode === 'anchored') {
+    const sl = document.getElementById('anchored-decay-slider');
+    const ANC_DECAY = sl ? parseFloat(sl.value) : 0.893;
+    for (let di=13; di<days.length; di++) {
+      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[12]*Math.pow(ANC_DECAY, di-12)));
+    }
+  } else {
+    for (let di=13; di<days.length; di++) {
+      const sRef = comboSignal[12]||comboSignal[4]||comboSignal[0]||1;
+      const rel  = clamp((comboSignal[di]||sRef)/sRef, 0.75, 1.20);
+      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[12]*Math.pow(MODE.postDecay, di-12)*rel));
+    }
+  }
+
+  // ── 플랫폼 분배 ──
+  const psDaily=[], stDaily=[], xbDaily=[], otherDaily=[];
+  const psAdjDaily=[], stAdjDaily=[], xbAdjDaily=[];
+  days.forEach(di => {
+    const gross = totalDaily[di]||0;
+    const otherPool = gross * otherShareForDay(di);
+    const visiblePool = gross - otherPool;
+    const rawPs=psSignal[di]||0.01, rawSt=stSignal[di]||0.01, rawXb=xbSignal[di]||0.01;
+    const rawSum = rawPs+rawSt+rawXb||1;
+    const psAdj=otherPool*OTHER_ALLOC.ps, stAdj=otherPool*OTHER_ALLOC.st, xbAdj=otherPool*OTHER_ALLOC.xb;
+    let ps=Math.round(visiblePool*rawPs/rawSum+psAdj);
+    let st=Math.round(visiblePool*rawSt/rawSum+stAdj);
+    let xb=Math.round(visiblePool*rawXb/rawSum+xbAdj);
+    let other=Math.round(gross-ps-st-xb);
+    if (other<0) { xb=Math.max(0,xb+other); other=0; }
+    psDaily.push(ps); stDaily.push(st); xbDaily.push(xb); otherDaily.push(other);
+    psAdjDaily.push(Math.round(psAdj)); stAdjDaily.push(Math.round(stAdj)); xbAdjDaily.push(Math.round(xbAdj));
+  });
+
+  // ── 누적 ──
+  const psCum=[], stCum=[], xbCum=[], otherCum=[], totCum=[];
+  let psAcc=0, stAcc=0, xbAcc=0, otherAcc=0;
+  days.forEach((_,i) => {
+    psAcc+=psDaily[i]; stAcc+=stDaily[i]; xbAcc+=xbDaily[i]; otherAcc+=otherDaily[i];
+    psCum.push(psAcc); stCum.push(stAcc); xbCum.push(xbAcc); otherCum.push(otherAcc);
+    totCum.push(psAcc+stAcc+xbAcc+otherAcc);
+  });
+
+  const idx = Math.min(todayDay, totCum.length-1);
+  const psTotal=psCum[idx]||0, stTotal=stCum[idx]||0, xbTotal=xbCum[idx]||0;
+  const otherTotal=otherCum[idx]||0, totalGross=totCum[idx]||0;
+  const psAdjTotal  = psAdjDaily.slice(0,todayDay+1).reduce((a,b)=>a+b,0);
+  const stAdjTotal  = stAdjDaily.slice(0,todayDay+1).reduce((a,b)=>a+b,0);
+  const xbAdjTotal  = xbAdjDaily.slice(0,todayDay+1).reduce((a,b)=>a+b,0);
+  const totalAdjTotal = psAdjTotal+stAdjTotal+xbAdjTotal;
+  const refundableBase = stTotal + otherTotal*0.65 + psTotal*0.30;
+  const totalNet = Math.round(totalGross - refundableBase*(refundPct/100));
+
+  // ── 요약 카드 ──
+  const cards = document.getElementById('sales-summary-cards');
+  if (cards) cards.innerHTML = [
+    { label:'📦 전체 누적 (총)', val:fmtSales(totalGross), adj:fmtSales(totalAdjTotal), sub:'공식 2M·3M·4M 앵커 보정', color:'var(--gold)' },
+    { label:'🧾 순보유량 추정',  val:fmtSales(totalNet),   adj:null, sub:`환불 ${refundPct}% (Steam·PC 전량, PS5 30% 가중)`, color:'#c0c0c0' },
+    { label:'🎮 PS5 누적',       val:fmtSales(psTotal),    adj:fmtSales(psAdjTotal),   sub:null, color:'var(--blood)' },
+    { label:'🖥 Steam 누적',     val:fmtSales(stTotal),    adj:fmtSales(stAdjTotal),   sub:null, color:'var(--steam)' },
+    { label:'🎮 Xbox 누적',      val:fmtSales(xbTotal),    adj:fmtSales(xbAdjTotal),   sub:null, color:'#107C10' },
+    { label:'🧩 기타 채널 누적', val:fmtSales(otherTotal), adj:null, sub:'EGS · Mac · 오프라인 · AMD', color:'#9b59b6' },
+  ].map(({label,val,adj,sub,color}) => `
+    <div class="s-card" style="border-left-color:${color}">
+      <div class="s-label">${label}</div>
+      <div class="s-val" style="color:${color}">${val}${adj?`<span class="s-adj" title="순위 미반영 채널 고정비율 추정 (참고용)">+${adj}*</span>`:''}</div>
+      ${sub?`<div class="s-sub">${sub}</div>`:''}
+    </div>`).join('');
+
+  // ── 마일스톤 ──
+  const msEl = document.getElementById('sales-milestone-cards');
+  if (msEl) {
+    const LAUNCH = new Date('2026-03-20T07:00:00+09:00');
+    const currentDay = Math.max(0, Math.floor((Date.now()-LAUNCH.getTime())/86400000));
+    const cumNow = totCum[Math.min(currentDay, totCum.length-1)] || totalGross;
+    const recentD = totalDaily.slice(Math.max(0,currentDay-2), currentDay+1).filter(v=>v>0);
+    const lastDaily2 = recentD.length ? recentD.reduce((a,b)=>a+b,0)/recentD.length : totalGross*0.03;
+    const signalRef = comboSignal[Math.min(currentDay,comboSignal.length-1)] || comboSignal[comboSignal.length-1] || 1;
+
+    function projectedDaily(offset) {
+      const di = currentDay+offset;
+      const rel = clamp((comboSignal[di]||signalRef)/signalRef, 0.72, 1.12);
+      return Math.max(DAILY_FLOOR, lastDaily2*Math.pow(0.90,offset-1)*rel);
+    }
+
+    const HARD_ANCHORS = [
+      { target:2_000_000, date:new Date('2026-03-20T23:46:00+09:00'), day:0  },
+      { target:3_000_000, date:new Date('2026-03-24T19:19:00+09:00'), day:4  },
+      { target:4_000_000, date:new Date('2026-04-01T11:00:00+09:00'), day:12 },
+    ];
+
+    function findMilestone(target) {
+      const anchor = HARD_ANCHORS.find(a=>a.target===target);
+      if (anchor) return { date:anchor.date, day:anchor.day, achieved:true };
+      for (let i=0; i<totCum.length; i++) {
+        if (totCum[i]>=target) return { date:new Date(LAUNCH.getTime()+i*86400000), day:i, achieved:i<=currentDay };
+      }
+      let c = totCum[totCum.length-1]||cumNow;
+      const startDay = totCum.length-1;
+      for (let d=1; d<=730; d++) {
+        c += projectedDaily(startDay+d-currentDay);
+        if (c>=target) return { date:new Date(LAUNCH.getTime()+(startDay+d)*86400000), day:startDay+d, achieved:false };
+      }
+      return null;
+    }
+
+    const fmtDateMs = dt => !dt ? '예측불가' : `${dt.getMonth()+1}/${dt.getDate()}`;
+    const fmtDiff   = (dt, achieved) => {
+      if (!dt) return '현재 추세로 불가';
+      const diff = Math.round((dt.getTime()-Date.now())/86400000);
+      if (achieved) return '✅ 달성';
+      if (diff<=0) return '오늘';
+      if (diff===1) return '내일';
+      return `D+${diff}`;
+    };
+
+    const mCards = [
+      { label:'🎯 300만 달성 ✅', ms:findMilestone(3_000_000),  color:'#2ecc71' },
+      { label:'🏅 400만 달성 ✅', ms:findMilestone(4_000_000),  color:'#f1c40f' },
+      { label:'🚀 500만 달성',    ms:findMilestone(5_000_000),  color:'#4a9eff' },
+      { label:'🚀 600만 달성',    ms:findMilestone(6_000_000),  color:'#e67e22' },
+      { label:'🔥 700만 달성',    ms:findMilestone(7_000_000),  color:'#e74c3c' },
+      { label:'🔥 800만 달성',    ms:findMilestone(8_000_000),  color:'#c0392b' },
+      { label:'💎 900만 달성',    ms:findMilestone(9_000_000),  color:'#9b59b6' },
+      { label:'💎 1000만 달성',   ms:findMilestone(10_000_000), color:'#8e44ad' },
+    ];
+
+    msEl.innerHTML = mCards.map(({label,ms,color}) => {
+      const dateStr = ms ? fmtDateMs(ms.date) : '예측불가';
+      const diffStr = ms ? fmtDiff(ms.date, ms.achieved) : '현재 추세로 불가';
+      const dayStr  = ms ? `출시 ${ms.day}일차` : '';
+      return `<div class="m-card" style="border-left-color:${color};${ms?.achieved?'border-color:rgba(46,204,113,0.4)':''}">
+        <div class="m-label">${label}</div>
+        <div class="m-date" style="color:${color}">${dateStr}</div>
+        <div class="m-day">${dayStr}</div>
+        <div class="m-diff" style="color:${ms?.achieved?'#2ecc71':'var(--tx-2)'}">${diffStr}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── 차트 공통 옵션 ──
+  const chartOpts = {
+    responsive:true, maintainAspectRatio:false,
+    layout:{ padding:{ top:8 } },
+    scales:{
+      x:{ ticks:{ color:'#aaa', maxTicksLimit:10, font:{size:11} }, grid:{ color:'#1e1e1e' } },
+      y:{ ticks:{ color:'#aaa', font:{size:11}, callback:v=>fmtSales(v) }, grid:{ color:'#1e1e1e' } },
+    },
+    plugins:{
+      legend:{ labels:{ color:'#ccc', font:{size:12}, boxWidth:12 } },
+      tooltip:{ callbacks:{ label:c=>' '+c.dataset.label+': '+fmtSales(c.parsed.y) } },
+    },
+    animation:false,
+  };
+
+  // 일별 차트
+  const ctx1 = document.getElementById('salesDailyChart').getContext('2d');
+  if (salesDailyCI) salesDailyCI.destroy();
+  salesDailyCI = new Chart(ctx1, {
+    type:'bar', data:{ labels, datasets:[
+      { label:'PS5',  data:psDaily,    backgroundColor:'rgba(255,71,87,0.75)',  borderColor:'#ff4757', borderWidth:1, stack:'a' },
+      { label:'Steam',data:stDaily,    backgroundColor:'rgba(74,158,255,0.75)', borderColor:'#4a9eff', borderWidth:1, stack:'a' },
+      { label:'Xbox', data:xbDaily,    backgroundColor:'rgba(16,124,16,0.75)',  borderColor:'#107C10', borderWidth:1, stack:'a' },
+      { label:'기타',  data:otherDaily, backgroundColor:'rgba(155,89,182,0.75)',borderColor:'#9b59b6', borderWidth:1, stack:'a' },
+    ]},
+    options:{ ...chartOpts, scales:{ ...chartOpts.scales,
+      x:{ ...chartOpts.scales.x, stacked:true },
+      y:{ ...chartOpts.scales.y, stacked:true },
+    }},
+  });
+
+  // 누적 차트
+  const ctx2 = document.getElementById('salesCumChart').getContext('2d');
+  if (salesCumCI) salesCumCI.destroy();
+  salesCumCI = new Chart(ctx2, {
+    type:'line', data:{ labels, datasets:[
+      { label:'전체', data:totCum,   borderColor:'#f1c40f', backgroundColor:'transparent', borderWidth:2.5, borderDash:[5,3], fill:false, tension:0.3, pointRadius:0 },
+      { label:'PS5',  data:psCum,    borderColor:'#ff4757', backgroundColor:'rgba(255,71,87,0.05)',  borderWidth:2, fill:true, tension:0.3, pointRadius:0 },
+      { label:'Steam',data:stCum,    borderColor:'#4a9eff', backgroundColor:'rgba(74,158,255,0.05)', borderWidth:2, fill:true, tension:0.3, pointRadius:0 },
+      { label:'Xbox', data:xbCum,    borderColor:'#107C10', backgroundColor:'rgba(16,124,16,0.05)',  borderWidth:2, fill:true, tension:0.3, pointRadius:0 },
+      { label:'기타',  data:otherCum, borderColor:'#9b59b6', backgroundColor:'rgba(155,89,182,0.05)',borderWidth:2, fill:true, tension:0.3, pointRadius:0 },
+      ...buildExtDatasets(labels),
+    ]},
+    options:chartOpts,
+  });
+}
+
+/* ══ 외부 추정치 ══ */
+const EXT_SOURCES = {
+  vg:{ label:'VG Insights', color:'#2ecc71' },
+  gm:{ label:'Gamalytic',   color:'#f1c40f' },
+  pt:{ label:'PlayTracker', color:'#a55eea' },
+};
+let _extData = {
+  vg:[{ date:'2026-03-30', val:1670000 }],
+  gm:[{ date:'2026-03-30', val:1930000 }],
+  pt:[{ date:'2026-03-30', val:2020000 }],
+};
+
+function loadExtData() {
+  try { const s = localStorage.getItem('cd_ext_sales'); if (s) _extData = JSON.parse(s); } catch(e) {}
+  renderExtRows();
+}
+function saveExtData() {
+  ['vg','gm','pt'].forEach(src => {
+    const rows = document.querySelectorAll(`[data-ext-src="${src}"]`);
+    _extData[src] = [];
+    rows.forEach(row => {
+      const date = row.querySelector('.ext-date')?.value?.trim();
+      const val  = parseInt(row.querySelector('.ext-val')?.value?.replace(/,/g,'')||'0');
+      if (date && val>0) _extData[src].push({ date, val });
+    });
+  });
+  try { localStorage.setItem('cd_ext_sales', JSON.stringify(_extData)); } catch(e) {}
+  renderSalesChart();
+}
+function clearExtData() {
+  _extData = { vg:[], gm:[], pt:[] };
+  try { localStorage.removeItem('cd_ext_sales'); } catch(e) {}
+  renderExtRows(); renderSalesChart();
+}
+function addExtRow(src, date='', val='') {
+  const container = document.getElementById(`ext-${src}-rows`);
+  if (!container) return;
+  const div = document.createElement('div');
+  div.dataset.extSrc = src;
+  div.className = 'ext-row';
+  div.innerHTML = `
+    <input class="ext-date ext-input" type="date" value="${date}" style="flex:1;min-width:0">
+    <input class="ext-val  ext-input" type="number" value="${val}" placeholder="판매수" style="width:72px">
+    <button onclick="this.parentElement.remove()" style="background:transparent;border:none;color:var(--tx-4);cursor:pointer;font-size:13px;padding:0 2px">✕</button>`;
+  container.appendChild(div);
+}
+function renderExtRows() {
+  ['vg','gm','pt'].forEach(src => {
+    const c = document.getElementById(`ext-${src}-rows`);
+    if (!c) return; c.innerHTML='';
+    (_extData[src]||[]).forEach(({date,val}) => addExtRow(src,date,val));
+  });
+}
+function buildExtDatasets(labels) {
+  const LAUNCH = new Date('2026-03-20T07:00:00+09:00');
+  return Object.entries(EXT_SOURCES).flatMap(([src, meta]) => {
+    const points = (_extData[src]||[]).map(({date,val}) => {
+      const d = new Date(date+'T12:00:00+09:00');
+      const lbl = `${d.getMonth()+1}/${d.getDate()}`;
+      const idx = labels.indexOf(lbl);
+      return idx>=0 ? { x:labels[idx], y:val } : null;
+    }).filter(Boolean);
+    if (!points.length) return [];
+    return [{ label:meta.label, type:'scatter', data:points,
+      backgroundColor:meta.color, borderColor:'#111', borderWidth:1.5,
+      pointRadius:8, pointHoverRadius:10, pointStyle:'triangle', showLine:false, order:-1 }];
+  });
+}
+
+/* ══ 초기화 ══ */
+window.addEventListener('DOMContentLoaded', () => {
+  loadExtData();
+  setSalesMode('optimistic');
+  loadData();
+});
+</script>
+</body>
+</html>
