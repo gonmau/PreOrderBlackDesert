@@ -73,83 +73,61 @@ def get_browse_url(country, page=1):
 # 크롤링
 # =============================================================================
 
+def get_discount_deadline(driver, url):
+    """
+    게임 상세 페이지에 접속하여 할인 종료 날짜를 정밀하게 추출합니다.
+    """
+    try:
+        driver.get(url)
+        time.sleep(3) # 상세 페이지 로딩 대기
+        
+        # 할인 종료일이 포함된 전형적인 태그/텍스트 탐색
+        # 스크린샷의 "Angebot endet am..." 또는 "Offer ends..." 등을 찾습니다.
+        deadline_elements = driver.find_elements(By.CSS_SELECTOR, "[data-qa*='discount-descriptor'], [class*='pdp-discount-availability']")
+        
+        if deadline_elements:
+            return deadline_elements[0].text.strip()
+            
+        # 태그로 못 찾을 경우, 페이지 전체 텍스트에서 '종료' 관련 키워드 검색
+        page_text = driver.find_element(By.TAG_NAME, "body").text
+        for line in page_text.split('\n'):
+            if any(kw in line.lower() for kw in ["ends", "endet am", "종료", "termina"]):
+                return line.strip()
+                
+        return "종료일 정보 없음"
+    except:
+        return "확인 불가"
+
 def crawl_competitors(driver, country):
-    """
-    innerText를 사용하여 숨겨진 할인 텍스트와 가격 정보를 강제로 추출합니다.
-    """
     total_rank = 0
     target = f"/concept/{CONCEPT_ID}"
-    competitors = []
+    competitors_links = []
 
-    for page in range(1, MAX_PAGES + 1):
-        url = get_browse_url(country, page)
-        if not url:
-            return None, "no_url"
+    # 1. 먼저 목록에서 붉은사막 전까지의 링크를 모두 수집
+    driver.get(get_browse_url(country))
+    time.sleep(5)
+    
+    links = driver.find_elements(By.CSS_SELECTOR, "a[href*='/concept/']")
+    for link in links:
+        href = link.get_attribute("href") or ""
+        if target in href: break # 붉은사막 발견 시 중단
+        if href not in [c['url'] for c in competitors_links]:
+            competitors_links.append({"url": href, "title": link.text.split('\n')[0]})
 
-        try:
-            driver.get(url)
-            time.sleep(5) # 스토어 데이터 로딩을 위해 대기 시간 충분히 확보
-
-            # 게임 카드 리스트 요소 찾기
-            items = driver.find_elements(By.CSS_SELECTOR, "li[data-qa^='grid#']")
-            
-            if not items:
-                print(f"    ⚠️ {country}: 아이템을 찾을 수 없습니다. (페이지: {page})")
-                break
-
-            for item in items:
-                try:
-                    # 1. 붉은사막(Target) 여부 확인
-                    link_element = item.find_element(By.TAG_NAME, "a")
-                    href = link_element.get_attribute("href") or ""
-                    
-                    total_rank += 1
-                    
-                    if target in href:
-                        print(f"    ✅ {country}: 붉은사막 {total_rank}위 발견. (상위 {len(competitors)}개 수집)")
-                        return competitors, "found"
-
-                    # 2. innerText를 활용한 정밀 텍스트 추출 (가장 강력한 방법)
-                    full_text = item.get_attribute("innerText")
-                    raw_info = [t.strip() for t in full_text.split('\n') if t.strip()]
-                    
-                    if not raw_info:
-                        continue
-                        
-                    title = raw_info[0]
-                    status_details = []
-                    is_tracking_target = False
-
-                    # 제목 제외 나머지 데이터 분석
-                    for info in raw_info[1:]:
-                        info_lower = info.lower()
-                        # 플랫폼 이름 제외
-                        if info.upper() in ["PS4", "PS5", "PS4 & PS5"]:
-                            continue
-                            
-                        # 할인율(%), 가격($/₩), 무료/구독(Gratuito, Free, Incluido, Add-on) 등 감지
-                        # 특히 '%' 기호를 최우선으로 잡습니다.
-                        keywords = ["%", "$", "₩", "free", "gratuito", "incluido", "off", "save", "sale"]
-                        if any(key in info_lower for key in keywords):
-                            is_tracking_target = True
-                            
-                        status_details.append(info)
-
-                    # 3. 데이터 추가 (무료 게임이나 할인 게임 위주로 저장)
-                    competitors.append({
-                        "rank": total_rank,
-                        "title": title,
-                        "discount_info": " | ".join(status_details) if is_tracking_target else "상시가"
-                    })
-
-                except Exception as e:
-                    continue
-
-        except Exception as e:
-            print(f"    ⚠️ {country} 시스템 오류: {e}")
-            break
-
-    return competitors, "not_found"
+    # 2. 수집된 각 링크에 접속하여 상세 정보 파싱
+    final_results = []
+    for idx, item in enumerate(competitors_links):
+        rank = idx + 1
+        print(f"    ↳ [{rank}위] {item['title']} 상세 분석 중...")
+        deadline = get_discount_deadline(driver, item['url'])
+        
+        final_results.append({
+            "rank": rank,
+            "title": item['title'],
+            "discount_info": deadline
+        })
+        
+    return final_results, "found"
 # =============================================================================
 # 메인 & 알림 발송
 # =============================================================================
