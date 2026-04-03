@@ -99,35 +99,64 @@ def wait_for_tiles(driver, timeout=8):
 
 def parse_browse_page(driver):
     """
-    browse 페이지에서 타일 정보 추출 (Selenium DOM 직접 사용).
+    browse 페이지에서 타일 정보 추출.
+    DOM 구조:
+      - 타일 루트: data-qa="ems-sdk-grid#productTileN" (div)
+      - 링크:      <a href="/concept/..."> (data-qa 없음, 타일 내부)
+      - 타이틀:    data-qa="ems-sdk-grid#productTileN#product-name" (span)
+      - 할인 뱃지: data-qa="ems-sdk-grid#productTileN#discount-badge"
     반환: list of {tile_idx, url, title, has_discount}
     """
     tile_map = {}
-    elements = driver.find_elements(By.CSS_SELECTOR, '[data-qa*="productTile"]')
 
-    for elem in elements:
+    # 타일 루트 div만 수집 (하위 요소 제외하기 위해 정확히 "#productTileN" 끝나는 것)
+    root_elems = driver.find_elements(By.CSS_SELECTOR, '[data-qa*="productTile"]')
+    for elem in root_elems:
         qa = elem.get_attribute('data-qa') or ''
-        match = re.search(r'productTile(\d+)', qa)
+        # "ems-sdk-grid#productTileN" 형태만 (하위 #product-name 등 제외)
+        match = re.search(r'productTile(\d+)$', qa)
         if not match:
             continue
         tile_idx = int(match.group(1))
-
         if tile_idx not in tile_map:
             tile_map[tile_idx] = {'url': None, 'title': None, 'has_discount': False}
 
-        # 링크 + 타이틀
-        if elem.tag_name.lower() == 'a':
-            href = elem.get_attribute('href') or ''
-            if '/concept/' in href and not tile_map[tile_idx]['url']:
-                tile_map[tile_idx]['url'] = href
-                text = elem.text.strip()
-                if text:
-                    tile_map[tile_idx]['title'] = text.split('\n')[0].strip()
+        # 타일 div 텍스트 첫 줄 = 게임명 (fallback)
+        text = elem.text.strip()
+        if text and not tile_map[tile_idx]['title']:
+            tile_map[tile_idx]['title'] = text.split('\n')[0].strip()
 
-        # 할인 뱃지 감지: 텍스트에 "-숫자%" 또는 data-qa에 discount
-        elem_text = elem.text or ''
-        if re.search(r'-\d+%', elem_text) or 'discount' in qa.lower():
-            tile_map[tile_idx]['has_discount'] = True
+    # 링크: /concept/ href를 가진 <a> 태그 → 타일과 매칭
+    # <a>는 data-qa가 없으므로 텍스트(게임명)로 타일과 연결
+    links = driver.find_elements(By.CSS_SELECTOR, 'a[href*="/concept/"]')
+    for a in links:
+        href = a.get_attribute('href') or ''
+        title = a.text.strip()
+        # 타일맵에서 같은 게임명 찾기
+        for idx, d in tile_map.items():
+            if d['url']:
+                continue
+            if d['title'] and title and d['title'].startswith(title[:20]):
+                d['url'] = href
+                break
+        else:
+            # 매칭 실패 시 순서대로 빈 슬롯에 채우기
+            for idx in sorted(tile_map.keys()):
+                if not tile_map[idx]['url']:
+                    tile_map[idx]['url'] = href
+                    if title:
+                        tile_map[idx]['title'] = title
+                    break
+
+    # 할인 뱃지: data-qa*="discount-badge" 요소
+    badge_elems = driver.find_elements(By.CSS_SELECTOR, '[data-qa*="discount-badge"]')
+    for elem in badge_elems:
+        qa = elem.get_attribute('data-qa') or ''
+        match = re.search(r'productTile(\d+)', qa)
+        if match:
+            tile_idx = int(match.group(1))
+            if tile_idx in tile_map:
+                tile_map[tile_idx]['has_discount'] = True
 
     results = []
     for idx in sorted(tile_map.keys()):
@@ -244,7 +273,10 @@ def crawl_competitors(driver, country):
     if not all_tiles:
         return []
 
-    # 할인 뱃지 있는 게임만 필터 (상세 방문 대상)
+    # all_tiles 내 순서를 rank로 사용 (tile_idx는 페이지 내 0-based라 누적 rank와 다름)
+    for i, tile in enumerate(all_tiles):
+        tile['rank'] = i + 1
+
     discounted = [t for t in all_tiles if t['has_discount']]
     non_discounted = [t for t in all_tiles if not t['has_discount']]
 
@@ -254,7 +286,7 @@ def crawl_competitors(driver, country):
 
     # 할인 뱃지 있는 게임: 상세 페이지 방문
     for tile in discounted:
-        rank = tile['tile_idx'] + 1  # tile_idx는 0-based
+        rank = tile['rank']
         print(f"   ↳ [{rank}위] {tile['title'][:40]} → Offer ends 확인...")
         deadline = get_discount_deadline(driver, tile['url'])
         final_results.append({
@@ -264,11 +296,10 @@ def crawl_competitors(driver, country):
             "has_badge": True
         })
 
-    # 할인 뱃지 없는 게임: 상세 방문 없이 기록 (선택: 보고서에서 제외 가능)
+    # 할인 뱃지 없는 게임: 상세 방문 없이 기록
     for tile in non_discounted:
-        rank = tile['tile_idx'] + 1
         final_results.append({
-            "rank": rank,
+            "rank": tile['rank'],
             "title": tile['title'],
             "discount_info": "할인 없음",
             "has_badge": False
