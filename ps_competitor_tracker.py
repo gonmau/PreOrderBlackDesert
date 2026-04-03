@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-PS Store 경쟁작 추적기 - Crimson Desert (최종 최적화판 v2.3)
+PS Store 경쟁작 추적기 - Crimson Desert (v3.0 고속화)
+개선점:
+  - browse 타일에서 할인 뱃지 직접 감지 → 할인 없는 게임 상세 방문 스킵
+  - 상세 페이지 셀렉터 정확도 대폭 향상 (data-qa 기반)
+  - page_source 파싱으로 DOM 쿼리 최소화
+  - sleep 최적화
 """
 
 import time
@@ -10,6 +15,7 @@ import json
 import requests
 import re
 from datetime import datetime, timezone, timedelta
+from bs4 import BeautifulSoup
 
 KST = timezone(timedelta(hours=9))
 
@@ -17,6 +23,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
 # =============================================================================
@@ -49,6 +57,12 @@ MAX_PAGES = 8
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 HISTORY_FILE = "competitor_history.json"
 
+# "Offer ends" 패턴 - 다국어 지원
+OFFER_ENDS_PATTERNS = re.compile(
+    r'(offer ends?|ends?|sale ends?|종료|까지|fin\s*le|endet am|termina el|scade il|終了|有効期限)',
+    re.IGNORECASE
+)
+
 # =============================================================================
 # 드라이버 설정
 # =============================================================================
@@ -59,109 +73,219 @@ def setup_driver():
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--window-size=1920,1080')
+    options.add_argument('--blink-settings=imagesEnabled=false')  # 이미지 로드 비활성화 → 빠름
+    options.add_argument('--disable-extensions')
+    options.add_argument('--disable-gpu')
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
-    driver.set_page_load_timeout(25)
+    driver.set_page_load_timeout(20)
     return driver
 
 def get_browse_url(country, page=1):
     locale = LOCALE_MAP.get(country)
     return f"https://store.playstation.com/{locale}/pages/browse/{page}" if locale else None
 
+def wait_for_tiles(driver, timeout=8):
+    """타일이 최소 1개 이상 로드될 때까지 대기 (최대 timeout초)"""
+    try:
+        WebDriverWait(driver, timeout).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, '[data-qa*="productTile"]'))
+        )
+    except:
+        pass
+
 # =============================================================================
-# 할인 종료일 추출
+# browse 페이지 파싱 (BeautifulSoup, 빠름)
+# =============================================================================
+
+def parse_browse_page(page_source):
+    """
+    browse 페이지 HTML에서 타일 정보 추출.
+    반환: list of {tile_idx, url, title, has_discount}
+    """
+    soup = BeautifulSoup(page_source, 'html.parser')
+    tile_map = {}
+
+    # data-qa에 "productTile숫자" 포함된 모든 요소
+    for elem in soup.find_all(attrs={"data-qa": re.compile(r'productTile\d+')}):
+        qa = elem.get('data-qa', '')
+        match = re.search(r'productTile(\d+)', qa)
+        if not match:
+            continue
+        tile_idx = int(match.group(1))
+
+        if tile_idx not in tile_map:
+            tile_map[tile_idx] = {'url': None, 'title': None, 'has_discount': False}
+
+        # 링크 추출 (<a href="/concept/...">)
+        if elem.name == 'a':
+            href = elem.get('href', '')
+            if '/concept/' in href:
+                if not tile_map[tile_idx]['url']:
+                    tile_map[tile_idx]['url'] = href
+                # 타이틀: 텍스트 첫 줄
+                text = elem.get_text(separator='\n').strip()
+                if text and not tile_map[tile_idx]['title']:
+                    tile_map[tile_idx]['title'] = text.split('\n')[0].strip()
+
+        # 할인 뱃지 감지: "-숫자%" 패턴 텍스트 또는 data-qa에 discount 포함
+        elem_text = elem.get_text()
+        if re.search(r'-\d+%', elem_text) or 'discount' in qa.lower():
+            tile_map[tile_idx]['has_discount'] = True
+
+    results = []
+    for idx in sorted(tile_map.keys()):
+        d = tile_map[idx]
+        if d['url']:
+            results.append({
+                'tile_idx': idx,
+                'url': d['url'],
+                'title': d['title'] or 'Unknown',
+                'has_discount': d['has_discount']
+            })
+    return results
+
+# =============================================================================
+# 상세 페이지 할인 종료일 추출 (정확한 셀렉터)
 # =============================================================================
 
 def get_discount_deadline(driver, url):
+    """
+    상세 페이지에서 "Offer ends ..." 텍스트 추출.
+    이미지 2 기준: data-qa*="mfe-purchase" 하위 또는 가격 블록 내 텍스트
+    """
     try:
         driver.get(url)
-        time.sleep(3)
-        
-        elements = driver.find_elements(By.CSS_SELECTOR, 
-            "[data-qa*='discount'], [class*='discount'], [class*='price'], [data-qa*='offer'], [data-qa*='availability']")
-        
-        for el in elements:
-            text = el.text.strip()
-            if any(kw in text.lower() for kw in ["ends", "종료", "offer ends", "save", "까지", "fin", "scade"]):
+        # 구매 블록 로드 대기
+        try:
+            WebDriverWait(driver, 8).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, '[data-qa*="mfe-purchase"], [data-qa*="price"]'))
+            )
+        except:
+            time.sleep(3)
+
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+        # 전략 1: data-qa에 purchase/price/offer 포함된 요소의 텍스트
+        for elem in soup.find_all(attrs={"data-qa": re.compile(r'(purchase|price|offer|discount)', re.I)}):
+            text = elem.get_text(separator=' ').strip()
+            if OFFER_ENDS_PATTERNS.search(text):
+                # 해당 텍스트에서 "Offer ends ..." 줄만 추출
+                for line in text.split('\n'):
+                    line = line.strip()
+                    if OFFER_ENDS_PATTERNS.search(line) and len(line) > 5:
+                        return line
+                return text[:120]  # 패턴 있는 전체 텍스트 앞부분
+
+        # 전략 2: 페이지 전체에서 "Offer ends" / "Save X%" 포함 짧은 텍스트 블록
+        for elem in soup.find_all(['p', 'span', 'div']):
+            text = elem.get_text(separator=' ').strip()
+            if len(text) < 150 and OFFER_ENDS_PATTERNS.search(text):
+                # 날짜 패턴이 같이 있으면 더 신뢰
+                if re.search(r'\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}|\d{4}년|\d+월', text):
+                    return text
+
+        # 전략 3: "Save X%" 텍스트 (종료일은 없지만 할인 확인)
+        for elem in soup.find_all(['p', 'span']):
+            text = elem.get_text(separator=' ').strip()
+            if re.search(r'save\s+\d+%', text, re.IGNORECASE) and len(text) < 200:
                 return text
+
         return "종료일 정보 없음"
-    except:
-        return "확인 불가"
+
+    except Exception as e:
+        return f"확인 불가({str(e)[:30]})"
 
 # =============================================================================
-# 경쟁작 크롤링 (최적화)
+# 경쟁작 크롤링 (v3.0 고속화)
 # =============================================================================
 
 def crawl_competitors(driver, country):
-    competitors_links = []
+    """
+    1단계: browse 페이지에서 Crimson Desert 앞 게임 + 할인 뱃지 여부 수집
+    2단계: 할인 뱃지 있는 게임만 상세 페이지 방문 → Offer ends 추출
+    """
+    all_tiles = []   # Crimson Desert 도달 전 전체 타일
     page = 1
     found_target = False
 
-    print(f"🔍 {country} Best Selling 탐색 시작...")
+    print(f"🔍 {country} 탐색 중...", end="", flush=True)
 
     while page <= MAX_PAGES and not found_target:
-        driver.get(get_browse_url(country, page))
-        time.sleep(4 if page == 1 else 2.5)   # 대폭 줄임
+        url = get_browse_url(country, page)
+        if not url:
+            break
 
-        tile_map = {}
-        elements = driver.find_elements(By.CSS_SELECTOR, '[data-qa*="productTile"]')
-        
-        for elem in elements:
-            qa = elem.get_attribute('data-qa') or ''
-            match = re.search(r'productTile(\d+)', qa)
-            if not match:
-                continue
-            tile_idx = int(match.group(1))
-            
-            if tile_idx not in tile_map:
-                tile_map[tile_idx] = {'link': None, 'title': None}
-            
-            if elem.tag_name.lower() == 'a':
-                href = elem.get_attribute('href')
-                if href and '/concept/' in href:
-                    tile_map[tile_idx]['link'] = href
-                    if elem.text:
-                        tile_map[tile_idx]['title'] = elem.text.split('\n')[0].strip()
+        try:
+            driver.get(url)
+            wait_for_tiles(driver, timeout=8)
+        except Exception:
+            break
 
-        for idx in sorted(tile_map.keys()):
-            data = tile_map[idx]
-            if not data.get('link'):
-                continue
-                
-            href = data['link']
-            title = data.get('title') or "Unknown Title"
+        tiles = parse_browse_page(driver.page_source)
 
-            if f"/concept/{CONCEPT_ID}" in href:
-                found_target = True
-                print(f"   ✅ Crimson Desert를 {len(competitors_links) + 1}위에서 발견!")
+        if not tiles:
+            # 타일 파싱 실패 → 짧게 재대기 후 재시도
+            time.sleep(2)
+            tiles = parse_browse_page(driver.page_source)
+            if not tiles:
                 break
 
-            if href not in [c.get('url') for c in competitors_links]:
-                competitors_links.append({"url": href, "title": title})
-                print(f"   ↳ [{len(competitors_links)}위] {title}")
+        for tile in tiles:
+            if f"/concept/{CONCEPT_ID}" in tile['url']:
+                found_target = True
+                print(f" → {len(all_tiles)+1}위에서 발견!", flush=True)
+                break
+            all_tiles.append(tile)
 
-        page += 1
+        if not found_target:
+            page += 1
+            time.sleep(1.5)  # 페이지 간 최소 대기
 
-    if not competitors_links:
-        print(f"   ⚠️ {country} 경쟁작 없음")
+    if not found_target:
+        print(f" → 미발견 (최대 {MAX_PAGES}페이지)", flush=True)
+
+    if not all_tiles:
         return []
 
-    print(f"✅ {country} 경쟁작 {len(competitors_links)}개 수집 완료")
+    # 할인 뱃지 있는 게임만 필터 (상세 방문 대상)
+    discounted = [t for t in all_tiles if t['has_discount']]
+    non_discounted = [t for t in all_tiles if not t['has_discount']]
 
-    # 할인 정보 확인
+    print(f"   전체 {len(all_tiles)}개 중 할인 뱃지 {len(discounted)}개 → 상세 확인")
+
     final_results = []
-    for idx, item in enumerate(competitors_links[:15]):   # 너무 많으면 상위 15개까지만 상세 확인
-        rank = idx + 1
-        print(f"   ↳ [{rank}위] {item['title']} → 할인 정보 확인...")
-        deadline = get_discount_deadline(driver, item['url'])
+
+    # 할인 뱃지 있는 게임: 상세 페이지 방문
+    for tile in discounted:
+        rank = tile['tile_idx'] + 1  # tile_idx는 0-based
+        print(f"   ↳ [{rank}위] {tile['title'][:40]} → Offer ends 확인...")
+        deadline = get_discount_deadline(driver, tile['url'])
         final_results.append({
             "rank": rank,
-            "title": item['title'],
-            "discount_info": deadline
+            "title": tile['title'],
+            "discount_info": deadline,
+            "has_badge": True
         })
-    
+
+    # 할인 뱃지 없는 게임: 상세 방문 없이 기록 (선택: 보고서에서 제외 가능)
+    for tile in non_discounted:
+        rank = tile['tile_idx'] + 1
+        final_results.append({
+            "rank": rank,
+            "title": tile['title'],
+            "discount_info": "할인 없음",
+            "has_badge": False
+        })
+
+    # rank 순 정렬
+    final_results.sort(key=lambda x: x['rank'])
     return final_results
 
+
+# =============================================================================
+# 저장 / Discord 전송
+# =============================================================================
 
 def save_data(data):
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
@@ -174,30 +298,49 @@ def send_discord(country_results):
         return
 
     report_lines = []
-    total_competitors = 0
+    total_discounted = 0
 
     for country, comps in country_results.items():
         if not comps:
             continue
-        
-        discounted_games = [g for g in comps if g['discount_info'] not in ("종료일 정보 없음", "확인 불가")]
-        if not discounted_games:
+
+        # 할인 뱃지 있고, 종료일 정보가 있는 것만
+        active = [g for g in comps if g.get('has_badge') and g['discount_info'] not in ("종료일 정보 없음", "확인 불가", "할인 없음") and not g['discount_info'].startswith("확인 불가")]
+        # 뱃지는 있지만 종료일 파싱 못한 것 (할인 중이긴 함)
+        badge_only = [g for g in comps if g.get('has_badge') and g['discount_info'] in ("종료일 정보 없음",)]
+
+        if not active and not badge_only:
             continue
 
         flag = FLAGS.get(country, "")
-        report_lines.append(f"**{flag} {country}** (붉은사막 도달 전)")
-        
-        for game in discounted_games:
-            total_competitors += 1
-            report_lines.append(f"> `{game['rank']}위` {game['title']} - ⏰ {game['discount_info']}")
-        report_lines.append("")
+        lines_for_country = []
+
+        for game in active:
+            total_discounted += 1
+            lines_for_country.append(f"> `{game['rank']}위` {game['title']} — ⏰ {game['discount_info']}")
+
+        for game in badge_only:
+            total_discounted += 1
+            lines_for_country.append(f"> `{game['rank']}위` {game['title']} — 💸 할인 중 (종료일 미확인)")
+
+        if lines_for_country:
+            report_lines.append(f"**{flag} {country}**")
+            report_lines.extend(lines_for_country)
+            report_lines.append("")
 
     if not report_lines:
         print("ℹ️ 현재 할인 중인 경쟁작이 없습니다.")
+        # 빈 알림도 발송 (확인용)
+        requests.post(DISCORD_WEBHOOK, json={"embeds": [{
+            "title": "⚔️ Crimson Desert 경쟁작 할인 추적",
+            "description": "현재 할인 중인 경쟁작이 없습니다.",
+            "color": 0x808080,
+            "timestamp": datetime.now(KST).isoformat()
+        }]})
         return
 
-    desc = f"📊 **총 {total_competitors}개의 경쟁작이 할인 진행 중입니다.**\n\n" + "\n".join(report_lines)
-    
+    desc = f"📊 **{total_discounted}개 경쟁작 할인 중**\n\n" + "\n".join(report_lines)
+
     CHUNK_LIMIT = 4000
     chunks = [desc[i:i+CHUNK_LIMIT] for i in range(0, len(desc), CHUNK_LIMIT)]
 
@@ -211,23 +354,31 @@ def send_discord(country_results):
         time.sleep(1)
 
 
+# =============================================================================
+# main
+# =============================================================================
+
 def main():
     print("=" * 70)
-    print("⚔️ Crimson Desert 경쟁작 추적기 (최종 최적화 v2.3)")
+    print("⚔️ Crimson Desert 경쟁작 추적기 v3.0 (고속화)")
     print("=" * 70)
-    print("예상 실행 시간: 8~15분 정도")
+    print("예상 실행 시간: 3~7분 (할인작 수에 따라 변동)")
 
+    t0 = time.time()
     driver = setup_driver()
     country_results = {}
 
     try:
         all_countries = [c for region in REGIONS.values() for c in region]
-        for country in all_countries:
+        for i, country in enumerate(all_countries):
             if country in SKIP_COUNTRIES:
                 continue
             competitors = crawl_competitors(driver, country)
             if competitors:
                 country_results[country] = competitors
+            elapsed = time.time() - t0
+            remaining = len(all_countries) - i - 1
+            print(f"   ⏱ 경과 {elapsed:.0f}s | 남은 국가 {remaining}개")
     finally:
         driver.quit()
 
@@ -237,7 +388,9 @@ def main():
     })
 
     send_discord(country_results)
-    print("🎉 작업 완료!")
+
+    total = time.time() - t0
+    print(f"🎉 완료! 총 소요: {total:.0f}초 ({total/60:.1f}분)")
 
 
 if __name__ == "__main__":
