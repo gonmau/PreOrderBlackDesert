@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-PS Store 경쟁작 추적기 - Crimson Desert (수정판 v2)
+PS Store 경쟁작 추적기 - Crimson Desert (수정판 v2.1)
 """
 
 import time
@@ -192,4 +192,60 @@ def send_discord(country_results):
             continue
 
         flag = FLAGS.get(country, "")
-        report_lines.append(f"**{flag} {country}** (붉은사
+        report_lines.append(f"**{flag} {country}** (붉은사막 도달 전)")
+        
+        for game in discounted_games:
+            total_competitors += 1
+            report_lines.append(f"> `{game['rank']}위` {game['title']} - ⏰ {game['discount_info']}")
+        report_lines.append("")
+
+    if not report_lines:
+        print("ℹ️ 알림을 보낼 할인 중인 경쟁작이 없습니다.")
+        return
+
+    desc = f"📊 **총 {total_competitors}개의 경쟁작이 할인 진행 중입니다.**\n\n" + "\n".join(report_lines)
+    
+    CHUNK_LIMIT = 4000
+    chunks = [desc[i:i+CHUNK_LIMIT] for i in range(0, len(desc), CHUNK_LIMIT)]
+
+    for chunk in chunks:
+        requests.post(DISCORD_WEBHOOK, json={"embeds": [{
+            "title": "⚔️ Crimson Desert 경쟁작 할인 추적 리포트",
+            "description": chunk,
+            "color": 0xFFD700,
+            "timestamp": datetime.now(KST).isoformat()
+        }]})
+        time.sleep(1)
+
+
+def main():
+    print("=" * 60)
+    print("⚔️ Crimson Desert 경쟁작 추적기 (수정판 v2.1)")
+    print("=" * 60)
+
+    driver = setup_driver()
+    country_results = {}
+
+    try:
+        all_countries = [c for region in REGIONS.values() for c in region]
+        for country in all_countries:
+            if country in SKIP_COUNTRIES:
+                continue
+            print(f"🔍 {country} 탐색 중...")
+            competitors, status = crawl_competitors(driver, country)
+            if competitors:
+                country_results[country] = competitors
+
+    finally:
+        driver.quit()
+
+    save_data({
+        "timestamp": datetime.now(KST).isoformat(),
+        "results": country_results
+    })
+
+    send_discord(country_results)
+
+
+if __name__ == "__main__":
+    main()
