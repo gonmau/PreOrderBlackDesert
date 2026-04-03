@@ -1,0 +1,57 @@
+name: 플스경쟁작 추적기
+
+on:
+  schedule:
+    # KST 기준 09:00 ~ 19:00 (UTC 00:00 ~ 10:00) 1시간 간격 실행
+    - cron: '0 0-10 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install Dependencies
+      run: |
+        pip install selenium webdriver-manager requests
+
+    - name: Run Competitor Tracker
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      # 파일명은 위에서 저장한 파이썬 스크립트명과 동일하게 맞춰주세요
+      run: python ps_competitor_tracker.py
+
+    - name: Commit and Push changes
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+
+        # 데이터 백업 및 리베이스 설정
+        mkdir -p /tmp/tracker_backup
+        [ -f "competitor_history.json" ] && cp "competitor_history.json" "/tmp/tracker_backup/"
+        
+        git checkout -- . 
+        git pull origin main --rebase
+
+        if [ -f "/tmp/tracker_backup/competitor_history.json" ]; then
+          cp "/tmp/tracker_backup/competitor_history.json" .
+        fi
+
+        # 변경사항 푸시
+        [ -f "competitor_history.json" ] && git add competitor_history.json || true
+        git diff --cached --quiet || (git commit -m "Update competitor history [skip ci]" && git push origin main)
