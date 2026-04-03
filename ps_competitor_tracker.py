@@ -107,16 +107,24 @@ def crawl_competitors(driver, country):
                     print(f"    ✅ {country}: 붉은사막 {total_rank}위 발견. 상위 {len(competitors)}개 경쟁작 추적 완료.")
                     return competitors, "found"
 
-                # 붉은사막보다 순위가 높은 게임의 정보 파싱
-                text_content = link.text.strip().split('\n')
-                title = text_content[0] if text_content else "Unknown Title"
+                # 텍스트를 줄바꿈 단위로 쪼개고 빈 줄은 제거
+                text_content = [t.strip() for t in link.text.strip().split('\n') if t.strip()]
+                title = text_content[0] if len(text_content) > 0 else "Unknown Title"
+                
                 discount_info = "할인 없음"
                 
-                for line in text_content:
-                    line_lower = line.lower()
-                    if any(kw in line_lower for kw in DISCOUNT_KEYWORDS) and "ps4" not in line_lower and "ps5" not in line_lower:
-                        discount_info = line
-                        break
+                # 텍스트 전체 중 "%" 기호가 있거나 할인 관련 단어가 있으면 할인 중으로 간주
+                is_discounted = any("%" in t or "종료" in t.lower() or "ends" in t.lower() for t in text_content)
+
+                if is_discounted:
+                    info_parts = []
+                    # 첫 줄(제목)을 제외한 나머지 텍스트에서 불필요한 플랫폼 정보 필터링
+                    for t in text_content[1:]:
+                        if t.upper() not in ["PS4", "PS5", "PS4 & PS5", "FULL GAME", "GAME BUNDLE", "PREMIUM EDITION"]:
+                            info_parts.append(t)
+                    
+                    # 남은 정보(할인율, 할인가, 원가 등)를 보기 좋게 조합
+                    discount_info = " | ".join(info_parts)
 
                 competitors.append({
                     "rank": total_rank,
