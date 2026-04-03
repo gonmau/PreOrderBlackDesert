@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-03T11:25:45.417321+09:00",
+  "timestamp": "2026-04-03T11:34:12.409642+09:00",
   "results": {
     "미국": [
       {
@@ -364,16 +364,21 @@
       },
       {
         "rank": 5,
-        "title": "原神～空月の歌～",
+        "title": "eFootball™",
         "discount_info": "할인 없음"
       },
       {
         "rank": 6,
-        "title": "七つの大罪：Origin",
+        "title": "原神～空月の歌～",
         "discount_info": "할인 없음"
       },
       {
         "rank": 7,
+        "title": "七つの大罪：Origin",
+        "discount_info": "할인 없음"
+      },
+      {
+        "rank": 8,
         "title": "EA SPORTS FC™ 26",
         "discount_info": "할인 없음"
       }
