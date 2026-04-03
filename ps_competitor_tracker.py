@@ -75,7 +75,8 @@ def get_browse_url(country, page=1):
 
 def crawl_competitors(driver, country):
     """
-    붉은사막(CONCEPT_ID)이 나올 때까지의 상위 게임들을 수집합니다.
+    붉은사막(CONCEPT_ID)이 나올 때까지의 상위 게임들을 수집하며,
+    % 기호나 할인 키워드가 포함된 모든 가격 정보를 추출합니다.
     """
     total_rank = 0
     target = f"/concept/{CONCEPT_ID}"
@@ -90,9 +91,9 @@ def crawl_competitors(driver, country):
             driver.get(url)
             time.sleep(3)
 
+            # 게임 카드 요소들을 가져옴
             links = driver.find_elements(By.CSS_SELECTOR, "a[href*='/concept/']")
             if not links:
-                print(f"    ↳ {country}: {page}p 아이템 없음 → 탐색 종료")
                 break
 
             for link in links:
@@ -102,28 +103,37 @@ def crawl_competitors(driver, country):
                 
                 total_rank += 1
 
-                # 붉은사막을 발견하면 즉시 추적 종료
+                # 붉은사막 발견 시 즉시 종료
                 if target in href:
-                    print(f"    ✅ {country}: 붉은사막 {total_rank}위 발견. 상위 {len(competitors)}개 경쟁작 추적 완료.")
+                    print(f"    ✅ {country}: 붉은사막 {total_rank}위 발견. 상위 {len(competitors)}개 추적 완료.")
                     return competitors, "found"
 
-                # 텍스트를 줄바꿈 단위로 쪼개고 빈 줄은 제거
-                text_content = [t.strip() for t in link.text.strip().split('\n') if t.strip()]
-                title = text_content[0] if len(text_content) > 0 else "Unknown Title"
+                # 텍스트 파싱 (줄바꿈 제거 및 정리)
+                raw_text = [t.strip() for t in link.text.split('\n') if t.strip()]
+                title = raw_text[0] if raw_text else "Unknown"
                 
                 discount_info = "할인 없음"
                 
-                # 텍스트 전체 중 "%" 기호가 있거나 할인 관련 단어가 있으면 할인 중으로 간주
-                is_discounted = any("%" in t or "종료" in t.lower() or "ends" in t.lower() for t in text_content)
+                # 할인 여부 판단: % 기호가 있거나, 특정 할인 키워드가 포함된 경우
+                # 단, PS4/PS5 같은 플랫폼 명칭은 무시
+                info_parts = []
+                is_discounted = False
+                
+                for idx, t in enumerate(raw_text):
+                    if idx == 0: continue # 첫 줄은 제목이므로 패스
+                    
+                    # 플랫폼 및 유형 키워드 제외
+                    if t.upper() in ["PS4", "PS5", "PS4 & PS5", "FULL GAME", "GAME BUNDLE", "PREMIUM EDITION"]:
+                        continue
+                    
+                    # 할인 징후(% 기호 또는 가격 변동 텍스트) 발견 시
+                    if "%" in t or any(kw in t.lower() for kw in ["종료", "ends", "off", "save"]):
+                        is_discounted = True
+                    
+                    info_parts.append(t)
 
                 if is_discounted:
-                    info_parts = []
-                    # 첫 줄(제목)을 제외한 나머지 텍스트에서 불필요한 플랫폼 정보 필터링
-                    for t in text_content[1:]:
-                        if t.upper() not in ["PS4", "PS5", "PS4 & PS5", "FULL GAME", "GAME BUNDLE", "PREMIUM EDITION"]:
-                            info_parts.append(t)
-                    
-                    # 남은 정보(할인율, 할인가, 원가 등)를 보기 좋게 조합
+                    # 추출된 가격 및 할인 정보를 한 줄로 병합
                     discount_info = " | ".join(info_parts)
 
                 competitors.append({
@@ -132,17 +142,11 @@ def crawl_competitors(driver, country):
                     "discount_info": discount_info
                 })
 
-            print(f"    {country}: page {page} 완료 (현재 {total_rank}위)...")
-
         except Exception as e:
-            print(f"    ⚠️ {country} page {page} 오류: {e}")
-            if page == 1:
-                return None, "error"
+            print(f"    ⚠️ {country} 오류: {e}")
             break
 
-    print(f"    ↳ {country}: {MAX_PAGES}p({total_rank}위)까지 붉은사막 미발견")
     return competitors, "not_found"
-
 # =============================================================================
 # 메인 & 알림 발송
 # =============================================================================
