@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crimson Desert — PS Store 요약</title>
+<title>Crimson Desert — Steam Top Seller 요약</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/twemoji@14/dist/twemoji.min.js" crossorigin="anonymous"></script>
@@ -28,10 +28,10 @@
   #header {
     display:flex; align-items:center; gap:12px;
     padding:9px 18px; background:var(--bg-1);
-    border-bottom:2px solid var(--blood);
+    border-bottom:2px solid var(--steam);
     position:sticky; top:0; z-index:20;
   }
-  #header .title { font-family:'Cinzel',serif; font-size:1.05rem; font-weight:900; color:var(--blood); letter-spacing:2px; }
+  #header .title { font-family:'Cinzel',serif; font-size:1.05rem; font-weight:900; color:var(--steam); letter-spacing:2px; }
   #header .sub   { font-size:11px; color:var(--tx-4); font-weight:700; letter-spacing:1px; text-transform:uppercase; }
   #fetch-status  { font-size:11px; color:var(--tx-4); font-weight:700; margin-left:auto; }
 
@@ -41,12 +41,27 @@
   /* ── 상단 요약 카드 ── */
   .top-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px; }
   .t-card {
-    background:var(--bg-2); border:1px solid var(--bd); border-left:3px solid var(--blood);
+    background:var(--bg-2); border:1px solid var(--bd); border-left:3px solid var(--steam);
     border-radius:var(--radius); padding:10px 12px;
   }
   .t-label { font-size:9px; color:var(--tx-4); font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:3px; }
-  .t-val   { font-family:'Cinzel',serif; font-size:1.7rem; font-weight:900; color:var(--blood); line-height:1; }
+  .t-val   { font-family:'Cinzel',serif; font-size:1.7rem; font-weight:900; color:var(--steam); line-height:1; }
   .t-sub   { font-size:10px; color:var(--tx-4); margin-top:3px; }
+
+  /* ── Top5 현재 순위 ── */
+  .top5-row { display:flex; flex-direction:column; gap:5px; }
+  .top5-item {
+    display:flex; align-items:center; gap:7px;
+    padding:5px 0; border-bottom:1px solid var(--bd);
+  }
+  .top5-item:last-child { border-bottom:none; }
+  .top5-rank { font-family:'Cinzel',serif; font-size:17px; font-weight:900; min-width:34px; line-height:1; }
+  .top5-name { flex:1; font-size:13px; font-weight:700; color:var(--tx-2); text-decoration:none; }
+  .top5-name:hover { color:var(--steam); }
+  .top5-chg  { font-size:11px; font-weight:800; padding:1px 5px; border-radius:3px; }
+  .chg-up   { color:var(--up);   background:rgba(46,204,113,0.12); }
+  .chg-down { color:var(--down); background:rgba(231,76,60,0.12); }
+  .chg-none { color:var(--tx-4); }
 
   /* ── 2열 그리드 ── */
   .two-col { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
@@ -55,36 +70,30 @@
   /* ── 섹션 블록 ── */
   .sec-block {
     background:var(--bg-1); border:1px solid var(--bd);
-    border-top:2px solid var(--blood); border-radius:var(--radius);
+    border-top:2px solid var(--steam); border-radius:var(--radius);
     overflow:hidden;
   }
   .sec-block.full { margin-bottom:16px; }
   .sec-head {
     padding:7px 14px; font-size:12px; font-weight:800;
-    color:var(--blood); letter-spacing:1px; text-transform:uppercase;
+    color:var(--steam); letter-spacing:1px; text-transform:uppercase;
     border-bottom:1px solid var(--bd);
     display:flex; align-items:center; gap:8px;
   }
+  .sec-head a {
+    margin-left:auto; font-size:11px; color:var(--steam); opacity:0.65;
+    text-decoration:none; padding:1px 6px; border:1px solid rgba(74,158,255,0.3);
+    border-radius:4px; font-weight:700; text-transform:none; letter-spacing:0;
+  }
+  .sec-head a:hover { opacity:1; }
   .sec-body { padding:12px 14px; }
-
-  /* ── Top5 현재 순위 ── */
-  .top5-row { display:flex; flex-direction:column; gap:0; }
-  .top5-item { display:flex; align-items:center; gap:7px; padding:5px 0; border-bottom:1px solid var(--bd); }
-  .top5-item:last-child { border-bottom:none; }
-  .top5-rank { font-family:'Cinzel',serif; font-size:17px; font-weight:900; min-width:34px; line-height:1; }
-  .top5-name { flex:1; font-size:13px; font-weight:700; color:var(--tx-2); text-decoration:none; }
-  .top5-name:hover { color:var(--blood); }
-  .top5-bar-wrap { height:3px; background:var(--bg-4); border-radius:2px; overflow:hidden; margin-top:3px; }
-  .top5-bar-fill { height:100%; background:var(--blood); border-radius:2px; opacity:0.6; }
-  .top5-chg { font-size:11px; font-weight:800; padding:1px 5px; border-radius:3px; }
-  .chg-up   { color:var(--up);   background:rgba(46,204,113,0.12); }
-  .chg-down { color:var(--down); background:rgba(231,76,60,0.12); }
-  .chg-none { color:var(--tx-4); }
 
   /* ── 차트 범례 ── */
   .chart-legend { display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; font-size:11px; }
   .chart-legend-item { display:flex; align-items:center; gap:5px; }
   .chart-legend-dot  { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+  /* ── 순위 분포 차트 범례 ── */
   .dist-legend { display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; font-size:11px; }
 
   /* ── 리더보드 ── */
@@ -152,26 +161,26 @@
   .reg-bar-fill { height:100%; border-radius:1px; opacity:0.5; }
 
   /* ── 국가 모달 ── */
-  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:150; align-items:center; justify-content:center; padding:16px; }
-  .modal-overlay.open { display:flex; }
-  .modal-box { background:var(--bg-2); border:1px solid var(--bd-hi); border-radius:var(--radius); padding:22px; width:min(560px,92vw); max-height:85vh; overflow-y:auto; margin:auto; }
-  .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-  .modal-title  { font-size:16px; font-weight:800; color:var(--tx-1); font-family:'Cinzel',serif; }
-  .modal-close  { background:none; border:none; color:var(--tx-3); font-size:22px; cursor:pointer; padding:2px 6px; border-radius:4px; }
-  .modal-close:hover { color:var(--tx-1); background:var(--bg-3); }
-  .modal-stats  { display:flex; gap:8px; margin-bottom:14px; }
-  .modal-stat-box { flex:1; background:var(--bg-3); border:1px solid var(--bd); border-radius:6px; padding:8px 10px; }
-  .modal-stat-label { font-size:9px; color:var(--tx-4); font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:3px; }
-  .modal-stat-value { font-family:'Cinzel',serif; font-size:1.5rem; color:var(--blood); font-weight:900; line-height:1; }
-  .modal-chart  { height:220px; }
-  .modal-link   { display:inline-flex; align-items:center; gap:5px; margin-top:10px; color:var(--blood); font-size:13px; font-weight:700; text-decoration:none; }
+  .sts-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:150; align-items:center; justify-content:center; overflow-y:auto; padding:16px; }
+  .sts-modal-overlay.open { display:flex; }
+  .sts-modal { background:var(--bg-2); border:1px solid var(--bd-hi); border-radius:var(--radius); padding:22px; width:min(480px,92vw); max-height:85vh; overflow-y:auto; margin:auto; }
+  .sts-modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .sts-modal-title  { font-size:16px; font-weight:800; color:var(--tx-1); }
+  .sts-modal-close  { background:none; border:none; color:var(--tx-3); font-size:22px; cursor:pointer; padding:2px 6px; border-radius:4px; }
+  .sts-modal-close:hover { color:var(--tx-1); background:var(--bg-3); }
+  .sts-modal-stats  { display:flex; gap:8px; margin-bottom:14px; }
+  .sts-stat-box     { flex:1; background:var(--bg-3); border:1px solid var(--bd); border-radius:6px; padding:8px 10px; }
+  .sts-stat-label   { font-size:9px; color:var(--tx-4); font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:3px; }
+  .sts-stat-value   { font-family:'Cinzel',serif; font-size:1.5rem; color:var(--steam); font-weight:900; line-height:1; }
+  .sts-modal-chart  { height:200px; }
+  .sts-modal-link   { display:inline-flex; align-items:center; gap:5px; margin-top:10px; color:var(--steam); font-size:13px; font-weight:700; text-decoration:none; }
 </style>
 </head>
 <body>
 
 <div id="header">
   <div>
-    <div class="title">🎮 PS Store</div>
+    <div class="title">🖥 Steam Top Seller</div>
     <div class="sub">Crimson Desert 요약</div>
   </div>
   <span id="fetch-status">⏳ 로딩 중…</span>
@@ -181,24 +190,24 @@
 
   <!-- 상단 요약 카드 -->
   <div class="top-cards">
-    <div class="t-card">
+    <div class="t-card" style="border-left-color:var(--steam)">
       <div class="t-label">가중 평균 순위</div>
-      <div class="t-val" id="ps-avg">—</div>
-      <div class="t-sub" id="ps-avg-diff">—</div>
+      <div class="t-val" id="sts-avg">—</div>
+      <div class="t-sub" id="sts-avg-diff">—</div>
     </div>
     <div class="t-card" style="border-left-color:var(--gold)">
       <div class="t-label">역대 최고</div>
-      <div class="t-val" id="ps-best" style="color:var(--gold)">—</div>
-      <div class="t-sub" id="ps-best-date">—</div>
+      <div class="t-val" id="sts-best" style="color:var(--gold)">—</div>
+      <div class="t-sub" id="sts-best-date">—</div>
     </div>
     <div class="t-card" style="border-left-color:#2ecc71">
-      <div class="t-label">1위 국가 수</div>
-      <div class="t-val" id="ps-cnt1" style="color:#2ecc71">—</div>
-      <div class="t-sub" id="ps-data-time">—</div>
+      <div class="t-label">추적 스냅샷</div>
+      <div class="t-val" id="sts-count" style="color:#2ecc71">—</div>
+      <div class="t-sub" id="sts-data-time">—</div>
     </div>
     <div class="t-card" style="border-left-color:#a55eea">
-      <div class="t-label">순위권 국가</div>
-      <div class="t-val" id="ps-cnt-all" style="color:#a55eea">—</div>
+      <div class="t-label">추적 국가</div>
+      <div class="t-val" id="sts-countries" style="color:#a55eea">—</div>
       <div class="t-sub">개국</div>
     </div>
   </div>
@@ -206,19 +215,23 @@
   <!-- 추이 차트 + Top5 현재 순위 -->
   <div class="two-col">
     <div class="sec-block">
-      <div class="sec-head">📈 가중 평균 순위 추이</div>
+      <div class="sec-head">
+        📈 가중 평균 순위 추이
+        <a href="https://steamdb.info/app/3321460/charts/" target="_blank">SteamDB ↗</a>
+      </div>
       <div class="sec-body">
-        <div style="height:240px"><canvas id="psMainChart"></canvas></div>
+        <div style="height:240px"><canvas id="stsMainChart"></canvas></div>
         <div class="chart-legend">
-          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="ps-leg-start">시작 —</span></div>
-          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="ps-leg-best">최고 —</span></div>
-          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="ps-leg-current">현재 —</span></div>
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#fff"></span><span id="sst-leg-start">시작 —</span></div>
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#2ecc71"></span><span id="sst-leg-best">최고 —</span></div>
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f1c40f"></span><span id="sst-leg-current">현재 —</span></div>
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#e74c3c"></span><span id="sst-leg-worst">최저 —</span></div>
         </div>
       </div>
     </div>
     <div class="sec-block">
       <div class="sec-head">🏆 점유율 Top5 현재 순위</div>
-      <div class="sec-body" id="ps-top5-body">—</div>
+      <div class="sec-body" id="sts-top5-body">—</div>
     </div>
   </div>
 
@@ -226,7 +239,7 @@
   <div class="sec-block full">
     <div class="sec-head">📊 일자별 순위 분포 (국가 수)</div>
     <div class="sec-body">
-      <div style="height:160px"><canvas id="psDistChart"></canvas></div>
+      <div style="height:160px"><canvas id="stsDistChart"></canvas></div>
       <div class="dist-legend">
         <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#f1c40f;border-radius:2px;display:inline-block"></span>1위</span>
         <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#c0c0c0;border-radius:2px;display:inline-block"></span>2~3위</span>
@@ -241,7 +254,7 @@
     <div class="sec-head">📉 Top5 + 한국 일자별 평균 순위</div>
     <div class="sec-body">
       <div style="font-size:11px;color:var(--tx-4);margin-bottom:10px">각 날짜의 스냅샷 평균 순위를 국가별 라인으로 표시합니다.</div>
-      <div style="height:260px"><canvas id="psTop5KrChart"></canvas></div>
+      <div style="height:260px"><canvas id="stsTop5KrChart"></canvas></div>
     </div>
   </div>
 
@@ -249,107 +262,51 @@
   <div class="sec-block full">
     <div class="sec-head">🌏 지역별 평균 순위</div>
     <div class="sec-body" style="padding:0">
-      <div id="ps-region-summary"></div>
+      <div id="sts-region-summary"></div>
     </div>
   </div>
 
   <!-- 국가별 리더보드 -->
   <div class="sec-block full">
     <div class="sec-head">🗺 국가별 현재 순위</div>
-    <div id="lb-ps-container"></div>
+    <div id="lb-sts-container"></div>
   </div>
 
 </div><!-- /page -->
 
 <!-- 국가 상세 모달 -->
-<div class="modal-overlay" id="psModal" onclick="closeModal(event)">
-  <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-title">—</div>
-      <button class="modal-close" onclick="closeModalDirect()">×</button>
+<div class="sts-modal-overlay" id="sts-modal" onclick="closeStsModal(event)">
+  <div class="sts-modal">
+    <div class="sts-modal-header">
+      <div class="sts-modal-title" id="sts-modal-title">—</div>
+      <button class="sts-modal-close" onclick="closeStsModalDirect()">×</button>
     </div>
-    <div class="modal-stats">
-      <div class="modal-stat-box"><div class="modal-stat-label">현재</div><div class="modal-stat-value" id="modal-current">—</div></div>
-      <div class="modal-stat-box"><div class="modal-stat-label">최고</div><div class="modal-stat-value" id="modal-best">—</div></div>
-      <div class="modal-stat-box"><div class="modal-stat-label">평균</div><div class="modal-stat-value" id="modal-avg">—</div></div>
+    <div class="sts-modal-stats">
+      <div class="sts-stat-box"><div class="sts-stat-label">현재</div><div class="sts-stat-value" id="sts-modal-current">—</div></div>
+      <div class="sts-stat-box"><div class="sts-stat-label">최고</div><div class="sts-stat-value" id="sts-modal-best">—</div></div>
+      <div class="sts-stat-box"><div class="sts-stat-label">평균</div><div class="sts-stat-value" id="sts-modal-avg">—</div></div>
     </div>
-    <div class="modal-chart"><canvas id="psModalChart"></canvas></div>
-    <a id="modal-link" href="https://store.playstation.com/" target="_blank" class="modal-link">🔗 PS Store에서 보기 ↗</a>
+    <div class="sts-modal-chart"><canvas id="stsModalChart"></canvas></div>
+    <a id="sts-modal-link" href="https://steamdb.info/app/3321460/charts/" target="_blank" class="sts-modal-link">🔗 SteamDB에서 보기 ↗</a>
   </div>
 </div>
 
 <script>
 /* ══ 상수 ══ */
-const PS_JSON = './bestseller_history.json';
+const STS_JSON = './steam_topseller_history.json';
 
-const WEIGHTS = {"미국":30.0,"영국":8.5,"일본":8.0,"독일":6.5,"프랑스":6.0,"캐나다":4.5,"스페인":4.0,"이탈리아":3.5,"호주":3.0,"한국":2.8};
+const STS_W  = {"미국":30.0,"중국":28.0,"러시아":6.0,"독일":5.5,"영국":5.0,"브라질":4.5,"한국":4.2,"프랑스":4.0,"일본":3.5,"캐나다":3.5,"호주":2.5,"터키":2.0,"폴란드":2.0,"스페인":2.0,"이탈리아":1.8,"네덜란드":0.8,"스웨덴":0.7,"노르웨이":0.5,"덴마크":0.5,"핀란드":0.4,"오스트리아":0.6,"스위스":0.7,"체코":0.4,"싱가포르":0.5,"태국":0.8,"벨기에":0.8,"홍콩":0.7,"뉴질랜드":0.4,"대만":0.8};
+const STS_F  = {"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","호주":"🇦🇺","한국":"🇰🇷","중국":"🇨🇳","러시아":"🇷🇺","폴란드":"🇵🇱","터키":"🇹🇷","네덜란드":"🇳🇱","스웨덴":"🇸🇪","노르웨이":"🇳🇴","덴마크":"🇩🇰","핀란드":"🇫🇮","오스트리아":"🇦🇹","스위스":"🇨🇭","체코":"🇨🇿","싱가포르":"🇸🇬","태국":"🇹🇭","벨기에":"🇧🇪","홍콩":"🇭🇰","뉴질랜드":"🇳🇿","대만":"🇹🇼"};
+const STS_CC = {"미국":"us","캐나다":"ca","브라질":"br","영국":"gb","독일":"de","프랑스":"fr","스페인":"es","이탈리아":"it","일본":"jp","호주":"au","한국":"kr","중국":"cn","러시아":"ru","폴란드":"pl","터키":"tr","네덜란드":"nl","스웨덴":"se","노르웨이":"no","덴마크":"dk","핀란드":"fi","오스트리아":"at","스위스":"ch","체코":"cz","싱가포르":"sg","태국":"th","벨기에":"be","홍콩":"hk","뉴질랜드":"nz","대만":"tw"};
 
-const FLAGS = {
-  "미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽",
-  "아르헨티나":"🇦🇷","칠레":"🇨🇱","콜롬비아":"🇨🇴","페루":"🇵🇪",
-  "우루과이":"🇺🇾","볼리비아":"🇧🇴","과테말라":"🇬🇹","온두라스":"🇭🇳",
-  "코스타리카":"🇨🇷","에콰도르":"🇪🇨","엘살바도르":"🇸🇻",
-  "니카라과":"🇳🇮","파나마":"🇵🇦","파라과이":"🇵🇾",
-  "영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸",
-  "이탈리아":"🇮🇹","네덜란드":"🇳🇱","폴란드":"🇵🇱","스위스":"🇨🇭",
-  "스웨덴":"🇸🇪","노르웨이":"🇳🇴","덴마크":"🇩🇰","핀란드":"🇫🇮",
-  "포르투갈":"🇵🇹","그리스":"🇬🇷","체코":"🇨🇿","헝가리":"🇭🇺",
-  "루마니아":"🇷🇴","슬로바키아":"🇸🇰","슬로베니아":"🇸🇮",
-  "우크라이나":"🇺🇦","사우디아라비아":"🇸🇦","아랍에미리트":"🇦🇪",
-  "남아공":"🇿🇦","터키":"🇹🇷","벨기에":"🇧🇪","오스트리아":"🇦🇹",
-  "이스라엘":"🇮🇱","크로아티아":"🇭🇷","불가리아":"🇧🇬",
-  "키프로스":"🇨🇾","아이슬란드":"🇮🇸","아일랜드":"🇮🇪",
-  "쿠웨이트":"🇰🇼","레바논":"🇱🇧","룩셈부르크":"🇱🇺",
-  "몰타":"🇲🇹","오만":"🇴🇲","카타르":"🇶🇦","바레인":"🇧🇭",
-  "일본":"🇯🇵","한국":"🇰🇷","중국":"🇨🇳","호주":"🇦🇺",
-  "인도":"🇮🇳","태국":"🇹🇭","싱가포르":"🇸🇬","말레이시아":"🇲🇾",
-  "인도네시아":"🇮🇩","필리핀":"🇵🇭","베트남":"🇻🇳",
-  "홍콩":"🇭🇰","대만":"🇹🇼","뉴질랜드":"🇳🇿"
-};
-
-const COUNTRY_LOCALE = {
-  "미국":"en-us","캐나다":"en-ca","브라질":"pt-br","멕시코":"es-mx",
-  "아르헨티나":"es-ar","칠레":"es-cl","콜롬비아":"es-co","페루":"es-pe",
-  "우루과이":"es-uy","볼리비아":"es-bo","과테말라":"es-gt","온두라스":"es-hn",
-  "코스타리카":"es-cr","에콰도르":"es-ec","엘살바도르":"es-sv",
-  "니카라과":"es-ni","파나마":"es-pa","파라과이":"es-py",
-  "영국":"en-gb","독일":"de-de","프랑스":"fr-fr","스페인":"es-es",
-  "이탈리아":"it-it","네덜란드":"nl-nl","폴란드":"pl-pl","스위스":"de-ch",
-  "스웨덴":"sv-se","노르웨이":"no-no","덴마크":"en-dk","핀란드":"fi-fi",
-  "포르투갈":"pt-pt","그리스":"en-gr","체코":"en-cz","헝가리":"en-hu",
-  "루마니아":"en-ro","슬로바키아":"en-sk","슬로베니아":"en-si",
-  "우크라이나":"ru-ua","벨기에":"nl-be","오스트리아":"de-at",
-  "아이슬란드":"en-is","아일랜드":"en-ie","룩셈부르크":"de-lu",
-  "몰타":"en-mt","크로아티아":"en-hr","불가리아":"en-bg","키프로스":"en-cy",
-  "터키":"en-tr","사우디아라비아":"en-sa","아랍에미리트":"en-ae",
-  "남아공":"en-za","이스라엘":"en-il","쿠웨이트":"en-kw",
-  "레바논":"en-lb","오만":"en-om","카타르":"en-qa","바레인":"en-bh",
-  "일본":"ja-jp","한국":"ko-kr","호주":"en-au","뉴질랜드":"en-nz",
-  "인도":"en-in","태국":"en-th","싱가포르":"en-sg","말레이시아":"en-my",
-  "인도네시아":"en-id","필리핀":"en-ph","베트남":"en-vn",
-  "홍콩":"en-hk","대만":"zh-hant-tw",
-};
-
-const PS_REGION = {
-  "미국":"북미","캐나다":"북미","멕시코":"북미",
-  "브라질":"중남미","아르헨티나":"중남미","칠레":"중남미","콜롬비아":"중남미",
-  "페루":"중남미","우루과이":"중남미","볼리비아":"중남미","에콰도르":"중남미",
-  "파라과이":"중남미","과테말라":"중남미","온두라스":"중남미","코스타리카":"중남미",
-  "엘살바도르":"중남미","니카라과":"중남미","파나마":"중남미",
-  "영국":"유럽","독일":"유럽","프랑스":"유럽","스페인":"유럽",
-  "이탈리아":"유럽","네덜란드":"유럽","스웨덴":"유럽","노르웨이":"유럽",
-  "덴마크":"유럽","핀란드":"유럽","오스트리아":"유럽","스위스":"유럽",
-  "벨기에":"유럽","폴란드":"유럽","체코":"유럽","포르투갈":"유럽",
-  "그리스":"유럽","헝가리":"유럽","루마니아":"유럽","슬로바키아":"유럽",
-  "슬로베니아":"유럽","크로아티아":"유럽","불가리아":"유럽","우크라이나":"유럽",
-  "아이슬란드":"유럽","아일랜드":"유럽","룩셈부르크":"유럽","몰타":"유럽","키프로스":"유럽",
-  "터키":"중동/아프리카","사우디아라비아":"중동/아프리카","아랍에미리트":"중동/아프리카",
-  "이스라엘":"중동/아프리카","쿠웨이트":"중동/아프리카","레바논":"중동/아프리카",
-  "오만":"중동/아프리카","카타르":"중동/아프리카","바레인":"중동/아프리카","남아공":"중동/아프리카",
-  "일본":"아시아","한국":"아시아","중국":"아시아","홍콩":"아시아",
-  "대만":"아시아","싱가포르":"아시아","태국":"아시아","인도":"아시아",
-  "말레이시아":"아시아","인도네시아":"아시아","필리핀":"아시아","베트남":"아시아",
+const STS_REGION = {
+  "미국":"북미","캐나다":"북미",
+  "브라질":"중남미",
+  "영국":"유럽","독일":"유럽","프랑스":"유럽","스페인":"유럽","이탈리아":"유럽","네덜란드":"유럽","스웨덴":"유럽","노르웨이":"유럽","덴마크":"유럽","핀란드":"유럽","오스트리아":"유럽","스위스":"유럽","벨기에":"유럽","폴란드":"유럽","체코":"유럽",
+  "터키":"중동/아프리카",
+  "일본":"아시아","한국":"아시아","중국":"아시아","홍콩":"아시아","대만":"아시아","싱가포르":"아시아","태국":"아시아",
   "호주":"오세아니아","뉴질랜드":"오세아니아",
+  "러시아":"유럽",
 };
 const REGION_META = {
   "북미":         { icon:"🌎", color:"#ff4757" },
@@ -360,22 +317,22 @@ const REGION_META = {
   "중동/아프리카":{ icon:"🌍", color:"#a55eea" },
 };
 
-const PS_MARKET_TOP5 = new Set(["미국","일본","독일","영국","프랑스"]);
+const STEAM_MARKET_TOP5 = new Set(["미국","중국","일본","한국","독일"]);
 
 /* ══ 상태 ══ */
-let historyData = [];
-let psModalCI   = null;
+let stsHist = [];
+let stsMCI  = null;
 const _regCharts = {};
 
 /* ══ fetch ══ */
 async function loadData() {
   const el = document.getElementById('fetch-status');
   try {
-    const r = await fetch(PS_JSON + '?t=' + Date.now());
+    const r = await fetch(STS_JSON + '?t=' + Date.now());
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const payload = await r.json();
-    historyData = Array.isArray(payload) ? payload : (payload.history || []);
-    el.textContent = `✅ ${historyData.length}건`;
+    stsHist = Array.isArray(payload) ? payload : (payload.history || []);
+    el.textContent = `✅ ${stsHist.length}건`;
     el.style.color = '#2ecc71';
   } catch(e) {
     el.textContent = '⚠️ fetch 실패';
@@ -385,59 +342,65 @@ async function loadData() {
 }
 
 /* ══ 유틸 ══ */
-function getRank(entry, country) {
-  const r = entry.raw_results?.[country];
-  if (r === undefined || r === null) return 999;
-  return typeof r === 'object' ? Math.min(...Object.values(r).filter(v=>v!==null)) : r;
-}
-function getStoreUrl(name) {
-  const locale = COUNTRY_LOCALE[name];
-  if (!locale) return 'https://store.playstation.com/';
-  return `https://store.playstation.com/${locale}/pages/browse/1?conceptId=10002363`;
-}
-function getDaysAtRank(name, currentRank) {
-  if (currentRank >= 999) return 0;
-  let count = 0;
-  for (let i=historyData.length-1; i>=0; i--) {
-    if (getRank(historyData[i], name) === currentRank) count++; else break;
+function stsAvg(h) {
+  if (!h?.results) return null;
+  let tw=0, ts=0;
+  for (const [n,d] of Object.entries(h.results)) {
+    const r = d?.rank; if (!r || r>20) continue;
+    const w = STS_W[n]||1; ts += r*w; tw += w;
   }
-  if (count<2||historyData.length<2) return count>0?1:0;
-  const first = new Date(historyData[historyData.length-count].timestamp);
-  const last  = new Date(historyData[historyData.length-1].timestamp);
-  const diff  = (last-first)/86400000;
-  return diff<1?(diff>0?1:0):Math.round(diff);
+  return tw>0 ? Math.round(ts/tw*10)/10 : null;
 }
-function starBadge(name) {
-  if (PS_MARKET_TOP5.has(name))
-    return '<span title="PS 시장 Top5" style="color:#ff4757;font-size:11px;margin-left:2px">★</span>';
-  return '';
-}
-function toggleRankGroup(id) {
-  const body=document.getElementById(id), arrow=document.getElementById(id+'-arrow');
-  if (!body) return;
-  body.classList.toggle('collapsed');
-  if (arrow) arrow.classList.toggle('open');
-}
+
 function getKstDayKey(ts) {
-  const kst = new Date(new Date(ts).getTime()+9*3600000);
+  const kst = new Date(new Date(ts).getTime() + 9*3600000);
   return `${kst.getUTCFullYear()}-${String(kst.getUTCMonth()+1).padStart(2,'0')}-${String(kst.getUTCDate()).padStart(2,'0')}`;
 }
 function getDayLabel(k) { const [,m,d]=k.split('-'); return `${+m}/${+d}`; }
 
+function getStsDaysAtRank(name, currentRank) {
+  if (!currentRank) return 0;
+  let count=0;
+  for (let i=stsHist.length-1; i>=0; i--) {
+    const r = stsHist[i].results?.[name]?.rank??null;
+    if (r===currentRank) count++; else break;
+  }
+  if (count<2||stsHist.length<2) return count>0?1:0;
+  const first=new Date(stsHist[stsHist.length-count].timestamp);
+  const last =new Date(stsHist[stsHist.length-1].timestamp);
+  const diff=(last-first)/86400000;
+  return diff<1?(diff>0?1:0):Math.round(diff);
+}
+
+function starBadge(name) {
+  if (STEAM_MARKET_TOP5.has(name))
+    return '<span title="Steam 시장 Top5" style="color:#4a9eff;font-size:11px;margin-left:2px">★</span>';
+  return '';
+}
+
+function toggleRankGroup(id) {
+  const body  = document.getElementById(id);
+  const arrow = document.getElementById(id+'-arrow');
+  if (!body) return;
+  body.classList.toggle('collapsed');
+  if (arrow) arrow.classList.toggle('open');
+}
+
 function getTop5PlusKorea() {
   return [...new Set([
-    ...Object.entries(WEIGHTS).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n])=>n),
+    ...Object.entries(STS_W).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n])=>n),
     '한국'
   ])];
 }
+
 function buildDailyBestSeries(countries) {
   const dayMap = {};
-  historyData.forEach(entry => {
+  stsHist.forEach(entry => {
     const dk = getKstDayKey(entry.timestamp);
     if (!dayMap[dk]) { dayMap[dk]={}; countries.forEach(n=>{ dayMap[dk][n]={sum:0,cnt:0}; }); }
     countries.forEach(n => {
-      const rank = getRank(entry, n);
-      if (rank>=999) return;
+      const rank = entry.results?.[n]?.rank??null;
+      if (rank==null||rank>=999) return;
       dayMap[dk][n].sum+=rank; dayMap[dk][n].cnt++;
     });
   });
@@ -453,69 +416,62 @@ function buildDailyBestSeries(countries) {
 
 /* ══ 메인 렌더 ══ */
 function renderAll() {
-  if (!historyData.length) return;
-  const curr = historyData[historyData.length-1];
-  const prev = historyData.length>1 ? historyData[historyData.length-2] : null;
+  if (!stsHist.length) return;
+  const v   = stsHist.filter(h => stsAvg(h)!==null);
+  const lat = v[v.length-1];
+  const prv = v.length>=2 ? v[v.length-2] : null;
+  if (!lat) return;
 
-  // ── 국가 목록 빌드 ──
-  let list = [];
-  const countryBest = {}, countryAvg = {};
-  Object.keys(curr.raw_results||{}).forEach(name => {
-    const allRanks = historyData.map(h=>getRank(h,name)).filter(r=>r<999);
-    countryBest[name] = allRanks.length ? Math.min(...allRanks) : 999;
-    countryAvg[name]  = allRanks.length ? allRanks.reduce((a,b)=>a+b,0)/allRanks.length : 999;
-    const r = getRank(curr, name), p = prev?getRank(prev,name):999;
-    list.push({ name, rank:r, change:(p===999||r===999)?0:p-r, weight:WEIGHTS[name]||1, best:countryBest[name], avg:countryAvg[name] });
-  });
+  const la = stsAvg(lat), pa = prv ? stsAvg(prv) : null;
 
   // ── 상단 카드 ──
-  const avgVal = curr.averages?.combined;
-  const prevAvg = prev?.averages?.combined;
-  document.getElementById('ps-avg').textContent = avgVal ? avgVal.toFixed(1)+'위' : '—';
-  const diffEl = document.getElementById('ps-avg-diff');
-  if (avgVal!=null && prevAvg!=null) {
-    const d = Math.round((prevAvg-avgVal)*10)/10;
+  document.getElementById('sts-avg').textContent     = la ? la.toFixed(1)+'위' : '—';
+  const diffEl = document.getElementById('sts-avg-diff');
+  if (pa!==null && la!==null) {
+    const d = Math.round((pa-la)*10)/10;
     if (d>0)      { diffEl.textContent='▲'+d+' 상승'; diffEl.style.color='var(--up)'; }
     else if (d<0) { diffEl.textContent='▼'+Math.abs(d)+' 하락'; diffEl.style.color='var(--down)'; }
     else          { diffEl.textContent='변동없음'; diffEl.style.color='var(--tx-4)'; }
   }
-  const allAvgs = historyData.map(h=>h.averages?.combined).filter(v=>v!=null);
-  const bestAvg = allAvgs.length ? Math.min(...allAvgs) : null;
-  const bestIdx = allAvgs.indexOf(bestAvg);
-  document.getElementById('ps-best').textContent      = bestAvg ? bestAvg.toFixed(1)+'위' : '—';
-  document.getElementById('ps-best-date').textContent = bestIdx>=0 ? historyData[bestIdx].timestamp.slice(5,10).replace('-','/') : '—';
-  document.getElementById('ps-cnt1').textContent      = list.filter(x=>x.rank===1).length;
-  document.getElementById('ps-cnt-all').textContent   = list.filter(x=>x.rank<999).length;
-  document.getElementById('ps-data-time').textContent = curr.timestamp.slice(5,16).replace('T',' ');
 
-  renderMainChart();
-  renderTop5(list, prev);
+  let best=null, be=null;
+  for (const h of v) { const a=stsAvg(h); if (a!==null&&(best===null||a<best)){best=a;be=h;} }
+  document.getElementById('sts-best').textContent      = best ? best.toFixed(1)+'위' : '—';
+  document.getElementById('sts-best-date').textContent = be ? be.timestamp.slice(5,10).replace('-','/') : '—';
+  document.getElementById('sts-count').textContent     = stsHist.length;
+  document.getElementById('sts-data-time').textContent = lat.timestamp.slice(5,16).replace('T',' ');
+  document.getElementById('sts-countries').textContent = Object.keys(lat.results||{}).length;
+
+  renderMainChart(v, la, pa);
   renderDistChart();
+  renderTop5(lat, prv);
   renderTop5KrChart();
-  renderRegion(list);
-  renderLeaderboard(list);
+  renderRegion(lat, prv);
+  renderLeaderboard(lat, prv);
 }
 
 /* ── 추이 차트 ── */
 let mainCI = null;
-function renderMainChart() {
-  const el = document.getElementById('psMainChart');
-  if (!el||historyData.length<2) return;
-  const allData = historyData.map(h=>({ x:new Date(h.timestamp.split('.')[0]), y:h.averages?.combined })).filter(d=>d.y!=null);
-  const dv=allData.map(d=>d.y), lbs=allData.map(d=>d.x);
+function renderMainChart(v, la, pa) {
+  const el = document.getElementById('stsMainChart');
+  if (!el) return;
+  const dv  = v.map(h=>stsAvg(h));
+  const lbs = v.map(h=>new Date(h.timestamp));
   const iFirst=0, iLast=dv.length-1;
-  const iBest = dv.reduce((bi,v,i,a)=>v!==null&&(a[bi]===null||v<a[bi])?i:bi, 0);
-  const ptR = dv.map((_,i)=>[iFirst,iLast,iBest].includes(i)?5:0);
-  const ptC = dv.map((_,i)=>i===iBest?'#2ecc71':i===iLast?'#f1c40f':'#fff');
-  const fmt = v => v!=null?v.toFixed(1)+'위':'—';
+  const iBest  = dv.reduce((bi,val,i,a)=>val!==null&&(a[bi]===null||val<a[bi])?i:bi, 0);
+  const iWorst = dv.reduce((wi,val,i,a)=>val!==null&&(a[wi]===null||val>a[wi])?i:wi, 0);
+  const ptR = dv.map((_,i)=>[iFirst,iLast,iBest,iWorst].includes(i)?5:0);
+  const ptC = dv.map((_,i)=>i===iBest?'#2ecc71':i===iWorst?'#e74c3c':i===iLast?'#f1c40f':'#fff');
+  const fmt = val => val!=null?val.toFixed(1)+'위':'—';
   const setL = (id,t)=>{ const e=document.getElementById(id); if(e) e.textContent=t; };
-  setL('ps-leg-start',   '시작 '+fmt(dv[iFirst]));
-  setL('ps-leg-best',    '최고 '+fmt(dv[iBest]));
-  setL('ps-leg-current', '현재 '+fmt(dv[iLast]));
+  setL('sst-leg-start',   '시작 '+fmt(dv[iFirst]));
+  setL('sst-leg-best',    '최고 '+fmt(dv[iBest]));
+  setL('sst-leg-current', '현재 '+fmt(dv[iLast]));
+  setL('sst-leg-worst',   '최저 '+fmt(dv[iWorst]));
   if (mainCI) mainCI.destroy();
   mainCI = new Chart(el.getContext('2d'), {
     type:'line',
-    data:{ labels:lbs, datasets:[{ data:dv, borderColor:'#ff4757', backgroundColor:'rgba(255,71,87,0.08)', borderWidth:2, pointRadius:ptR, pointBackgroundColor:ptC, pointBorderColor:ptC, fill:true, tension:0.25, spanGaps:true }] },
+    data:{ labels:lbs, datasets:[{ data:dv, borderColor:'#4a9eff', backgroundColor:'rgba(74,158,255,0.08)', borderWidth:2, pointRadius:ptR, pointBackgroundColor:ptC, pointBorderColor:ptC, fill:true, tension:0.3, spanGaps:true }] },
     options:{ responsive:true, maintainAspectRatio:false, animation:false,
       layout:{ padding:{ top:10, right:10 } },
       scales:{
@@ -527,47 +483,23 @@ function renderMainChart() {
   });
 }
 
-/* ── Top5 현재 순위 ── */
-function renderTop5(list, prev) {
-  const el = document.getElementById('ps-top5-body');
-  if (!el) return;
-  const top5 = Object.entries(WEIGHTS).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([name,w])=>{
-    const item = list.find(x=>x.name===name);
-    return { name, w, rank:item?.rank??999, change:item?.change??0 };
-  });
-  const totalW = top5.reduce((s,x)=>s+x.w,0);
-  el.innerHTML = '<div class="top5-row">' + top5.map(({name,w,rank,change})=>{
-    const pct = Math.round(w/totalW*100);
-    const rc  = rank===1?'var(--gold)':rank<=3?'#c0c0c0':rank<=10?'var(--steam)':rank<999?'var(--tx-2)':'var(--tx-4)';
-    const rankStr = rank>=999
-      ? `<span class="top5-rank" style="color:var(--tx-4);font-size:12px">순위 밖</span>`
-      : `<span class="top5-rank" style="color:${rc}">${rank}<span style="font-size:11px">위</span></span>`;
-    let chgHtml='';
-    if (change>0)      chgHtml=`<span class="top5-chg chg-up">▲${change}</span>`;
-    else if (change<0) chgHtml=`<span class="top5-chg chg-down">▼${Math.abs(change)}</span>`;
-    else               chgHtml=`<span class="top5-chg chg-none">—</span>`;
-    return `<div class="top5-item">
-      <span style="font-size:15px">${FLAGS[name]||''}</span>
-      <a href="${getStoreUrl(name)}" target="_blank" class="top5-name">${name} <span style="font-size:10px;color:var(--tx-4)">W${pct}%</span></a>
-      ${rankStr}${chgHtml}
-    </div>
-    <div class="top5-bar-wrap"><div class="top5-bar-fill" style="width:${pct}%"></div></div>`;
-  }).join('') + '</div>';
-}
-
 /* ── 순위 분포 차트 ── */
 let distCI = null;
 const stackedBarLabelPlugin = {
   id:'stackedBarLabel',
   afterDatasetsDraw(chart) {
-    const { ctx }=chart; ctx.save();
+    const { ctx } = chart;
+    ctx.save();
     chart.data.datasets.forEach((ds,di) => {
-      const meta=chart.getDatasetMeta(di); if(meta.hidden) return;
+      const meta = chart.getDatasetMeta(di);
+      if (meta.hidden) return;
       meta.data.forEach((bar,i) => {
-        const val=ds.data[i]; if(!val||val<1) return;
-        const { x,y,height }=bar.getProps(['x','y','height'],true);
-        if(Math.abs(height)<12) return;
-        ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.font='700 10px Rajdhani,sans-serif';
+        const val = ds.data[i];
+        if (!val||val<1) return;
+        const { x,y,height } = bar.getProps(['x','y','height'],true);
+        if (Math.abs(height)<12) return;
+        ctx.fillStyle='rgba(255,255,255,0.85)';
+        ctx.font='700 10px Rajdhani,sans-serif';
         ctx.textAlign='center'; ctx.textBaseline='middle';
         ctx.fillText(val, x, y+height/2);
       });
@@ -576,15 +508,15 @@ const stackedBarLabelPlugin = {
   }
 };
 function renderDistChart() {
-  const el = document.getElementById('psDistChart');
-  if (!el||historyData.length<2) return;
+  const el = document.getElementById('stsDistChart');
+  if (!el||stsHist.length<2) return;
   const dm = {};
-  historyData.forEach(h => {
+  stsHist.forEach(h => {
     const dk = getDayLabel(getKstDayKey(h.timestamp));
     if (!dm[dk]) dm[dk]={ r1:0, r23:0, r410:0, r11:0, cnt:0 };
-    const e=dm[dk];
-    Object.keys(h.raw_results||{}).forEach(name => {
-      const r=getRank(h,name); if(r>=999) return;
+    const e = dm[dk];
+    Object.entries(h.results||{}).forEach(([,d]) => {
+      const r=d?.rank; if(!r) return;
       if(r===1)e.r1++; else if(r<=3)e.r23++; else if(r<=10)e.r410++; else e.r11++;
     });
     e.cnt++;
@@ -592,7 +524,8 @@ function renderDistChart() {
   const dates = Object.keys(dm);
   if (distCI) distCI.destroy();
   distCI = new Chart(el.getContext('2d'), {
-    type:'bar', plugins:[stackedBarLabelPlugin],
+    type:'bar',
+    plugins:[stackedBarLabelPlugin],
     data:{ labels:dates, datasets:[
       { label:'1위',   data:dates.map(d=>Math.round(dm[d].r1  /dm[d].cnt)), backgroundColor:'rgba(241,196,15,0.85)', stack:'s' },
       { label:'2~3위', data:dates.map(d=>Math.round(dm[d].r23 /dm[d].cnt)), backgroundColor:'rgba(192,192,192,0.75)',stack:'s' },
@@ -609,19 +542,50 @@ function renderDistChart() {
   });
 }
 
+/* ── Top5 현재 순위 ── */
+function renderTop5(lat, prv) {
+  const el = document.getElementById('sts-top5-body');
+  if (!el) return;
+  const top5 = Object.entries(STS_W).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([name,w])=>{
+    const r  = lat.results?.[name]?.rank??null;
+    const pr = prv?.results?.[name]?.rank??null;
+    const ch = (r&&pr)?pr-r:0;
+    return { name, w, rank:r, change:ch };
+  });
+  const totalW = top5.reduce((s,x)=>s+x.w,0);
+  el.innerHTML = '<div class="top5-row">' + top5.map(({name,w,rank,change}) => {
+    const pct = Math.round(w/totalW*100);
+    const rc  = rank===1?'var(--gold)':rank<=3?'#c0c0c0':rank<=10?'var(--steam)':rank?'var(--tx-2)':'var(--tx-4)';
+    const rankStr = rank
+      ? `<span class="top5-rank" style="color:${rc}">${rank}<span style="font-size:11px">위</span></span>`
+      : `<span class="top5-rank" style="color:var(--tx-4)">—</span>`;
+    let chgHtml = '';
+    if (change>0)      chgHtml=`<span class="top5-chg chg-up">▲${change}</span>`;
+    else if (change<0) chgHtml=`<span class="top5-chg chg-down">▼${Math.abs(change)}</span>`;
+    else               chgHtml=`<span class="top5-chg chg-none">—</span>`;
+    const cc  = STS_CC[name]||'us';
+    const url = `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`;
+    return `<div class="top5-item">
+      <span style="font-size:15px">${STS_F[name]||''}</span>
+      <a href="${url}" target="_blank" class="top5-name">${name} <span style="font-size:10px;color:var(--tx-4)">W${pct}%</span></a>
+      ${rankStr}${chgHtml}
+    </div>`;
+  }).join('') + '</div>';
+}
+
 /* ── Top5+한국 라인 차트 ── */
 let top5KrCI = null;
 function renderTop5KrChart() {
-  const el = document.getElementById('psTop5KrChart');
-  if (!el||!historyData.length) return;
+  const el = document.getElementById('stsTop5KrChart');
+  if (!el||!stsHist.length) return;
   const countries = getTop5PlusKorea();
   const bundle    = buildDailyBestSeries(countries);
   if (!bundle.labels.length) return;
-  const palette = ['#ff4757','#f1c40f','#4a9eff','#2ecc71','#9b59b6','#ff9f43'];
+  const palette = ['#4a9eff','#f1c40f','#2ecc71','#ff6b81','#a55eea','#45aaf2'];
   const datasets = bundle.series.map((row,idx) => {
-    const color = row.name==='한국'?'#ffffff':palette[idx%palette.length];
+    const color = row.name==='한국' ? '#ffffff' : palette[idx%palette.length];
     return {
-      label:`${FLAGS[row.name]||''} ${row.name}`.trim(),
+      label:`${STS_F[row.name]||''} ${row.name}`.trim(),
       data:row.data, borderColor:color, backgroundColor:color,
       pointBackgroundColor:color, pointBorderColor:'#111',
       pointBorderWidth:row.name==='한국'?1.5:1,
@@ -650,21 +614,17 @@ function renderTop5KrChart() {
 }
 
 /* ── 지역별 ── */
-function renderRegion(list) {
-  const el = document.getElementById('ps-region-summary');
+function renderRegion(lat, prv) {
+  const el = document.getElementById('sts-region-summary');
   if (!el) return;
-  const listMap = {};
-  list.forEach(x => { listMap[x.name]=x; });
-  const weightMap = {};
-  Object.keys(FLAGS).forEach(name => { weightMap[name]=WEIGHTS[name]||0.1; });
-  const totalW = Object.values(weightMap).reduce((s,w)=>s+w,0);
-
+  const totalW = Object.values(STS_W).reduce((s,w)=>s+w,0);
   const regions = {};
-  Object.entries(weightMap).forEach(([name,w]) => {
-    const reg = PS_REGION[name]||'기타';
+  Object.entries(STS_W).forEach(([name,w]) => {
+    const reg = STS_REGION[name]||'기타';
     if (!regions[reg]) regions[reg]={ countries:[], totalW:0 };
-    const rank   = listMap[name]?.rank??999;
-    const change = listMap[name]?.change??0;
+    const rank   = lat.results?.[name]?.rank??999;
+    const pr     = prv?.results?.[name]?.rank??null;
+    const change = (rank<999&&pr) ? pr-rank : 0;
     regions[reg].countries.push({ name,w,rank,change });
     regions[reg].totalW += w;
   });
@@ -677,40 +637,47 @@ function renderRegion(list) {
   });
   const sorted = Object.entries(regions).sort((a,b)=>b[1].totalW-a[1].totalW);
 
-  // 지역 히스토리
+  // 지역별 히스토리
   const dayRegMap = {};
-  historyData.forEach(entry => {
+  stsHist.forEach(entry => {
     const dk = getKstDayKey(entry.timestamp);
     if (!dayRegMap[dk]) dayRegMap[dk]={};
-    Object.entries(weightMap).forEach(([name,w]) => {
-      const reg=PS_REGION[name]||'기타';
-      const r=getRank(entry,name); if(r>=999) return;
+    Object.entries(STS_W).forEach(([name,w]) => {
+      const reg = STS_REGION[name]||'기타';
+      const r   = entry.results?.[name]?.rank??null;
+      if (r==null||r>=999) return;
       if (!dayRegMap[dk][reg]) dayRegMap[dk][reg]={ws:0,wt:0};
-      dayRegMap[dk][reg].ws+=r*w; dayRegMap[dk][reg].wt+=w;
+      dayRegMap[dk][reg].ws += r*w; dayRegMap[dk][reg].wt += w;
     });
   });
-  const dayKeys=Object.keys(dayRegMap).sort(), dayLabels=dayKeys.map(getDayLabel);
+  const dayKeys = Object.keys(dayRegMap).sort();
+  const dayLabels = dayKeys.map(getDayLabel);
   sorted.forEach(([regName],ri) => {
-    const data=dayKeys.map(dk=>{ const e=dayRegMap[dk]?.[regName]; return (e&&e.wt>0)?Math.round(e.ws/e.wt*10)/10:null; });
-    _regCharts['reg-chart-'+ri+'_data']={ labels:dayLabels, data };
+    const data = dayKeys.map(dk => { const e=dayRegMap[dk]?.[regName]; return (e&&e.wt>0)?Math.round(e.ws/e.wt*10)/10:null; });
+    _regCharts['reg-chart-'+ri+'_data'] = { labels:dayLabels, data };
   });
 
   el.innerHTML = '<div class="reg-wrap">' + sorted.map(([regName,reg],ri) => {
-    const pct=Math.round(reg.totalW/totalW*100);
-    const avgStr=reg.avg!=null?`<span style="color:var(--blood)">${reg.avg.toFixed(1)}위</span>`:`<span style="color:var(--tx-4)">—</span>`;
-    const m=REGION_META[regName]||{ icon:'🌐', color:'#888' };
-    const bodyId='reg-body-'+ri, arrowId='reg-arrow-'+ri, chartId='reg-chart-'+ri;
+    const pct    = Math.round(reg.totalW/totalW*100);
+    const avgStr = reg.avg!=null
+      ? `<span style="color:var(--steam)">${reg.avg.toFixed(1)}위</span>`
+      : `<span style="color:var(--tx-4)">—</span>`;
+    const m = REGION_META[regName]||{ icon:'🌐', color:'#888' };
+    const bodyId  = 'reg-body-'+ri;
+    const arrowId = 'reg-arrow-'+ri;
+    const chartId = 'reg-chart-'+ri;
     const countriesHtml = reg.countries.map(({name,w,rank,change}) => {
-      const cPct=Math.round(w/totalW*100), cPctReg=Math.round(w/reg.totalW*100);
-      const rankColor=rank===1?'var(--gold)':rank<=3?'#c0c0c0':rank<=10?'var(--steam)':rank<999?'var(--tx-2)':'var(--tx-4)';
-      const rankTxt=rank<999?`<span style="color:${rankColor}">${rank}위</span>`:`<span style="color:var(--tx-4)">-</span>`;
+      const cPct    = Math.round(w/totalW*100);
+      const cPctReg = Math.round(w/reg.totalW*100);
+      const rankColor = rank===1?'var(--gold)':rank<=3?'#c0c0c0':rank<=10?'var(--steam)':rank<999?'var(--tx-2)':'var(--tx-4)';
+      const rankTxt   = rank<999?`<span style="color:${rankColor}">${rank}위</span>`:`<span style="color:var(--tx-4)">-</span>`;
       let chgTxt='';
-      if(change>0) chgTxt=`<span style="color:var(--up)">▲${change}</span>`;
-      else if(change<0) chgTxt=`<span style="color:var(--down)">▼${Math.abs(change)}</span>`;
-      else chgTxt=`<span style="color:var(--tx-4)">—</span>`;
+      if (change>0)      chgTxt=`<span style="color:var(--up)">▲${change}</span>`;
+      else if (change<0) chgTxt=`<span style="color:var(--down)">▼${Math.abs(change)}</span>`;
+      else               chgTxt=`<span style="color:var(--tx-4)">—</span>`;
       return `<div>
         <div class="reg-country-row">
-          <span class="reg-c-flag">${FLAGS[name]||''}</span>
+          <span class="reg-c-flag">${STS_F[name]||''}</span>
           <span class="reg-c-name">${name}</span>
           <span class="reg-c-share">W:${cPct}%</span>
           <span class="reg-c-rank">${rankTxt}</span>
@@ -739,19 +706,21 @@ function renderRegion(list) {
 }
 
 function toggleRegion(bodyId, arrowId, chartId) {
-  const body=document.getElementById(bodyId), arrow=document.getElementById(arrowId);
+  const body  = document.getElementById(bodyId);
+  const arrow = document.getElementById(arrowId);
   if (!body) return;
-  const collapsed=body.classList.toggle('collapsed');
-  if (arrow) arrow.classList.toggle('open',!collapsed);
-  if (!collapsed&&chartId) {
-    const canvas=document.getElementById(chartId);
+  const collapsed = body.classList.toggle('collapsed');
+  if (arrow) arrow.classList.toggle('open', !collapsed);
+  if (!collapsed && chartId) {
+    const canvas = document.getElementById(chartId);
     if (!canvas||_regCharts[chartId]) return;
-    const cached=_regCharts[chartId+'_data'];
+    const cached = _regCharts[chartId+'_data'];
     if (!cached||!cached.labels.length) return;
-    canvas.width=canvas.parentElement.offsetWidth||400; canvas.height=110;
+    canvas.width  = canvas.parentElement.offsetWidth||400;
+    canvas.height = 110;
     _regCharts[chartId] = new Chart(canvas.getContext('2d'), {
       type:'line',
-      data:{ labels:cached.labels, datasets:[{ data:cached.data, borderColor:'#ff4757', backgroundColor:'rgba(255,71,87,0.08)', borderWidth:2, pointRadius:cached.data.map((_,i)=>(i===0||i===cached.data.length-1)?4:0), pointBackgroundColor:'#ff4757', fill:true, tension:0.3, spanGaps:true }] },
+      data:{ labels:cached.labels, datasets:[{ data:cached.data, borderColor:'#4a9eff', backgroundColor:'rgba(74,158,255,0.08)', borderWidth:2, pointRadius:cached.data.map((_,i)=>(i===0||i===cached.data.length-1)?4:0), pointBackgroundColor:'#4a9eff', fill:true, tension:0.3, spanGaps:true }] },
       options:{ responsive:false, animation:false, layout:{padding:{top:6,right:4}},
         scales:{
           x:{ ticks:{color:'#777',maxTicksLimit:10,font:{size:9}}, grid:{color:'#1a1a1a'} },
@@ -764,42 +733,47 @@ function toggleRegion(bodyId, arrowId, chartId) {
 }
 
 /* ── 리더보드 ── */
-function renderLeaderboard(list) {
-  const g = document.getElementById('lb-ps-container');
-  if (!g) return;
+function renderLeaderboard(lat, prv) {
+  const g = document.getElementById('lb-sts-container');
+  if (!g||!lat?.results) return;
   const changeMap = {};
-  list.forEach(d => { changeMap[d.name]=d.change||0; });
-  const sorted = list.slice().sort((a,b) => {
-    if (a.rank<999&&b.rank<999) return a.rank!==b.rank?a.rank-b.rank:(b.weight||0)-(a.weight||0);
-    if (a.rank<999) return -1; if (b.rank<999) return 1;
-    return (b.weight||0)-(a.weight||0);
+  Object.keys(STS_W).forEach(n => {
+    const r=lat.results[n]?.rank??null, pr=prv?.results?.[n]?.rank??null;
+    changeMap[n] = (r&&pr)?pr-r:0;
   });
+  const sorted = Object.keys(STS_W)
+    .map(n=>({ name:n, rank:lat.results[n]?.rank??null, w:STS_W[n]||1 }))
+    .sort((a,b) => {
+      if (a.rank&&b.rank) return a.rank!==b.rank?a.rank-b.rank:b.w-a.w;
+      if (a.rank) return -1; if (b.rank) return 1; return b.w-a.w;
+    });
   const groups = {};
   sorted.forEach(d => {
-    const k=d.rank>=999?'순위 밖':d.rank+'위';
-    if (!groups[k]) groups[k]={ rank:d.rank>=999?9999:d.rank, names:[] };
+    const k = d.rank?d.rank+'위':'순위 밖';
+    if (!groups[k]) groups[k]={ rank:d.rank||9999, names:[] };
     groups[k].names.push(d.name);
   });
   g.innerHTML = Object.entries(groups).map(([label,{rank,names}]) => {
-    const lc=rank===1?'g1':rank<=3?'g2':rank<=10?'g3':rank<999?'g10':'gout';
-    const tc=rank===1?'tier-1':rank<=3?'tier-2':rank<=10?'tier-3':rank<999?'tier-10':'tier-out';
-    const medal=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
-    const groupId='ps-lb-grp-'+rank;
-    const upCnt =names.filter(n=>(changeMap[n]||0)>0).length;
-    const dnCnt =names.filter(n=>(changeMap[n]||0)<0).length;
+    const lc = rank===1?'g1':rank<=3?'g2':rank<=10?'g3':rank<999?'g10':'gout';
+    const tc = rank===1?'tier-1':rank<=3?'tier-2':rank<=10?'tier-3':rank<999?'tier-10':'tier-out';
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+    const groupId = 'sts-lb-grp-'+rank;
+    const upCnt  =names.filter(n=>(changeMap[n]||0)>0).length;
+    const dnCnt  =names.filter(n=>(changeMap[n]||0)<0).length;
     const chgBadge=(upCnt>0||dnCnt>0)
       ?`<span style="font-size:9px;margin-left:6px;display:inline-flex;gap:4px">
           ${upCnt>0?`<span style="color:var(--up);font-weight:800">▲${upCnt}</span>`:''}
           ${dnCnt>0?`<span style="color:var(--down);font-weight:800">▼${dnCnt}</span>`:''}
         </span>`:'';
     const cards = names.map(n => {
-      const ch=changeMap[n]||0;
-      const chTxt=ch>0?`<span style="font-size:9px;color:var(--up);font-weight:800">▲${ch}</span>`
-                 :ch<0?`<span style="font-size:9px;color:var(--down);font-weight:800">▼${Math.abs(ch)}</span>`:'';
-      const d=getDaysAtRank(n,rank<9999?rank:0);
-      return `<div class="top10-item ${tc}" onclick="showCountryModal('${n}')">
-        <span class="n">${FLAGS[n]||''} <a href="${getStoreUrl(n)}" target="_blank" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${n}</a>${starBadge(n)}</span>
-        <span class="r">${rank>=9999?'—':rank+'위'+(d>1?`(${d}d)`:'')}${chTxt}</span>
+      const ch = changeMap[n]||0;
+      const chTxt = ch>0?`<span style="font-size:9px;color:var(--up);font-weight:800">▲${ch}</span>`
+                  :ch<0?`<span style="font-size:9px;color:var(--down);font-weight:800">▼${Math.abs(ch)}</span>`:'';
+      const dSts = getStsDaysAtRank(n, rank<9999?rank:0);
+      const url  = `https://store.steampowered.com/charts/topselling/${(STS_CC[n]||'us').toUpperCase()}`;
+      return `<div class="top10-item ${tc}" onclick="openStsModal('${n}')">
+        <span class="n">${STS_F[n]||''} <a href="${url}" target="_blank" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${n}</a>${starBadge(n)}</span>
+        <span class="r">${rank>=9999?'—':rank+'위'+(dSts>1?`(${dSts}d)`:'')}${chTxt}</span>
       </div>`;
     }).join('');
     return `<div>
@@ -813,42 +787,46 @@ function renderLeaderboard(list) {
       </div>
     </div>`;
   }).join('');
-  if (typeof twemoji!=='undefined') twemoji.parse(g,{ folder:'svg', ext:'.svg' });
+  if (typeof twemoji !== 'undefined') twemoji.parse(g, { folder:'svg', ext:'.svg' });
 }
 
 /* ── 국가 모달 ── */
-function showCountryModal(name) {
-  const modal = document.getElementById('psModal');
-  if (!modal) return;
-  document.getElementById('modal-title').textContent = `${FLAGS[name]||''} ${name}`;
-  document.getElementById('modal-link').href = getStoreUrl(name);
-  const data = historyData.map(h=>({ x:new Date(h.timestamp.split('.')[0]), y:getRank(h,name) })).filter(d=>d.y<999);
-  const cur  = data.length ? data[data.length-1].y : null;
-  const best = data.length ? data.reduce((m,d)=>d.y<m?d.y:m, Infinity) : null;
-  const avg  = data.length ? Math.round(data.reduce((s,d)=>s+d.y,0)/data.length*10)/10 : null;
-  document.getElementById('modal-current').textContent = cur  ? cur+'위'  : '—';
-  document.getElementById('modal-best').textContent    = best ? best+'위' : '—';
-  document.getElementById('modal-avg').textContent     = avg  ? avg+'위'  : '—';
-  const c2 = document.getElementById('psModalChart').getContext('2d');
-  if (psModalCI) { psModalCI.destroy(); psModalCI=null; }
-  if (data.length) {
-    psModalCI = new Chart(c2, {
+function openStsModal(n) {
+  const m = document.getElementById('sts-modal');
+  if (!m) return;
+  const cc = STS_CC[n]||'us';
+  document.getElementById('sts-modal-title').innerHTML =
+    `<img src="https://flagcdn.com/w40/${cc}.png" alt="${n}" style="width:28px;height:20px;object-fit:cover;border-radius:2px;vertical-align:middle;margin-right:6px">${n}`;
+  document.getElementById('sts-modal-link').href = `https://store.steampowered.com/charts/topselling/${cc.toUpperCase()}`;
+  const h = stsHist.filter(x=>x.results&&x.results[n]?.rank).map(x=>({ t:new Date(x.timestamp), r:x.results[n].rank }));
+  if (!h.length) {
+    ['sts-modal-current','sts-modal-best','sts-modal-avg'].forEach(id=>{ document.getElementById(id).textContent='—'; });
+  } else {
+    const cur  = h[h.length-1].r;
+    const best = h.reduce((m,x)=>x.r<m?x.r:m, Infinity);
+    const avg  = Math.round(h.reduce((s,x)=>s+x.r,0)/h.length*10)/10;
+    document.getElementById('sts-modal-current').textContent = cur+'위';
+    document.getElementById('sts-modal-best').textContent    = best+'위';
+    document.getElementById('sts-modal-avg').textContent     = avg+'위';
+    const c2 = document.getElementById('stsModalChart').getContext('2d');
+    if (stsMCI) stsMCI.destroy();
+    stsMCI = new Chart(c2, {
       type:'line',
-      data:{ datasets:[{ data, borderColor:'#ff4757', backgroundColor:'rgba(255,71,87,0.1)', borderWidth:2, pointRadius:data.length>100?0:2, fill:true, tension:0.2, spanGaps:true }] },
+      data:{ labels:h.map(x=>x.t), datasets:[{ data:h.map(x=>x.r), borderColor:'#4a9eff', backgroundColor:'rgba(74,158,255,0.1)', borderWidth:2, pointRadius:h.length>60?0:h.length>20?2:3, fill:true, tension:0.3, spanGaps:true }] },
       options:{ responsive:true, maintainAspectRatio:false,
         scales:{
-          x:{ type:'time', time:{ unit:data.length>48?'day':'hour', displayFormats:{hour:'M/d HH:mm',day:'M/d'} }, ticks:{color:'#fff',maxTicksLimit:7,font:{size:10}}, grid:{color:'#222'} },
-          y:{ reverse:true, suggestedMin:0, ticks:{color:'#fff',stepSize:1,callback:v=>v>0?v+'위':'',font:{size:11},padding:8}, grid:{color:'#222'} }
+          x:{ type:'time', time:{ unit:h.length>48?'day':'hour', displayFormats:{ hour:'M/d HH:mm', day:'M/d' } }, ticks:{ color:'#fff', maxTicksLimit:7, font:{size:10} }, grid:{ color:'#222' } },
+          y:{ reverse:true, suggestedMin:0, ticks:{ color:'#fff', stepSize:1, callback:v=>v>0?v+'위':'', font:{size:11}, padding:8 }, grid:{ color:'#222' } }
         },
-        plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>c.parsed.y+'위'}} }
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.parsed.y+'위' } } }
       }
     });
   }
-  modal.classList.add('open'); document.body.style.overflow='hidden';
+  m.classList.add('open'); document.body.style.overflow='hidden';
 }
-function closeModal(e) { if(e.target===document.getElementById('psModal')) closeModalDirect(); }
-function closeModalDirect() { document.getElementById('psModal').classList.remove('open'); document.body.style.overflow=''; if(psModalCI){psModalCI.destroy();psModalCI=null;} }
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModalDirect(); });
+function closeStsModal(e) { if (e.target===document.getElementById('sts-modal')) closeStsModalDirect(); }
+function closeStsModalDirect() { document.getElementById('sts-modal').classList.remove('open'); document.body.style.overflow=''; if(stsMCI){stsMCI.destroy();stsMCI=null;} }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeStsModalDirect(); });
 
 /* ══ 초기화 ══ */
 loadData();
