@@ -46,14 +46,15 @@
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 10px 20px;
+    gap: 10px;
+    padding: 8px 14px;
     background: var(--bg-1);
     border-bottom: 2px solid var(--steam);
+    flex-wrap: wrap;
   }
   #header .title {
     font-family: 'Cinzel', serif;
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     font-weight: 900;
     color: var(--steam);
     letter-spacing: 2px;
@@ -61,7 +62,7 @@
     white-space: nowrap;
   }
   #header .sub {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--tx-4);
     font-weight: 700;
     letter-spacing: 1px;
@@ -73,7 +74,7 @@
     font-weight: 700;
   }
   .hdr-btn {
-    padding: 4px 11px;
+    padding: 4px 10px;
     font-size: 12px;
     font-weight: 700;
     border-radius: 4px;
@@ -90,15 +91,18 @@
     background: rgba(74,158,255,0.15);
     color: var(--steam);
   }
-  .hdr-sep { width: 1px; height: 20px; background: var(--bd-hi); flex-shrink: 0; }
+  #hdr-btn-row {
+    display: flex; gap: 5px; align-items: center; flex-wrap: wrap;
+  }
+  .hdr-sep { width: 1px; height: 18px; background: var(--bd-hi); flex-shrink: 0; }
 
   /* ── 요약 카드 행 ── */
   #card-row {
     flex-shrink: 0;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-    padding: 12px 20px;
+    gap: 8px;
+    padding: 10px 14px;
     background: var(--bg-1);
     border-bottom: 1px solid var(--bd);
   }
@@ -107,26 +111,26 @@
     border: 1px solid var(--bd);
     border-left-width: 3px;
     border-radius: var(--radius);
-    padding: 10px 14px;
+    padding: 8px 10px;
   }
   .stat-label {
-    font-size: 10px;
+    font-size: 9px;
     color: var(--tx-4);
     font-weight: 800;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
     text-transform: uppercase;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
   }
   .stat-val {
     font-family: 'Cinzel', serif;
-    font-size: 1.9rem;
+    font-size: 1.6rem;
     font-weight: 900;
     line-height: 1;
   }
   .stat-sub {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--tx-4);
-    margin-top: 3px;
+    margin-top: 2px;
     font-weight: 600;
   }
 
@@ -136,8 +140,8 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
-    padding: 14px 20px 10px;
-    gap: 10px;
+    padding: 10px 14px 8px;
+    gap: 8px;
   }
 
   .chart-block {
@@ -151,12 +155,12 @@
     flex-direction: column;
     overflow: hidden;
   }
-  .chart-block.daily { flex: 0 0 auto; height: 30%; min-height: 120px; }
+  .chart-block.daily { flex: 0 0 auto; height: 28%; min-height: 110px; }
 
   .chart-title {
     flex-shrink: 0;
-    padding: 7px 14px;
-    font-size: 12px;
+    padding: 5px 12px;
+    font-size: 11px;
     font-weight: 800;
     color: var(--steam);
     letter-spacing: 1px;
@@ -168,11 +172,11 @@
   }
   .chart-title a {
     margin-left: auto;
-    font-size: 11px;
+    font-size: 10px;
     color: var(--steam);
     opacity: 0.65;
     text-decoration: none;
-    padding: 2px 7px;
+    padding: 1px 6px;
     border: 1px solid rgba(74,158,255,0.3);
     border-radius: 4px;
     font-weight: 700;
@@ -185,7 +189,7 @@
     flex: 1;
     min-height: 0;
     position: relative;
-    padding: 8px 10px 6px;
+    padding: 6px 8px 4px;
   }
   .chart-canvas-wrap canvas {
     display: block;
@@ -196,7 +200,7 @@
   /* ── 하단 메모 ── */
   #footer-note {
     flex-shrink: 0;
-    padding: 5px 20px 8px;
+    padding: 4px 14px 6px;
     font-size: 10px;
     color: var(--tx-4);
     font-weight: 600;
@@ -231,10 +235,10 @@
   .gh-modal-bg.open { display: flex; }
   .gh-modal-box {
     background: var(--bg-2); border: 1px solid var(--bd-hi);
-    border-radius: var(--radius); padding: 24px;
+    border-radius: var(--radius); padding: 20px;
     width: 90%; max-width: 400px; position: relative;
   }
-  .gh-modal-title { font-size: 16px; font-weight: 800; color: var(--tx-1); margin-bottom: 6px; }
+  .gh-modal-title { font-size: 15px; font-weight: 800; color: var(--tx-1); margin-bottom: 6px; }
   .gh-modal-desc  { font-size: 13px; color: var(--tx-4); margin-bottom: 14px; line-height: 1.6; }
   .gh-modal-desc a { color: var(--steam); }
   .gh-modal-label { font-size: 10px; color: var(--tx-4); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
@@ -256,10 +260,57 @@
   }
   .gh-modal-close:hover { color: var(--tx-1); }
 
-  @media (max-width: 700px) {
-    #card-row { grid-template-columns: repeat(3, 1fr); }
-    .stat-val { font-size: 1.4rem; }
-    #header .title { font-size: 1rem; }
+  /* ══ 모바일 ══ */
+  @media (max-width: 600px) {
+    /* 스크롤 레이아웃으로 전환 */
+    html, body { height: auto; overflow: auto; }
+    body { display: block; height: auto; min-height: 100vh; }
+
+    #header { padding: 8px 12px; gap: 6px; position: sticky; top: 0; z-index: 20; }
+    #header .sub { display: none; }
+    #ccu-fetch-status { font-size: 10px; order: 10; width: 100%; }
+
+    /* 버튼 행 스크롤 */
+    #hdr-btn-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; padding-bottom: 2px; }
+    #hdr-btn-row::-webkit-scrollbar { display: none; }
+    .hdr-sep { display: none; }
+
+    /* 카드: 2열 */
+    #card-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px; padding: 8px 12px;
+    }
+    /* 5번째 카드 전체 너비 */
+    #card-row .stat-card:last-child { grid-column: 1 / -1; }
+    .stat-val { font-size: 1.5rem; }
+    .stat-label { font-size: 9px; }
+
+    /* 차트 영역: 고정 높이 블록으로 */
+    #chart-area {
+      display: block;
+      flex: none;
+      padding: 8px 12px;
+      gap: 0;
+      overflow: visible;
+    }
+    .chart-block {
+      flex: none;
+      height: 280px;
+      margin-bottom: 10px;
+    }
+    .chart-block.daily {
+      height: 220px;
+    }
+
+    #footer-note { padding: 6px 12px 10px; font-size: 9px; line-height: 1.6; }
+  }
+
+  @media (max-width: 380px) {
+    .stat-val { font-size: 1.25rem; }
+    .chart-block { height: 240px; }
+    .chart-block.daily { height: 190px; }
   }
 </style>
 </head>
@@ -273,13 +324,13 @@
   </div>
   <div class="hdr-sep"></div>
   <span id="ccu-fetch-status">⏳ 로딩 중…</span>
-  <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+  <div id="hdr-btn-row" style="margin-left:auto;display:flex;gap:5px;align-items:center">
     <button class="hdr-btn active" id="ccu-btn-hourly" onclick="setCCUView('hourly')">시간별</button>
-    <button class="hdr-btn" id="ccu-btn-daily"  onclick="setCCUView('daily')">일별 피크</button>
-    <button class="hdr-btn" onclick="loadCCUHistory()" title="최신 데이터 새로고침">↻ 새로고침</button>
+    <button class="hdr-btn" id="ccu-btn-daily"  onclick="setCCUView('daily')">일별</button>
+    <button class="hdr-btn" onclick="loadCCUHistory()">↻</button>
     <div class="hdr-sep"></div>
     <button class="hdr-btn dispatch-btn" id="btn-dispatch-conc" onclick="dispatchWorkflow()">
-      <span class="btn-icon">▶</span> 동접 실행
+      <span class="btn-icon">▶</span> 수집
     </button>
     <button class="hdr-btn token-btn" id="btn-gh-token" onclick="openGhModal()">
       <span id="gh-status-dot" class="dot-none">●</span>&nbsp;⚙
