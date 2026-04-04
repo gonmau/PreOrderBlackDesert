@@ -307,6 +307,45 @@
     #footer-note { padding: 6px 12px 10px; font-size: 9px; line-height: 1.6; }
   }
 
+  /* ══ 가로 보기 (landscape) — 터치 기기 기준 ══ */
+  @media (max-height: 500px) and (orientation: landscape) {
+    html, body { height: auto; overflow-y: auto; overflow-x: hidden; }
+    body { display: block; height: auto; }
+
+    #header { position: sticky; top: 0; z-index: 20; padding: 6px 12px; }
+    #header .sub { display: none; }
+    #ccu-fetch-status { font-size: 10px; }
+
+    #hdr-btn-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; }
+    #hdr-btn-row::-webkit-scrollbar { display: none; }
+
+    #card-row {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px; padding: 8px 12px;
+    }
+    .stat-val { font-size: 1.2rem; }
+    .stat-label { font-size: 8px; }
+    .stat-sub { font-size: 9px; }
+
+    #chart-area {
+      display: block;
+      flex: none;
+      padding: 8px 12px;
+      overflow: visible;
+    }
+    .chart-block {
+      flex: none;
+      height: 260px;
+      margin-bottom: 10px;
+    }
+    .chart-block.daily {
+      height: 200px;
+    }
+
+    #footer-note { padding: 4px 12px 8px; font-size: 9px; }
+  }
+
   @media (max-width: 380px) {
     .stat-val { font-size: 1.25rem; }
     .chart-block { height: 240px; }
