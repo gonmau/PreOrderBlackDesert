@@ -614,7 +614,14 @@ function renderMainChart() {
   };
   const axisStyle = {
     x: {
-      ticks: { color: '#888', font: { size: 11 }, maxTicksLimit: 14 },
+      ticks: {
+        color: '#888',
+        font: { size: 11 },
+        // 빈 문자열 틱은 표시 안 함
+        callback: (val, idx) => labels[idx] || null,
+        maxRotation: 0,
+        autoSkip: false,
+      },
       grid: { color: '#1a1a1a' }
     },
     y: {
@@ -627,16 +634,15 @@ function renderMainChart() {
   };
 
   if (currentView === 'hourly') {
-    // X축 라벨: 날짜 변경 시 M/DD, 같은 날은 HH:mm
+    // X축 라벨: 날짜 바뀌는 포인트만 M/DD, 나머지 빈 문자열
     const labels = CCU_HOURLY.map((d, i) => {
-      const dt  = new Date(d.ts);
-      const hh  = String(dt.getHours()).padStart(2,'0');
-      const mm  = String(dt.getMinutes()).padStart(2,'0');
-      const cur = d.ts.slice(0,10);
-      const prv = i > 0 ? CCU_HOURLY[i-1].ts.slice(0,10) : null;
-      return (i === 0 || cur !== prv)
-        ? `${dt.getMonth()+1}/${dt.getDate()}`
-        : `${hh}:${mm}`;
+      const cur = d.ts.slice(0, 10);
+      const prv = i > 0 ? CCU_HOURLY[i-1].ts.slice(0, 10) : null;
+      if (i === 0 || cur !== prv) {
+        const dt = new Date(d.ts);
+        return `${dt.getMonth()+1}/${dt.getDate()}`;
+      }
+      return '';
     });
 
     // Y축 범위: 실제 동접 데이터 기준
