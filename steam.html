@@ -653,17 +653,22 @@ function renderMainChart() {
   };
 
   if (currentView === 'hourly') {
-    // 날짜가 바뀌는 첫 포인트만 M/DD 표시, 나머지는 HH:mm
+    // X축 라벨: 날짜 변경 시 M/DD, 같은 날은 HH:mm
     const labels = CCU_HOURLY.map((d, i) => {
-      const dt   = new Date(d.ts);
-      const hh   = String(dt.getHours()).padStart(2,'0');
-      const mm   = String(dt.getMinutes()).padStart(2,'0');
-      const prev = i > 0 ? CCU_HOURLY[i-1].ts.slice(0,10) : null;
-      const cur  = d.ts.slice(0,10);
-      return (i === 0 || cur !== prev)
+      const dt  = new Date(d.ts);
+      const hh  = String(dt.getHours()).padStart(2,'0');
+      const mm  = String(dt.getMinutes()).padStart(2,'0');
+      const cur = d.ts.slice(0,10);
+      const prv = i > 0 ? CCU_HOURLY[i-1].ts.slice(0,10) : null;
+      return (i === 0 || cur !== prv)
         ? `${dt.getMonth()+1}/${dt.getDate()}`
         : `${hh}:${mm}`;
     });
+
+    // Y축 범위: 실제 동접 데이터만 기준 (scatter 포인트 제외)
+    const vals    = CCU_HOURLY.map(d => d.v);
+    const yMin    = Math.max(0, Math.floor(Math.min(...vals) * 0.92 / 5000) * 5000);
+    const yMax    = Math.ceil(Math.max(...vals) * 1.05 / 5000) * 5000;
 
     const byDay = {};
     CCU_HOURLY.forEach((d, idx) => {
@@ -699,6 +704,7 @@ function renderMainChart() {
             tension: 0.2,
             pointRadius: 0,
             pointHoverRadius: 5,
+            yAxisID: 'y',
           },
           {
             label: '일 피크',
@@ -710,6 +716,7 @@ function renderMainChart() {
             borderColor: '#f1c40f',
             showLine: false,
             parsing: false,
+            yAxisID: 'y',
           },
           {
             label: '일 평균',
@@ -721,6 +728,7 @@ function renderMainChart() {
             borderColor: '#2ecc71',
             showLine: false,
             parsing: false,
+            yAxisID: 'y',
           },
           {
             label: '일 최저',
@@ -732,6 +740,7 @@ function renderMainChart() {
             borderColor: '#e74c3c',
             showLine: false,
             parsing: false,
+            yAxisID: 'y',
           },
         ]
       },
@@ -741,7 +750,8 @@ function renderMainChart() {
           x: axisStyle.x,
           y: {
             ...axisStyle.y,
-            min: Math.max(0, Math.floor(Math.min(...CCU_HOURLY.map(d => d.v)) * 0.85 / 10000) * 10000),
+            min: yMin,
+            max: yMax,
           }
         },
         plugins: {
