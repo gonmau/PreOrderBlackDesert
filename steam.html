@@ -586,7 +586,9 @@ const ccuLabelPlugin = {
         const raw = chart.data.datasets[di].data[i];
         if (raw == null) return;
         const { x, y } = pt.getProps(['x', 'y'], true);
-        const txt = (raw.y / 10000).toFixed(1) + '만';
+        const val = typeof raw === 'object' ? raw.y : raw;
+        if (val == null) return;
+        const txt = (val / 10000).toFixed(1) + '만';
         ctx.font = 'bold 10px Rajdhani,sans-serif';
         const tw = ctx.measureText(txt).width;
         const px = x - tw / 2;
@@ -656,15 +658,17 @@ function renderMainChart() {
       byDay[day].push({ idx, v: d.v });
     });
 
-    const peakPts = [], minPts = [], avgPts = [];
+    const peakArr = new Array(CCU_HOURLY.length).fill(null);
+    const minArr  = new Array(CCU_HOURLY.length).fill(null);
+    const avgArr  = new Array(CCU_HOURLY.length).fill(null);
     Object.values(byDay).forEach(pts => {
-      const peak = pts.reduce((a, b) => b.v > a.v ? b : a);
-      const min  = pts.reduce((a, b) => b.v < a.v ? b : a);
-      const avg  = pts.reduce((s, b) => s + b.v, 0) / pts.length;
+      const peak  = pts.reduce((a, b) => b.v > a.v ? b : a);
+      const min   = pts.reduce((a, b) => b.v < a.v ? b : a);
+      const avg   = pts.reduce((s, b) => s + b.v, 0) / pts.length;
       const avgPt = pts.reduce((a, b) => Math.abs(b.v - avg) < Math.abs(a.v - avg) ? b : a);
-      peakPts.push({ x: peak.idx, y: peak.v });
-      minPts.push({  x: min.idx,  y: min.v  });
-      avgPts.push({  x: avgPt.idx, y: Math.round(avg) });
+      peakArr[peak.idx]   = peak.v;
+      minArr[min.idx]     = min.v;
+      avgArr[avgPt.idx]   = Math.round(avg);
     });
 
     mainCI = new Chart(el.getContext('2d'), {
@@ -683,43 +687,39 @@ function renderMainChart() {
             tension: 0.2,
             pointRadius: 0,
             pointHoverRadius: 5,
-            yAxisID: 'y',
           },
           {
             label: '일 피크',
-            data: peakPts.map(p => ({ x: p.x, y: p.y })),
+            data: peakArr,
             pointStyle: 'triangle',
-            pointRadius: 8,
+            pointRadius: peakArr.map(v => v !== null ? 8 : 0),
             pointHoverRadius: 10,
             backgroundColor: '#f1c40f',
             borderColor: '#f1c40f',
             showLine: false,
-            parsing: false,
-            yAxisID: 'y2',
+            spanGaps: false,
           },
           {
             label: '일 평균',
-            data: avgPts.map(p => ({ x: p.x, y: p.y })),
+            data: avgArr,
             pointStyle: 'circle',
-            pointRadius: 6,
+            pointRadius: avgArr.map(v => v !== null ? 6 : 0),
             pointHoverRadius: 8,
             backgroundColor: '#2ecc71',
             borderColor: '#2ecc71',
             showLine: false,
-            parsing: false,
-            yAxisID: 'y2',
+            spanGaps: false,
           },
           {
             label: '일 최저',
-            data: minPts.map(p => ({ x: p.x, y: p.y })),
+            data: minArr,
             pointStyle: 'rectRot',
-            pointRadius: 6,
+            pointRadius: minArr.map(v => v !== null ? 6 : 0),
             pointHoverRadius: 8,
             backgroundColor: '#e74c3c',
             borderColor: '#e74c3c',
             showLine: false,
-            parsing: false,
-            yAxisID: 'y2',
+            spanGaps: false,
           },
         ]
       },
@@ -738,11 +738,6 @@ function renderMainChart() {
             min: yMin,
             max: yMax,
           },
-          y2: {
-            min: yMin,
-            max: yMax,
-            display: false,
-          }
         },
         plugins: {
           legend: {
