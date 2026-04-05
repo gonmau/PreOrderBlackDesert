@@ -737,7 +737,13 @@ function renderMainChart() {
       },
       options: {
         ...commonOpts,
-        scales: axisStyle,
+        scales: {
+          x: axisStyle.x,
+          y: {
+            ...axisStyle.y,
+            min: Math.max(0, Math.floor(Math.min(...CCU_HOURLY.map(d => d.v)) * 0.85 / 10000) * 10000),
+          }
+        },
         plugins: {
           legend: {
             display: true,
