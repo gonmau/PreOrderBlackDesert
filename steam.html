@@ -449,6 +449,16 @@
       <canvas id="ccuTimeChart"></canvas>
     </div>
   </div>
+  <!-- 1주일 전 비교 -->
+  <div class="chart-block daily" id="week-block">
+    <div class="chart-title">
+      📅 1주일 전 동시간대 비교
+      <span id="week-match-rate" style="font-size:10px;color:var(--tx-4);font-weight:600;text-transform:none;letter-spacing:0;margin-left:4px"></span>
+    </div>
+    <div class="chart-canvas-wrap">
+      <canvas id="ccuWeekChart"></canvas>
+    </div>
+  </div>
 </div>
 
 <!-- ── 하단 메모 ── -->
@@ -573,6 +583,7 @@ function setCCUView(view) {
   const hideSub = view === 'daily' ? 'none' : 'flex';
   document.getElementById('daily-block').style.display = hideSub;
   document.getElementById('time-block').style.display  = hideSub;
+  document.getElementById('week-block').style.display  = hideSub;
   renderMainChart();
 }
 
@@ -580,6 +591,7 @@ function renderCharts() {
   renderMainChart();
   renderDailyChart();
   renderTimeChart();
+  renderWeekChart();
 }
 
 /* ── 플러그인: 일별 피크/평균/최저 레이블 ── */
@@ -1001,6 +1013,139 @@ function renderTimeChart() {
             label: ctx => {
               const tips = ctx.datasetIndex === 0 ? peakTooltips : minTooltips;
               return ` ${ctx.dataset.label}: ${tips[ctx.dataIndex]}`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+/* ── 1주일 전 동시간대 비교 차트 ── */
+let weekCI = null;
+
+function renderWeekChart() {
+  if (weekCI) { weekCI.destroy(); weekCI = null; }
+  const el = document.getElementById('ccuWeekChart');
+  const rateEl = document.getElementById('week-match-rate');
+  if (!el || CCU_HOURLY.length < 2) return;
+
+  const WINDOW_MS = 45 * 60 * 1000;  // ±45분
+  const WEEK_MS   = 7 * 24 * 3600 * 1000;
+
+  // 현재 기준: 가장 최근 7일치 스냅샷
+  const now = new Date(CCU_HOURLY[CCU_HOURLY.length - 1].ts);
+  const weekAgo = new Date(now.getTime() - WEEK_MS);
+
+  // "이번 주" = 최근 7일 스냅샷
+  const thisWeek = CCU_HOURLY.filter(d => new Date(d.ts) > weekAgo);
+
+  // 각 포인트에 대해 7일 전 ±45분 매칭
+  const labels       = [];
+  const thisVals     = [];
+  const lastVals     = [];
+  const diffVals     = [];
+  const tooltipThis  = [];
+  const tooltipLast  = [];
+  let matched = 0;
+
+  thisWeek.forEach(d => {
+    const dt      = new Date(d.ts);
+    const target  = new Date(dt.getTime() - WEEK_MS);
+    const closest = CCU_HOURLY.reduce((best, p) => {
+      const pdt  = new Date(p.ts);
+      const diff = Math.abs(pdt.getTime() - target.getTime());
+      return diff < best.diff ? { diff, p } : best;
+    }, { diff: Infinity, p: null });
+
+    // 라벨: M/DD HH:mm
+    const m  = dt.getMonth()+1, day = dt.getDate();
+    const hh = String(dt.getHours()).padStart(2,'0');
+    const mm = String(dt.getMinutes()).padStart(2,'0');
+    labels.push(`${m}/${day} ${hh}:${mm}`);
+    thisVals.push(d.v);
+    tooltipThis.push(`${d.ts.slice(5,16)} · ${d.v.toLocaleString()}명`);
+
+    if (closest.p && closest.diff <= WINDOW_MS) {
+      lastVals.push(closest.p.v);
+      diffVals.push(d.v - closest.p.v);
+      tooltipLast.push(`${closest.p.ts.slice(5,16)} · ${closest.p.v.toLocaleString()}명 (±${Math.round(closest.diff/60000)}분)`);
+      matched++;
+    } else {
+      lastVals.push(null);
+      diffVals.push(null);
+      tooltipLast.push(null);
+    }
+  });
+
+  const matchRate = thisWeek.length > 0 ? Math.round(matched / thisWeek.length * 100) : 0;
+  if (rateEl) rateEl.textContent = `매칭 ${matched}/${thisWeek.length}건 (${matchRate}%)`;
+
+  weekCI = new Chart(el.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: '이번 주',
+          data: thisVals,
+          borderColor: '#4a9eff',
+          backgroundColor: 'rgba(74,158,255,0.06)',
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.2,
+          fill: true,
+        },
+        {
+          label: '1주일 전',
+          data: lastVals,
+          borderColor: 'rgba(180,180,180,0.6)',
+          backgroundColor: 'transparent',
+          borderWidth: 1.5,
+          borderDash: [5, 3],
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.2,
+          fill: false,
+          spanGaps: false,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      scales: {
+        x: {
+          ticks: { color: '#777', font: { size: 9 }, maxTicksLimit: 10, maxRotation: 0 },
+          grid: { color: '#1a1a1a' },
+        },
+        y: {
+          ticks: {
+            color: '#777', font: { size: 10 },
+            callback: v => v >= 10000 ? (v/10000).toFixed(0)+'만' : v,
+          },
+          grid: { color: '#1a1a1a' },
+          suggestedMin: 0,
+        }
+      },
+      plugins: {
+        legend: { labels: { color: '#aaa', font: { size: 11 }, boxWidth: 10, padding: 14 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              if (ctx.datasetIndex === 0) return ` 이번 주: ${tooltipThis[ctx.dataIndex]}`;
+              const t = tooltipLast[ctx.dataIndex];
+              return t ? ` 1주일 전: ${t}` : ' 1주일 전: 매칭 없음';
+            },
+            afterBody: (items) => {
+              const i = items[0]?.dataIndex;
+              if (i == null || diffVals[i] == null) return [];
+              const d = diffVals[i];
+              const sign = d > 0 ? '▲' : d < 0 ? '▼' : '';
+              const color = d > 0 ? '+' : '';
+              return [`전주 대비: ${color}${(d/10000).toFixed(1)}만명`];
             }
           }
         }
