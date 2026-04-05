@@ -617,10 +617,9 @@ function renderMainChart() {
       ticks: {
         color: '#888',
         font: { size: 11 },
-        // 빈 문자열 틱은 표시 안 함
-        callback: (val, idx) => labels[idx] || null,
         maxRotation: 0,
         autoSkip: false,
+        // 빈 문자열이면 틱 숨김 - labels 배열과 동기화는 차트 options에서 처리
       },
       grid: { color: '#1a1a1a' }
     },
@@ -727,7 +726,13 @@ function renderMainChart() {
       options: {
         ...commonOpts,
         scales: {
-          x: axisStyle.x,
+          x: {
+            ...axisStyle.x,
+            ticks: {
+              ...axisStyle.x.ticks,
+              callback: (val, idx) => labels[idx] || null,
+            },
+          },
           y: {
             ...axisStyle.y,
             min: yMin,
