@@ -649,14 +649,20 @@ function renderMainChart() {
         callback: v => v >= 10000 ? (v/10000).toFixed(0)+'만' : v
       },
       grid: { color: '#1a1a1a' },
-      suggestedMin: 0
     }
   };
 
   if (currentView === 'hourly') {
-    const labels = CCU_HOURLY.map(d => {
-      const dt = new Date(d.ts);
-      return `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+    // 날짜가 바뀌는 첫 포인트만 M/DD 표시, 나머지는 HH:mm
+    const labels = CCU_HOURLY.map((d, i) => {
+      const dt   = new Date(d.ts);
+      const hh   = String(dt.getHours()).padStart(2,'0');
+      const mm   = String(dt.getMinutes()).padStart(2,'0');
+      const prev = i > 0 ? CCU_HOURLY[i-1].ts.slice(0,10) : null;
+      const cur  = d.ts.slice(0,10);
+      return (i === 0 || cur !== prev)
+        ? `${dt.getMonth()+1}/${dt.getDate()}`
+        : `${hh}:${mm}`;
     });
 
     const byDay = {};
