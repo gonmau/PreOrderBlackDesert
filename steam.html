@@ -193,7 +193,18 @@
     position: relative;
     padding: 6px 8px 4px;
   }
-  .chart-canvas-wrap canvas {
+  /* 시간별 메인 차트 - 가로 스크롤 */
+  #main-block .chart-canvas-wrap {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  #main-block .chart-canvas-wrap canvas {
+    display: block;
+    height: 100% !important;
+    /* 너비는 JS에서 데이터 수 기반으로 동적 설정 */
+  }
+  /* 나머지 차트는 기존 방식 유지 */
+  .chart-canvas-wrap:not(#main-block .chart-canvas-wrap) canvas {
     display: block;
     width: 100% !important;
     height: 100% !important;
@@ -634,7 +645,7 @@ function renderMainChart() {
   if (!el) return;
 
   const commonOpts = {
-    responsive: true,
+    responsive: false,
     maintainAspectRatio: false,
     animation: false,
   };
@@ -664,6 +675,12 @@ function renderMainChart() {
         ? `${dt.getMonth()+1}/${dt.getDate()}`
         : `${hh}:${mm}`;
     });
+
+    // canvas 너비: 포인트당 최소 12px, 최소 화면 너비 이상
+    const wrap = el.parentElement;
+    const minW  = Math.max(wrap.offsetWidth || 800, CCU_HOURLY.length * 12);
+    el.style.width  = minW + 'px';
+    el.style.minWidth = '100%';
 
     // Y축 범위: 실제 동접 데이터만 기준 (scatter 포인트 제외)
     const vals    = CCU_HOURLY.map(d => d.v);
@@ -775,6 +792,9 @@ function renderMainChart() {
       }
     });
   } else {
+    // daily view — canvas 너비 초기화 (스크롤 불필요)
+    el.style.width = '';
+    el.style.minWidth = '';
     // daily view — 메인 차트도 bar
     mainCI = new Chart(el.getContext('2d'), {
       type: 'bar',
@@ -802,6 +822,7 @@ function renderMainChart() {
       },
       options: {
         ...commonOpts,
+        responsive: true,
         scales: axisStyle,
         plugins: {
           legend: { labels: { color: '#ccc', font: { size: 12 }, boxWidth: 12, padding: 14 } },
