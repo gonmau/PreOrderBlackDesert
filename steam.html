@@ -664,31 +664,29 @@ function renderMainChart() {
     CCU_HOURLY.forEach((d, idx) => {
       const day = d.ts.slice(0, 10);
       if (!byDay[day]) byDay[day] = [];
-      byDay[day].push({ idx, v: d.v });
+      byDay[day].push({ idx, v: d.v, ts: d.ts });
     });
 
-    const peakArr = new Array(CCU_HOURLY.length).fill(null);
-    const minArr  = new Array(CCU_HOURLY.length).fill(null);
-    const avgArr  = new Array(CCU_HOURLY.length).fill(null);
+    // 피크/평균/최저 — time scale이므로 {x: Date, y: value} 형태로
+    const peakPts = [], minPts = [], avgPts = [];
     Object.values(byDay).forEach(pts => {
       const peak  = pts.reduce((a, b) => b.v > a.v ? b : a);
       const min   = pts.reduce((a, b) => b.v < a.v ? b : a);
       const avg   = pts.reduce((s, b) => s + b.v, 0) / pts.length;
       const avgPt = pts.reduce((a, b) => Math.abs(b.v - avg) < Math.abs(a.v - avg) ? b : a);
-      peakArr[peak.idx]   = peak.v;
-      minArr[min.idx]     = min.v;
-      avgArr[avgPt.idx]   = Math.round(avg);
+      peakPts.push({ x: new Date(peak.ts), y: peak.v });
+      minPts.push({  x: new Date(min.ts),  y: min.v  });
+      avgPts.push({  x: new Date(avgPt.ts), y: Math.round(avg) });
     });
 
     mainCI = new Chart(el.getContext('2d'), {
       type: 'line',
       plugins: [ccuLabelPlugin],
       data: {
-        labels,
         datasets: [
           {
             label: '동접수',
-            data: CCU_HOURLY.map(d => d.v),
+            data: CCU_HOURLY.map(d => ({ x: new Date(d.ts), y: d.v })),
             borderColor: '#4a9eff',
             backgroundColor: 'rgba(74,158,255,0.07)',
             borderWidth: 2,
@@ -699,36 +697,33 @@ function renderMainChart() {
           },
           {
             label: '일 피크',
-            data: peakArr,
+            data: peakPts,
             pointStyle: 'triangle',
-            pointRadius: peakArr.map(v => v !== null ? 8 : 0),
+            pointRadius: 8,
             pointHoverRadius: 10,
             backgroundColor: '#f1c40f',
             borderColor: '#f1c40f',
             showLine: false,
-            spanGaps: false,
           },
           {
             label: '일 평균',
-            data: avgArr,
+            data: avgPts,
             pointStyle: 'circle',
-            pointRadius: avgArr.map(v => v !== null ? 6 : 0),
+            pointRadius: 6,
             pointHoverRadius: 8,
             backgroundColor: '#2ecc71',
             borderColor: '#2ecc71',
             showLine: false,
-            spanGaps: false,
           },
           {
             label: '일 최저',
-            data: minArr,
+            data: minPts,
             pointStyle: 'rectRot',
-            pointRadius: minArr.map(v => v !== null ? 6 : 0),
+            pointRadius: 6,
             pointHoverRadius: 8,
             backgroundColor: '#e74c3c',
             borderColor: '#e74c3c',
             showLine: false,
-            spanGaps: false,
           },
         ]
       },
@@ -736,11 +731,13 @@ function renderMainChart() {
         ...commonOpts,
         scales: {
           x: {
-            ...axisStyle.x,
-            ticks: {
-              ...axisStyle.x.ticks,
-              callback: (val, idx) => labels[idx] || null,
+            type: 'time',
+            time: {
+              displayFormats: { day: 'M/d', hour: 'M/d HH:mm' },
+              tooltipFormat: 'M/d HH:mm',
             },
+            ticks: { color: '#888', font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 18 },
+            grid: { color: '#1a1a1a' },
           },
           y: {
             ...axisStyle.y,
@@ -1057,10 +1054,9 @@ function renderWeekChart() {
   const thisWeek = CCU_HOURLY.filter(d => new Date(d.ts) > weekAgo);
 
   // 각 포인트에 대해 7일 전 ±45분 매칭
-  const labels       = [];
-  const thisVals     = [];
-  const lastVals     = [];
-  const diffVals     = [];
+  const thisData  = [];
+  const lastData  = [];
+  const diffVals  = [];
   const tooltipThis  = [];
   const tooltipLast  = [];
   let matched = 0;
@@ -1074,21 +1070,16 @@ function renderWeekChart() {
       return diff < best.diff ? { diff, p } : best;
     }, { diff: Infinity, p: null });
 
-    // 라벨: M/DD HH:mm
-    const m  = dt.getMonth()+1, day = dt.getDate();
-    const hh = String(dt.getHours()).padStart(2,'0');
-    const mm = String(dt.getMinutes()).padStart(2,'0');
-    labels.push(`${m}/${day} ${hh}:${mm}`);
-    thisVals.push(d.v);
+    thisData.push({ x: dt, y: d.v });
     tooltipThis.push(`${d.ts.slice(5,16)} · ${d.v.toLocaleString()}명`);
 
     if (closest.p && closest.diff <= WINDOW_MS) {
-      lastVals.push(closest.p.v);
+      lastData.push({ x: dt, y: closest.p.v });
       diffVals.push(d.v - closest.p.v);
       tooltipLast.push(`${closest.p.ts.slice(5,16)} · ${closest.p.v.toLocaleString()}명 (±${Math.round(closest.diff/60000)}분)`);
       matched++;
     } else {
-      lastVals.push(null);
+      lastData.push({ x: dt, y: null });
       diffVals.push(null);
       tooltipLast.push(null);
     }
@@ -1100,11 +1091,10 @@ function renderWeekChart() {
   weekCI = new Chart(el.getContext('2d'), {
     type: 'line',
     data: {
-      labels,
       datasets: [
         {
           label: '이번 주',
-          data: thisVals,
+          data: thisData,
           borderColor: '#4a9eff',
           backgroundColor: 'rgba(74,158,255,0.06)',
           borderWidth: 2,
@@ -1115,7 +1105,7 @@ function renderWeekChart() {
         },
         {
           label: '1주일 전',
-          data: lastVals,
+          data: lastData,
           borderColor: 'rgba(180,180,180,0.6)',
           backgroundColor: 'transparent',
           borderWidth: 1.5,
@@ -1134,7 +1124,12 @@ function renderWeekChart() {
       animation: false,
       scales: {
         x: {
-          ticks: { color: '#777', font: { size: 9 }, maxTicksLimit: 10, maxRotation: 0 },
+          type: 'time',
+          time: {
+            displayFormats: { day: 'M/d', hour: 'M/d HH:mm' },
+            tooltipFormat: 'M/d HH:mm',
+          },
+          ticks: { color: '#777', font: { size: 9 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 12 },
           grid: { color: '#1a1a1a' },
         },
         y: {
@@ -1151,17 +1146,17 @@ function renderWeekChart() {
         tooltip: {
           callbacks: {
             label: ctx => {
-              if (ctx.datasetIndex === 0) return ` 이번 주: ${tooltipThis[ctx.dataIndex]}`;
-              const t = tooltipLast[ctx.dataIndex];
+              const idx = thisData.findIndex(p => p.x.getTime() === ctx.raw?.x?.getTime?.());
+              const i = idx >= 0 ? idx : ctx.dataIndex;
+              if (ctx.datasetIndex === 0) return ` 이번 주: ${tooltipThis[i] ?? ''}`;
+              const t = tooltipLast[i];
               return t ? ` 1주일 전: ${t}` : ' 1주일 전: 매칭 없음';
             },
             afterBody: (items) => {
               const i = items[0]?.dataIndex;
               if (i == null || diffVals[i] == null) return [];
               const d = diffVals[i];
-              const sign = d > 0 ? '▲' : d < 0 ? '▼' : '';
-              const color = d > 0 ? '+' : '';
-              return [`전주 대비: ${color}${(d/10000).toFixed(1)}만명`];
+              return [`전주 대비: ${d > 0 ? '+' : ''}${(d/10000).toFixed(1)}만명`];
             }
           }
         }
