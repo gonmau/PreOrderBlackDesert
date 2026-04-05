@@ -733,7 +733,7 @@ function renderMainChart() {
             borderColor: '#f1c40f',
             showLine: false,
             parsing: false,
-            yAxisID: 'y',
+            yAxisID: 'y2',
           },
           {
             label: '일 평균',
@@ -745,7 +745,7 @@ function renderMainChart() {
             borderColor: '#2ecc71',
             showLine: false,
             parsing: false,
-            yAxisID: 'y',
+            yAxisID: 'y2',
           },
           {
             label: '일 최저',
@@ -757,7 +757,7 @@ function renderMainChart() {
             borderColor: '#e74c3c',
             showLine: false,
             parsing: false,
-            yAxisID: 'y',
+            yAxisID: 'y2',
           },
         ]
       },
@@ -769,6 +769,11 @@ function renderMainChart() {
             ...axisStyle.y,
             min: yMin,
             max: yMax,
+          },
+          y2: {
+            min: yMin,
+            max: yMax,
+            display: false,
           }
         },
         plugins: {
