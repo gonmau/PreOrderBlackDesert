@@ -433,6 +433,13 @@
       <canvas id="ccuWeekChart"></canvas>
     </div>
   </div>
+  <!-- 요일별 평균 동접 -->
+  <div class="chart-block daily" id="dow-block">
+    <div class="chart-title">📆 요일별 평균 동접 (피크 · 평균)</div>
+    <div class="chart-canvas-wrap">
+      <canvas id="ccuDowChart"></canvas>
+    </div>
+  </div>
 </div>
 
 <!-- ── 하단 메모 ── -->
@@ -558,6 +565,7 @@ function setCCUView(view) {
   document.getElementById('daily-block').style.display = hideSub;
   document.getElementById('time-block').style.display  = hideSub;
   document.getElementById('week-block').style.display  = hideSub;
+  document.getElementById('dow-block').style.display   = hideSub;
   renderMainChart();
 }
 
@@ -566,6 +574,7 @@ function renderCharts() {
   renderDailyChart();
   renderTimeChart();
   renderWeekChart();
+  renderDowChart();
 }
 
 /* ── 플러그인: 일별 피크/평균/최저 레이블 ── */
@@ -1158,6 +1167,129 @@ function renderWeekChart() {
         }
       }
     }
+  });
+}
+
+/* ── 요일별 평균 동접 차트 ── */
+let dowCI = null;
+const DOW_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
+const DOW_COLORS = ['#f1c40f','#4a9eff','#4a9eff','#4a9eff','#4a9eff','#4a9eff','#2ecc71']; // 일=금, 토=초록, 평일=파랑
+
+function renderDowChart() {
+  if (dowCI) { dowCI.destroy(); dowCI = null; }
+  const el = document.getElementById('ccuDowChart');
+  if (!el || CCU_HOURLY.length < 2) return;
+
+  // 요일별 스냅샷 수집 (0=일, 1=월, ... 6=토)
+  const byDow = Array.from({ length: 7 }, () => []);
+  CCU_HOURLY.forEach(d => {
+    const dow = new Date(d.ts).getDay();
+    byDow[dow].push(d.v);
+  });
+
+  // 요일별 피크 평균 / 전체 평균 / 샘플 수
+  const peakAvg = byDow.map(vals => {
+    if (!vals.length) return null;
+    return Math.round(Math.max(...vals));  // 해당 요일에 나온 최고값
+  });
+  const allAvg = byDow.map(vals => {
+    if (!vals.length) return null;
+    return Math.round(vals.reduce((a,b)=>a+b,0) / vals.length);
+  });
+  const sampleCnt = byDow.map(v => v.length);
+
+  const maxVal = Math.max(...peakAvg.filter(v=>v!==null));
+
+  dowCI = new Chart(el.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: DOW_LABELS.map((d, i) => `${d} (${sampleCnt[i]}건)`),
+      datasets: [
+        {
+          label: '요일 최고',
+          data: peakAvg,
+          backgroundColor: DOW_COLORS.map((c, i) =>
+            peakAvg[i] === maxVal ? 'rgba(241,196,15,0.85)' : 'rgba(74,158,255,0.65)'
+          ),
+          borderColor: DOW_COLORS.map((c, i) =>
+            peakAvg[i] === maxVal ? '#f1c40f' : '#4a9eff'
+          ),
+          borderWidth: 1,
+          borderRadius: 4,
+          order: 2,
+        },
+        {
+          label: '요일 평균',
+          data: allAvg,
+          type: 'line',
+          borderColor: '#2ecc71',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          pointRadius: 5,
+          pointBackgroundColor: '#2ecc71',
+          pointBorderColor: '#111',
+          tension: 0.3,
+          order: 1,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      layout: { padding: { top: 24 } },
+      scales: {
+        x: {
+          ticks: { color: '#888', font: { size: 11 } },
+          grid: { color: '#1a1a1a' },
+        },
+        y: {
+          ticks: {
+            color: '#888', font: { size: 11 },
+            callback: v => v >= 10000 ? (v/10000).toFixed(0)+'만' : v,
+          },
+          grid: { color: '#1a1a1a' },
+          suggestedMin: 0,
+        }
+      },
+      plugins: {
+        legend: { labels: { color: '#aaa', font: { size: 11 }, boxWidth: 10, padding: 14 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${(ctx.parsed.y/10000).toFixed(1)}만명 (${ctx.parsed.y.toLocaleString()})`,
+            afterBody: (items) => {
+              const i = items[0]?.dataIndex;
+              if (i == null) return [];
+              const cnt = sampleCnt[i];
+              return cnt > 0 ? [`샘플 ${cnt}건`] : [];
+            }
+          }
+        },
+        // 바 위 숫자 레이블
+        datalabels: undefined,
+      }
+    },
+    plugins: [{
+      id: 'dowBarLabel',
+      afterDatasetsDraw(chart) {
+        const { ctx } = chart;
+        const meta = chart.getDatasetMeta(0); // 바 dataset
+        if (!meta || meta.hidden) return;
+        ctx.save();
+        meta.data.forEach((bar, i) => {
+          const v = peakAvg[i];
+          if (v == null) return;
+          const txt = (v / 10000).toFixed(1) + '만';
+          const isMax = v === maxVal;
+          ctx.font = `bold ${isMax ? 12 : 10}px Rajdhani,sans-serif`;
+          ctx.fillStyle = isMax ? '#f1c40f' : 'rgba(74,158,255,0.9)';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(txt, bar.x, bar.y - 3);
+        });
+        ctx.restore();
+      }
+    }],
   });
 }
 
