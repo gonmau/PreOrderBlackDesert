@@ -198,8 +198,8 @@
       <input id="sales-refund-pct" class="ctrl-input" type="number" value="8" min="0" max="25" step="1" style="width:55px">
     </label>
     <label>PS5 기본(%):
-      <input id="sales-ps-ratio" class="ctrl-input" type="number" value="36" min="10" max="60" step="1" style="width:55px">
-      <span style="color:var(--tx-4);font-size:11px"> Steam <span id="sales-steam-ratio-lbl">40</span>% / Xbox 10% / 기타 14%</span>
+      <input id="sales-ps-ratio" class="ctrl-input" type="number" value="26" min="10" max="60" step="1" style="width:55px">
+      <span style="color:var(--tx-4);font-size:11px"> Steam <span id="sales-steam-ratio-lbl">50</span>% / Xbox 10% / 기타 14%<br><span style="color:#666;font-size:10px">※ Alinea PS5 역산 27% · VG Insights Steam 50% 기준</span></span>
     </label>
     <button class="calc-btn" onclick="renderSalesChart()">재계산</button>
   </div>
@@ -428,7 +428,7 @@ let salesDailyCI = null, salesCumCI = null;
 function renderSalesChart() {
   const soldThroughD0 = parseInt(document.getElementById('sales-day1-total').value) || 2000000;
   const refundPct     = parseFloat(document.getElementById('sales-refund-pct').value) || 8;
-  const psBaseRatio   = parseInt(document.getElementById('sales-ps-ratio').value) || 36;
+  const psBaseRatio   = parseInt(document.getElementById('sales-ps-ratio').value) || 26;
   const xbBaseRatio   = 10, otherBaseRatio = 14;
   const stBaseRatio   = Math.max(5, 100 - psBaseRatio - xbBaseRatio - otherBaseRatio);
   const lbl = document.getElementById('sales-steam-ratio-lbl');
