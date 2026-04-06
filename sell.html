@@ -153,8 +153,9 @@
     • 공식 앵커: <b style="color:var(--gold)">D0=200만 (3/20)</b> · <b style="color:var(--gold)">D4=300만 (3/24)</b> · <b style="color:var(--gold)">D12=400만 (4/1)</b><br>
     • PS는 WEIGHTS 기반 가중 평균 순위, Steam은 STS_W 기반 국가별 가중 평균 순위를 일별 신호로 사용합니다.<br>
     • 공식 앵커: <b style="color:var(--gold)">D0=200만 (3/20)</b> · <b style="color:var(--gold)">D4=300만 (3/24)</b> · <b style="color:var(--gold)">D12=400만 (4/1)</b><br>
-    • D13+는 슬라이더 decay 값으로 <b>통일 적용</b> (일별 추정·마일스톤 예측 일관성 유지). 기타 채널(EGS·Mac·AMD·오프라인)은 고정비율 보정.<br>
-    • <b style="color:#2ecc71">📐 추세 맞춤</b>: D12 이후 실측 누적 증분을 기반으로 최적 decay를 자동 역산.
+    • D13+는 <b style="color:#4a9eff">Steam CCU × 배율</b> 방식으로 일별 판매량 추정. CCU 없는 날은 마지막 CCU에 0.970/일 decay 적용.<br>
+    • 기준 배율 <b style="color:#f1c40f">0.364x</b>는 공식 앵커 D9~D12 역산값. 마일스톤 예측도 동일 방식 통일 적용.<br>
+    • <b style="color:#2ecc71">📐 추세 맞춤</b>: D12 이후 실측 CCU 기반으로 최적 배율 자동 역산.
     • 각 플랫폼 <b style="color:var(--tx-2)">+숫자*</b>는 순위 미반영 채널 고정비율 추정치 (참고용).
   </div>
 
@@ -168,25 +169,23 @@
 
   <!-- anchored 슬라이더 -->
   <div id="anchored-controls">
-    <div style="font-size:11px;color:#f1c40f;font-weight:800;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase">📌 공지기반 — D13+ 감소율</div>
+    <div style="font-size:11px;color:#f1c40f;font-weight:800;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase">📌 공지기반 — D13+ CCU 배율 조정</div>
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px">
-        <input id="anchored-decay-slider" type="range" min="0.860" max="0.980" step="0.001" value="0.893"
+        <input id="anchored-decay-slider" type="range" min="0.28" max="0.52" step="0.001" value="0.364"
           style="flex:1;accent-color:#f1c40f;cursor:pointer" oninput="updateAnchoredDecayLabel()">
-        <span style="font-size:18px;font-weight:900;color:#f1c40f;font-family:'Cinzel',serif;min-width:44px" id="anchored-decay-lbl">0.893</span>
+        <span style="font-size:18px;font-weight:900;color:#f1c40f;font-family:'Cinzel',serif;min-width:48px" id="anchored-decay-lbl">0.364</span>
       </div>
       <button onclick="fitDecayToTrend()" style="background:rgba(46,204,113,0.15);border:1px solid #2ecc71;color:#2ecc71;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;white-space:nowrap">📐 추세 맞춤</button>
       <div style="font-size:11px;color:var(--tx-4);display:flex;gap:10px;flex-wrap:wrap">
-        <span>0.860 <span style="color:#e74c3c">FF XVI</span></span>
-        <span>0.880 <span style="color:#e67e22">Black Myth</span></span>
-        <span>0.893 <span style="color:#f1c40f">MHW평균</span></span>
-        <span>0.913 <span style="color:#2ecc71">Elden Ring</span></span>
-        <span>0.930 <span style="color:#4a9eff">MHW낙관</span></span>
+        <span>0.30 <span style="color:#e74c3c">보수</span></span>
+        <span>0.364 <span style="color:#f1c40f">앵커역산</span></span>
+        <span>0.40 <span style="color:#2ecc71">낙관</span></span>
       </div>
     </div>
     <div id="anchored-ref-lbl" style="font-size:11px;color:var(--tx-3);margin-top:6px"></div>
     <div id="anchored-fit-lbl" style="font-size:11px;color:#2ecc71;margin-top:4px;display:none"></div>
-    <div style="font-size:10px;color:var(--tx-4);margin-top:5px">D0~D12: 공식 발표 앵커 고정 · D13+: 슬라이더 감소율 통일 적용 (마일스톤 예측 포함)</div>
+    <div style="font-size:10px;color:var(--tx-4);margin-top:5px">D0~D12: 공식 앵커 고정 · D13+: Steam CCU × 배율 → CCU 없는 날은 마지막 CCU에 decay 0.970 적용</div>
   </div>
 
   <!-- 컨트롤 -->
@@ -264,6 +263,9 @@
 /* ══ 데이터 소스 ══ */
 const PS_JSON  = './bestseller_history.json';
 const STS_JSON = './steam_topseller_history.json';
+const CCU_JSON = './steam_concurrent_history.json';
+
+let ccuHist = [];  // { timestamp, peak_ccu } 형태
 
 const STS_W  = {"미국":30.0,"중국":28.0,"러시아":6.0,"독일":5.5,"영국":5.0,"브라질":4.5,"한국":4.2,"프랑스":4.0,"일본":3.5,"캐나다":3.5,"호주":2.5,"터키":2.0,"폴란드":2.0,"스페인":2.0,"이탈리아":1.8,"네덜란드":0.8,"스웨덴":0.7,"노르웨이":0.5,"덴마크":0.5,"핀란드":0.4,"오스트리아":0.6,"스위스":0.7,"체코":0.4,"싱가포르":0.5,"태국":0.8,"벨기에":0.8,"홍콩":0.7,"뉴질랜드":0.4,"대만":0.8};
 
@@ -275,7 +277,7 @@ let stsHist     = [];
 /* ══ 데이터 fetch ══ */
 async function loadData() {
   const statusEl = document.getElementById('fetch-status');
-  let psOk = false, stsOk = false;
+  let psOk = false, stsOk = false, ccuOk = false;
 
   try {
     const r = await fetch(PS_JSON + '?t=' + Date.now());
@@ -295,14 +297,23 @@ async function loadData() {
     }
   } catch(e) { console.warn('STS fetch 실패:', e); }
 
+  try {
+    const r = await fetch(CCU_JSON + '?t=' + Date.now());
+    if (r.ok) {
+      const payload = await r.json();
+      ccuHist = Array.isArray(payload) ? payload : (payload.history || []);
+      ccuOk = true;
+    }
+  } catch(e) { console.warn('CCU fetch 실패:', e); }
+
   if (psOk && stsOk) {
-    statusEl.textContent = `✅ PS ${historyData.length}건 · Steam ${stsHist.length}건`;
+    statusEl.textContent = `✅ PS ${historyData.length}건 · Steam ${stsHist.length}건 · CCU ${ccuOk ? ccuHist.length+'건' : '없음'}`;
     statusEl.style.color = '#2ecc71';
   } else if (!psOk && !stsOk) {
     statusEl.textContent = '⚠️ 데이터 fetch 실패 — 순위 신호 없이 앵커만 사용';
     statusEl.style.color = '#e67e22';
   } else {
-    statusEl.textContent = `⚠️ PS:${psOk?'✓':'✗'} Steam:${stsOk?'✓':'✗'}`;
+    statusEl.textContent = `⚠️ PS:${psOk?'✓':'✗'} Steam:${stsOk?'✓':'✗'} CCU:${ccuOk?'✓':'✗'}`;
     statusEl.style.color = '#e67e22';
   }
 
@@ -322,59 +333,55 @@ let currentSalesMode = 'optimistic';
 const modeColors = { conservative:'#4a9eff', normal:'#aaaaaa', optimistic:'#ff4757', anchored:'#f1c40f' };
 const modeRgbs   = { conservative:'74,158,255', normal:'170,170,170', optimistic:'255,71,87', anchored:'241,196,15' };
 
-// ── 추세 맞춤: 실측 순위 추세에서 최적 decay 역산 ──
+// ── 추세 맞춤: 실측 CCU 기반으로 최적 배율 역산 ──
 function fitDecayToTrend() {
-  // totalDaily가 렌더링된 상태여야 함 — window에 저장된 값 활용
-  const d12 = window._anchoredD12Daily;
-  if (!d12 || d12 <= 0) {
-    alert('순위 데이터가 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.');
+  const ccuByDay = window._ccuByDay || {};
+  const d12Daily = window._anchoredD12Daily;
+  if (!d12Daily || d12Daily <= 0) {
+    alert('데이터가 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.');
     return;
   }
-
-  // 공식 앵커 3개로 decay를 역산
-  // D0=2M, D4=3M(D0~D4 합=1M), D12=4M(D4~D12 합=1M)
-  // D13+ 구간의 실측 포인트: 현재 totCum vs 공식 앵커 4M
-  // → D12 일별판매량에서 현재일까지 decay^n 합산이 현재 누적증분과 일치하는 decay 탐색
-
   const LAUNCH = new Date('2026-03-20T07:00:00+09:00');
   const todayDay = Math.max(13, Math.floor((Date.now() - LAUNCH.getTime()) / 86400000));
-  const floor = window._anchoredFloor || 20000;
+  const floor = window._ccuFloor || 25000;
+  const CCU_DECAY = 0.970;
 
-  // 현재 totCum에서 D12 이후 실측 증분 파악
-  // 공식 4M(D12) 이후 현재까지 추가 판매 추정 = 현재 대시보드 누적 - 4M
-  const currentTotal = (window._latestTotCum) || 4280000; // 최근 렌더 결과
-  const d12Cum = 4000000;
-  const observedInc = Math.max(0, currentTotal - d12Cum);
-  const daysElapsed = todayDay - 12; // D13부터 현재까지 일수
+  const realDays = Object.keys(ccuByDay).map(Number).filter(d => d >= 13 && d <= todayDay).sort((a,b)=>a-b);
 
-  if (daysElapsed < 1 || observedInc < 1) {
-    const sl = document.getElementById('anchored-decay-slider');
-    if (sl) { sl.value = 0.893; updateAnchoredDecayLabel(); }
-    return;
-  }
+  let bestRatio = 0.364;
 
-  // decay 탐색: sum_{k=1}^{n} d12 * decay^k + floor 보정 ≈ observedInc
-  let bestDecay = 0.893;
-  let bestErr = Infinity;
-  for (let d = 0.860; d <= 0.980; d += 0.001) {
-    let cum = 0;
-    for (let k = 1; k <= daysElapsed; k++) {
-      cum += Math.max(floor, d12 * Math.pow(d, k));
+  if (realDays.length >= 2) {
+    // CCU 실측 있음 → (일별판매추정 / CCU) 평균
+    const totByDay = window._latestTotalDailyByDay || {};
+    const rs = realDays.map(d => {
+      const s = totByDay[d]; const c = ccuByDay[d];
+      return (s && c && s > floor) ? s/c : null;
+    }).filter(r => r != null);
+    if (rs.length >= 1) {
+      bestRatio = Math.max(0.28, Math.min(0.52, rs.reduce((a,b)=>a+b,0)/rs.length));
     }
-    const err = Math.abs(cum - observedInc);
-    if (err < bestErr) { bestErr = err; bestDecay = d; }
+  } else {
+    // CCU 없음 → 누적 증분 기반 역산
+    const currentTotal = window._latestTotCum || 4_280_000;
+    const observedInc  = Math.max(0, currentTotal - 4_000_000);
+    const daysElapsed  = todayDay - 12;
+    if (daysElapsed >= 1 && observedInc >= 1) {
+      let bestErr = Infinity;
+      for (let r = 0.28; r <= 0.52; r += 0.001) {
+        let cum = 0, ccu = 250000;
+        for (let k = 1; k <= daysElapsed; k++) { ccu *= CCU_DECAY; cum += Math.max(floor, ccu * r); }
+        const err = Math.abs(cum - observedInc);
+        if (err < bestErr) { bestErr = err; bestRatio = r; }
+      }
+    }
   }
 
   const sl = document.getElementById('anchored-decay-slider');
-  if (sl) {
-    sl.value = bestDecay.toFixed(3);
-    updateAnchoredDecayLabel();
-  }
-
+  if (sl) { sl.value = bestRatio.toFixed(3); updateAnchoredDecayLabel(); }
   const fitLbl = document.getElementById('anchored-fit-lbl');
   if (fitLbl) {
     fitLbl.style.display = 'block';
-    fitLbl.innerHTML = `📐 추세 맞춤: <b>decay ${bestDecay.toFixed(3)}</b> — D12 이후 ${daysElapsed}일간 실측 +${(observedInc/1000).toFixed(0)}K 기준 역산`;
+    fitLbl.innerHTML = `📐 추세 맞춤: <b>배율 ${bestRatio.toFixed(3)}</b> — CCU ${realDays.length}일 실측 기반 역산`;
   }
 }
 
@@ -402,11 +409,11 @@ function updateAnchoredDecayLabel() {
   const v = parseFloat(slider.value);
   if (lbl) lbl.textContent = v.toFixed(3);
   const refs = [
-    { max:0.865, name:'FF XVI 수준',    desc:'PS독점·빠른 포화',       color:'#e74c3c' },
-    { max:0.885, name:'Black Myth 수준', desc:'강한 피크 후 빠른 하락', color:'#e67e22' },
-    { max:0.900, name:'MHW·BM 중간',    desc:'멀티플랫폼 평균',         color:'#f1c40f' },
-    { max:0.916, name:'Elden Ring 수준', desc:'GOTY급 스테디셀러',       color:'#2ecc71' },
-    { max:0.931, name:'MHW 낙관',       desc:'멀티플랫폼 장기판매 최상',color:'#4a9eff' },
+    { max:0.31, name:'보수적',    desc:'빠른 감소 시나리오',    color:'#e74c3c' },
+    { max:0.35, name:'중간 보수', desc:'완만한 감소',            color:'#e67e22' },
+    { max:0.38, name:'앵커 역산', desc:'D9~D12 공식앵커 기준',   color:'#f1c40f' },
+    { max:0.43, name:'낙관적',    desc:'패치 효과 지속 시나리오',color:'#2ecc71' },
+    { max:0.53, name:'매우 낙관', desc:'CCU 유지력 강한 시나리오',color:'#4a9eff'},
   ];
   const ref = refs.find(r => v <= r.max) || refs[refs.length-1];
   if (refLbl) refLbl.innerHTML = `→ <b style="color:${ref.color}">${ref.name}</b> <span style="color:var(--tx-4)">(${ref.desc})</span>`;
@@ -439,7 +446,7 @@ function renderSalesChart() {
     let modeText = SALES_MODES[currentSalesMode].label;
     if (currentSalesMode === 'anchored') {
       const sl = document.getElementById('anchored-decay-slider');
-      if (sl) modeText += ` decay:${parseFloat(sl.value).toFixed(3)}`;
+      if (sl) modeText += ` CCU×${parseFloat(sl.value).toFixed(3)}`;
     }
     modeLbl.textContent = modeText;
     modeLbl.style.color      = modeColors[currentSalesMode];
@@ -542,22 +549,53 @@ function renderSalesChart() {
   const w5_12Sum = day5_12W.reduce((a,b)=>a+b,0)||1;
   for (let di=5; di<=12; di++) totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, D4_TO_D12_INC*(day5_12W[di-5]/w5_12Sum)));
 
-  // D13+
+  // ── D13+: CCU 기반 모델 ──
+  // CCU 일별 피크를 일별 인덱스로 집계
+  const ccuByDay = {};
+  ccuHist.forEach(h => {
+    const di = getDayIndex(h.timestamp);
+    if (di < 0) return;
+    const peak = h.peak_ccu ?? h.ccu ?? h.concurrent ?? null;
+    if (peak == null || !isFinite(peak) || peak <= 0) return;
+    if (!ccuByDay[di] || peak > ccuByDay[di]) ccuByDay[di] = peak;
+  });
+
   const _sl = document.getElementById('anchored-decay-slider');
-  const ANC_DECAY = (currentSalesMode === 'anchored' && _sl) ? parseFloat(_sl.value) : MODE.postDecay;
-  for (let di=13; di<days.length; di++) {
-    if (currentSalesMode === 'anchored') {
-      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[12]*Math.pow(ANC_DECAY, di-12)));
+  const CCU_RATIO  = (currentSalesMode === 'anchored' && _sl) ? parseFloat(_sl.value) : 0.364;
+  const CCU_DECAY  = 0.970;   // CCU 자체 일별 감소율 (fallback용)
+  const CCU_FLOOR  = 25000;   // 최저 일별 판매량
+
+  // D12 기준 CCU 추정값 (CCU 데이터 없을 때 fallback 기준)
+  const D12_CCU_BASE = ccuByDay[12] || 250000;
+
+  for (let di = 13; di < days.length; di++) {
+    let ccu;
+    if (ccuByDay[di] != null) {
+      ccu = ccuByDay[di];
     } else {
-      const sRef = comboSignal[12]||comboSignal[4]||comboSignal[0]||1;
-      const rel  = clamp((comboSignal[di]||sRef)/sRef, 0.75, 1.20);
-      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[12]*Math.pow(MODE.postDecay, di-12)*rel));
+      // 마지막 실측 CCU 이후 0.970/일 감소로 추정
+      const lastRealDay = Math.max(...Object.keys(ccuByDay).map(Number).filter(d => d <= di));
+      const lastCCU = ccuByDay[lastRealDay] ?? D12_CCU_BASE;
+      const gap = di - (isFinite(lastRealDay) ? lastRealDay : 12);
+      ccu = lastCCU * Math.pow(CCU_DECAY, gap);
+    }
+    if (currentSalesMode === 'anchored') {
+      totalDaily[di] = Math.round(Math.max(CCU_FLOOR, ccu * CCU_RATIO));
+    } else {
+      const sRef = comboSignal[12] || comboSignal[4] || comboSignal[0] || 1;
+      const rel  = clamp((comboSignal[di] || sRef) / sRef, 0.75, 1.20);
+      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[12] * Math.pow(MODE.postDecay, di - 12) * rel));
     }
   }
+
   // 마일스톤 탐색용 기준값 저장
+  window._ccuByDay       = ccuByDay;
+  window._ccuRatio       = CCU_RATIO;
+  window._ccuDecay       = CCU_DECAY;
+  window._ccuFloor       = CCU_FLOOR;
   window._anchoredD12Daily = totalDaily[12];
-  window._anchoredDecay    = ANC_DECAY;
-  window._anchoredFloor    = DAILY_FLOOR;
+  window._anchoredDecay    = CCU_RATIO;   // 하위 호환
+  window._anchoredFloor    = CCU_FLOOR;
 
   // ── 플랫폼 분배 ──
   const psDaily=[], stDaily=[], xbDaily=[], otherDaily=[];
@@ -588,7 +626,11 @@ function renderSalesChart() {
   });
 
   const idx = Math.min(todayDay, totCum.length-1);
-  window._latestTotCum = totCum[idx] || 0; // 추세 맞춤용
+  window._latestTotCum = totCum[idx] || 0;
+  // 추세 맞춤용: 일별 판매량 맵
+  const _tdByDay = {};
+  days.forEach((_, i) => { _tdByDay[i] = totalDaily[i] || 0; });
+  window._latestTotalDailyByDay = _tdByDay;
   const psTotal=psCum[idx]||0, stTotal=stCum[idx]||0, xbTotal=xbCum[idx]||0;
   const otherTotal=otherCum[idx]||0, totalGross=totCum[idx]||0;
   const psAdjTotal  = psAdjDaily.slice(0,todayDay+1).reduce((a,b)=>a+b,0);
@@ -620,14 +662,23 @@ function renderSalesChart() {
     const LAUNCH = new Date('2026-03-20T07:00:00+09:00');
     const currentDay = Math.max(0, Math.floor((Date.now()-LAUNCH.getTime())/86400000));
     const cumNow = totCum[Math.min(currentDay, totCum.length-1)] || totalGross;
-    // D13+ 와 동일한 decay/기준값으로 마일스톤 탐색
-    const _msDecay = window._anchoredDecay || 0.893;
-    const _msD12   = window._anchoredD12Daily || (totalDaily[12] || 50000);
-    const _msFloor = window._anchoredFloor || 20000;
+    // D13+ 와 동일한 CCU 기반으로 마일스톤 탐색
+    const _ccuByDay = window._ccuByDay || {};
+    const _ccuRatio = window._ccuRatio || 0.364;
+    const _ccuDecay = window._ccuDecay || 0.970;
+    const _ccuFloor = window._ccuFloor || 25000;
+
+    // 마지막 실측 CCU 찾기
+    const realDays = Object.keys(_ccuByDay).map(Number).sort((a,b)=>a-b);
+    const lastRealCCUDay = realDays.length ? realDays[realDays.length-1] : 12;
+    const lastRealCCU    = _ccuByDay[lastRealCCUDay] || 152064;
 
     function projectedDaily(di) {
-      // totCum 범위 밖의 날짜 → D12 기준 동일 decay로 연장
-      return Math.max(_msFloor, _msD12 * Math.pow(_msDecay, di - 12));
+      // 실측 CCU 있으면 그대로, 없으면 마지막 CCU에서 decay 연장
+      if (_ccuByDay[di] != null) return Math.max(_ccuFloor, _ccuByDay[di] * _ccuRatio);
+      const gap = di - lastRealCCUDay;
+      const estCCU = lastRealCCU * Math.pow(_ccuDecay, gap);
+      return Math.max(_ccuFloor, estCCU * _ccuRatio);
     }
 
     const HARD_ANCHORS = [
