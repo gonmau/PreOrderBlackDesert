@@ -311,9 +311,9 @@ async function loadData() {
 
 /* ══ 판매량 모델 ══ */
 const SALES_MODES = {
-  conservative: { label:'🔵 보수적', postDecay:0.82, psExp:0.20, stExp:0.22, xbExp:0.13, otherMin:0.12, otherMax:0.15, dailyFloor:15000, d14Decay:0.85 },
-  normal:       { label:'⚪ 중간',   postDecay:0.87, psExp:0.28, stExp:0.30, xbExp:0.18, otherMin:0.14, otherMax:0.18, dailyFloor:20000, d14Decay:0.89 },
-  optimistic:   { label:'🔴 낙관적', postDecay:0.89, psExp:0.38, stExp:0.40, xbExp:0.25, otherMin:0.16, otherMax:0.22, dailyFloor:30000, d14Decay:0.93 },
+  conservative: { label:'🔵 보수적', postDecay:0.85, psExp:0.20, stExp:0.22, xbExp:0.13, otherMin:0.12, otherMax:0.15, dailyFloor:15000, d14Decay:0.83 },
+  normal:       { label:'⚪ 중간',   postDecay:0.893,psExp:0.28, stExp:0.30, xbExp:0.18, otherMin:0.14, otherMax:0.18, dailyFloor:20000, d14Decay:0.89 },
+  optimistic:   { label:'🔴 낙관적', postDecay:0.930,psExp:0.38, stExp:0.40, xbExp:0.25, otherMin:0.16, otherMax:0.22, dailyFloor:30000, d14Decay:0.95 },
   anchored:     { label:'📌 공지기반', postDecay:0.893, psExp:0.28, stExp:0.30, xbExp:0.18, otherMin:0.14, otherMax:0.18, dailyFloor:20000, d14Decay:0.87 },
 };
 
