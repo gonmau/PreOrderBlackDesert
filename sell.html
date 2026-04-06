@@ -152,7 +152,9 @@
     <b>📌 모델 근거</b><br>
     • 공식 앵커: <b style="color:var(--gold)">D0=200만 (3/20)</b> · <b style="color:var(--gold)">D4=300만 (3/24)</b> · <b style="color:var(--gold)">D12=400만 (4/1)</b><br>
     • PS는 WEIGHTS 기반 가중 평균 순위, Steam은 STS_W 기반 국가별 가중 평균 순위를 일별 신호로 사용합니다.<br>
-    • D13+는 모델 decay 또는 📌공지기반 슬라이더 값 적용. 기타 채널(EGS·Mac·AMD·오프라인)은 고정비율 보정.<br>
+    • 공식 앵커: <b style="color:var(--gold)">D0=200만 (3/20)</b> · <b style="color:var(--gold)">D4=300만 (3/24)</b> · <b style="color:var(--gold)">D12=400만 (4/1)</b><br>
+    • D13+는 슬라이더 decay 값으로 <b>통일 적용</b> (일별 추정·마일스톤 예측 일관성 유지). 기타 채널(EGS·Mac·AMD·오프라인)은 고정비율 보정.<br>
+    • <b style="color:#2ecc71">📐 추세 맞춤</b>: D12 이후 실측 누적 증분을 기반으로 최적 decay를 자동 역산.
     • 각 플랫폼 <b style="color:var(--tx-2)">+숫자*</b>는 순위 미반영 채널 고정비율 추정치 (참고용).
   </div>
 
@@ -169,10 +171,11 @@
     <div style="font-size:11px;color:#f1c40f;font-weight:800;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase">📌 공지기반 — D13+ 감소율</div>
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px">
-        <input id="anchored-decay-slider" type="range" min="0.860" max="0.930" step="0.001" value="0.893"
+        <input id="anchored-decay-slider" type="range" min="0.860" max="0.980" step="0.001" value="0.893"
           style="flex:1;accent-color:#f1c40f;cursor:pointer" oninput="updateAnchoredDecayLabel()">
         <span style="font-size:18px;font-weight:900;color:#f1c40f;font-family:'Cinzel',serif;min-width:44px" id="anchored-decay-lbl">0.893</span>
       </div>
+      <button onclick="fitDecayToTrend()" style="background:rgba(46,204,113,0.15);border:1px solid #2ecc71;color:#2ecc71;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;white-space:nowrap">📐 추세 맞춤</button>
       <div style="font-size:11px;color:var(--tx-4);display:flex;gap:10px;flex-wrap:wrap">
         <span>0.860 <span style="color:#e74c3c">FF XVI</span></span>
         <span>0.880 <span style="color:#e67e22">Black Myth</span></span>
@@ -182,7 +185,8 @@
       </div>
     </div>
     <div id="anchored-ref-lbl" style="font-size:11px;color:var(--tx-3);margin-top:6px"></div>
-    <div style="font-size:10px;color:var(--tx-4);margin-top:5px">D0~D12: 공식 발표 앵커 고정 — D13+: 슬라이더 감소율 적용</div>
+    <div id="anchored-fit-lbl" style="font-size:11px;color:#2ecc71;margin-top:4px;display:none"></div>
+    <div style="font-size:10px;color:var(--tx-4);margin-top:5px">D0~D12: 공식 발표 앵커 고정 · D13+: 슬라이더 감소율 통일 적용 (마일스톤 예측 포함)</div>
   </div>
 
   <!-- 컨트롤 -->
@@ -317,6 +321,62 @@ let currentSalesMode = 'optimistic';
 
 const modeColors = { conservative:'#4a9eff', normal:'#aaaaaa', optimistic:'#ff4757', anchored:'#f1c40f' };
 const modeRgbs   = { conservative:'74,158,255', normal:'170,170,170', optimistic:'255,71,87', anchored:'241,196,15' };
+
+// ── 추세 맞춤: 실측 순위 추세에서 최적 decay 역산 ──
+function fitDecayToTrend() {
+  // totalDaily가 렌더링된 상태여야 함 — window에 저장된 값 활용
+  const d12 = window._anchoredD12Daily;
+  if (!d12 || d12 <= 0) {
+    alert('순위 데이터가 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.');
+    return;
+  }
+
+  // 공식 앵커 3개로 decay를 역산
+  // D0=2M, D4=3M(D0~D4 합=1M), D12=4M(D4~D12 합=1M)
+  // D13+ 구간의 실측 포인트: 현재 totCum vs 공식 앵커 4M
+  // → D12 일별판매량에서 현재일까지 decay^n 합산이 현재 누적증분과 일치하는 decay 탐색
+
+  const LAUNCH = new Date('2026-03-20T07:00:00+09:00');
+  const todayDay = Math.max(13, Math.floor((Date.now() - LAUNCH.getTime()) / 86400000));
+  const floor = window._anchoredFloor || 20000;
+
+  // 현재 totCum에서 D12 이후 실측 증분 파악
+  // 공식 4M(D12) 이후 현재까지 추가 판매 추정 = 현재 대시보드 누적 - 4M
+  const currentTotal = (window._latestTotCum) || 4280000; // 최근 렌더 결과
+  const d12Cum = 4000000;
+  const observedInc = Math.max(0, currentTotal - d12Cum);
+  const daysElapsed = todayDay - 12; // D13부터 현재까지 일수
+
+  if (daysElapsed < 1 || observedInc < 1) {
+    const sl = document.getElementById('anchored-decay-slider');
+    if (sl) { sl.value = 0.893; updateAnchoredDecayLabel(); }
+    return;
+  }
+
+  // decay 탐색: sum_{k=1}^{n} d12 * decay^k + floor 보정 ≈ observedInc
+  let bestDecay = 0.893;
+  let bestErr = Infinity;
+  for (let d = 0.860; d <= 0.980; d += 0.001) {
+    let cum = 0;
+    for (let k = 1; k <= daysElapsed; k++) {
+      cum += Math.max(floor, d12 * Math.pow(d, k));
+    }
+    const err = Math.abs(cum - observedInc);
+    if (err < bestErr) { bestErr = err; bestDecay = d; }
+  }
+
+  const sl = document.getElementById('anchored-decay-slider');
+  if (sl) {
+    sl.value = bestDecay.toFixed(3);
+    updateAnchoredDecayLabel();
+  }
+
+  const fitLbl = document.getElementById('anchored-fit-lbl');
+  if (fitLbl) {
+    fitLbl.style.display = 'block';
+    fitLbl.innerHTML = `📐 추세 맞춤: <b>decay ${bestDecay.toFixed(3)}</b> — D12 이후 ${daysElapsed}일간 실측 +${(observedInc/1000).toFixed(0)}K 기준 역산`;
+  }
+}
 
 function setSalesMode(mode) {
   currentSalesMode = mode;
@@ -483,19 +543,21 @@ function renderSalesChart() {
   for (let di=5; di<=12; di++) totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, D4_TO_D12_INC*(day5_12W[di-5]/w5_12Sum)));
 
   // D13+
-  if (currentSalesMode === 'anchored') {
-    const sl = document.getElementById('anchored-decay-slider');
-    const ANC_DECAY = sl ? parseFloat(sl.value) : 0.893;
-    for (let di=13; di<days.length; di++) {
+  const _sl = document.getElementById('anchored-decay-slider');
+  const ANC_DECAY = (currentSalesMode === 'anchored' && _sl) ? parseFloat(_sl.value) : MODE.postDecay;
+  for (let di=13; di<days.length; di++) {
+    if (currentSalesMode === 'anchored') {
       totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[12]*Math.pow(ANC_DECAY, di-12)));
-    }
-  } else {
-    for (let di=13; di<days.length; di++) {
+    } else {
       const sRef = comboSignal[12]||comboSignal[4]||comboSignal[0]||1;
       const rel  = clamp((comboSignal[di]||sRef)/sRef, 0.75, 1.20);
       totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[12]*Math.pow(MODE.postDecay, di-12)*rel));
     }
   }
+  // 마일스톤 탐색용 기준값 저장
+  window._anchoredD12Daily = totalDaily[12];
+  window._anchoredDecay    = ANC_DECAY;
+  window._anchoredFloor    = DAILY_FLOOR;
 
   // ── 플랫폼 분배 ──
   const psDaily=[], stDaily=[], xbDaily=[], otherDaily=[];
@@ -526,6 +588,7 @@ function renderSalesChart() {
   });
 
   const idx = Math.min(todayDay, totCum.length-1);
+  window._latestTotCum = totCum[idx] || 0; // 추세 맞춤용
   const psTotal=psCum[idx]||0, stTotal=stCum[idx]||0, xbTotal=xbCum[idx]||0;
   const otherTotal=otherCum[idx]||0, totalGross=totCum[idx]||0;
   const psAdjTotal  = psAdjDaily.slice(0,todayDay+1).reduce((a,b)=>a+b,0);
@@ -557,14 +620,14 @@ function renderSalesChart() {
     const LAUNCH = new Date('2026-03-20T07:00:00+09:00');
     const currentDay = Math.max(0, Math.floor((Date.now()-LAUNCH.getTime())/86400000));
     const cumNow = totCum[Math.min(currentDay, totCum.length-1)] || totalGross;
-    const recentD = totalDaily.slice(Math.max(0,currentDay-2), currentDay+1).filter(v=>v>0);
-    const lastDaily2 = recentD.length ? recentD.reduce((a,b)=>a+b,0)/recentD.length : totalGross*0.03;
-    const signalRef = comboSignal[Math.min(currentDay,comboSignal.length-1)] || comboSignal[comboSignal.length-1] || 1;
+    // D13+ 와 동일한 decay/기준값으로 마일스톤 탐색
+    const _msDecay = window._anchoredDecay || 0.893;
+    const _msD12   = window._anchoredD12Daily || (totalDaily[12] || 50000);
+    const _msFloor = window._anchoredFloor || 20000;
 
-    function projectedDaily(offset) {
-      const di = currentDay+offset;
-      const rel = clamp((comboSignal[di]||signalRef)/signalRef, 0.72, 1.12);
-      return Math.max(DAILY_FLOOR, lastDaily2*Math.pow(0.90,offset-1)*rel);
+    function projectedDaily(di) {
+      // totCum 범위 밖의 날짜 → D12 기준 동일 decay로 연장
+      return Math.max(_msFloor, _msD12 * Math.pow(_msDecay, di - 12));
     }
 
     const HARD_ANCHORS = [
@@ -576,14 +639,17 @@ function renderSalesChart() {
     function findMilestone(target) {
       const anchor = HARD_ANCHORS.find(a=>a.target===target);
       if (anchor) return { date:anchor.date, day:anchor.day, achieved:true };
+      // totCum 내에서 탐색
       for (let i=0; i<totCum.length; i++) {
         if (totCum[i]>=target) return { date:new Date(LAUNCH.getTime()+i*86400000), day:i, achieved:i<=currentDay };
       }
-      let c = totCum[totCum.length-1]||cumNow;
-      const startDay = totCum.length-1;
+      // totCum 이후 구간: 동일 decay로 연장
+      let c = totCum[totCum.length-1] || 0;
+      const startDay = totCum.length - 1;
       for (let d=1; d<=730; d++) {
-        c += projectedDaily(startDay+d-currentDay);
-        if (c>=target) return { date:new Date(LAUNCH.getTime()+(startDay+d)*86400000), day:startDay+d, achieved:false };
+        const di = startDay + d;
+        c += projectedDaily(di);
+        if (c>=target) return { date:new Date(LAUNCH.getTime()+di*86400000), day:di, achieved:false };
       }
       return null;
     }
