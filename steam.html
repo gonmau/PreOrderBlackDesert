@@ -935,30 +935,36 @@ function renderRangeChart() {
 
   const maxPeak = Math.max(...CCU_DAILY.map(d => d.peak));
   const minMin  = Math.min(...CCU_DAILY.map(d => d.min));
+  const peakVals = CCU_DAILY.map(d => d.peak);
+  const minVals  = CCU_DAILY.map(d => d.min);
+
+  // 극값 포인트 반경: 극값만 크게, 나머지 작게
+  const peakRadius = peakVals.map(v => v === maxPeak ? 7 : 3);
+  const minRadius  = minVals.map(v  => v === minMin  ? 7 : 3);
+  const peakBg     = peakVals.map(v => v === maxPeak ? '#f1c40f' : '#ff4757');
+  const minBg      = minVals.map(v  => v === minMin  ? '#e74c3c' : '#4a9eff');
 
   const rangeLabelPlugin = {
     id: 'rangeLabel',
     afterDatasetsDraw(chart) {
       const { ctx } = chart;
-      // dataset 0 = 일 최고, dataset 1 = 일 최저
-      [0, 1].forEach(di => {
+      [[0, peakVals, maxPeak, 'above', '#ff4757', '#f1c40f'],
+       [1, minVals,  minMin,  'below', '#4a9eff', '#e74c3c']].forEach(([di, data, extreme, pos, baseColor, extremeColor]) => {
         const meta = chart.getDatasetMeta(di);
         if (!meta || meta.hidden) return;
-        const data  = chart.data.datasets[di].data;
-        const isMax = di === 0;
         ctx.save();
-        meta.data.forEach((bar, i) => {
+        meta.data.forEach((pt, i) => {
           const v = data[i];
           if (v == null) return;
-          const isExtreme = isMax ? v === maxPeak : v === minMin;
+          const isExtreme = v === extreme;
+          if (!isExtreme) return; // 극값만 레이블 표시
+          const { x, y } = pt.getProps(['x', 'y'], true);
           const txt = v >= 10000 ? (v/10000).toFixed(1)+'만' : v.toLocaleString();
-          ctx.font = `bold ${isExtreme ? 11 : 10}px Rajdhani,sans-serif`;
-          ctx.fillStyle = isMax
-            ? (isExtreme ? '#f1c40f' : 'rgba(255,71,87,0.80)')
-            : (isExtreme ? '#e74c3c' : 'rgba(74,158,255,0.80)');
+          ctx.font = 'bold 11px Rajdhani,sans-serif';
+          ctx.fillStyle = extremeColor;
           ctx.textAlign = 'center';
-          ctx.textBaseline = isMax ? 'bottom' : 'top';
-          ctx.fillText(txt, bar.x, isMax ? bar.y - 2 : bar.y + 2);
+          ctx.textBaseline = pos === 'above' ? 'bottom' : 'top';
+          ctx.fillText(txt, x, pos === 'above' ? y - 6 : y + 6);
         });
         ctx.restore();
       });
@@ -966,34 +972,36 @@ function renderRangeChart() {
   };
 
   rangeCI = new Chart(el.getContext('2d'), {
-    type: 'bar',
+    type: 'line',
     plugins: [rangeLabelPlugin],
     data: {
       labels: CCU_DAILY.map(d => d.date.slice(5)),
       datasets: [
         {
-          label: '일 최고',
-          data:  CCU_DAILY.map(d => d.peak),
-          backgroundColor: CCU_DAILY.map(d =>
-            d.peak === maxPeak ? 'rgba(241,196,15,0.85)' : 'rgba(255,71,87,0.70)'
-          ),
-          borderColor: CCU_DAILY.map(d =>
-            d.peak === maxPeak ? '#f1c40f' : '#ff4757'
-          ),
-          borderWidth: 1,
-          borderRadius: 3,
+          label: '일 최고 (피크)',
+          data:  peakVals,
+          borderColor: '#ff4757',
+          backgroundColor: 'rgba(255,71,87,0.08)',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: false,
+          pointRadius: peakRadius,
+          pointBackgroundColor: peakBg,
+          pointBorderColor: peakBg,
+          pointHoverRadius: 6,
         },
         {
           label: '일 최저',
-          data:  CCU_DAILY.map(d => d.min),
-          backgroundColor: CCU_DAILY.map(d =>
-            d.min === minMin ? 'rgba(231,76,60,0.85)' : 'rgba(74,158,255,0.70)'
-          ),
-          borderColor: CCU_DAILY.map(d =>
-            d.min === minMin ? '#e74c3c' : '#4a9eff'
-          ),
-          borderWidth: 1,
-          borderRadius: 3,
+          data:  minVals,
+          borderColor: '#4a9eff',
+          backgroundColor: 'rgba(74,158,255,0.08)',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: false,
+          pointRadius: minRadius,
+          pointBackgroundColor: minBg,
+          pointBorderColor: minBg,
+          pointHoverRadius: 6,
         },
       ]
     },
@@ -1001,7 +1009,7 @@ function renderRangeChart() {
       responsive: true,
       maintainAspectRatio: false,
       animation: false,
-      layout: { padding: { top: 18, bottom: 14 } },
+      layout: { padding: { top: 22, bottom: 14 } },
       scales: {
         x: {
           ticks: { color: '#777', font: { size: 10 }, maxRotation: 0 },
