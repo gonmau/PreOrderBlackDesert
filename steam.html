@@ -416,6 +416,13 @@
       <canvas id="ccuDailyChart"></canvas>
     </div>
   </div>
+  <!-- 일별 최고·최저 범위 -->
+  <div class="chart-block daily" id="range-block">
+    <div class="chart-title">📉 일별 최고 / 최저</div>
+    <div class="chart-canvas-wrap">
+      <canvas id="ccuRangeChart"></canvas>
+    </div>
+  </div>
   <!-- 피크·최저 시간대 변화 -->
   <div class="chart-block daily" id="time-block">
     <div class="chart-title">🕐 일별 피크·최저 달성 시각 (KST)</div>
@@ -487,6 +494,7 @@ function buildDailyFromHourly(hourly) {
   return Object.entries(byDay).sort().map(([date, vals]) => ({
     date,
     peak: Math.max(...vals),
+    min:  Math.min(...vals),
     avg:  Math.round(vals.reduce((a,b)=>a+b,0) / vals.length),
     cnt:  vals.length,
   }));
@@ -563,6 +571,7 @@ function setCCUView(view) {
   // daily-block 숨기기 (daily 뷰일 때 중복이므로)
   const hideSub = view === 'daily' ? 'none' : 'flex';
   document.getElementById('daily-block').style.display = hideSub;
+  document.getElementById('range-block').style.display = hideSub;
   document.getElementById('time-block').style.display  = hideSub;
   document.getElementById('week-block').style.display  = hideSub;
   document.getElementById('dow-block').style.display   = hideSub;
@@ -572,6 +581,7 @@ function setCCUView(view) {
 function renderCharts() {
   renderMainChart();
   renderDailyChart();
+  renderRangeChart();
   renderTimeChart();
   renderWeekChart();
   renderDowChart();
@@ -894,6 +904,108 @@ function renderDailyChart() {
         x: {
           ticks: { color: '#777', font: { size: 10 }, maxRotation: 0 },
           grid: { color: '#1a1a1a' }
+        },
+        y: {
+          ticks: {
+            color: '#777', font: { size: 10 },
+            callback: v => v >= 10000 ? (v/10000).toFixed(0)+'만' : v
+          },
+          grid: { color: '#1a1a1a' },
+          suggestedMin: 0
+        }
+      },
+      plugins: {
+        legend: { labels: { color: '#aaa', font: { size: 11 }, boxWidth: 10, padding: 12 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${(ctx.parsed.y||0).toLocaleString()}명`
+          }
+        }
+      }
+    }
+  });
+}
+
+let rangeCI = null;
+
+function renderRangeChart() {
+  if (rangeCI) { rangeCI.destroy(); rangeCI = null; }
+  const el = document.getElementById('ccuRangeChart');
+  if (!el || CCU_DAILY.length === 0) return;
+
+  const maxPeak = Math.max(...CCU_DAILY.map(d => d.peak));
+  const minMin  = Math.min(...CCU_DAILY.map(d => d.min));
+
+  const rangeLabelPlugin = {
+    id: 'rangeLabel',
+    afterDatasetsDraw(chart) {
+      const { ctx } = chart;
+      // dataset 0 = 일 최고, dataset 1 = 일 최저
+      [0, 1].forEach(di => {
+        const meta = chart.getDatasetMeta(di);
+        if (!meta || meta.hidden) return;
+        const data  = chart.data.datasets[di].data;
+        const isMax = di === 0;
+        ctx.save();
+        meta.data.forEach((bar, i) => {
+          const v = data[i];
+          if (v == null) return;
+          const isExtreme = isMax ? v === maxPeak : v === minMin;
+          const txt = v >= 10000 ? (v/10000).toFixed(1)+'만' : v.toLocaleString();
+          ctx.font = `bold ${isExtreme ? 11 : 10}px Rajdhani,sans-serif`;
+          ctx.fillStyle = isMax
+            ? (isExtreme ? '#f1c40f' : 'rgba(255,71,87,0.80)')
+            : (isExtreme ? '#e74c3c' : 'rgba(74,158,255,0.80)');
+          ctx.textAlign = 'center';
+          ctx.textBaseline = isMax ? 'bottom' : 'top';
+          ctx.fillText(txt, bar.x, isMax ? bar.y - 2 : bar.y + 2);
+        });
+        ctx.restore();
+      });
+    }
+  };
+
+  rangeCI = new Chart(el.getContext('2d'), {
+    type: 'bar',
+    plugins: [rangeLabelPlugin],
+    data: {
+      labels: CCU_DAILY.map(d => d.date.slice(5)),
+      datasets: [
+        {
+          label: '일 최고',
+          data:  CCU_DAILY.map(d => d.peak),
+          backgroundColor: CCU_DAILY.map(d =>
+            d.peak === maxPeak ? 'rgba(241,196,15,0.85)' : 'rgba(255,71,87,0.70)'
+          ),
+          borderColor: CCU_DAILY.map(d =>
+            d.peak === maxPeak ? '#f1c40f' : '#ff4757'
+          ),
+          borderWidth: 1,
+          borderRadius: 3,
+        },
+        {
+          label: '일 최저',
+          data:  CCU_DAILY.map(d => d.min),
+          backgroundColor: CCU_DAILY.map(d =>
+            d.min === minMin ? 'rgba(231,76,60,0.85)' : 'rgba(74,158,255,0.70)'
+          ),
+          borderColor: CCU_DAILY.map(d =>
+            d.min === minMin ? '#e74c3c' : '#4a9eff'
+          ),
+          borderWidth: 1,
+          borderRadius: 3,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      layout: { padding: { top: 18, bottom: 14 } },
+      scales: {
+        x: {
+          ticks: { color: '#777', font: { size: 10 }, maxRotation: 0 },
+          grid:  { color: '#1a1a1a' }
         },
         y: {
           ticks: {
