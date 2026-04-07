@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-04-03T14:15:39.355083+09:00",
+  "timestamp": "2026-04-07T21:09:51.201338+09:00",
   "results": {
     "미국": {
-      "cd_rank": 5,
+      "cd_rank": 6,
       "games": [
         {
           "rank": 1,
@@ -18,32 +18,56 @@
         },
         {
           "rank": 3,
+          "title": "Call of Duty®",
+          "discount_info": "Offer ends 4/9/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 4,
           "title": "MLB® The Show™ 26",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 4,
-          "title": "Call of Duty®",
+          "rank": 5,
+          "title": "EA SPORTS FC™ 26",
           "discount_info": "Offer ends 4/9/2026 06:59 AM UTC",
           "has_badge": true
         }
       ]
     },
     "캐나다": {
-      "cd_rank": 3,
+      "cd_rank": 6,
       "games": [
         {
           "rank": 1,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 2,
+          "title": "NBA 2K26",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 3,
           "title": "Call of Duty®",
           "discount_info": "Offer ends 9/4/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 2,
-          "title": "Fortnite",
-          "discount_info": "할인 없음",
-          "has_badge": false
+          "rank": 4,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "Offer ends 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 5,
+          "title": "NHL® 26",
+          "discount_info": "Offer ends 9/4/2026 06:59 AM UTC",
+          "has_badge": true
         }
       ]
     },
@@ -65,7 +89,7 @@
       ]
     },
     "멕시코": {
-      "cd_rank": 5,
+      "cd_rank": 7,
       "games": [
         {
           "rank": 1,
@@ -90,29 +114,41 @@
           "title": "Resident Evil Requiem",
           "discount_info": "할인 없음",
           "has_badge": false
+        },
+        {
+          "rank": 5,
+          "title": "Grand Theft Auto V (PlayStation®5)",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 6,
+          "title": "Minecraft",
+          "discount_info": "할인 없음",
+          "has_badge": false
         }
       ]
     },
     "아르헨티나": {
-      "cd_rank": 8,
+      "cd_rank": 11,
       "games": [
         {
           "rank": 1,
           "title": "EA SPORTS FC™ 26",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 2,
-          "title": "Call of Duty®",
           "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
-          "rank": 3,
+          "rank": 2,
           "title": "Fortnite",
           "discount_info": "할인 없음",
           "has_badge": false
+        },
+        {
+          "rank": 3,
+          "title": "Call of Duty®",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
         },
         {
           "rank": 4,
@@ -134,6 +170,24 @@
         },
         {
           "rank": 7,
+          "title": "NBA 2K26",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 8,
+          "title": "eFootball™",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 9,
+          "title": "Red Dead Redemption 2",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 10,
           "title": "Resident Evil Requiem",
           "discount_info": "할인 없음",
           "has_badge": false
@@ -141,7 +195,7 @@
       ]
     },
     "칠레": {
-      "cd_rank": 4,
+      "cd_rank": 5,
       "games": [
         {
           "rank": 1,
@@ -151,266 +205,25 @@
         },
         {
           "rank": 2,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 3,
           "title": "Call of Duty®",
           "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 3,
-          "title": "Fortnite",
+          "rank": 4,
+          "title": "Grand Theft Auto V (PlayStation®5)",
           "discount_info": "할인 없음",
           "has_badge": false
         }
       ]
     },
     "콜롬비아": {
-      "cd_rank": 5,
-      "games": [
-        {
-          "rank": 1,
-          "title": "Call of Duty®",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 2,
-          "title": "EA SPORTS FC™ 26",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 3,
-          "title": "Fortnite",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 4,
-          "title": "Grand Theft Auto V (PlayStation®5)",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        }
-      ]
-    },
-    "페루": {
-      "cd_rank": 12,
-      "games": [
-        {
-          "rank": 1,
-          "title": "EA SPORTS FC™ 26",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 2,
-          "title": "Call of Duty®",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 3,
-          "title": "eFootball™",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 4,
-          "title": "Grand Theft Auto V (PlayStation®5)",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 5,
-          "title": "Fortnite",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 6,
-          "title": "Resident Evil Requiem",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 7,
-          "title": "DRAGON BALL: Sparking! ZERO",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 8,
-          "title": "Crash™ Team Racing Nitro-Fueled",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 9,
-          "title": "Minecraft",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 10,
-          "title": "Roblox",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 11,
-          "title": "Diablo® IV",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        }
-      ]
-    },
-    "우루과이": {
-      "cd_rank": 5,
-      "games": [
-        {
-          "rank": 1,
-          "title": "EA SPORTS FC™ 26",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 2,
-          "title": "Call of Duty®",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 3,
-          "title": "Fortnite",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 4,
-          "title": "Grand Theft Auto V (PlayStation®5)",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        }
-      ]
-    },
-    "볼리비아": {
-      "cd_rank": 11,
-      "games": [
-        {
-          "rank": 1,
-          "title": "EA SPORTS FC™ 26",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 2,
-          "title": "Call of Duty®",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 3,
-          "title": "Fortnite",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 4,
-          "title": "eFootball™",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 5,
-          "title": "Resident Evil Requiem",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 6,
-          "title": "PRAGMATA",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 7,
-          "title": "SAROS",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 8,
-          "title": "DRAGON BALL: Sparking! ZERO",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 9,
-          "title": "ELDEN RING",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 10,
-          "title": "Mortal Kombat 1",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        }
-      ]
-    },
-    "과테말라": {
-      "cd_rank": 9,
-      "games": [
-        {
-          "rank": 1,
-          "title": "EA SPORTS FC™ 26",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 2,
-          "title": "Call of Duty®",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 3,
-          "title": "Fortnite",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 4,
-          "title": "Grand Theft Auto V (PlayStation®5)",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 5,
-          "title": "Resident Evil Requiem",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 6,
-          "title": "Mortal Kombat 1",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 7,
-          "title": "DRAGON BALL: Sparking! ZERO",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 8,
-          "title": "Forza Horizon 5",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        }
-      ]
-    },
-    "온두라스": {
       "cd_rank": 6,
       "games": [
         {
@@ -439,19 +252,108 @@
         },
         {
           "rank": 5,
-          "title": "Roblox",
-          "discount_info": "할인 없음",
-          "has_badge": false
+          "title": "Red Dead Redemption 2",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
         }
       ]
     },
-    "코스타리카": {
-      "cd_rank": 5,
+    "페루": {
+      "cd_rank": 15,
       "games": [
         {
           "rank": 1,
           "title": "EA SPORTS FC™ 26",
           "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "Call of Duty®",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 3,
+          "title": "eFootball™",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 4,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 5,
+          "title": "DRAGON BALL: Sparking! ZERO",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 6,
+          "title": "Resident Evil Requiem",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 7,
+          "title": "Crash™ Team Racing Nitro-Fueled",
+          "discount_info": "확인 불가(Message: stale element referen)",
+          "has_badge": true
+        },
+        {
+          "rank": 8,
+          "title": "Grand Theft Auto V (PlayStation®5)",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 9,
+          "title": "Mortal Kombat 1",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 10,
+          "title": "NBA 2K26",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 11,
+          "title": "Minecraft",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 12,
+          "title": "Roblox",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 13,
+          "title": "ELDEN RING",
+          "discount_info": "확인 불가(Message: stale element referen)",
+          "has_badge": true
+        },
+        {
+          "rank": 14,
+          "title": "It Takes Two para PS4™ y PS5™",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        }
+      ]
+    },
+    "우루과이": {
+      "cd_rank": 7,
+      "games": [
+        {
+          "rank": 1,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -469,6 +371,566 @@
         {
           "rank": 4,
           "title": "Grand Theft Auto V (PlayStation®5)",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 5,
+          "title": "NBA 2K26",
+          "discount_info": "확인 불가(Message: stale element referen)",
+          "has_badge": true
+        },
+        {
+          "rank": 6,
+          "title": "Roblox",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        }
+      ]
+    },
+    "볼리비아": {
+      "cd_rank": 60,
+      "games": [
+        {
+          "rank": 1,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 3,
+          "title": "Call of Duty®",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 4,
+          "title": "eFootball™",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 5,
+          "title": "Grand Theft Auto V (PlayStation®5)",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 6,
+          "title": "Resident Evil Requiem",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 7,
+          "title": "The Seven Deadly Sins: Origin",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 8,
+          "title": "DRAGON BALL: Sparking! ZERO",
+          "discount_info": "확인 불가(Message: stale element referen)",
+          "has_badge": true
+        },
+        {
+          "rank": 9,
+          "title": "ELDEN RING",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 10,
+          "title": "PRAGMATA",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 11,
+          "title": "Starfield",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 12,
+          "title": "NBA 2K26",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 13,
+          "title": "Mortal Kombat 1",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 14,
+          "title": "TEKKEN 8",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 15,
+          "title": "Black Myth: Wukong",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 16,
+          "title": "Minecraft",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 17,
+          "title": "Roblox",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 18,
+          "title": "Diablo® IV",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 19,
+          "title": "Where Winds Meet (F2P)",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 20,
+          "title": "Call of Duty®: WWII",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 21,
+          "title": "Call of Duty®: Black Ops III",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 22,
+          "title": "ASTRO BOT",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 23,
+          "title": "DOOM: The Dark Ages",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 24,
+          "title": "Forza Horizon 5",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 25,
+          "title": "WWE 2K26",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 26,
+          "title": "STAR WARS Jedi: Survivor™",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 27,
+          "title": "Dead by Daylight",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 28,
+          "title": "HELLDIVERS™ 2",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 29,
+          "title": "Kingdom Come: Deliverance II",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 30,
+          "title": "The First Berserker: Khazan",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 31,
+          "title": "Rocket League®",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 32,
+          "title": "Five Nights at Freddy's: Security Breach",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 33,
+          "title": "Marvel's Spider-Man 2",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 34,
+          "title": "Battlefield™ 6",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 35,
+          "title": "It Takes Two para PS4™ y PS5™",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 36,
+          "title": "Red Dead Redemption 2",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 37,
+          "title": "Crash™ Team Racing Nitro-Fueled",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 38,
+          "title": "Cuphead",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 39,
+          "title": "Resident Evil 4",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 40,
+          "title": "MY HERO ACADEMIA: All’s Justice",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 41,
+          "title": "007 First Light",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 42,
+          "title": "Ghost of Tsushima",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 43,
+          "title": "LEGO® Batman™: El Legado del Caballero de la Noche",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 44,
+          "title": "Split Fiction",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 45,
+          "title": "Anno 117: Pax Romana",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 46,
+          "title": "DRAGON BALL FighterZ",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 47,
+          "title": "Metro Exodus",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 48,
+          "title": "ARK: Survival Ascended",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 49,
+          "title": "RIDE 6",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 50,
+          "title": "Screamer",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 51,
+          "title": "Gran Turismo® 7",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 52,
+          "title": "Fallout 4",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 53,
+          "title": "Grand Theft Auto: The Trilogy – The Definitive Edition",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 54,
+          "title": "Persona 3 Reload",
+          "discount_info": "확인 불가(Message: stale element referen)",
+          "has_badge": true
+        },
+        {
+          "rank": 55,
+          "title": "Beat Saber",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 56,
+          "title": "Tales of Arise",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 57,
+          "title": "UFC™ 5",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 58,
+          "title": "Fallout 76",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 59,
+          "title": "Stellar Blade™",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        }
+      ]
+    },
+    "과테말라": {
+      "cd_rank": 18,
+      "games": [
+        {
+          "rank": 1,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 3,
+          "title": "Call of Duty®",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 4,
+          "title": "Grand Theft Auto V (PlayStation®5)",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 5,
+          "title": "Resident Evil Requiem",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 6,
+          "title": "Mortal Kombat 1",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 7,
+          "title": "Apex Legends™",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 8,
+          "title": "DRAGON BALL: Sparking! ZERO",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 9,
+          "title": "NBA 2K26",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 10,
+          "title": "Gran Turismo® 7",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 11,
+          "title": "ELDEN RING",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 12,
+          "title": "Forza Horizon 5",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 13,
+          "title": "Minecraft",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 14,
+          "title": "Roblox",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 15,
+          "title": "Mortal Kombat 11",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 16,
+          "title": "Battlefield™ 6",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 17,
+          "title": "Red Dead Redemption 2",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        }
+      ]
+    },
+    "온두라스": {
+      "cd_rank": 8,
+      "games": [
+        {
+          "rank": 1,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "Call of Duty®",
+          "discount_info": "확인 불가(Message: stale element referen)",
+          "has_badge": true
+        },
+        {
+          "rank": 3,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 4,
+          "title": "Roblox",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 5,
+          "title": "Grand Theft Auto V (PlayStation®5)",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 6,
+          "title": "Red Dead Redemption 2",
+          "discount_info": "확인 불가(Message: stale element referen)",
+          "has_badge": true
+        },
+        {
+          "rank": 7,
+          "title": "Resident Evil Requiem",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        }
+      ]
+    },
+    "코스타리카": {
+      "cd_rank": 6,
+      "games": [
+        {
+          "rank": 1,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 3,
+          "title": "Call of Duty®",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 4,
+          "title": "Grand Theft Auto V (PlayStation®5)",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 5,
+          "title": "Roblox",
           "discount_info": "할인 없음",
           "has_badge": false
         }
@@ -486,7 +948,7 @@
         {
           "rank": 2,
           "title": "Call of Duty®",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -497,15 +959,15 @@
         },
         {
           "rank": 4,
-          "title": "DRAGON BALL: Sparking! ZERO",
-          "discount_info": "확인 불가(Message: stale element referen)",
-          "has_badge": true
-        },
-        {
-          "rank": 5,
           "title": "Grand Theft Auto V (PlayStation®5)",
           "discount_info": "할인 없음",
           "has_badge": false
+        },
+        {
+          "rank": 5,
+          "title": "DRAGON BALL: Sparking! ZERO",
+          "discount_info": "확인 불가(Message: stale element referen)",
+          "has_badge": true
         },
         {
           "rank": 6,
@@ -521,13 +983,13 @@
         },
         {
           "rank": 8,
-          "title": "Mortal Kombat 1",
-          "discount_info": "종료일 정보 없음",
+          "title": "Red Dead Redemption 2",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
           "rank": 9,
-          "title": "Red Dead Redemption 2",
+          "title": "NBA 2K26",
           "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
           "has_badge": true
         },
@@ -539,25 +1001,126 @@
         },
         {
           "rank": 11,
-          "title": "Roblox",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 12,
-          "title": "UFC™ 5",
+          "title": "Mortal Kombat 1",
           "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 13,
+          "rank": 12,
           "title": "It Takes Two para PS4™ y PS5™",
           "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
+          "rank": 13,
+          "title": "Roblox",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
           "rank": 14,
+          "title": "UFC™ 5",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 15,
+          "title": "Gran Turismo® 7",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 16,
+          "title": "Mortal Kombat 11",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        }
+      ]
+    },
+    "엘살바도르": {
+      "cd_rank": 19,
+      "games": [
+        {
+          "rank": 1,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "확인 불가(Message: stale element referen)",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 3,
+          "title": "Call of Duty®",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 4,
+          "title": "Grand Theft Auto V (PlayStation®5)",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 5,
+          "title": "Mortal Kombat 1",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 6,
+          "title": "Red Dead Redemption 2",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 7,
           "title": "NBA 2K26",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 8,
+          "title": "Forza Horizon 5",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 9,
+          "title": "Minecraft",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 10,
+          "title": "Resident Evil Requiem",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 11,
+          "title": "The Crew Motorfest",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 12,
+          "title": "Roblox",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 13,
+          "title": "Genshin Impact",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 14,
+          "title": "ELDEN RING",
           "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
           "has_badge": true
         },
@@ -569,49 +1132,26 @@
         },
         {
           "rank": 16,
-          "title": "ASTRO BOT",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "title": "DRAGON BALL: Sparking! ZERO",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
-        }
-      ]
-    },
-    "엘살바도르": {
-      "cd_rank": 6,
-      "games": [
+        },
         {
-          "rank": 1,
-          "title": "EA SPORTS FC™ 26",
+          "rank": 17,
+          "title": "Gran Turismo® 7",
           "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 2,
-          "title": "Call of Duty®",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 3,
-          "title": "Fortnite",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 4,
-          "title": "Grand Theft Auto V (PlayStation®5)",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 5,
-          "title": "MLB® The Show™ 26",
+          "rank": 18,
+          "title": "War Thunder",
           "discount_info": "할인 없음",
           "has_badge": false
         }
       ]
     },
     "니카라과": {
-      "cd_rank": 12,
+      "cd_rank": 101,
       "games": [
         {
           "rank": 1,
@@ -627,13 +1167,13 @@
         },
         {
           "rank": 3,
-          "title": "Fortnite",
+          "title": "Grand Theft Auto V (PlayStation®5)",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
           "rank": 4,
-          "title": "Grand Theft Auto V (PlayStation®5)",
+          "title": "Fortnite",
           "discount_info": "할인 없음",
           "has_badge": false
         },
@@ -651,38 +1191,572 @@
         },
         {
           "rank": 7,
-          "title": "NBA 2K26",
+          "title": "Red Dead Redemption 2",
           "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
           "rank": 8,
-          "title": "Genshin Impact",
-          "discount_info": "할인 없음",
-          "has_badge": false
+          "title": "NBA 2K26",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
         },
         {
           "rank": 9,
-          "title": "Minecraft",
+          "title": "MLB® The Show™ 26",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
           "rank": 10,
-          "title": "Call of Duty®: Black Ops III",
+          "title": "Minecraft",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
           "rank": 11,
           "title": "eFootball™",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 12,
+          "title": "Call of Duty®: Modern Warfare®",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 13,
+          "title": "Monster Hunter Stories 3: Twisted Reflection",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 14,
+          "title": "Call of Duty®: Black Ops III",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 15,
+          "title": "Microsoft Flight Simulator 2024",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 16,
+          "title": "Resident Evil Requiem",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 17,
+          "title": "Battlefield™ 6",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 18,
+          "title": "ELDEN RING",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 19,
+          "title": "DRAGON BALL: Sparking! ZERO",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 20,
+          "title": "Tom Clancy's The Division® 2",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 21,
+          "title": "RIDE 5",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 22,
+          "title": "Fall Guys",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 23,
+          "title": "Diablo® IV",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 24,
+          "title": "Kingdom Come: Deliverance II",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 25,
+          "title": "ASTRO BOT",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 26,
+          "title": "Mortal Kombat 11",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 27,
+          "title": "Assassin’s Creed Shadows",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 28,
+          "title": "Mortal Kombat 1",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 29,
+          "title": "Dead by Daylight",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 30,
+          "title": "Genshin Impact",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 31,
+          "title": "MLB® The Show™ 24",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 32,
+          "title": "Apex Legends™",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 33,
+          "title": "LEGO® Batman™: El Legado del Caballero de la Noche",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 34,
+          "title": "Resident Evil 4",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 35,
+          "title": "Demon Slayer -Kimetsu no Yaiba- The Hinokami Chronicles 2",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 36,
+          "title": "DOOM: The Dark Ages",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 37,
+          "title": "It Takes Two para PS4™ y PS5™",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 38,
+          "title": "The Crew Motorfest",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 39,
+          "title": "RIDE 6",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 40,
+          "title": "Call of Duty®: Black Ops 4",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 41,
+          "title": "FINAL FANTASY VII REBIRTH",
+          "discount_info": "확인 불가(Message: stale element referen)",
+          "has_badge": true
+        },
+        {
+          "rank": 42,
+          "title": "Monster Hunter Wilds",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 43,
+          "title": "Undisputed",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 44,
+          "title": "Marvel's Spider-Man 2",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 45,
+          "title": "Brawlhalla",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 46,
+          "title": "God of War",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 47,
+          "title": "ARC Raiders",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 48,
+          "title": "Cuphead",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 49,
+          "title": "Stellar Blade™",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 50,
+          "title": "KINGDOM HEARTS Ⅲ",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 51,
+          "title": "WWE 2K26",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 52,
+          "title": "Fallout 4",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 53,
+          "title": "Alan Wake 2",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 54,
+          "title": "DAYS GONE",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 55,
+          "title": "PRAGMATA",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 56,
+          "title": "Lies of P",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 57,
+          "title": "Marvel Rivals",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 58,
+          "title": "ELDEN RING NIGHTREIGN",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 59,
+          "title": "Persona 3 Reload",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 60,
+          "title": "Indiana Jones y el Gran Círculo",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 61,
+          "title": "Call of Duty®: Vanguard",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 62,
+          "title": "Street Fighter 6",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 63,
+          "title": "RESIDENT EVIL 3",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 64,
+          "title": "DayZ",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 65,
+          "title": "Rocket League®",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 66,
+          "title": "HELLDIVERS™ 2",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 67,
+          "title": "Wuthering Waves",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 68,
+          "title": "Assassin's Creed Valhalla",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 69,
+          "title": "The First Berserker: Khazan",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 70,
+          "title": "Call of Duty®: Black Ops Cold War",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 71,
+          "title": "ARK: Survival Ascended",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 72,
+          "title": "S.T.A.L.K.E.R. 2: Heart of Chornobyl",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 73,
+          "title": "BERSERK and the Band of the Hawk",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 74,
+          "title": "TEKKEN 8",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 75,
+          "title": "Gran Turismo® 7",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 76,
+          "title": "Truck Driver",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 77,
+          "title": "OCTOPATH TRAVELER PS4＆PS5",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 78,
+          "title": "Age of Mythology: Retold",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 79,
+          "title": "WUCHANG: Fallen Feathers",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 80,
+          "title": "Cult of the Lamb",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 81,
+          "title": "STAR WARS Jedi: Survivor™",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 82,
+          "title": "Resident Evil Village",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 83,
+          "title": "Black Myth: Wukong",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 84,
+          "title": "Call of Duty®: Modern Warfare® Remastered",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 85,
+          "title": "God of War Sons of Sparta",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 86,
+          "title": "Jak and Daxter: The Precursor Legacy™",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 87,
+          "title": "Life is Strange Remastered Collection",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 88,
+          "title": "NINJA GAIDEN Master Collection",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 89,
+          "title": "REANIMAL",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 90,
+          "title": "STRANGER OF PARADISE FINAL FANTASY ORIGIN PS4 & PS5",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 91,
+          "title": "The Elder Scrolls IV: Oblivion Remastered",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 92,
+          "title": "The Last of Us™ Part I",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 93,
+          "title": "Poppy Playtime: Capítulo 4",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 94,
+          "title": "Grand Theft Auto: The Trilogy – The Definitive Edition",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 95,
+          "title": "Tom Clancy's Ghost Recon® Wildlands",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 96,
+          "title": "DRAGON BALL Z: KAKAROT",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 97,
+          "title": "EA SPORTS FC™ 25",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 98,
+          "title": "Goat Simulator 3",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 99,
+          "title": "Borderlands Collection: Caja de Pandora",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 100,
+          "title": "Path Of Titans",
           "discount_info": "할인 없음",
           "has_badge": false
         }
       ]
     },
     "파나마": {
-      "cd_rank": 8,
+      "cd_rank": 11,
       "games": [
         {
           "rank": 1,
@@ -698,38 +1772,56 @@
         },
         {
           "rank": 3,
-          "title": "Fortnite",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 4,
           "title": "Grand Theft Auto V (PlayStation®5)",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 5,
-          "title": "MLB® The Show™ 26",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 6,
+          "rank": 4,
           "title": "NBA 2K26",
           "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
+          "rank": 5,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 6,
+          "title": "MLB® The Show™ 26",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
           "rank": 7,
           "title": "Roblox",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 8,
+          "title": "Gran Turismo® 7",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 9,
+          "title": "eFootball™",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 10,
+          "title": "WWE 2K26",
           "discount_info": "할인 없음",
           "has_badge": false
         }
       ]
     },
     "파라과이": {
-      "cd_rank": 16,
+      "cd_rank": 17,
       "games": [
         {
           "rank": 1,
@@ -739,15 +1831,15 @@
         },
         {
           "rank": 2,
-          "title": "Call of Duty®",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 3,
           "title": "Fortnite",
           "discount_info": "할인 없음",
           "has_badge": false
+        },
+        {
+          "rank": 3,
+          "title": "Call of Duty®",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
         },
         {
           "rank": 4,
@@ -763,49 +1855,49 @@
         },
         {
           "rank": 6,
-          "title": "eFootball™",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 7,
-          "title": "Resident Evil Requiem",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 8,
-          "title": "Minecraft",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 9,
-          "title": "ELDEN RING",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 10,
-          "title": "DRAGON BALL: Sparking! ZERO",
-          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 11,
           "title": "Red Dead Redemption 2",
           "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 12,
+          "rank": 7,
+          "title": "eFootball™",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 8,
           "title": "NBA 2K26",
           "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
+          "rank": 9,
+          "title": "Resident Evil Requiem",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 10,
+          "title": "Minecraft",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 11,
+          "title": "DRAGON BALL: Sparking! ZERO",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 12,
+          "title": "ELDEN RING",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
           "rank": 13,
-          "title": "Mortal Kombat 1",
+          "title": "Mortal Kombat 11",
           "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
           "has_badge": true
         },
@@ -817,6 +1909,12 @@
         },
         {
           "rank": 15,
+          "title": "Mortal Kombat 1",
+          "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 16,
           "title": "Gran Turismo® 7",
           "discount_info": "La oferta finaliza el 9/4/2026 06:59 AM UTC",
           "has_badge": true
@@ -834,8 +1932,31 @@
         },
         {
           "rank": 2,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 3,
           "title": "Call of Duty®",
           "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "has_badge": true
+        }
+      ]
+    },
+    "독일": {
+      "cd_rank": 4,
+      "games": [
+        {
+          "rank": 1,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "Call of Duty®",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -846,37 +1967,26 @@
         }
       ]
     },
-    "독일": {
-      "cd_rank": 3,
-      "games": [
-        {
-          "rank": 1,
-          "title": "EA SPORTS FC™ 26",
-          "discount_info": "Angebot endet am 8.4.2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 2,
-          "title": "Call of Duty®",
-          "discount_info": "Angebot endet am 8.4.2026 10:59 PM UTC",
-          "has_badge": true
-        }
-      ]
-    },
     "프랑스": {
-      "cd_rank": 3,
+      "cd_rank": 4,
       "games": [
         {
           "rank": 1,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
           "title": "Call of Duty®",
           "discount_info": "Fin de l'offre : 8/4/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
-          "rank": 2,
-          "title": "EA SPORTS FC™ 26",
-          "discount_info": "Fin de l'offre : 8/4/2026 10:59 PM UTC",
-          "has_badge": true
+          "rank": 3,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
         }
       ]
     },
@@ -909,19 +2019,19 @@
         {
           "rank": 1,
           "title": "EA SPORTS FC™ 26",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "L'offerta termina il 8/4/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
           "rank": 2,
-          "title": "Call of Duty®",
-          "discount_info": "L'offerta termina il 8/4/2026 10:59 PM UTC",
-          "has_badge": true
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
         }
       ]
     },
     "네덜란드": {
-      "cd_rank": 3,
+      "cd_rank": 4,
       "games": [
         {
           "rank": 1,
@@ -934,33 +2044,33 @@
           "title": "Call of Duty®",
           "discount_info": "Actie eindigt op 8-4-2026 10:59 PM UTC",
           "has_badge": true
+        },
+        {
+          "rank": 3,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
         }
       ]
     },
     "폴란드": {
-      "cd_rank": 3,
+      "cd_rank": 2,
       "games": [
         {
           "rank": 1,
           "title": "EA SPORTS FC™ 26",
-          "discount_info": "Oferta ważna do 8.4.2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 2,
-          "title": "Call of Duty®",
-          "discount_info": "Oferta ważna do 8.4.2026 10:59 PM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         }
       ]
     },
     "스위스": {
-      "cd_rank": 3,
+      "cd_rank": 4,
       "games": [
         {
           "rank": 1,
           "title": "EA SPORTS FC™ 26",
-          "discount_info": "Angebot endet am 8.4.2026 10:59 PM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -968,11 +2078,17 @@
           "title": "Call of Duty®",
           "discount_info": "Angebot endet am 8.4.2026 10:59 PM UTC",
           "has_badge": true
+        },
+        {
+          "rank": 3,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
         }
       ]
     },
     "스웨덴": {
-      "cd_rank": 3,
+      "cd_rank": 5,
       "games": [
         {
           "rank": 1,
@@ -982,14 +2098,26 @@
         },
         {
           "rank": 2,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 3,
+          "title": "NHL 26",
+          "discount_info": "Erbjudandet upphör 8-4-2026 10:59 PM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 4,
           "title": "Call of Duty®",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "Erbjudandet upphör 8-4-2026 10:59 PM UTC",
           "has_badge": true
         }
       ]
     },
     "노르웨이": {
-      "cd_rank": 3,
+      "cd_rank": 4,
       "games": [
         {
           "rank": 1,
@@ -999,6 +2127,12 @@
         },
         {
           "rank": 2,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 3,
           "title": "Call of Duty®",
           "discount_info": "Tilbudet avsluttes 8.4.2026 10:59 PM UTC",
           "has_badge": true
@@ -1016,9 +2150,9 @@
         },
         {
           "rank": 2,
-          "title": "Call of Duty®",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
         }
       ]
     },
@@ -1028,48 +2162,60 @@
         {
           "rank": 1,
           "title": "NHL 26",
+          "discount_info": "확인 불가(Message: stale element referen)",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "Tarjous päättyy 8.4.2026 10:59 PM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 3,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 4,
+          "title": "Call of Duty®",
+          "discount_info": "Tarjous päättyy 8.4.2026 10:59 PM UTC",
+          "has_badge": true
+        }
+      ]
+    },
+    "포르투갈": {
+      "cd_rank": 5,
+      "games": [
+        {
+          "rank": 1,
+          "title": "EA SPORTS FC™ 26",
           "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
           "rank": 2,
           "title": "Call of Duty®",
-          "discount_info": "Tarjous päättyy 8.4.2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 3,
-          "title": "EA SPORTS FC™ 26",
-          "discount_info": "Tarjous päättyy 8.4.2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 4,
-          "title": "Fortnite",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        }
-      ]
-    },
-    "포르투갈": {
-      "cd_rank": 3,
-      "games": [
-        {
-          "rank": 1,
-          "title": "EA SPORTS FC™ 26",
           "discount_info": "A oferta termina a 8/4/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
-          "rank": 2,
-          "title": "Call of Duty®",
+          "rank": 3,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 4,
+          "title": "NBA 2K26",
           "discount_info": "A oferta termina a 8/4/2026 10:59 PM UTC",
           "has_badge": true
         }
       ]
     },
     "그리스": {
-      "cd_rank": 3,
+      "cd_rank": 5,
       "games": [
         {
           "rank": 1,
@@ -1079,6 +2225,18 @@
         },
         {
           "rank": 2,
+          "title": "NBA 2K26",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 3,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 4,
           "title": "Call of Duty®",
           "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
           "has_badge": true
@@ -1102,24 +2260,18 @@
         },
         {
           "rank": 3,
-          "title": "Call of Duty®",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
         }
       ]
     },
     "헝가리": {
-      "cd_rank": 3,
+      "cd_rank": 2,
       "games": [
         {
           "rank": 1,
           "title": "EA SPORTS FC™ 26",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 2,
-          "title": "Call of Duty®",
           "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
           "has_badge": true
         }
@@ -1137,7 +2289,7 @@
       ]
     },
     "슬로바키아": {
-      "cd_rank": 5,
+      "cd_rank": 6,
       "games": [
         {
           "rank": 1,
@@ -1153,20 +2305,26 @@
         },
         {
           "rank": 3,
-          "title": "Call of Duty®",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 4,
           "title": "Fortnite",
           "discount_info": "할인 없음",
           "has_badge": false
+        },
+        {
+          "rank": 4,
+          "title": "Roblox",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 5,
+          "title": "Call of Duty®",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "has_badge": true
         }
       ]
     },
     "슬로베니아": {
-      "cd_rank": 5,
+      "cd_rank": 6,
       "games": [
         {
           "rank": 1,
@@ -1176,19 +2334,25 @@
         },
         {
           "rank": 2,
-          "title": "Call of Duty®",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 3,
           "title": "NBA 2K26",
           "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
-          "rank": 4,
+          "rank": 3,
           "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 4,
+          "title": "Call of Duty®",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 5,
+          "title": "Grand Theft Auto V (PlayStation®5)",
           "discount_info": "할인 없음",
           "has_badge": false
         }
@@ -1223,28 +2387,34 @@
       ]
     },
     "오스트리아": {
-      "cd_rank": 3,
-      "games": [
-        {
-          "rank": 1,
-          "title": "EA SPORTS FC™ 26",
-          "discount_info": "Angebot endet am 8.4.2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 2,
-          "title": "Call of Duty®",
-          "discount_info": "Angebot endet am 8.4.2026 10:59 PM UTC",
-          "has_badge": true
-        }
-      ]
-    },
-    "이스라엘": {
       "cd_rank": 4,
       "games": [
         {
           "rank": 1,
           "title": "EA SPORTS FC™ 26",
+          "discount_info": "Angebot endet am 8.4.2026 10:59 PM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "Call of Duty®",
+          "discount_info": "Angebot endet am 8.4.2026 10:59 PM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 3,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        }
+      ]
+    },
+    "이스라엘": {
+      "cd_rank": 5,
+      "games": [
+        {
+          "rank": 1,
+          "title": "EA SPORTS FC™ 26",
           "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
           "has_badge": true
         },
@@ -1256,71 +2426,19 @@
         },
         {
           "rank": 3,
-          "title": "Call of Duty®",
+          "title": "NBA 2K26",
           "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
           "has_badge": true
+        },
+        {
+          "rank": 4,
+          "title": "Grand Theft Auto V (PlayStation®5)",
+          "discount_info": "할인 없음",
+          "has_badge": false
         }
       ]
     },
     "크로아티아": {
-      "cd_rank": 5,
-      "games": [
-        {
-          "rank": 1,
-          "title": "EA SPORTS FC™ 26",
-          "discount_info": "종료일 정보 없음",
-          "has_badge": true
-        },
-        {
-          "rank": 2,
-          "title": "Call of Duty®",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 3,
-          "title": "Fortnite",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 4,
-          "title": "Roblox",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        }
-      ]
-    },
-    "불가리아": {
-      "cd_rank": 5,
-      "games": [
-        {
-          "rank": 1,
-          "title": "EA SPORTS FC™ 26",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 2,
-          "title": "Fortnite",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 3,
-          "title": "Call of Duty®",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 4,
-          "title": "Roblox",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        }
-      ]
-    },
-    "키프로스": {
       "cd_rank": 6,
       "games": [
         {
@@ -1331,13 +2449,48 @@
         },
         {
           "rank": 2,
-          "title": "Call of Duty®",
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 3,
+          "title": "NBA 2K26",
           "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
-          "rank": 3,
+          "rank": 4,
+          "title": "Roblox",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 5,
+          "title": "Call of Duty®",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "has_badge": true
+        }
+      ]
+    },
+    "불가리아": {
+      "cd_rank": 6,
+      "games": [
+        {
+          "rank": 1,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "확인 불가(Message: stale element referen)",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
           "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 3,
+          "title": "Roblox",
           "discount_info": "할인 없음",
           "has_badge": false
         },
@@ -1349,6 +2502,35 @@
         },
         {
           "rank": 5,
+          "title": "Call of Duty®",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        }
+      ]
+    },
+    "키프로스": {
+      "cd_rank": 5,
+      "games": [
+        {
+          "rank": 1,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 3,
+          "title": "Call of Duty®",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 4,
           "title": "Roblox",
           "discount_info": "할인 없음",
           "has_badge": false
@@ -1366,38 +2548,38 @@
         },
         {
           "rank": 2,
-          "title": "Call of Duty®",
+          "title": "NBA 2K26",
           "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
           "rank": 3,
-          "title": "NBA 2K26",
-          "discount_info": "종료일 정보 없음",
-          "has_badge": true
-        },
-        {
-          "rank": 4,
           "title": "Fortnite",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
+          "rank": 4,
+          "title": "Call of Duty®",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "has_badge": true
+        },
+        {
           "rank": 5,
-          "title": "Roblox",
+          "title": "Grand Theft Auto V (PlayStation®5)",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
           "rank": 6,
-          "title": "Grand Theft Auto V (PlayStation®5)",
+          "title": "Roblox",
           "discount_info": "할인 없음",
           "has_badge": false
         }
       ]
     },
     "아일랜드": {
-      "cd_rank": 4,
+      "cd_rank": 6,
       "games": [
         {
           "rank": 1,
@@ -1407,35 +2589,53 @@
         },
         {
           "rank": 2,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 3,
           "title": "Call of Duty®",
           "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
-          "rank": 3,
-          "title": "Fortnite",
+          "rank": 4,
+          "title": "Roblox",
           "discount_info": "할인 없음",
           "has_badge": false
+        },
+        {
+          "rank": 5,
+          "title": "NBA 2K26",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "has_badge": true
         }
       ]
     },
     "룩셈부르크": {
-      "cd_rank": 4,
+      "cd_rank": 5,
       "games": [
         {
           "rank": 1,
           "title": "EA SPORTS FC™ 26",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Angebot endet am 8.4.2026 10:59 PM UTC",
           "has_badge": true
         },
         {
           "rank": 2,
-          "title": "Call of Duty®",
+          "title": "NBA 2K26",
           "discount_info": "Angebot endet am 8.4.2026 10:59 PM UTC",
           "has_badge": true
         },
         {
           "rank": 3,
+          "title": "Call of Duty®",
+          "discount_info": "Angebot endet am 8.4.2026 10:59 PM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 4,
           "title": "Fortnite",
           "discount_info": "할인 없음",
           "has_badge": false
@@ -1448,7 +2648,7 @@
         {
           "rank": 1,
           "title": "EA SPORTS FC™ 26",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -1459,21 +2659,21 @@
         },
         {
           "rank": 3,
-          "title": "Call of Duty®",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 4,
           "title": "Fortnite",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 5,
+          "rank": 4,
           "title": "Grand Theft Auto V (PlayStation®5)",
           "discount_info": "할인 없음",
           "has_badge": false
+        },
+        {
+          "rank": 5,
+          "title": "Call of Duty®",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "has_badge": true
         }
       ]
     },
@@ -1494,15 +2694,15 @@
         },
         {
           "rank": 3,
-          "title": "Call of Duty®",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 4,
           "title": "Roblox",
           "discount_info": "할인 없음",
           "has_badge": false
+        },
+        {
+          "rank": 4,
+          "title": "Call of Duty®",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
         },
         {
           "rank": 5,
@@ -1513,7 +2713,36 @@
       ]
     },
     "아랍에미리트": {
-      "cd_rank": 4,
+      "cd_rank": 5,
+      "games": [
+        {
+          "rank": 1,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 3,
+          "title": "Call of Duty®",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 4,
+          "title": "Roblox",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        }
+      ]
+    },
+    "남아공": {
+      "cd_rank": 5,
       "games": [
         {
           "rank": 1,
@@ -1532,27 +2761,10 @@
           "title": "Fortnite",
           "discount_info": "할인 없음",
           "has_badge": false
-        }
-      ]
-    },
-    "남아공": {
-      "cd_rank": 4,
-      "games": [
-        {
-          "rank": 1,
-          "title": "EA SPORTS FC™ 26",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
         },
         {
-          "rank": 2,
-          "title": "Call of Duty®",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 3,
-          "title": "Fortnite",
+          "rank": 4,
+          "title": "Roblox",
           "discount_info": "할인 없음",
           "has_badge": false
         }
@@ -1564,7 +2776,7 @@
         {
           "rank": 1,
           "title": "EA SPORTS FC™ 26",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
           "has_badge": true
         }
       ]
@@ -1575,7 +2787,7 @@
         {
           "rank": 1,
           "title": "EA SPORTS FC™ 26",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -1593,117 +2805,12 @@
         {
           "rank": 4,
           "title": "Call of Duty®",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
           "has_badge": true
         }
       ]
     },
     "레바논": {
-      "cd_rank": 6,
-      "games": [
-        {
-          "rank": 1,
-          "title": "EA SPORTS FC™ 26",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 2,
-          "title": "Fortnite",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 3,
-          "title": "NBA 2K26",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 4,
-          "title": "Call of Duty®",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 5,
-          "title": "Roblox",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        }
-      ]
-    },
-    "오만": {
-      "cd_rank": 6,
-      "games": [
-        {
-          "rank": 1,
-          "title": "EA SPORTS FC™ 26",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 2,
-          "title": "Fortnite",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 3,
-          "title": "Call of Duty®",
-          "discount_info": "종료일 정보 없음",
-          "has_badge": true
-        },
-        {
-          "rank": 4,
-          "title": "Forza Horizon 5",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 5,
-          "title": "Rocket League®",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        }
-      ]
-    },
-    "카타르": {
-      "cd_rank": 6,
-      "games": [
-        {
-          "rank": 1,
-          "title": "EA SPORTS FC™ 26",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 2,
-          "title": "Fortnite",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 3,
-          "title": "Call of Duty®",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 4,
-          "title": "WWE 2K26",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 5,
-          "title": "Rocket League®",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        }
-      ]
-    },
-    "바레인": {
       "cd_rank": 7,
       "games": [
         {
@@ -1720,13 +2827,112 @@
         },
         {
           "rank": 3,
+          "title": "NBA 2K26",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 4,
+          "title": "Roblox",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 5,
+          "title": "Call of Duty®",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 6,
+          "title": "Minecraft",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        }
+      ]
+    },
+    "오만": {
+      "cd_rank": 5,
+      "games": [
+        {
+          "rank": 1,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 3,
           "title": "Call of Duty®",
           "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
           "rank": 4,
+          "title": "Rocket League®",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        }
+      ]
+    },
+    "카타르": {
+      "cd_rank": 5,
+      "games": [
+        {
+          "rank": 1,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "확인 불가(Message: stale element referen)",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 3,
+          "title": "Call of Duty®",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 4,
+          "title": "Rocket League®",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        }
+      ]
+    },
+    "바레인": {
+      "cd_rank": 8,
+      "games": [
+        {
+          "rank": 1,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "Fortnite",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 3,
           "title": "NBA 2K26",
+          "discount_info": "확인 불가(Message: stale element referen)",
+          "has_badge": true
+        },
+        {
+          "rank": 4,
+          "title": "Call of Duty®",
           "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
           "has_badge": true
         },
@@ -1738,6 +2944,12 @@
         },
         {
           "rank": 6,
+          "title": "WWE 2K26",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 7,
           "title": "Rocket League®",
           "discount_info": "할인 없음",
           "has_badge": false
@@ -1749,51 +2961,51 @@
       "games": [
         {
           "rank": 1,
-          "title": "アークナイツ：エンドフィールド",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 2,
           "title": "エーペックスレジェンズ",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 3,
-          "title": "ゼンレスゾーンゼロ",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 4,
-          "title": "機動戦士ガンダム　バトルオペレーション２",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 5,
-          "title": "原神～空月の歌～",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 6,
+          "rank": 2,
           "title": "eFootball™",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
+          "rank": 3,
+          "title": "原神～空月の歌～",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 4,
+          "title": "アークナイツ：エンドフィールド",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 5,
+          "title": "機動戦士ガンダム　バトルオペレーション２",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 6,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "2026/4/8 02:59 PM UTCまで",
+          "has_badge": true
+        },
+        {
           "rank": 7,
-          "title": "七つの大罪：Origin",
+          "title": "ゼンレスゾーンゼロ",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
           "rank": 8,
-          "title": "EA SPORTS FC™ 26",
-          "discount_info": "2026/4/8 02:59 PM UTCまで",
-          "has_badge": true
+          "title": "七つの大罪：Origin",
+          "discount_info": "할인 없음",
+          "has_badge": false
         }
       ]
     },
@@ -1812,19 +3024,19 @@
         },
         {
           "rank": 2,
+          "title": "NBA 2K26",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 3,
           "title": "Fortnite",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 3,
-          "title": "Call of Duty®",
-          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
-          "has_badge": true
-        },
-        {
           "rank": 4,
-          "title": "NBA 2K26",
+          "title": "Call of Duty®",
           "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
           "has_badge": true
         }
@@ -1842,22 +3054,34 @@
       ]
     },
     "태국": {
-      "cd_rank": 2,
+      "cd_rank": 3,
       "games": [
         {
           "rank": 1,
           "title": "EA SPORTS FC™ 26",
           "discount_info": "Offer ends 8/4/2026 02:59 PM UTC",
           "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "eFootball™",
+          "discount_info": "할인 없음",
+          "has_badge": false
         }
       ]
     },
     "싱가포르": {
-      "cd_rank": 2,
+      "cd_rank": 3,
       "games": [
         {
           "rank": 1,
           "title": "EA SPORTS FC™ 26",
+          "discount_info": "Offer ends 8/4/2026 02:59 PM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "NBA 2K26",
           "discount_info": "Offer ends 8/4/2026 02:59 PM UTC",
           "has_badge": true
         }
@@ -1869,24 +3093,30 @@
         {
           "rank": 1,
           "title": "EA SPORTS FC™ 26",
-          "discount_info": "Offer ends 8/4/2026 02:59 PM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         }
       ]
     },
     "인도네시아": {
-      "cd_rank": 2,
+      "cd_rank": 3,
       "games": [
         {
           "rank": 1,
           "title": "EA SPORTS FC™ 26",
           "discount_info": "Offer ends 8/4/2026 02:59 PM UTC",
           "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "eFootball™",
+          "discount_info": "할인 없음",
+          "has_badge": false
         }
       ]
     },
     "필리핀": {
-      "cd_rank": 5,
+      "cd_rank": 6,
       "games": [
         {
           "rank": 1,
@@ -1902,25 +3132,31 @@
         },
         {
           "rank": 3,
+          "title": "Call of Duty®",
+          "discount_info": "Offer ends 4/9/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 4,
           "title": "MLB® The Show™ 26",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 4,
-          "title": "Call of Duty®",
+          "rank": 5,
+          "title": "EA SPORTS FC™ 26",
           "discount_info": "Offer ends 4/9/2026 06:59 AM UTC",
           "has_badge": true
         }
       ]
     },
     "베트남": {
-      "cd_rank": 5,
+      "cd_rank": 6,
       "games": [
         {
           "rank": 1,
           "title": "NBA 2K26",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 4/9/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -1931,40 +3167,64 @@
         },
         {
           "rank": 3,
+          "title": "Call of Duty®",
+          "discount_info": "Offer ends 4/9/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 4,
           "title": "MLB® The Show™ 26",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 4,
-          "title": "Call of Duty®",
+          "rank": 5,
+          "title": "EA SPORTS FC™ 26",
           "discount_info": "Offer ends 4/9/2026 06:59 AM UTC",
           "has_badge": true
         }
       ]
     },
     "홍콩": {
-      "cd_rank": 2,
+      "cd_rank": 4,
       "games": [
         {
           "rank": 1,
           "title": "EA SPORTS FC™ 26",
           "discount_info": "종료일 정보 없음",
           "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "NBA 2K26",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 3,
+          "title": "eFootball™",
+          "discount_info": "할인 없음",
+          "has_badge": false
         }
       ]
     },
     "대만": {
-      "cd_rank": 3,
+      "cd_rank": 4,
       "games": [
         {
           "rank": 1,
+          "title": "《NBA 2K26》",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
           "title": "燕雲十六聲（免費遊玩）",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 2,
+          "rank": 3,
           "title": "MLB® The Show™ 26",
           "discount_info": "할인 없음",
           "has_badge": false
@@ -1972,24 +3232,30 @@
       ]
     },
     "뉴질랜드": {
-      "cd_rank": 4,
+      "cd_rank": 5,
       "games": [
         {
           "rank": 1,
+          "title": "NBA 2K26",
+          "discount_info": "확인 불가(Message: stale element referen)",
+          "has_badge": true
+        },
+        {
+          "rank": 2,
           "title": "Fortnite",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 2,
+          "rank": 3,
           "title": "Call of Duty®",
           "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
-          "rank": 3,
-          "title": "NBA 2K26",
-          "discount_info": "종료일 정보 없음",
+          "rank": 4,
+          "title": "EA SPORTS FC™ 26",
+          "discount_info": "Offer ends 8/4/2026 10:59 PM UTC",
           "has_badge": true
         }
       ]
