@@ -818,15 +818,19 @@ const barLabelPlugin = {
     // dataset 0 = 일 피크 (bar) 만 표기
     const meta = chart.getDatasetMeta(0);
     if (!meta || meta.hidden) return;
-    const maxPeak = Math.max(...chart.data.datasets[0].data);
+    const peakData = chart.data.datasets[0].data;
+    const avgData  = chart.data.datasets[1]?.data || [];
+    const maxPeak = Math.max(...peakData.filter(v => v != null));
+    const minAvg  = Math.min(...avgData.filter(v => v != null));
     ctx.save();
     meta.data.forEach((bar, i) => {
-      const v = chart.data.datasets[0].data[i];
+      const v = peakData[i];
       if (v == null) return;
       const txt = v >= 10000 ? (v/10000).toFixed(1)+'만' : v.toLocaleString();
-      const isMax = v === maxPeak;
-      ctx.font = `bold ${isMax ? 11 : 10}px Rajdhani,sans-serif`;
-      ctx.fillStyle = isMax ? '#f1c40f' : 'rgba(74,158,255,0.85)';
+      const isMax    = v === maxPeak;
+      const isMinAvg = avgData[i] != null && avgData[i] === minAvg;
+      ctx.font = `bold ${isMax || isMinAvg ? 11 : 10}px Rajdhani,sans-serif`;
+      ctx.fillStyle = isMax ? '#f1c40f' : isMinAvg ? '#e74c3c' : 'rgba(74,158,255,0.85)';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
       ctx.fillText(txt, bar.x, bar.y - 2);
@@ -840,6 +844,9 @@ function renderDailyChart() {
   const el = document.getElementById('ccuDailyChart');
   if (!el) return;
 
+  const _maxPeak = Math.max(...CCU_DAILY.map(x=>x.peak));
+  const _minAvg  = Math.min(...CCU_DAILY.map(x=>x.avg));
+
   dailyCI = new Chart(el.getContext('2d'), {
     type: 'bar',
     plugins: [barLabelPlugin],
@@ -850,12 +857,16 @@ function renderDailyChart() {
           label: '일 피크',
           data: CCU_DAILY.map(d => d.peak),
           backgroundColor: CCU_DAILY.map(d =>
-            d.peak === Math.max(...CCU_DAILY.map(x=>x.peak))
+            d.peak === _maxPeak
               ? 'rgba(241,196,15,0.85)'
-              : 'rgba(74,158,255,0.70)'
+              : d.avg === _minAvg
+                ? 'rgba(231,76,60,0.85)'
+                : 'rgba(74,158,255,0.70)'
           ),
           borderColor: CCU_DAILY.map(d =>
-            d.peak === Math.max(...CCU_DAILY.map(x=>x.peak)) ? '#f1c40f' : '#4a9eff'
+            d.peak === _maxPeak ? '#f1c40f'
+            : d.avg === _minAvg ? '#e74c3c'
+            : '#4a9eff'
           ),
           borderWidth: 1,
           borderRadius: 3,
