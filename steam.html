@@ -713,7 +713,12 @@ function renderMainChart() {
             pointHoverRadius: 8,
             backgroundColor: '#2ecc71',
             borderColor: '#2ecc71',
-            showLine: false,
+            borderWidth: 1.5,
+            borderDash: [4, 3],
+            showLine: true,
+            spanGaps: true,
+            tension: 0.3,
+            fill: false,
           },
           {
             label: '일 최저',
