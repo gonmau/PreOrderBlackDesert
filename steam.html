@@ -655,12 +655,14 @@ function renderMainChart() {
 
   if (currentView === 'hourly') {
     // X축 라벨: 날짜 바뀌는 포인트만 M/DD, 나머지 빈 문자열
+    // ※ new Date(ts) 는 UTC 파싱 후 로컬 TZ 변환 → KST 환경에서 날짜 경계 불일치 발생
+    //   → 문자열에서 직접 월/일 추출하여 타임존 영향 제거
     const labels = CCU_HOURLY.map((d, i) => {
       const cur = d.ts.slice(0, 10);
       const prv = i > 0 ? CCU_HOURLY[i-1].ts.slice(0, 10) : null;
       if (i === 0 || cur !== prv) {
-        const dt = new Date(d.ts);
-        return `${dt.getMonth()+1}/${dt.getDate()}`;
+        const [, mm, dd] = cur.split('-');
+        return `${parseInt(mm)}/${parseInt(dd)}`;
       }
       return '';
     });
