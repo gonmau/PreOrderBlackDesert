@@ -679,6 +679,12 @@ function renderMainChart() {
       avgData.push({ x: avgPt.ts, y: Math.round(avg) });
     });
 
+    // 전체 기간 평균 (수평선)
+    const overallAvg = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+    const firstTs = CCU_HOURLY[0].ts;
+    const lastTs  = CCU_HOURLY[CCU_HOURLY.length - 1].ts;
+    const overallAvgData = [{ x: firstTs, y: overallAvg }, { x: lastTs, y: overallAvg }];
+
     mainCI = new Chart(el.getContext('2d'), {
       type: 'line',
       plugins: [ccuLabelPlugin],
@@ -729,6 +735,18 @@ function renderMainChart() {
             backgroundColor: '#e74c3c',
             borderColor: '#e74c3c',
             showLine: false,
+          },
+          {
+            label: `전체 평균 ${(overallAvg/10000).toFixed(1)}만`,
+            data: overallAvgData,
+            borderColor: 'rgba(255,255,255,0.35)',
+            borderWidth: 1.5,
+            borderDash: [6, 4],
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            showLine: true,
+            fill: false,
+            tension: 0,
           },
         ]
       },
