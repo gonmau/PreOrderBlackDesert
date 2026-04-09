@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Crimson Desert — Steam 동접 트래커</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@500;600;700&display=swap');
 
@@ -654,56 +655,38 @@ function renderMainChart() {
   };
 
   if (currentView === 'hourly') {
-    // X축 라벨 & tick 위치: 날짜 경계 인덱스만 추출
-    // ※ autoSkip:false + 빈 문자열 혼합 방식은 날짜별 데이터 수 차이로 간격이 불균등해짐
-    //   → ticks.values 로 경계 인덱스만 명시하면 Chart.js가 해당 위치에만 tick 배치
-    const labels = CCU_HOURLY.map(d => d.ts.slice(0, 10)); // 내부용 (tooltip 등)
-    const dayBoundaryIndices = [];
-    const dayBoundaryLabels = {};
-    CCU_HOURLY.forEach((d, i) => {
-      const cur = d.ts.slice(0, 10);
-      const prv = i > 0 ? CCU_HOURLY[i-1].ts.slice(0, 10) : null;
-      if (i === 0 || cur !== prv) {
-        const [, mm, dd] = cur.split('-');
-        dayBoundaryIndices.push(i);
-        dayBoundaryLabels[i] = `${parseInt(mm)}/${parseInt(dd)}`;
-      }
-    });
-
-    // Y축 범위: 실제 동접 데이터 기준
+    // type:'time' scale — X축을 실제 시간 기준 등간격으로 렌더링
+    // data를 {x: ISO문자열, y: 값} 형태로 구성, labels 배열 불필요
     const vals = CCU_HOURLY.map(d => d.v);
     const yMin = Math.max(0, Math.floor(Math.min(...vals) * 0.92 / 5000) * 5000);
     const yMax = Math.ceil(Math.max(...vals) * 1.05 / 5000) * 5000;
 
     const byDay = {};
-    CCU_HOURLY.forEach((d, idx) => {
+    CCU_HOURLY.forEach(d => {
       const day = d.ts.slice(0, 10);
       if (!byDay[day]) byDay[day] = [];
-      byDay[day].push({ idx, v: d.v });
+      byDay[day].push(d);
     });
 
-    const peakArr = new Array(CCU_HOURLY.length).fill(null);
-    const minArr  = new Array(CCU_HOURLY.length).fill(null);
-    const avgArr  = new Array(CCU_HOURLY.length).fill(null);
+    const peakData = [], minData = [], avgData = [];
     Object.values(byDay).forEach(pts => {
       const peak  = pts.reduce((a, b) => b.v > a.v ? b : a);
       const min   = pts.reduce((a, b) => b.v < a.v ? b : a);
       const avg   = pts.reduce((s, b) => s + b.v, 0) / pts.length;
       const avgPt = pts.reduce((a, b) => Math.abs(b.v - avg) < Math.abs(a.v - avg) ? b : a);
-      peakArr[peak.idx]   = peak.v;
-      minArr[min.idx]     = min.v;
-      avgArr[avgPt.idx]   = Math.round(avg);
+      peakData.push({ x: peak.ts, y: peak.v });
+      minData.push({ x: min.ts,  y: min.v });
+      avgData.push({ x: avgPt.ts, y: Math.round(avg) });
     });
 
     mainCI = new Chart(el.getContext('2d'), {
       type: 'line',
       plugins: [ccuLabelPlugin],
       data: {
-        labels,
         datasets: [
           {
             label: '동접수',
-            data: CCU_HOURLY.map(d => d.v),
+            data: CCU_HOURLY.map(d => ({ x: d.ts, y: d.v })),
             borderColor: '#4a9eff',
             backgroundColor: 'rgba(74,158,255,0.07)',
             borderWidth: 2,
@@ -714,36 +697,33 @@ function renderMainChart() {
           },
           {
             label: '일 피크',
-            data: peakArr,
+            data: peakData,
             pointStyle: 'triangle',
-            pointRadius: peakArr.map(v => v !== null ? 8 : 0),
+            pointRadius: 8,
             pointHoverRadius: 10,
             backgroundColor: '#f1c40f',
             borderColor: '#f1c40f',
             showLine: false,
-            spanGaps: false,
           },
           {
             label: '일 평균',
-            data: avgArr,
+            data: avgData,
             pointStyle: 'circle',
-            pointRadius: avgArr.map(v => v !== null ? 6 : 0),
+            pointRadius: 6,
             pointHoverRadius: 8,
             backgroundColor: '#2ecc71',
             borderColor: '#2ecc71',
             showLine: false,
-            spanGaps: false,
           },
           {
             label: '일 최저',
-            data: minArr,
+            data: minData,
             pointStyle: 'rectRot',
-            pointRadius: minArr.map(v => v !== null ? 6 : 0),
+            pointRadius: 6,
             pointHoverRadius: 8,
             backgroundColor: '#e74c3c',
             borderColor: '#e74c3c',
             showLine: false,
-            spanGaps: false,
           },
         ]
       },
@@ -751,14 +731,19 @@ function renderMainChart() {
         ...commonOpts,
         scales: {
           x: {
-            ...axisStyle.x,
+            type: 'time',
+            time: {
+              unit: 'day',
+              displayFormats: { day: 'M/d' },
+              tooltipFormat: 'M/d HH:mm',
+            },
+            grid: { color: '#1a1a1a' },
             ticks: {
               color: '#888',
               font: { size: 11 },
               maxRotation: 0,
-              autoSkip: false,
-              values: dayBoundaryIndices,
-              callback: (val, idx) => dayBoundaryLabels[dayBoundaryIndices[idx]] || '',
+              autoSkip: true,
+              maxTicksLimit: 25,
             },
           },
           y: {
