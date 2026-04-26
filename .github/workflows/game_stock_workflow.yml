@@ -8,10 +8,10 @@ jobs:
   analyze:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
         with:
           fetch-depth: 0
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -29,6 +29,8 @@ jobs:
       
       - name: Pull latest changes
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git config pull.rebase true
           git pull --rebase --autostash origin ${{ github.ref_name }} || true
       
@@ -38,3 +40,4 @@ jobs:
           commit_message: 'Update game stock analysis results'
           file_pattern: 'game_stocks_analysis.*'
           push_options: '--force-with-lease'
+          token: ${{ secrets.GITHUB_TOKEN }}
