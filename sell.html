@@ -150,12 +150,12 @@
   <!-- 모델 근거 -->
   <div class="model-note">
     <b>📌 모델 근거</b><br>
-    • 공식 앵커: <b style="color:var(--gold)">D0=200만 (3/20)</b> · <b style="color:var(--gold)">D4=300만 (3/24)</b> · <b style="color:var(--gold)">D12=400만 (4/1)</b><br>
+    • 공식 앵커: <b style="color:var(--gold)">D0=200만 (3/20)</b> · <b style="color:var(--gold)">D4=300만 (3/24)</b> · <b style="color:var(--gold)">D12=400만 (4/1)</b> · <b style="color:var(--gold)">D26=500만 (4/15)</b><br>
     • PS는 WEIGHTS 기반 가중 평균 순위, Steam은 STS_W 기반 국가별 가중 평균 순위를 일별 신호로 사용합니다.<br>
-    • 공식 앵커: <b style="color:var(--gold)">D0=200만 (3/20)</b> · <b style="color:var(--gold)">D4=300만 (3/24)</b> · <b style="color:var(--gold)">D12=400만 (4/1)</b><br>
-    • D13+는 <b style="color:#4a9eff">Steam CCU × 배율</b> 방식으로 일별 판매량 추정. CCU 없는 날은 마지막 CCU에 0.970/일 decay 적용.<br>
-    • 기준 배율 <b style="color:#f1c40f">0.364x</b>는 공식 앵커 D9~D12 역산값. 마일스톤 예측도 동일 방식 통일 적용.<br>
-    • <b style="color:#2ecc71">📐 추세 맞춤</b>: D12 이후 실측 CCU 기반으로 최적 배율 자동 역산.
+    • 공식 앵커: <b style="color:var(--gold)">D0=200만 (3/20)</b> · <b style="color:var(--gold)">D4=300만 (3/24)</b> · <b style="color:var(--gold)">D12=400만 (4/1)</b> · <b style="color:var(--gold)">D26=500만 (4/15)</b><br>
+    • D13~D26: <b style="color:#f1c40f">500만 앵커 역산</b>으로 CCU 비율 가중 고정 배분. D27+는 <b style="color:#4a9eff">Steam CCU × 배율</b> 방식으로 일별 판매량 추정.<br>
+    • 기준 배율 <b style="color:#f1c40f">1.05x</b>는 1Q26 어닝스레터 가이던스(붉은사막 연간 6,441~7,348억) 역산값. D27+ 적용.<br>
+    • <b style="color:#2ecc71">📐 추세 맞춤</b>: D27 이후 실측 CCU 기반으로 최적 배율 자동 역산.
     • 각 플랫폼 <b style="color:var(--tx-2)">+숫자*</b>는 순위 미반영 채널 고정비율 추정치 (참고용).
   </div>
 
@@ -172,15 +172,15 @@
     <div style="font-size:11px;color:#f1c40f;font-weight:800;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase">📌 공지기반 — D13+ CCU 배율 조정</div>
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px">
-        <input id="anchored-decay-slider" type="range" min="0.28" max="0.52" step="0.001" value="0.364"
+        <input id="anchored-decay-slider" type="range" min="0.5" max="1.5" step="0.01" value="1.05"
           style="flex:1;accent-color:#f1c40f;cursor:pointer" oninput="updateAnchoredDecayLabel()">
-        <span style="font-size:18px;font-weight:900;color:#f1c40f;font-family:'Cinzel',serif;min-width:48px" id="anchored-decay-lbl">0.364</span>
+        <span style="font-size:18px;font-weight:900;color:#f1c40f;font-family:'Cinzel',serif;min-width:48px" id="anchored-decay-lbl">1.05</span>
       </div>
       <button onclick="fitDecayToTrend()" style="background:rgba(46,204,113,0.15);border:1px solid #2ecc71;color:#2ecc71;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;white-space:nowrap">📐 추세 맞춤</button>
       <div style="font-size:11px;color:var(--tx-4);display:flex;gap:10px;flex-wrap:wrap">
-        <span>0.30 <span style="color:#e74c3c">보수</span></span>
-        <span>0.364 <span style="color:#f1c40f">앵커역산</span></span>
-        <span>0.40 <span style="color:#2ecc71">낙관</span></span>
+        <span>0.60 <span style="color:#e74c3c">보수</span></span>
+        <span>1.05 <span style="color:#f1c40f">레터역산</span></span>
+        <span>1.30 <span style="color:#2ecc71">낙관</span></span>
       </div>
     </div>
     <div id="anchored-ref-lbl" style="font-size:11px;color:var(--tx-3);margin-top:6px"></div>
@@ -409,11 +409,11 @@ function updateAnchoredDecayLabel() {
   const v = parseFloat(slider.value);
   if (lbl) lbl.textContent = v.toFixed(3);
   const refs = [
-    { max:0.31, name:'보수적',    desc:'빠른 감소 시나리오',    color:'#e74c3c' },
-    { max:0.35, name:'중간 보수', desc:'완만한 감소',            color:'#e67e22' },
-    { max:0.38, name:'앵커 역산', desc:'D9~D12 공식앵커 기준',   color:'#f1c40f' },
-    { max:0.43, name:'낙관적',    desc:'패치 효과 지속 시나리오',color:'#2ecc71' },
-    { max:0.53, name:'매우 낙관', desc:'CCU 유지력 강한 시나리오',color:'#4a9eff'},
+    { max:0.70, name:'보수적',    desc:'D27+ 빠른 감소 시나리오',    color:'#e74c3c' },
+    { max:0.90, name:'중간 보수', desc:'완만한 감소',                 color:'#e67e22' },
+    { max:1.10, name:'레터 역산', desc:'1Q26 어닝스레터 가이던스 기준', color:'#f1c40f' },
+    { max:1.30, name:'낙관적',    desc:'패치·DLC 효과 지속',          color:'#2ecc71' },
+    { max:1.51, name:'매우 낙관', desc:'CCU 유지력 강한 시나리오',     color:'#4a9eff' },
   ];
   const ref = refs.find(r => v <= r.max) || refs[refs.length-1];
   if (refLbl) refLbl.innerHTML = `→ <b style="color:${ref.color}">${ref.name}</b> <span style="color:var(--tx-4)">(${ref.desc})</span>`;
@@ -435,7 +435,7 @@ let salesDailyCI = null, salesCumCI = null;
 function renderSalesChart() {
   const soldThroughD0 = parseInt(document.getElementById('sales-day1-total').value) || 2000000;
   const refundPct     = parseFloat(document.getElementById('sales-refund-pct').value) || 8;
-  const psBaseRatio   = parseInt(document.getElementById('sales-ps-ratio').value) || 28;
+  const psBaseRatio   = parseInt(document.getElementById('sales-ps-ratio').value) || 26;
   const xbBaseRatio   = 10, otherBaseRatio = 14;
   const stBaseRatio   = Math.max(5, 100 - psBaseRatio - xbBaseRatio - otherBaseRatio);
   const lbl = document.getElementById('sales-steam-ratio-lbl');
@@ -550,7 +550,10 @@ function renderSalesChart() {
   for (let di=5; di<=12; di++) totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, D4_TO_D12_INC*(day5_12W[di-5]/w5_12Sum)));
 
   // ── D13+: CCU 기반 모델 ──
-  // CCU 일별 피크를 일별 인덱스로 집계
+  // 500만 앵커(D26) 확정: D13~D26 구간 합계를 역산해 고정 배분
+  const MILESTONE_D26 = 5_000_000;
+  const D12_CUM = totalDaily.slice(0, 13).reduce((a, b) => a + b, 0); // D0~D12 누적
+  const D13_D26_INC = Math.max(0, MILESTONE_D26 - D12_CUM); // D13~D26 에 채워야 할 판매량
   const ccuByDay = {};
   ccuHist.forEach(h => {
     const di = getDayIndex(h.timestamp);
@@ -561,14 +564,35 @@ function renderSalesChart() {
   });
 
   const _sl = document.getElementById('anchored-decay-slider');
-  const CCU_RATIO  = (currentSalesMode === 'anchored' && _sl) ? parseFloat(_sl.value) : 0.364;
+  const CCU_RATIO  = (currentSalesMode === 'anchored' && _sl) ? parseFloat(_sl.value) : 1.05;
   const CCU_DECAY  = 0.970;   // CCU 자체 일별 감소율 (fallback용)
   const CCU_FLOOR  = 25000;   // 최저 일별 판매량
 
   // D12 기준 CCU 추정값 (CCU 데이터 없을 때 fallback 기준)
   const D12_CCU_BASE = ccuByDay[12] || 250000;
 
-  for (let di = 13; di < days.length; di++) {
+  // ── D13~D26: 500만 앵커 기준 고정 배분 ──
+  // CCU 신호 비율로 배분하되, 합계를 D13_D26_INC에 맞춤
+  const d13_26Weights = [];
+  for (let di = 13; di <= 26; di++) {
+    let ccu;
+    if (ccuByDay[di] != null) {
+      ccu = ccuByDay[di];
+    } else {
+      const lastRealDay = Math.max(...Object.keys(ccuByDay).map(Number).filter(d => d <= di), 12);
+      const lastCCU = ccuByDay[lastRealDay] ?? D12_CCU_BASE;
+      const gap = di - lastRealDay;
+      ccu = lastCCU * Math.pow(CCU_DECAY, gap);
+    }
+    d13_26Weights.push(Math.max(1, ccu));
+  }
+  const wSum13_26 = d13_26Weights.reduce((a, b) => a + b, 0) || 1;
+  for (let di = 13; di <= 26; di++) {
+    totalDaily[di] = Math.round(Math.max(CCU_FLOOR, D13_D26_INC * (d13_26Weights[di - 13] / wSum13_26)));
+  }
+
+  // ── D27+: CCU 기반 모델 (레터 역산 배율 적용) ──
+  for (let di = 27; di < days.length; di++) {
     let ccu;
     if (ccuByDay[di] != null) {
       ccu = ccuByDay[di];
@@ -685,6 +709,7 @@ function renderSalesChart() {
       { target:2_000_000, date:new Date('2026-03-20T23:46:00+09:00'), day:0  },
       { target:3_000_000, date:new Date('2026-03-24T19:19:00+09:00'), day:4  },
       { target:4_000_000, date:new Date('2026-04-01T11:00:00+09:00'), day:12 },
+      { target:5_000_000, date:new Date('2026-04-15T12:00:00+09:00'), day:26 },
     ];
 
     function findMilestone(target) {
@@ -718,7 +743,7 @@ function renderSalesChart() {
     const mCards = [
       { label:'🎯 300만 달성 ✅', ms:findMilestone(3_000_000),  color:'#2ecc71' },
       { label:'🏅 400만 달성 ✅', ms:findMilestone(4_000_000),  color:'#f1c40f' },
-      { label:'🚀 500만 달성',    ms:findMilestone(5_000_000),  color:'#4a9eff' },
+      { label:'🚀 500만 달성 ✅', ms:findMilestone(5_000_000),  color:'#4a9eff' },
       { label:'🚀 600만 달성',    ms:findMilestone(6_000_000),  color:'#e67e22' },
       { label:'🔥 700만 달성',    ms:findMilestone(7_000_000),  color:'#e74c3c' },
       { label:'🔥 800만 달성',    ms:findMilestone(8_000_000),  color:'#c0392b' },
