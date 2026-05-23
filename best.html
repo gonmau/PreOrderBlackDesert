@@ -934,12 +934,12 @@
       <!-- PS Store 현재 순위 -->
       <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--blood);border-radius:var(--radius)">
         <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--blood);letter-spacing:1px;border-bottom:1px solid var(--bd)">🎮 PS Store 현재 순위</div>
-        <div id="ps-current-ranks" style="padding:10px 14px;display:grid;gap:6px"></div>
+        <div id="ps-current-ranks" style="padding:10px 14px;max-height:600px;overflow-y:auto"></div>
       </div>
       <!-- Steam 현재 순위 -->
       <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--steam);border-radius:var(--radius)">
         <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--steam);letter-spacing:1px;border-bottom:1px solid var(--bd)">🖥 Steam 현재 순위</div>
-        <div id="sts-current-ranks" style="padding:10px 14px;display:grid;gap:6px"></div>
+        <div id="sts-current-ranks" style="padding:10px 14px;max-height:600px;overflow-y:auto"></div>
       </div>
     </div>
 
@@ -4846,10 +4846,10 @@ async function fetchStock() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   현재 순위표 렌더링
+   현재 순위표 렌더링 (전체 국가)
 ══════════════════════════════════════════════════════════════ */
 function renderCurrentRanks() {
-  // PS Store 현재 순위
+  // PS Store 현재 순위 (전체)
   if (historyData.length > 0) {
     const curr = historyData[historyData.length - 1];
     const countries = Object.keys(curr.raw_results || {})
@@ -4858,49 +4858,53 @@ function renderCurrentRanks() {
         rank: getRank(curr, name),
         flag: FLAGS[name] || ''
       }))
-      .filter(c => c.rank < 999)
-      .sort((a, b) => a.rank - b.rank)
-      .slice(0, 10);
+      .sort((a, b) => {
+        if (a.rank < 999 && b.rank < 999) return a.rank - b.rank;
+        if (a.rank < 999) return -1;
+        if (b.rank < 999) return 1;
+        return a.name.localeCompare(b.name);
+      });
     
     const psEl = document.getElementById('ps-current-ranks');
     if (psEl) {
-      psEl.innerHTML = countries.map((c, idx) => {
-        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '';
-        const rankColor = idx === 0 ? 'var(--gold)' : idx <= 2 ? '#c0c0c0' : idx <= 9 ? '#4a9eff' : 'var(--tx-2)';
-        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd)">
-          <span style="font-size:16px;width:24px">${medal}</span>
-          <span style="font-size:18px;color:${rankColor};font-weight:800;min-width:32px">${c.rank}위</span>
-          <span style="font-size:16px">${c.flag}</span>
-          <span style="flex:1;font-size:14px;font-weight:700;color:var(--tx-2)">${c.name}</span>
+      psEl.innerHTML = countries.map(c => {
+        const rankColor = c.rank === 1 ? 'var(--gold)' : c.rank <= 3 ? '#c0c0c0' : c.rank <= 10 ? '#4a9eff' : c.rank < 999 ? 'var(--tx-2)' : 'var(--tx-4)';
+        const rankTxt = c.rank >= 999 ? '—' : c.rank + '위';
+        return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
+          <span style="font-size:13px;color:${rankColor};font-weight:700;min-width:38px;text-align:right">${rankTxt}</span>
+          <span style="font-size:14px">${c.flag}</span>
+          <span style="flex:1;font-size:12px;font-weight:600;color:var(--tx-2)">${c.name}</span>
         </div>`;
       }).join('');
       twemoji.parse(psEl, { folder: 'svg', ext: '.svg' });
     }
   }
   
-  // Steam 현재 순위
+  // Steam 현재 순위 (전체)
   if (stsHist.length > 0) {
     const lat = stsHist[stsHist.length - 1];
     const countries = Object.entries(lat.results || {})
       .map(([name, data]) => ({
         name,
         rank: data?.rank || 999,
-        flag: STS_CC[name] ? `<img src="https://flagcdn.com/w40/${STS_CC[name]}.png" style="width:18px;height:13px;object-fit:cover;border-radius:2px">` : ''
+        flag: STS_CC[name] ? `<img src="https://flagcdn.com/w40/${STS_CC[name]}.png" style="width:16px;height:12px;object-fit:cover;border-radius:2px">` : ''
       }))
-      .filter(c => c.rank < 999)
-      .sort((a, b) => a.rank - b.rank)
-      .slice(0, 10);
+      .sort((a, b) => {
+        if (a.rank < 999 && b.rank < 999) return a.rank - b.rank;
+        if (a.rank < 999) return -1;
+        if (b.rank < 999) return 1;
+        return a.name.localeCompare(b.name);
+      });
     
     const stsEl = document.getElementById('sts-current-ranks');
     if (stsEl) {
-      stsEl.innerHTML = countries.map((c, idx) => {
-        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '';
-        const rankColor = idx === 0 ? 'var(--gold)' : idx <= 2 ? '#c0c0c0' : idx <= 9 ? '#4a9eff' : 'var(--tx-2)';
-        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd)">
-          <span style="font-size:16px;width:24px">${medal}</span>
-          <span style="font-size:18px;color:${rankColor};font-weight:800;min-width:32px">${c.rank}위</span>
-          <span style="font-size:16px">${c.flag}</span>
-          <span style="flex:1;font-size:14px;font-weight:700;color:var(--tx-2)">${c.name}</span>
+      stsEl.innerHTML = countries.map(c => {
+        const rankColor = c.rank === 1 ? 'var(--gold)' : c.rank <= 3 ? '#c0c0c0' : c.rank <= 10 ? '#4a9eff' : c.rank < 999 ? 'var(--tx-2)' : 'var(--tx-4)';
+        const rankTxt = c.rank >= 999 ? '—' : c.rank + '위';
+        return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
+          <span style="font-size:13px;color:${rankColor};font-weight:700;min-width:38px;text-align:right">${rankTxt}</span>
+          <span style="font-size:14px">${c.flag}</span>
+          <span style="flex:1;font-size:12px;font-weight:600;color:var(--tx-2)">${c.name}</span>
         </div>`;
       }).join('');
       twemoji.parse(stsEl, { folder: 'svg', ext: '.svg' });
