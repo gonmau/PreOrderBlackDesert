@@ -928,6 +928,21 @@
 
   <!-- ① 요약 -->
   <div id="sec-summary" class="tab-section active-section">
+    
+    <!-- 현재 순위표 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <!-- PS Store 현재 순위 -->
+      <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--blood);border-radius:var(--radius)">
+        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--blood);letter-spacing:1px;border-bottom:1px solid var(--bd)">🎮 PS Store 현재 순위</div>
+        <div id="ps-current-ranks" style="padding:10px 14px;display:grid;gap:6px"></div>
+      </div>
+      <!-- Steam 현재 순위 -->
+      <div style="background:var(--bg-1);border:1px solid var(--bd);border-top:2px solid var(--steam);border-radius:var(--radius)">
+        <div style="padding:8px 14px;font-size:13px;font-weight:800;color:var(--steam);letter-spacing:1px;border-bottom:1px solid var(--bd)">🖥 Steam 현재 순위</div>
+        <div id="sts-current-ranks" style="padding:10px 14px;display:grid;gap:6px"></div>
+      </div>
+    </div>
+
     <div class="dual-wrap">
       <!-- PS 좌측 -->
       <div class="dual-col ps-col">
@@ -1736,6 +1751,7 @@ function render() {
   renderMainChart();
   renderSchedule();
   renderPsHeatmap(list);
+  renderCurrentRanks();
 
   // 모든 이모지를 Twemoji 이미지로 변환 (PC/모바일 크로스 플랫폼)
   // twemoji는 각 섹션 렌더 후 개별 호출하여 전체 body 재파싱 방지
@@ -4039,6 +4055,7 @@ function renderSTS() {
   renderStsTable(lat, prv);
   renderStsHeatmap(lat, prv);
   renderStsLeaderboard(lat, prv);
+  renderCurrentRanks();
   // PS+Steam 데이터 모두 로드 후 차트 렌더
   if (historyData.length > 0 && document.getElementById('sec-summary')?.classList.contains('active-section')) setTimeout(renderSummaryCharts, 150);
 }
@@ -4826,6 +4843,69 @@ async function fetchStock() {
 
   priceEl.textContent = '—';
   changeEl.innerHTML  = '<a href="https://finance.naver.com/item/main.nhn?code=263750" target="_blank" style="color:#4a9eff;font-size:11px;text-decoration:none">네이버↗</a>';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   현재 순위표 렌더링
+══════════════════════════════════════════════════════════════ */
+function renderCurrentRanks() {
+  // PS Store 현재 순위
+  if (historyData.length > 0) {
+    const curr = historyData[historyData.length - 1];
+    const countries = Object.keys(curr.raw_results || {})
+      .map(name => ({
+        name,
+        rank: getRank(curr, name),
+        flag: FLAGS[name] || ''
+      }))
+      .filter(c => c.rank < 999)
+      .sort((a, b) => a.rank - b.rank)
+      .slice(0, 10);
+    
+    const psEl = document.getElementById('ps-current-ranks');
+    if (psEl) {
+      psEl.innerHTML = countries.map((c, idx) => {
+        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '';
+        const rankColor = idx === 0 ? 'var(--gold)' : idx <= 2 ? '#c0c0c0' : idx <= 9 ? '#4a9eff' : 'var(--tx-2)';
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd)">
+          <span style="font-size:16px;width:24px">${medal}</span>
+          <span style="font-size:18px;color:${rankColor};font-weight:800;min-width:32px">${c.rank}위</span>
+          <span style="font-size:16px">${c.flag}</span>
+          <span style="flex:1;font-size:14px;font-weight:700;color:var(--tx-2)">${c.name}</span>
+        </div>`;
+      }).join('');
+      twemoji.parse(psEl, { folder: 'svg', ext: '.svg' });
+    }
+  }
+  
+  // Steam 현재 순위
+  if (stsHist.length > 0) {
+    const lat = stsHist[stsHist.length - 1];
+    const countries = Object.entries(lat.results || {})
+      .map(([name, data]) => ({
+        name,
+        rank: data?.rank || 999,
+        flag: STS_CC[name] ? `<img src="https://flagcdn.com/w40/${STS_CC[name]}.png" style="width:18px;height:13px;object-fit:cover;border-radius:2px">` : ''
+      }))
+      .filter(c => c.rank < 999)
+      .sort((a, b) => a.rank - b.rank)
+      .slice(0, 10);
+    
+    const stsEl = document.getElementById('sts-current-ranks');
+    if (stsEl) {
+      stsEl.innerHTML = countries.map((c, idx) => {
+        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '';
+        const rankColor = idx === 0 ? 'var(--gold)' : idx <= 2 ? '#c0c0c0' : idx <= 9 ? '#4a9eff' : 'var(--tx-2)';
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd)">
+          <span style="font-size:16px;width:24px">${medal}</span>
+          <span style="font-size:18px;color:${rankColor};font-weight:800;min-width:32px">${c.rank}위</span>
+          <span style="font-size:16px">${c.flag}</span>
+          <span style="flex:1;font-size:14px;font-weight:700;color:var(--tx-2)">${c.name}</span>
+        </div>`;
+      }).join('');
+      twemoji.parse(stsEl, { folder: 'svg', ext: '.svg' });
+    }
+  }
 }
 
 init();
