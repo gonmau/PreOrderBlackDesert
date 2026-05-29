@@ -2196,7 +2196,7 @@ function stsAvg(h) {
   if (!h || !h.results) return null;
   let tw = 0, ts = 0;
   for (const [n, d] of Object.entries(h.results)) {
-    const r = d && d.rank; if (!r || r > 20) continue;  // 20위 밖 제외
+    const r = d && d.rank; if (!r) continue;
     const w = STS_W[n] || 1.0; ts += r * w; tw += w;
   }
   return tw > 0 ? Math.round(ts / tw * 10) / 10 : null;
