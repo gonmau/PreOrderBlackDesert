@@ -12242,5 +12242,14 @@
         "geo_code": "FR"
       }
     }
+  },
+  {
+    "timestamp": "2026-05-30T00:23:11.161044",
+    "google": {
+      "score": 18,
+      "avg_7d": 33,
+      "top_regions": {}
+    },
+    "console_markets": {}
   }
 ]
