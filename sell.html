@@ -31,7 +31,7 @@
   }
   #header .title { font-family: 'Cinzel',serif; font-size: 1.1rem; font-weight: 900; color: var(--gold); letter-spacing: 2px; }
   #header .sub   { font-size: 11px; color: var(--tx-4); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
-  #fetch-status  { font-size: 11px; color: var(--tx-4); font-weight: 700; margin-left: auto; }
+  #fetch-status  { font-size: 11px; color: var(--tx-4); font-weight: 700; margin-left: auto; white-space: nowrap; }
 
   /* ── 본문 ── */
   .page-body { max-width: 1200px; margin: 0 auto; padding: 16px 20px 40px; }
@@ -153,7 +153,7 @@
     • 공식 앵커: <b style="color:var(--gold)">D0=200만 (3/20)</b> · <b style="color:var(--gold)">D4=300만 (3/24)</b> · <b style="color:var(--gold)">D12=400만 (4/1)</b> · <b style="color:var(--gold)">D26=500만 (4/15)</b><br>
     • PS는 WEIGHTS 기반 가중 평균 순위, Steam은 STS_W 기반 국가별 가중 평균 순위를 일별 신호로 사용합니다.<br>
     • 공식 앵커: <b style="color:var(--gold)">D0=200만 (3/20)</b> · <b style="color:var(--gold)">D4=300만 (3/24)</b> · <b style="color:var(--gold)">D12=400만 (4/1)</b> · <b style="color:var(--gold)">D26=500만 (4/15)</b><br>
-    • D13~D26: <b style="color:#f1c40f">500만 앵커 역산</b>으로 CCU 비율 가중 고정 배분. D27+는 <b style="color:#4a9eff">Steam CCU × 배율</b> 방식으로 일별 판매량 추정.<br>
+    • D13~D26: <b style="color:#f1c40f">500만 앵커 역산</b>으로 CCU 비율 가중 고정 배분 (슬라이더로 평탄화 조정). D27+는 <b style="color:#4a9eff">실측 CCU × 0.409</b> 방식, CCU 없는 날 0.973 decay 적용.<br>
     • 기준 배율 <b style="color:#f1c40f">1.05x</b>는 1Q26 어닝스레터 가이던스(붉은사막 연간 6,441~7,348억) 역산값. D27+ 적용.<br>
     • <b style="color:#2ecc71">📐 추세 맞춤</b>: D27 이후 실측 CCU 기반으로 최적 배율 자동 역산.
     • 각 플랫폼 <b style="color:var(--tx-2)">+숫자*</b>는 순위 미반영 채널 고정비율 추정치 (참고용).
@@ -179,7 +179,7 @@
       <button onclick="fitDecayToTrend()" style="background:rgba(46,204,113,0.15);border:1px solid #2ecc71;color:#2ecc71;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;white-space:nowrap">📐 추세 맞춤</button>
       <div style="font-size:11px;color:var(--tx-4);display:flex;gap:10px;flex-wrap:wrap">
         <span>0.5 <span style="color:#e74c3c">초반집중</span></span>
-        <span>1.05 <span style="color:#f1c40f">레터역산</span></span>
+        <span>1.0 <span style="color:#f1c40f">CCU비례</span></span>
         <span>1.5 <span style="color:#2ecc71">균등배분</span></span>
       </div>
     </div>
@@ -600,7 +600,7 @@ function renderSalesChart() {
     totalDaily[di] = Math.round(Math.max(CCU_FLOOR, D13_D26_INC * Math.max(0.01, blended)));
   }
 
-  // ── D27+: CCU×실측배율 모델 (전 모드 공통, 공지기반은 decay 보정 추가) ──
+  // ── D27+: 실측 CCU × CCU_SALES_RATIO (전 모드 공통, CCU 없는 날 0.973 decay) ──
   for (let di = 27; di < days.length; di++) {
     let ccu;
     if (ccuByDay[di] != null) {
