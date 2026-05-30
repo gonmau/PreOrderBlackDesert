@@ -2860,32 +2860,26 @@ function renderSalesChart() {
     totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, D4_TO_D12_INC * (day5_12Weights[di - 5] / w5_12Sum)));
   }
 
-  // ── D13~D26: 500만 앵커 고정 구간 (공지기반·일반 공통) ──
-  // D13~D26 합산 = D12_TO_D26_INC (100만), decay 가중 분배
-  {
+  // ── D13+: 모드별 분기 ──
+  if (currentSalesMode === 'anchored') {
+    // 📌 공지기반: D13~D26 = 500만 앵커 고정, D27+ = 슬라이더 decay
     const sliderEl = document.getElementById('anchored-decay-slider');
     const ANC_DECAY = sliderEl ? parseFloat(sliderEl.value) : 0.893;
-    // decay 가중치 계산 (D13=1, D14=decay^1, ...)
     let w13_26 = 0;
     for (let di = 13; di <= 26; di++) w13_26 += Math.pow(ANC_DECAY, di - 13);
     const d13Base = w13_26 > 0 ? D12_TO_D26_INC / w13_26 : D12_TO_D26_INC / 14;
     for (let di = 13; di <= 26; di++) {
       totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, d13Base * Math.pow(ANC_DECAY, di - 13)));
     }
-  }
-
-  // ── D27+: D26 앵커 기준으로 슬라이더 decay 적용 ──
-  if (currentSalesMode === 'anchored') {
-    const sliderEl = document.getElementById('anchored-decay-slider');
-    const ANC_D27_DECAY = sliderEl ? parseFloat(sliderEl.value) : 0.893;
     for (let di = 27; di < days.length; di++) {
-      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[26] * Math.pow(ANC_D27_DECAY, di - 26)));
+      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[26] * Math.pow(ANC_DECAY, di - 26)));
     }
   } else {
-    for (let di = 27; di < days.length; di++) {
-      const signalRef = comboSignal[26] || comboSignal[12] || comboSignal[4] || 1;
+    // 낙관적·보수적: 기존 순위 신호 기반 decay (D12 기준)
+    for (let di = 13; di < days.length; di++) {
+      const signalRef = comboSignal[12] || comboSignal[4] || comboSignal[0] || 1;
       const rel = clamp((comboSignal[di] || signalRef) / signalRef, 0.75, 1.20);
-      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[26] * Math.pow(POST_D12_DECAY, di - 26) * rel));
+      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[12] * Math.pow(POST_D12_DECAY, di - 12) * rel));
     }
   }
 
