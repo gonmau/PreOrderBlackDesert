@@ -185,7 +185,7 @@
     </div>
     <div id="anchored-ref-lbl" style="font-size:11px;color:var(--tx-3);margin-top:6px"></div>
     <div id="anchored-fit-lbl" style="font-size:11px;color:#2ecc71;margin-top:4px;display:none"></div>
-    <div style="font-size:10px;color:var(--tx-4);margin-top:5px">D0~D12: 공식 앵커 고정 · D13+: Steam CCU × 배율 → CCU 없는 날은 마지막 CCU에 decay 0.970 적용</div>
+    <div style="font-size:10px;color:var(--tx-4);margin-top:5px">D0~D12: 공식 앵커 고정 (200만·300만·400만) · D13~D26: 500만 앵커 CCU 비율 역산 고정 · D27+: CCU × 배율 (CCU 없는 날 0.970 decay)</div>
   </div>
 
   <!-- 컨트롤 -->
@@ -197,8 +197,8 @@
       <input id="sales-refund-pct" class="ctrl-input" type="number" value="8" min="0" max="25" step="1" style="width:55px">
     </label>
     <label>PS5 기본(%):
-      <input id="sales-ps-ratio" class="ctrl-input" type="number" value="28" min="10" max="60" step="1" style="width:55px">
-      <span style="color:var(--tx-4);font-size:11px"> Steam <span id="sales-steam-ratio-lbl">48</span>% / Xbox 10% / 기타 14%<br><span style="color:#666;font-size:10px">※ 1Q26 어닝스레터 콘솔38%/PC59% 기준 보정 (구: Alinea 27% · VG Insights 50%)</span></span>
+      <input id="sales-ps-ratio" class="ctrl-input" type="number" value="34" min="10" max="60" step="1" style="width:55px">
+      <span style="color:var(--tx-4);font-size:11px"> Steam <span id="sales-steam-ratio-lbl">47</span>% / Xbox 13% / 기타 6%<br><span style="color:#666;font-size:10px">※ Sensor Tower 500만 실측: Steam 53%·PS5 34%·Xbox 13% / 1Q26 매출기준 PC:콘솔=50:50</span></span>
     </label>
     <button class="calc-btn" onclick="renderSalesChart()">재계산</button>
   </div>
@@ -436,7 +436,7 @@ function renderSalesChart() {
   const soldThroughD0 = parseInt(document.getElementById('sales-day1-total').value) || 2000000;
   const refundPct     = parseFloat(document.getElementById('sales-refund-pct').value) || 8;
   const psBaseRatio   = parseInt(document.getElementById('sales-ps-ratio').value) || 26;
-  const xbBaseRatio   = 10, otherBaseRatio = 14;
+  const xbBaseRatio   = 13, otherBaseRatio = 6;
   const stBaseRatio   = Math.max(5, 100 - psBaseRatio - xbBaseRatio - otherBaseRatio);
   const lbl = document.getElementById('sales-steam-ratio-lbl');
   if (lbl) lbl.textContent = stBaseRatio;
@@ -566,7 +566,7 @@ function renderSalesChart() {
   const _sl = document.getElementById('anchored-decay-slider');
   const CCU_RATIO  = (currentSalesMode === 'anchored' && _sl) ? parseFloat(_sl.value) : 1.05;
   const CCU_DECAY  = 0.970;   // CCU 자체 일별 감소율 (fallback용)
-  const CCU_FLOOR  = 25000;   // 최저 일별 판매량
+  const CCU_FLOOR  = MODE.dailyFloor;  // 최저 일별 판매량 (모드별 상이)
 
   // D12 기준 CCU 추정값 (CCU 데이터 없을 때 fallback 기준)
   const D12_CCU_BASE = ccuByDay[12] || 250000;
@@ -606,9 +606,10 @@ function renderSalesChart() {
     if (currentSalesMode === 'anchored') {
       totalDaily[di] = Math.round(Math.max(CCU_FLOOR, ccu * CCU_RATIO));
     } else {
-      const sRef = comboSignal[12] || comboSignal[4] || comboSignal[0] || 1;
+      // 보수·중간·낙관: D26 앵커 기준 순위 신호 decay
+      const sRef = comboSignal[26] || comboSignal[12] || comboSignal[4] || 1;
       const rel  = clamp((comboSignal[di] || sRef) / sRef, 0.75, 1.20);
-      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[12] * Math.pow(MODE.postDecay, di - 12) * rel));
+      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[26] * Math.pow(MODE.postDecay, di - 26) * rel));
     }
   }
 
