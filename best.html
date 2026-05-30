@@ -1172,7 +1172,7 @@
               </div>
             </div>
             <div id="anchored-ref-lbl" style="font-size:11px;color:var(--tx-3);margin-top:6px"></div>
-            <div style="font-size:10px;color:var(--tx-4);margin-top:5px">D0~D12: 공식 발표 앵커 고정 (200만 3/20·300만 3/24·400만 4/1) — D13+: 슬라이더 감소율 적용</div>
+            <div style="font-size:10px;color:var(--tx-4);margin-top:5px">D0~D12: 공식 발표 앵커 고정 (200만 3/20·300만 3/24·400만 4/1) — D13~D26: 500만 앵커 고정 (4/15) — D27+: 슬라이더 감소율 적용</div>
           </div>
           <!-- 컨트롤 -->
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
@@ -1185,9 +1185,9 @@
                 style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:55px;margin-left:6px">
             </label>
             <label style="font-size:12px;color:var(--tx-3)">PS5 기본(%):
-              <input id="sales-ps-ratio" type="number" value="36" min="10" max="60" step="1"
+              <input id="sales-ps-ratio" type="number" value="34" min="10" max="60" step="1"
                 style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:55px;margin-left:6px">
-              <span style="color:var(--tx-4);font-size:11px"> Steam <span id="sales-steam-ratio-lbl">40</span>% / Xbox 10% / 기타 14%</span>
+              <span style="color:var(--tx-4);font-size:11px"> Steam <span id="sales-steam-ratio-lbl">47</span>% / Xbox 13% / 기타 6%</span>
             </label>
             <button onclick="renderSalesChart()" style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:5px 14px;color:var(--tx-2);font-size:13px;cursor:pointer;font-weight:700">재계산</button>
           </div>
@@ -2308,10 +2308,12 @@ function closePsLinksPopover() {
      컨트롤 논란, Xbox 앱 오류 등)
 
    [플랫폼 비율 추정 근거]
-   - Steam 사전 판매 363K / 총 2M → Steam 비율 최소 18%
-   - 대형 AAA 통상: PS5 45~55%, PC 30~40%, Xbox 10~20%
-   - Pearl Abyss 특성상 아시아·콘솔 비중 높아 PS 비중 높게 설정
-   - 기본값: PS5 36%, Steam 40%, Xbox 10%, 기타 14%
+   - Sensor Tower 500만 판매 실측 기준: PS5 34%, Steam 53%, Xbox 13%
+   - best.html 기본값: PS5 34%, Steam 47%, Xbox 13%, 기타 6%
+     (Steam 순위 추적 외 EGS·Mac 등 기타 채널 포함해 Steam을 보수적으로 조정)
+   - 실적발표(Q1 매출 기준): 콘솔 50%, PC 50% — 매출 기준이므로 판매량 비중과 다름
+     (PS5 단가 > Steam 단가 → 판매량 기준 Steam 비중이 더 높은 것과 일관성 있음)
+   - 기본값: PS5 34%, Steam 47%, Xbox 13%, 기타 6%
      (입력 UI에서 조정 가능 — 주석은 코드 기본값 기준)
 
    [2M 수치 보수적 해석]
@@ -2717,8 +2719,8 @@ function renderSalesChart() {
   const soldThroughD0 = parseInt(document.getElementById('sales-day1-total').value) || 2000000;
   const refundPct = parseFloat(document.getElementById('sales-refund-pct').value) || 8;
   const psBaseRatio = parseInt(document.getElementById('sales-ps-ratio').value) || 36;
-  const xbBaseRatio = 10;
-  const otherBaseRatio = 14;
+  const xbBaseRatio = 13;
+  const otherBaseRatio = 6;
   const stBaseRatio = Math.max(5, 100 - psBaseRatio - xbBaseRatio - otherBaseRatio);
   const lbl = document.getElementById('sales-steam-ratio-lbl');
   if (lbl) lbl.textContent = stBaseRatio;
@@ -2743,9 +2745,11 @@ function renderSalesChart() {
 
   const MILESTONE_DAY4  = 3000000;
   const MILESTONE_DAY12 = 4000000;  // ← D12(4/1) 공식 발표 앵커
+  const MILESTONE_DAY26 = 5000000;  // ← D26(4/15) 공식 발표 앵커 (500만)
   const PRE4_INCREMENT  = Math.max(0, MILESTONE_DAY4 - soldThroughD0);
   const D4_TO_D12_INC   = Math.max(0, MILESTONE_DAY12 - MILESTONE_DAY4); // D5~D12 합산 = 100만
-  const POST_D12_DECAY  = MODE.postDecay;  // D13+ 감소율
+  const D12_TO_D26_INC  = Math.max(0, MILESTONE_DAY26 - MILESTONE_DAY12); // D13~D26 합산 = 100만
+  const POST_D12_DECAY  = MODE.postDecay;  // D27+ 감소율
   const POST_D4_DECAY   = MODE.postDecay;  // 하위 호환용 (미사용)
   const DAILY_FLOOR     = MODE.dailyFloor;
   const OTHER_ALLOC    = { ps: 0.20, st: 0.35, xb: 0.05, other: 0.40 };
@@ -2856,19 +2860,32 @@ function renderSalesChart() {
     totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, D4_TO_D12_INC * (day5_12Weights[di - 5] / w5_12Sum)));
   }
 
-  // ── D13+: D12 앵커 기준으로 POST_D12_DECAY 적용 ──
-  if (currentSalesMode === 'anchored') {
-    // 📌 공지기반: D13+는 슬라이더 decay 사용 (순위 신호 무시, 업계 유사 타이틀 기준)
+  // ── D13~D26: 500만 앵커 고정 구간 (공지기반·일반 공통) ──
+  // D13~D26 합산 = D12_TO_D26_INC (100만), decay 가중 분배
+  {
     const sliderEl = document.getElementById('anchored-decay-slider');
-    const ANC_D13_DECAY = sliderEl ? parseFloat(sliderEl.value) : 0.893;
-    for (let di = 13; di < days.length; di++) {
-      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[12] * Math.pow(ANC_D13_DECAY, di - 12)));
+    const ANC_DECAY = sliderEl ? parseFloat(sliderEl.value) : 0.893;
+    // decay 가중치 계산 (D13=1, D14=decay^1, ...)
+    let w13_26 = 0;
+    for (let di = 13; di <= 26; di++) w13_26 += Math.pow(ANC_DECAY, di - 13);
+    const d13Base = w13_26 > 0 ? D12_TO_D26_INC / w13_26 : D12_TO_D26_INC / 14;
+    for (let di = 13; di <= 26; di++) {
+      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, d13Base * Math.pow(ANC_DECAY, di - 13)));
+    }
+  }
+
+  // ── D27+: D26 앵커 기준으로 슬라이더 decay 적용 ──
+  if (currentSalesMode === 'anchored') {
+    const sliderEl = document.getElementById('anchored-decay-slider');
+    const ANC_D27_DECAY = sliderEl ? parseFloat(sliderEl.value) : 0.893;
+    for (let di = 27; di < days.length; di++) {
+      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[26] * Math.pow(ANC_D27_DECAY, di - 26)));
     }
   } else {
-    for (let di = 13; di < days.length; di++) {
-      const signalRef = comboSignal[12] || comboSignal[4] || comboSignal[0] || 1;
+    for (let di = 27; di < days.length; di++) {
+      const signalRef = comboSignal[26] || comboSignal[12] || comboSignal[4] || 1;
       const rel = clamp((comboSignal[di] || signalRef) / signalRef, 0.75, 1.20);
-      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[12] * Math.pow(POST_D12_DECAY, di - 12) * rel));
+      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[26] * Math.pow(POST_D12_DECAY, di - 26) * rel));
     }
   }
 
