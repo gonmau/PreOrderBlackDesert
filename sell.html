@@ -169,23 +169,23 @@
 
   <!-- anchored 슬라이더 -->
   <div id="anchored-controls">
-    <div style="font-size:11px;color:#f1c40f;font-weight:800;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase">📌 공지기반 — D13+ CCU 배율 조정</div>
+    <div style="font-size:11px;color:#f1c40f;font-weight:800;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase">📌 공지기반 — D13~D26 배분 평탄화 조정</div>
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px">
-        <input id="anchored-decay-slider" type="range" min="0.860" max="0.930" step="0.001" value="0.893"
+        <input id="anchored-decay-slider" type="range" min="0.5" max="1.5" step="0.05" value="1.0"
           style="flex:1;accent-color:#f1c40f;cursor:pointer" oninput="updateAnchoredDecayLabel()">
-        <span style="font-size:18px;font-weight:900;color:#f1c40f;font-family:'Cinzel',serif;min-width:48px" id="anchored-decay-lbl">0.893</span>
+        <span style="font-size:18px;font-weight:900;color:#f1c40f;font-family:'Cinzel',serif;min-width:48px" id="anchored-decay-lbl">1.00</span>
       </div>
       <button onclick="fitDecayToTrend()" style="background:rgba(46,204,113,0.15);border:1px solid #2ecc71;color:#2ecc71;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;white-space:nowrap">📐 추세 맞춤</button>
       <div style="font-size:11px;color:var(--tx-4);display:flex;gap:10px;flex-wrap:wrap">
-        <span>0.860 <span style="color:#e74c3c">FF XVI</span></span>
+        <span>0.5 <span style="color:#e74c3c">초반집중</span></span>
         <span>1.05 <span style="color:#f1c40f">레터역산</span></span>
-        <span>0.913 <span style="color:#2ecc71">Elden Ring</span></span>
+        <span>1.5 <span style="color:#2ecc71">균등배분</span></span>
       </div>
     </div>
     <div id="anchored-ref-lbl" style="font-size:11px;color:var(--tx-3);margin-top:6px"></div>
     <div id="anchored-fit-lbl" style="font-size:11px;color:#2ecc71;margin-top:4px;display:none"></div>
-    <div style="font-size:10px;color:var(--tx-4);margin-top:5px">D0~D12: 공식 앵커 고정 · D13~D26: 500만 앵커 CCU 역산 고정 · D27+: CCU × 실측배율(0.409) — CCU 없는 날 슬라이더 decay 적용 · <b style="color:#f1c40f">추세맞춤</b>으로 배율 자동보정</div>
+    <div style="font-size:10px;color:var(--tx-4);margin-top:5px">D0~D12: 공식 앵커 고정 · D13~D26: 500만 앵커 CCU 역산 고정 (슬라이더로 배분 평탄화) · D27+: 실측 CCU × 0.409, CCU 없는 날 0.973 decay · <b style="color:#f1c40f">추세맞춤</b>으로 배율 자동보정</div>
   </div>
 
   <!-- 컨트롤 -->
@@ -410,10 +410,10 @@ function updateAnchoredDecayLabel() {
   const v = parseFloat(slider.value);
   if (lbl) lbl.textContent = v.toFixed(3);
   const refs = [
-    { max:0.875, name:'보수적',   desc:'FF XVI 수준 급감',             color:'#e74c3c' },
-    { max:0.893, name:'중간',     desc:'MHW 평균 (실측 decay ~0.973/일)', color:'#f1c40f' },
-    { max:0.913, name:'낙관적',   desc:'Elden Ring 수준 완만',         color:'#2ecc71' },
-    { max:0.931, name:'매우 낙관',desc:'CCU 유지력 강한 시나리오',      color:'#4a9eff' },
+    { max:0.7,  name:'초반 집중', desc:'D13~15에 판매 몰린 시나리오',  color:'#e74c3c' },
+    { max:1.05, name:'CCU 비례',  desc:'실측 CCU 비율 그대로 배분 (기본)', color:'#f1c40f' },
+    { max:1.35, name:'균등 배분', desc:'D13~D26 하루하루 고르게',       color:'#2ecc71' },
+    { max:1.51, name:'후반 배분', desc:'D23~26에 판매 몰린 시나리오',   color:'#4a9eff' },
   ];
   const ref = refs.find(r => v <= r.max) || refs[refs.length-1];
   if (refLbl) refLbl.innerHTML = `→ <b style="color:${ref.color}">${ref.name}</b> <span style="color:var(--tx-4)">(${ref.desc})</span>`;
@@ -564,7 +564,7 @@ function renderSalesChart() {
   });
 
   const _sl = document.getElementById('anchored-decay-slider');
-  const ANC_DECAY  = (_sl) ? parseFloat(_sl.value) : 0.893;  // D27+ 일별 decay (공지기반)
+  const ANC_DECAY  = (_sl) ? parseFloat(_sl.value) : 1.0;  // D13~D26 배분 평탄화 계수 (1.0=CCU비례)
   // CCU→판매량 환산 배율 (실측 역산: D13~D26 앵커 기준 0.409)
   // 추세맞춤 실행 시 window._fitCcuRatio 우선 사용
   const _baseCcuRatio = { conservative:0.35, normal:0.409, optimistic:0.48, anchored:0.409 }[currentSalesMode] || 0.409;
@@ -576,7 +576,9 @@ function renderSalesChart() {
   const D12_CCU_BASE = ccuByDay[12] || 185884;  // 실측 D12 CCU
 
   // ── D13~D26: 500만 앵커 기준 고정 배분 ──
-  // CCU 신호 비율로 배분하되, 합계를 D13_D26_INC에 맞춤
+  // 슬라이더(평탄화 계수 k): k=1.0 → CCU 비율 그대로, k→0 → 초반 집중, k→∞ → 균등
+  const _flatK = ANC_DECAY;  // 슬라이더 값 재활용 (0.5~1.5)
+  const uniformW = 1 / 14;
   const d13_26Weights = [];
   for (let di = 13; di <= 26; di++) {
     let ccu;
@@ -592,7 +594,10 @@ function renderSalesChart() {
   }
   const wSum13_26 = d13_26Weights.reduce((a, b) => a + b, 0) || 1;
   for (let di = 13; di <= 26; di++) {
-    totalDaily[di] = Math.round(Math.max(CCU_FLOOR, D13_D26_INC * (d13_26Weights[di - 13] / wSum13_26)));
+    // CCU 비율과 균등 배분을 슬라이더로 블렌딩
+    const ccuW = d13_26Weights[di - 13] / wSum13_26;
+    const blended = ccuW * (1 / _flatK) + uniformW * (1 - 1 / _flatK);
+    totalDaily[di] = Math.round(Math.max(CCU_FLOOR, D13_D26_INC * Math.max(0.01, blended)));
   }
 
   // ── D27+: CCU×실측배율 모델 (전 모드 공통, 공지기반은 decay 보정 추가) ──
@@ -605,23 +610,19 @@ function renderSalesChart() {
       const lastRealDay = Math.max(...Object.keys(ccuByDay).map(Number).filter(d => d <= di));
       const lastCCU = ccuByDay[isFinite(lastRealDay) ? lastRealDay : 26] ?? (ccuByDay[26] || 116053);
       const gap = di - (isFinite(lastRealDay) ? lastRealDay : 26);
-      if (currentSalesMode === 'anchored') {
-        // 공지기반: 슬라이더 decay로 CCU 추정
-        ccu = lastCCU * Math.pow(ANC_DECAY, gap);
-      } else {
-        ccu = lastCCU * Math.pow(CCU_DECAY, gap);
-      }
+      // 전 모드 동일: 실측 CCU decay 0.973 적용
+      ccu = lastCCU * Math.pow(CCU_DECAY, gap);
     }
     totalDaily[di] = Math.round(Math.max(CCU_FLOOR, ccu * CCU_SALES_RATIO));
   }
 
   // 마일스톤 탐색용 기준값 저장
   window._ccuByDay       = ccuByDay;
-  window._ccuRatio       = CCU_RATIO;
+  window._ccuRatio       = CCU_SALES_RATIO;
   window._ccuDecay       = CCU_DECAY;
   window._ccuFloor       = CCU_FLOOR;
   window._anchoredD12Daily = totalDaily[12];
-  window._anchoredDecay    = CCU_RATIO;   // 하위 호환
+  window._anchoredDecay    = CCU_SALES_RATIO;   // 하위 호환
   window._anchoredFloor    = CCU_FLOOR;
 
   // ── 플랫폼 분배 ──
