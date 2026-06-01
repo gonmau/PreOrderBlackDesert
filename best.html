@@ -1573,7 +1573,7 @@ function render() {
   // PS 타임스탬프 뱃지 전체 업데이트
   const psTs = curr.timestamp.split('.')[0].replace('T', ' ').slice(5); // MM-DD HH:mm
   document.querySelectorAll('.ps-ts-badge, #ps-data-time').forEach(el => el.textContent = psTs);
-  document.getElementById('stat-avg').innerText = curr.averages.combined.toFixed(1) + '위';
+  document.getElementById('stat-avg').innerText = (psAvg(curr) ?? curr.averages?.combined ?? 0).toFixed(1) + '위';
 
   let list = [];
   let best = { r: 999, n: '' }; let worst = { r: 0, n: '' };
@@ -1836,7 +1836,7 @@ function renderMainChart() {
   const ctx = mainEl.getContext('2d');
   if (mainChart) mainChart.destroy();
 
-  const allData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.averages.combined }))
+  const allData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: psAvg(h) ?? h.averages?.combined }))
     .filter(d => d.y != null);
   const dv = allData.map(d => d.y);
   const lbs = allData.map(d => d.x);
@@ -2203,6 +2203,22 @@ function stsAvg(h) {
     const w = STS_W[n] || 1.0; ts += r * w; tw += w;
   }
   return tw > 0 ? Math.round(ts / tw * 10) / 10 : null;
+}
+
+// PS 가중평균 순위 — results 필드로 직접 계산 (WEIGHTS 기준, 과거 데이터도 일관 적용)
+function psAvg(h) {
+  if (!h) return null;
+  // results 필드 우선, 없으면 averages.combined fallback
+  if (h.results) {
+    let tw = 0, ts = 0;
+    for (const [n, d] of Object.entries(h.results)) {
+      const r = (typeof d === 'object') ? d?.rank : (typeof d === 'number' ? d : null);
+      if (!r || r >= 999) continue;
+      const w = WEIGHTS[n] || 0.1; ts += r * w; tw += w;
+    }
+    return tw > 0 ? Math.round(ts / tw * 10) / 10 : null;
+  }
+  return h.averages?.combined ?? null;
 }
 
 /* ── Steam 국가 모달 ── */
@@ -2765,12 +2781,12 @@ function renderSalesChart() {
   };
   const otherShareForDay = di => clamp(MODE.otherMin + di * 0.005, MODE.otherMin, MODE.otherMax);
 
-  // ── PS 일별 가중 평균 순위 (이미 WEIGHTS 반영된 averages.combined 사용) ──
+  // ── PS 일별 가중 평균 순위 (results 필드로 직접 재계산 → 과거 데이터도 신규 WEIGHTS 적용) ──
   const psByDay = {};
   historyData.forEach(h => {
     const di = getDayIndex(h.timestamp);
     if (di < 0) return;
-    const avg = h.averages?.combined;
+    const avg = psAvg(h);
     if (avg == null || !isFinite(avg)) return;
     if (!psByDay[di]) psByDay[di] = { sum: 0, cnt: 0 };
     psByDay[di].sum += avg;
@@ -3567,7 +3583,7 @@ function renderSummaryCharts() {
   if (psEl && historyData.length > 1) {
     psEl.width  = psEl.parentElement.offsetWidth || W;
     psEl.height = H_TREND;
-    const allData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.averages?.combined })).filter(d => d.y != null);
+    const allData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: psAvg(h) ?? h.averages?.combined })).filter(d => d.y != null);
     const dv = allData.map(d => d.y), lbs = allData.map(d => d.x);
     const idxFirst = 0, idxLast = dv.length - 1;
     const idxBest  = dv.reduce((bi, v, i, a) => v < (a[bi] ?? 99) ? i : bi, 0);
