@@ -1,0 +1,599 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+PS Store 전체 베스트셀러 순위 추적기 - Crimson Desert
+pages/browse/{page} 에서 concept ID로 게임을 찾을 때까지 페이지를 순회합니다.
+"""
+
+import time
+import os
+import json
+import shutil
+import requests
+from datetime import datetime, timezone, timedelta
+
+KST = timezone(timedelta(hours=9))
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+
+# =============================================================================
+# 설정
+# =============================================================================
+
+# Crimson Desert concept ID (전 세계 공통)
+CONCEPT_ID = "10002363"
+
+REGIONS = {
+    "Americas": [
+        "미국", "캐나다", "브라질", "멕시코", "아르헨티나", "칠레",
+        "콜롬비아", "페루", "우루과이", "볼리비아", "과테말라", "온두라스",
+        "코스타리카", "에콰도르", "엘살바도르", "니카라과", "파나마", "파라과이"
+    ],
+    "Europe & Middle East": [
+        "영국", "독일", "프랑스", "스페인", "이탈리아", "네덜란드",
+        "폴란드", "스위스", "스웨덴", "노르웨이", "덴마크", "핀란드",
+        "포르투갈", "그리스", "체코", "헝가리", "루마니아", "슬로바키아",
+        "슬로베니아", "우크라이나", "사우디아라비아", "아랍에미리트", "남아공",
+        "터키", "벨기에", "오스트리아", "이스라엘", "크로아티아", "불가리아",
+        "키프로스", "아이슬란드", "아일랜드", "쿠웨이트", "레바논",
+        "룩셈부르크", "몰타", "오만", "카타르", "바레인"
+    ],
+    "Asia & Oceania": [
+        "일본", "한국", "중국", "호주", "인도", "태국", "싱가포르",
+        "말레이시아", "인도네시아", "필리핀", "베트남", "홍콩", "대만",
+        "뉴질랜드"
+    ]
+}
+
+# 붉은사막 실적 기반 가중치 (best.html WEIGHTS와 동기화)
+# 1Q26 실적: 미주+유럽 87%, 아시아 13% / Sensor Tower PS5: 미국48%·영국8%·프랑스5% (일본 미언급)
+# 핵심 10개국은 실적 역산, 나머지는 상대적 비율 유지
+MARKET_WEIGHTS = {
+    # 북미 (실적 기반 상향)
+    "미국": 32.0, "캐나다": 5.0, "브라질": 2.0, "멕시코": 1.5,
+    "아르헨티나": 0.8, "칠레": 0.7, "콜롬비아": 0.6, "페루": 0.3,
+    "우루과이": 0.2, "볼리비아": 0.2, "과테말라": 0.2, "온두라스": 0.1,
+    "코스타리카": 0.2, "에콰도르": 0.2, "엘살바도르": 0.1, "니카라과": 0.1,
+    "파나마": 0.2, "파라과이": 0.1,
+    # 유럽 (실적 기반 상향: 영국8→8, 독일6.5→7.5, 프랑스6→6.5, 스페인4→4.5)
+    "영국": 8.0, "독일": 7.5, "프랑스": 6.5, "스페인": 4.5, "이탈리아": 3.5,
+    "네덜란드": 1.8, "사우디아라비아": 1.5, "아랍에미리트": 1.2,
+    "폴란드": 1.2, "스위스": 1.0, "스웨덴": 1.0, "덴마크": 0.9, "포르투갈": 0.8,
+    "핀란드": 0.8, "노르웨이": 0.8, "남아공": 0.8, "체코": 0.7, "루마니아": 0.6,
+    "그리스": 0.5, "헝가리": 0.5, "우크라이나": 0.5, "슬로바키아": 0.3,
+    "슬로베니아": 0.3, "터키": 0.8, "벨기에": 1.2, "오스트리아": 1.0,
+    "이스라엘": 0.8, "크로아티아": 0.2, "불가리아": 0.3, "키프로스": 0.1,
+    "아이슬란드": 0.1, "아일랜드": 0.8, "쿠웨이트": 0.3, "레바논": 0.1,
+    "룩셈부르크": 0.1, "몰타": 0.1, "오만": 0.2, "카타르": 0.3, "바레인": 0.2,
+    # 아시아-태평양 (일본 하향, 한국 상향)
+    "일본": 3.0, "호주": 2.5, "한국": 4.5, "인도": 1.5, "대만": 1.0,
+    "싱가포르": 0.8, "태국": 0.8, "홍콩": 0.8, "인도네시아": 0.6,
+    "말레이시아": 0.6, "베트남": 0.5, "필리핀": 0.5, "뉴질랜드": 0.5,
+    "중국": 0.2
+}
+
+FLAGS = {
+    "미국": "🇺🇸", "캐나다": "🇨🇦", "브라질": "🇧🇷", "멕시코": "🇲🇽",
+    "아르헨티나": "🇦🇷", "칠레": "🇨🇱", "콜롬비아": "🇨🇴", "페루": "🇵🇪",
+    "우루과이": "🇺🇾", "볼리비아": "🇧🇴", "과테말라": "🇬🇹", "온두라스": "🇭🇳",
+    "코스타리카": "🇨🇷", "에콰도르": "🇪🇨", "엘살바도르": "🇸🇻",
+    "니카라과": "🇳🇮", "파나마": "🇵🇦", "파라과이": "🇵🇾",
+    "영국": "🇬🇧", "독일": "🇩🇪", "프랑스": "🇫🇷", "스페인": "🇪🇸",
+    "이탈리아": "🇮🇹", "네덜란드": "🇳🇱", "폴란드": "🇵🇱", "스위스": "🇨🇭",
+    "스웨덴": "🇸🇪", "노르웨이": "🇳🇴", "덴마크": "🇩🇰", "핀란드": "🇫🇮",
+    "포르투갈": "🇵🇹", "그리스": "🇬🇷", "체코": "🇨🇿", "헝가리": "🇭🇺",
+    "루마니아": "🇷🇴", "슬로바키아": "🇸🇰", "슬로베니아": "🇸🇮",
+    "우크라이나": "🇺🇦", "사우디아라비아": "🇸🇦", "아랍에미리트": "🇦🇪",
+    "남아공": "🇿🇦", "터키": "🇹🇷", "벨기에": "🇧🇪", "오스트리아": "🇦🇹",
+    "이스라엘": "🇮🇱", "크로아티아": "🇭🇷", "불가리아": "🇧🇬",
+    "키프로스": "🇨🇾", "아이슬란드": "🇮🇸", "아일랜드": "🇮🇪",
+    "쿠웨이트": "🇰🇼", "레바논": "🇱🇧", "룩셈부르크": "🇱🇺",
+    "몰타": "🇲🇹", "오만": "🇴🇲", "카타르": "🇶🇦", "바레인": "🇧🇭",
+    "일본": "🇯🇵", "한국": "🇰🇷", "중국": "🇨🇳", "호주": "🇦🇺",
+    "인도": "🇮🇳", "태국": "🇹🇭", "싱가포르": "🇸🇬", "말레이시아": "🇲🇾",
+    "인도네시아": "🇮🇩", "필리핀": "🇵🇭", "베트남": "🇻🇳",
+    "홍콩": "🇭🇰", "대만": "🇹🇼", "뉴질랜드": "🇳🇿",
+}
+
+LOCALE_MAP = {
+    "미국": "en-us", "캐나다": "en-ca", "브라질": "pt-br", "멕시코": "es-mx",
+    "아르헨티나": "es-ar", "칠레": "es-cl", "콜롬비아": "es-co", "페루": "es-pe",
+    "우루과이": "es-uy", "볼리비아": "es-bo", "과테말라": "es-gt", "온두라스": "es-hn",
+    "코스타리카": "es-cr", "에콰도르": "es-ec", "엘살바도르": "es-sv",
+    "니카라과": "es-ni", "파나마": "es-pa", "파라과이": "es-py",
+    "영국": "en-gb", "독일": "de-de", "프랑스": "fr-fr", "스페인": "es-es",
+    "이탈리아": "it-it", "네덜란드": "nl-nl", "폴란드": "pl-pl", "스위스": "de-ch",
+    "스웨덴": "sv-se", "노르웨이": "no-no", "덴마크": "en-dk", "핀란드": "fi-fi",
+    "포르투갈": "pt-pt", "그리스": "en-gr", "체코": "en-cz", "헝가리": "en-hu",
+    "루마니아": "en-ro", "슬로바키아": "en-sk", "슬로베니아": "en-si",
+    "우크라이나": "ru-ua", "사우디아라비아": "en-sa", "아랍에미리트": "en-ae",
+    "남아공": "en-za", "터키": "en-tr", "벨기에": "nl-be", "오스트리아": "de-at",
+    "이스라엘": "en-il", "크로아티아": "en-hr", "불가리아": "en-bg",
+    "키프로스": "en-cy", "아이슬란드": "en-is", "아일랜드": "en-ie",
+    "쿠웨이트": "en-kw", "레바논": "en-lb", "룩셈부르크": "de-lu",
+    "몰타": "en-mt", "오만": "en-om", "카타르": "en-qa", "바레인": "en-bh",
+    "일본": "ja-jp", "한국": "ko-kr", "중국": "zh-cn", "호주": "en-au",
+    "인도": "en-in", "태국": "en-th", "싱가포르": "en-sg", "말레이시아": "en-my",
+    "인도네시아": "en-id", "필리핀": "en-ph", "베트남": "en-vn",
+    "홍콩": "en-hk", "대만": "zh-hant-tw", "뉴질랜드": "en-nz",
+}
+
+# URL 없거나 스토어 미지원 국가
+SKIP_COUNTRIES = {"중국", "베트남", "슬로베니아", "필리핀"}
+
+DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
+HISTORY_FILE  = "bestseller_history.json"
+BACKUP_FILE   = HISTORY_FILE + ".backup"
+BASELINE_FILE = "discord_baseline.json"   # 마지막 알림 발송 시점 기준값
+WORKFLOW_FILE = ".github/workflows/bestseller_tracker.yml"  # 스케줄 소스
+
+
+# =============================================================================
+# 스케줄 파싱 (yml → JSON 메타로 저장 → 대시보드가 읽음)
+# =============================================================================
+
+def parse_cron_to_kst_slots(cron_expr: str) -> list[int]:
+    """
+    'MIN HOUR ...' 형식의 cron 표현식에서 UTC hour 목록을 추출하고
+    KST(+9)로 변환해 정렬된 리스트로 반환합니다.
+    예) '0 9,21 * * *' → UTC [9,21] → KST [18, 6] → 정렬 [6, 18]
+    """
+    parts = cron_expr.strip().split()
+    if len(parts) < 2:
+        return []
+    hour_field = parts[1]
+    utc_hours = []
+    if hour_field == '*':
+        utc_hours = list(range(24))
+    else:
+        for token in hour_field.split(","):
+            token = token.strip()
+            if '-' in token:
+                a, b = token.split('-', 1)
+                if a.isdigit() and b.isdigit():
+                    utc_hours.extend(range(int(a), int(b) + 1))
+            elif token.isdigit():
+                utc_hours.append(int(token))
+    kst_hours = sorted(set((h + 9) % 24 for h in utc_hours))
+    return kst_hours
+
+
+def read_schedule_meta() -> dict:
+    """
+    workflow yml에서 cron 문자열을 읽어 스케줄 메타 dict를 반환합니다.
+    yml을 읽을 수 없으면 기존 히스토리의 마지막 메타를 유지하기 위해 None 반환.
+    반환 형식: {"cron": "0 9,21 * * *", "slots_kst": [6, 18]}
+    """
+    if not os.path.exists(WORKFLOW_FILE):
+        print(f"ℹ️  {WORKFLOW_FILE} 없음 → 스케줄 메타 업데이트 스킵")
+        return None
+    try:
+        with open(WORKFLOW_FILE, "r", encoding="utf-8") as f:
+            content = f.read()
+        # cron: '...' 또는 cron: "..." 패턴
+        import re
+        m = re.search(r"cron:\s*['\"]([^'\"]+)['\"]", content)
+        if not m:
+            print("ℹ️  cron 표현식 파싱 실패 → 스케줄 메타 업데이트 스킵")
+            return None
+        cron_expr = m.group(1)
+        slots = parse_cron_to_kst_slots(cron_expr)
+        print(f"✅  스케줄 파싱: {cron_expr!r} → KST {slots}")
+        return {"cron": cron_expr, "slots_kst": slots}
+    except Exception as e:
+        print(f"⚠️  스케줄 파싱 오류: {e}")
+        return None
+
+# 게임 미발견 시 최대 탐색 페이지
+MAX_PAGES = 30
+
+# =============================================================================
+# 드라이버
+# =============================================================================
+
+def setup_driver():
+    options = Options()
+    options.add_argument('--headless=new')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--window-size=1920,1080')
+    service = Service(ChromeDriverManager().install())
+    return webdriver.Chrome(service=service, options=options)
+
+# =============================================================================
+# 크롤링
+# =============================================================================
+
+def get_browse_url(country, page=1):
+    locale = LOCALE_MAP.get(country)
+    if not locale:
+        return None
+    return f"https://store.playstation.com/{locale}/pages/browse/{page}"
+
+def crawl_country(driver, country):
+    """
+    pages/browse/{page} 에서 /concept/CONCEPT_ID 링크를 찾을 때까지 순회.
+    반환: (rank or None, status)
+      status: "found" | "not_found" | "error" | "no_url"
+    """
+    total_rank = 0
+    target = f"/concept/{CONCEPT_ID}"
+
+    for page in range(1, MAX_PAGES + 1):
+        url = get_browse_url(country, page)
+        if not url:
+            return None, "no_url"
+
+        try:
+            driver.get(url)
+            time.sleep(3)
+
+            links = driver.find_elements(By.CSS_SELECTOR, "a[href*='/concept/']")
+
+            if not links:
+                print(f"    ↳ {country}: {page}p 아이템 없음 → 탐색 종료")
+                return None, "not_found"
+
+            for link in links:
+                href = link.get_attribute("href") or ""
+                if "/concept/" not in href:
+                    continue
+                total_rank += 1
+
+                if target in href:
+                    print(f"    ✅ {country}: {total_rank}위 발견 (page {page})")
+                    return total_rank, "found"
+
+            print(f"    {country}: page {page} 완료 ({total_rank}위까지 확인)...")
+
+        except Exception as e:
+            print(f"    ⚠️ {country} page {page} 오류: {e}")
+            if page == 1:
+                return None, "error"
+            break
+
+    print(f"    ↳ {country}: {MAX_PAGES}p({total_rank}위)까지 미발견")
+    return None, "not_found"
+
+# =============================================================================
+# 계산 유틸
+# =============================================================================
+
+def calculate_avg(results):
+    total_w, total_sum = 0, 0
+    for c, rank in results.items():
+        if rank is None:
+            continue
+        w = MARKET_WEIGHTS.get(c, 1.0)
+        total_sum += rank * w
+        total_w += w
+    return total_sum / total_w if total_w > 0 else None
+
+def format_diff(current, previous):
+    if previous is None or current is None:
+        return ""
+    diff = previous - current
+    if diff > 0:   return f"▲{diff}"
+    elif diff < 0: return f"▼{abs(diff)}"
+    else:          return "0"
+
+def get_emoji(diff_text):
+    if not diff_text or diff_text == "0": return "⚪"
+    elif "▲" in diff_text: return "🟢"
+    elif "▼" in diff_text: return "🔴"
+    return ""
+
+# =============================================================================
+# 히스토리 관리
+# =============================================================================
+
+def load_history_safe():
+    def _try_load(path):
+        if not os.path.exists(path):
+            return None
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            # 신규 포맷: {"schedule": ..., "history": [...]}
+            if isinstance(data, dict) and "history" in data:
+                return data["history"]
+            # 구버전 포맷: 리스트 그대로
+            if isinstance(data, list):
+                return data
+            return None
+        except Exception as e:
+            print(f"⚠️  {path} 로드 실패: {e}")
+            return None
+
+    history = _try_load(HISTORY_FILE)
+    if history is not None:
+        return history, False
+
+    print("⚠️  메인 파일 로드 실패 → backup 복구 시도...")
+    history = _try_load(BACKUP_FILE)
+    if history is not None:
+        shutil.copy2(BACKUP_FILE, HISTORY_FILE)
+        print(f"✅  backup 복구 성공 ({len(history)}개 레코드)")
+        return history, True
+
+    print("ℹ️  히스토리 없음 → 새로 시작")
+    return [], False
+
+def save_history(history, schedule_meta=None):
+    """
+    history 리스트를 JSON으로 저장합니다.
+    schedule_meta가 주어지면 최상위 키 "schedule"에 함께 저장합니다.
+    대시보드는 이 값을 읽어 하드코딩 없이 스케줄을 표시합니다.
+
+    저장 형식:
+      {
+        "schedule": {"cron": "0 9,21 * * *", "slots_kst": [6, 18]},
+        "history": [ ... ]
+      }
+    또는 schedule_meta가 None이면 기존 schedule 값을 유지합니다.
+    """
+    if os.path.exists(HISTORY_FILE):
+        shutil.copy2(HISTORY_FILE, BACKUP_FILE)
+
+    # 기존 파일에서 schedule 값 읽기 (메타가 없을 때 유지용)
+    existing_schedule = None
+    if os.path.exists(HISTORY_FILE):
+        try:
+            with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+                existing = json.load(f)
+            if isinstance(existing, dict):
+                existing_schedule = existing.get("schedule")
+        except Exception:
+            pass
+
+    final_schedule = schedule_meta if schedule_meta is not None else existing_schedule
+
+    payload = {"history": history}
+    if final_schedule:
+        payload["schedule"] = final_schedule
+
+    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
+
+def load_baseline():
+    """마지막 Discord 알림 발송 시점의 combined_avg 로드"""
+    if not os.path.exists(BASELINE_FILE):
+        return None
+    try:
+        with open(BASELINE_FILE, "r", encoding="utf-8") as f:
+            return json.load(f).get("combined_avg")
+    except:
+        return None
+
+def save_baseline(combined_avg):
+    """Discord 알림 발송 시점의 combined_avg 저장"""
+    with open(BASELINE_FILE, "w", encoding="utf-8") as f:
+        json.dump({"combined_avg": combined_avg, "timestamp": datetime.now(KST).isoformat()}, f)
+
+# =============================================================================
+# Discord 알림
+# =============================================================================
+
+def send_discord(results, combined_avg, skipped_countries, history):
+    if not DISCORD_WEBHOOK:
+        print("ℹ️  DISCORD_WEBHOOK 미설정, 알림 스킵")
+        return
+
+    prev_run = history[-2] if len(history) >= 2 else None
+    prev_avg = prev_run['averages'].get('combined') if prev_run else None
+    if isinstance(prev_avg, dict):
+        prev_avg = None  # 구버전 데이터 방어
+    avg_diff = format_diff(combined_avg, prev_avg)
+
+    # 마지막 알림 발송 기준점과 비교해서 ±1.0 이상 변화 시에만 알림 발송
+    baseline_avg = load_baseline()
+    if combined_avg is not None and baseline_avg is not None:
+        diff = abs(combined_avg - baseline_avg)
+        if diff < 1.0:
+            print(f"ℹ️  기준점 대비 변화 미미 (기준: {baseline_avg:.1f} → 현재: {combined_avg:.1f}, 차이: {diff:.2f}) - 알림 스킵")
+            return
+        print(f"🔔 기준점 대비 변화 감지 (기준: {baseline_avg:.1f} → 현재: {combined_avg:.1f}, 차이: {diff:.2f}) - 알림 발송")
+
+    tracked = sum(1 for c in results if c not in skipped_countries)
+    found   = sum(1 for c, r in results.items() if c not in skipped_countries and r is not None)
+
+    # 순위 변화 국가 수 계산
+    def extract_rank_inline(val):
+        if isinstance(val, dict):
+            s = val.get("standard"); d = val.get("deluxe")
+            if s and d: return min(s, d)
+            return s or d or None
+        return val
+
+    prev_results_for_count = prev_run.get("raw_results", {}) if prev_run else {}
+    changed_count = 0
+    for c in results:
+        if c in skipped_countries:
+            continue
+        curr_r = results.get(c)
+        prev_r = extract_rank_inline(prev_results_for_count.get(c))
+        d = format_diff(curr_r, prev_r)
+        if d and d != "0":
+            changed_count += 1
+        elif (curr_r is None) != (prev_r is None):
+            changed_count += 1
+
+    desc = ""
+    if combined_avg:
+        desc += f"📊 **전체 가중 평균**: `{combined_avg:.1f}위`"
+        if avg_diff:
+            desc += f" ({avg_diff})"
+        desc += "\n"
+    desc += f"🌐 **추적 국가**: {tracked}개국 | **순위권 발견**: {found}개국\n"
+    desc += f"🔄 **순위 변화**: {changed_count}개국\n\n"
+
+    for region_name in ["Americas", "Europe & Middle East", "Asia & Oceania"]:
+        region_results = {c: results[c] for c in REGIONS[region_name]
+                         if c in results and results[c] is not None and c not in skipped_countries}
+        region_avg = calculate_avg(region_results)
+        if region_avg:
+            desc += f"**{region_name}**: `{region_avg:.1f}위`\n"
+
+    requests.post(DISCORD_WEBHOOK, json={"embeds": [{
+        "title": "🎮 Crimson Desert 전체 베스트셀러 순위 리포트",
+        "description": desc,
+        "color": 0xFF4500,
+        "timestamp": datetime.now(KST).isoformat()
+    }]})
+    time.sleep(1)
+
+    prev_results = prev_run.get("raw_results", {}) if prev_run else {}
+
+    def extract_rank(val):
+        """이전 형식(dict) 또는 현재 형식(int/None) 모두 처리"""
+        if isinstance(val, dict):
+            # 구버전: {"standard": N, "deluxe": N} → 더 좋은 순위 반환
+            s = val.get("standard")
+            d = val.get("deluxe")
+            if s and d: return min(s, d)
+            return s or d or None
+        return val  # int or None
+
+    for region_name, region_countries in REGIONS.items():
+        lines = []
+        sorted_countries = sorted(
+            [c for c in region_countries if c in results and c not in skipped_countries],
+            key=lambda x: MARKET_WEIGHTS.get(x, 0), reverse=True
+        )
+
+        for c in sorted_countries:
+            curr = results.get(c)
+            prev = extract_rank(prev_results.get(c))
+            diff = format_diff(curr, prev)
+
+            # ── 순위 변화가 없는 나라는 스킵 ──────────────────────────
+            # diff가 빈 문자열이면 변화 없음(이전 데이터 없거나 동일)
+            # diff == "0" 이면 순위 동일
+            # 미발견(curr=None)이고 이전도 미발견(prev=None)이면 스킵
+            if not diff or diff == "0":
+                if not (curr is None and prev is not None) and not (curr is not None and prev is None):
+                    continue
+            # ──────────────────────────────────────────────────────────
+
+            emoji = get_emoji(diff)
+            rank_str = f"{curr}위 {diff}".strip() if curr else f"미발견 {diff}".strip()
+
+            store_url = get_browse_url(c)
+            flag = FLAGS.get(c, "")
+            label = f"{flag} [{c}]({store_url})" if store_url else f"{flag} {c}"
+            lines.append(f"**{label}**: {emoji} `{rank_str}`")
+
+        if not lines:
+            continue
+
+        CHUNK_LIMIT = 3800
+        chunks, cur_chunk, cur_len = [], [], 0
+        for line in lines:
+            if cur_len + len(line) + 1 > CHUNK_LIMIT and cur_chunk:
+                chunks.append(cur_chunk)
+                cur_chunk = [line]
+                cur_len = len(line)
+            else:
+                cur_chunk.append(line)
+                cur_len += len(line) + 1
+        if cur_chunk:
+            chunks.append(cur_chunk)
+
+        for i, chunk in enumerate(chunks):
+            part = f" ({i+1}/{len(chunks)})" if len(chunks) > 1 else ""
+            requests.post(DISCORD_WEBHOOK, json={"embeds": [{
+                "title": f"🌐 {region_name}{part}",
+                "description": "\n".join(chunk),
+                "color": 0xFF4500,
+                "timestamp": datetime.now(KST).isoformat()
+            }]})
+            time.sleep(1)
+
+    # 알림 발송 완료 → 현재 avg를 기준점으로 저장
+    if combined_avg is not None:
+        save_baseline(combined_avg)
+        print(f"✅ baseline 갱신: {combined_avg:.1f}")
+
+# =============================================================================
+# 메인
+# =============================================================================
+
+def main():
+    print("=" * 60)
+    print(f"🎮 Crimson Desert 전체 베스트셀러 순위 추적")
+    print(f"   Concept ID: {CONCEPT_ID} | 최대 {MAX_PAGES}페이지")
+    print("=" * 60)
+
+    start_time = time.time()
+    driver = setup_driver()
+
+    results = {}
+    skipped = set(SKIP_COUNTRIES)
+
+    try:
+        all_countries = [c for region in REGIONS.values() for c in region]
+
+        for country in all_countries:
+            if country in SKIP_COUNTRIES:
+                print(f"⏭️  스킵: {country}")
+                results[country] = None
+                continue
+
+            print(f"🔍 {country}...")
+            rank, status = crawl_country(driver, country)
+
+            if status in ("error", "no_url"):
+                print(f"    ⚠️  접근 불가 → 자동 스킵")
+                skipped.add(country)
+                results[country] = None
+            else:
+                results[country] = rank
+
+    finally:
+        driver.quit()
+
+    elapsed = (time.time() - start_time) / 60
+    print(f"\n⏱️  소요 시간: {elapsed:.1f}분")
+
+    combined_avg = calculate_avg({c: r for c, r in results.items() if c not in skipped})
+
+    print("\n" + "=" * 60)
+    print("📊 결과 요약")
+    print("=" * 60)
+    for region_name, region_countries in REGIONS.items():
+        print(f"\n{region_name}:")
+        for country in region_countries:
+            flag = FLAGS.get(country, "")
+            if country in skipped:
+                print(f"  {flag} {country}: 스킵")
+            else:
+                rank = results.get(country)
+                print(f"  {flag} {country}: {rank}위" if rank else f"  {flag} {country}: 미발견")
+
+    if combined_avg:
+        print(f"\n전체 가중 평균: {combined_avg:.1f}위")
+
+    history, _ = load_history_safe()
+    schedule_meta = read_schedule_meta()  # yml에서 cron 파싱
+    new_entry = {
+        "timestamp": datetime.now(KST).isoformat(),
+        "averages": {"combined": combined_avg},
+        "skipped": list(skipped),
+        "raw_results": results
+    }
+
+    if combined_avg is None:
+        print("\n⚠️  전국 미발견 (combined_avg=None) → 히스토리 저장 스킵")
+    else:
+        history.append(new_entry)
+        save_history(history, schedule_meta)
+        print(f"\n✅  {HISTORY_FILE} 저장 완료 (총 {len(history)}개 레코드)")
+
+    send_discord(results, combined_avg, skipped, history)
+
+if __name__ == "__main__":
+    main()
