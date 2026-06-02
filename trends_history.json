@@ -12656,5 +12656,14 @@
         "geo_code": "JP"
       }
     }
+  },
+  {
+    "timestamp": "2026-06-02T07:02:04.510524",
+    "google": {
+      "score": 12,
+      "avg_7d": 33,
+      "top_regions": {}
+    },
+    "console_markets": {}
   }
 ]
