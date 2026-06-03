@@ -12735,5 +12735,20 @@
         "geo_code": "FR"
       }
     }
+  },
+  {
+    "timestamp": "2026-06-03T07:12:25.357127",
+    "google": {
+      "score": 11,
+      "avg_7d": 33,
+      "top_regions": {}
+    },
+    "console_markets": {
+      "United States": {
+        "score": 42,
+        "avg_1m": 52,
+        "geo_code": "US"
+      }
+    }
   }
 ]
