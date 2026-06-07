@@ -1,20 +1,20 @@
 {
-  "timestamp": "2026-06-07T14:37:23.608481+09:00",
+  "timestamp": "2026-06-07T18:14:05.635249+09:00",
   "results": {
     "미국": {
       "cd_rank": 34,
       "games": [
         {
           "rank": 1,
-          "title": "007 First Light",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 2,
           "title": "NBA 2K26",
           "discount_info": "Offer ends 6/11/2026 06:59 AM UTC",
           "has_badge": true
+        },
+        {
+          "rank": 2,
+          "title": "007 First Light",
+          "discount_info": "할인 없음",
+          "has_badge": false
         },
         {
           "rank": 3,
@@ -168,15 +168,15 @@
         },
         {
           "rank": 28,
-          "title": "Rocket League®",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 29,
           "title": "Fallout 76",
           "discount_info": "Offer ends 6/11/2026 06:59 AM UTC",
           "has_badge": true
+        },
+        {
+          "rank": 29,
+          "title": "Rocket League®",
+          "discount_info": "할인 없음",
+          "has_badge": false
         },
         {
           "rank": 30,
@@ -228,7 +228,7 @@
         {
           "rank": 4,
           "title": "NBA 2K26",
-          "discount_info": "Offer ends 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -270,7 +270,7 @@
         {
           "rank": 11,
           "title": "MLB® The Show™ 26",
-          "discount_info": "Offer ends 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -282,7 +282,7 @@
         {
           "rank": 13,
           "title": "Ghost of Yōtei",
-          "discount_info": "Offer ends 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -419,7 +419,7 @@
         {
           "rank": 10,
           "title": "Resident Evil Requiem",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "A oferta termina em 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -543,15 +543,15 @@
         },
         {
           "rank": 5,
-          "title": "LEGO® Batman™: El Legado del Caballero de la Noche",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 6,
           "title": "Resident Evil 4",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
+        },
+        {
+          "rank": 6,
+          "title": "LEGO® Batman™: El Legado del Caballero de la Noche",
+          "discount_info": "할인 없음",
+          "has_badge": false
         },
         {
           "rank": 7,
@@ -568,7 +568,7 @@
         {
           "rank": 9,
           "title": "Resident Evil Requiem",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -717,38 +717,38 @@
         },
         {
           "rank": 34,
-          "title": "Cyberpunk 2077",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 35,
           "title": "BATMAN™: ARKHAM KNIGHT",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 36,
+          "rank": 35,
           "title": "Resident Evil Village",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 37,
+          "rank": 36,
           "title": "STAR WARS Jedi: Survivor™",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 38,
+          "rank": 37,
           "title": "Tom Clancy's Rainbow Six Siege",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 39,
+          "rank": 38,
           "title": "It Takes Two para PS4™ y PS5™",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 39,
+          "title": "Cyberpunk 2077",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -760,7 +760,7 @@
         {
           "rank": 41,
           "title": "No Man's Sky",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -790,7 +790,7 @@
         {
           "rank": 46,
           "title": "The Last of Us™ Part I",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -802,13 +802,13 @@
         {
           "rank": 48,
           "title": "Call of Duty®: Modern Warfare®",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
           "rank": 49,
           "title": "HELLDIVERS™ 2",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -844,7 +844,7 @@
         {
           "rank": 55,
           "title": "Clair Obscur: Expedition 33",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -874,13 +874,13 @@
         {
           "rank": 60,
           "title": "Grand Theft Auto: The Trilogy – The Definitive Edition",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
           "rank": 61,
           "title": "Gang Beasts",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -1010,19 +1010,19 @@
         },
         {
           "rank": 20,
-          "title": "Mortal Kombat 11",
+          "title": "It Takes Two para PS4™ y PS5™",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
           "rank": 21,
-          "title": "Battlefield™ 6",
+          "title": "Mortal Kombat 11",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
           "rank": 22,
-          "title": "It Takes Two para PS4™ y PS5™",
+          "title": "Battlefield™ 6",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
@@ -1035,7 +1035,7 @@
         {
           "rank": 24,
           "title": "God of War Ragnarök",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -1077,7 +1077,7 @@
         {
           "rank": 31,
           "title": "Assassin’s Creed Shadows",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -1101,7 +1101,7 @@
         {
           "rank": 35,
           "title": "The Witcher 3: Wild Hunt",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -1113,7 +1113,7 @@
         {
           "rank": 37,
           "title": "STAR WARS Jedi: Survivor™",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -1286,7 +1286,7 @@
         {
           "rank": 8,
           "title": "Resident Evil Requiem",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -1334,56 +1334,56 @@
         {
           "rank": 16,
           "title": "DRAGON BALL: Sparking! ZERO",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
           "rank": 17,
           "title": "NBA 2K26",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
           "rank": 18,
-          "title": "Forza Horizon 5",
+          "title": "Tomb Raider: Legacy of Atlantis",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
           "rank": 19,
-          "title": "Marvel’s Wolverine",
+          "title": "Forza Horizon 5",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
           "rank": 20,
-          "title": "Mortal Kombat 11",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
-          "has_badge": true
+          "title": "Marvel’s Wolverine",
+          "discount_info": "할인 없음",
+          "has_badge": false
         },
         {
           "rank": 21,
+          "title": "Mortal Kombat 11",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 22,
           "title": "NTE: Neverness to Everness",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 22,
+          "rank": 23,
           "title": "God of War Ragnarök",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 23,
-          "title": "Battlefield™ 6",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
           "rank": 24,
-          "title": "Tomb Raider: Legacy of Atlantis",
-          "discount_info": "할인 없음",
-          "has_badge": false
+          "title": "Battlefield™ 6",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
         },
         {
           "rank": 25,
@@ -1490,7 +1490,7 @@
         {
           "rank": 42,
           "title": "Resident Evil Village",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -1532,13 +1532,13 @@
         {
           "rank": 49,
           "title": "No Man's Sky",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
           "rank": 50,
           "title": "Split Fiction",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -1694,7 +1694,7 @@
       ]
     },
     "콜롬비아": {
-      "cd_rank": 62,
+      "cd_rank": 63,
       "games": [
         {
           "rank": 1,
@@ -1800,27 +1800,27 @@
         },
         {
           "rank": 18,
-          "title": "DRAGON BALL: Sparking! ZERO",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "title": "Battlefield™ 6",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
           "rank": 19,
+          "title": "DRAGON BALL: Sparking! ZERO",
+          "discount_info": "종료일 정보 없음",
+          "has_badge": true
+        },
+        {
+          "rank": 20,
           "title": "Resident Evil Requiem",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 20,
+          "rank": 21,
           "title": "Minecraft",
           "discount_info": "할인 없음",
           "has_badge": false
-        },
-        {
-          "rank": 21,
-          "title": "Battlefield™ 6",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
-          "has_badge": true
         },
         {
           "rank": 22,
@@ -1837,7 +1837,7 @@
         {
           "rank": 24,
           "title": "Gran Turismo® 7",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -1861,7 +1861,7 @@
         {
           "rank": 28,
           "title": "Call of Duty®: Modern Warfare®",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -1890,15 +1890,15 @@
         },
         {
           "rank": 33,
-          "title": "Ready or Not",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
-          "has_badge": true
-        },
-        {
-          "rank": 34,
           "title": "Apex Legends™",
           "discount_info": "할인 없음",
           "has_badge": false
+        },
+        {
+          "rank": 34,
+          "title": "Ready or Not",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "has_badge": true
         },
         {
           "rank": 35,
@@ -1975,7 +1975,7 @@
         {
           "rank": 47,
           "title": "The Witcher 3: Wild Hunt",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -2034,19 +2034,19 @@
         },
         {
           "rank": 57,
-          "title": "ARC Raiders",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 58,
           "title": "WRC 10 FIA World Rally Championship",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 59,
+          "rank": 58,
           "title": "Lost Soul Aside™",
+          "discount_info": "할인 없음",
+          "has_badge": false
+        },
+        {
+          "rank": 59,
+          "title": "ARC Raiders",
           "discount_info": "할인 없음",
           "has_badge": false
         },
@@ -2059,13 +2059,19 @@
         {
           "rank": 61,
           "title": "DAYS GONE",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "has_badge": true
+        },
+        {
+          "rank": 62,
+          "title": "RESIDENT EVIL 2",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         }
       ]
     },
     "페루": {
-      "cd_rank": 112,
+      "cd_rank": 111,
       "games": [
         {
           "rank": 1,
@@ -2154,7 +2160,7 @@
         {
           "rank": 15,
           "title": "Resident Evil Requiem",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -2202,7 +2208,7 @@
         {
           "rank": 23,
           "title": "HITMAN World of Assassination",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -2249,74 +2255,74 @@
         },
         {
           "rank": 31,
-          "title": "Crash™ Team Racing Nitro-Fueled",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 32,
           "title": "Resident Evil Village",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 33,
+          "rank": 32,
           "title": "Split Fiction",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 34,
+          "rank": 33,
           "title": "Poppy Playtime: Capítulo 5",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 35,
+          "rank": 34,
           "title": "Battlefield™ 6",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 36,
+          "rank": 35,
           "title": "Apex Legends™",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 37,
+          "rank": 36,
           "title": "Crash Bandicoot™ 4: It’s About Time",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 38,
+          "rank": 37,
           "title": "Marvel’s Spider-Man: Miles Morales",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 39,
+          "rank": 38,
           "title": "God of War Sons of Sparta",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 40,
+          "rank": 39,
           "title": "NBA 2K26",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 41,
+          "rank": 40,
           "title": "SpongeBob SquarePants: Battle For Bikini Bottom - Rehydrated",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
+        },
+        {
+          "rank": 41,
+          "title": "Crash™ Team Racing Nitro-Fueled",
+          "discount_info": "할인 없음",
+          "has_badge": false
         },
         {
           "rank": 42,
           "title": "SILENT HILL f",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -2394,7 +2400,7 @@
         {
           "rank": 55,
           "title": "ASTRO BOT",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -2418,7 +2424,7 @@
         {
           "rank": 59,
           "title": "RESIDENT EVIL 2",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -2472,7 +2478,7 @@
         {
           "rank": 68,
           "title": "The Last of Us™ Part II",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -2652,7 +2658,7 @@
         {
           "rank": 98,
           "title": "Dying Light: The Beast",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -2726,17 +2732,11 @@
           "title": "HELLDIVERS™ 2",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
-        },
-        {
-          "rank": 111,
-          "title": "World War Z: Aftermath",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
-          "has_badge": true
         }
       ]
     },
     "우루과이": {
-      "cd_rank": 60,
+      "cd_rank": 59,
       "games": [
         {
           "rank": 1,
@@ -2843,7 +2843,7 @@
         {
           "rank": 18,
           "title": "Marvel's Spider-Man",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -2861,7 +2861,7 @@
         {
           "rank": 21,
           "title": "Red Dead Redemption 2",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -2968,126 +2968,120 @@
         },
         {
           "rank": 39,
-          "title": "Assassin's Creed Black Flag Resynced",
-          "discount_info": "할인 없음",
-          "has_badge": false
-        },
-        {
-          "rank": 40,
           "title": "Honkai: Star Rail",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 41,
+          "rank": 40,
           "title": "Five Nights at Freddy's: Security Breach",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 42,
+          "rank": 41,
           "title": "Assassin’s Creed Shadows",
           "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
-          "rank": 43,
+          "rank": 42,
           "title": "ASTRO BOT",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 44,
+          "rank": 43,
           "title": "NARUTO SHIPPUDEN™: Ultimate Ninja® STORM 3 Full Burst",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 45,
+          "rank": 44,
           "title": "LEGO® Star Wars™ La saga de Skywalker",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 46,
+          "rank": 45,
           "title": "Marvel Rivals",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 47,
+          "rank": 46,
           "title": "Call of Duty®: Black Ops III",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 48,
+          "rank": 47,
           "title": "Warframe",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 49,
+          "rank": 48,
           "title": "DRAGON BALL XENOVERSE 2",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 50,
+          "rank": 49,
           "title": "The Witcher 3: Wild Hunt",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 51,
+          "rank": 50,
           "title": "Need for Speed™ Heat",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 52,
+          "rank": 51,
           "title": "Resident Evil Village",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 53,
+          "rank": 52,
           "title": "UFC™ 6",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 54,
+          "rank": 53,
           "title": "Crash Bandicoot™ 4: It’s About Time",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 55,
+          "rank": 54,
           "title": "Ready or Not",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
-          "rank": 56,
+          "rank": 55,
           "title": "Car Mechanic Simulator 2021",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 57,
+          "rank": 56,
           "title": "Cyberpunk 2077",
           "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
-          "rank": 58,
+          "rank": 57,
           "title": "Dead by Daylight",
           "discount_info": "할인 없음",
           "has_badge": false
         },
         {
-          "rank": 59,
+          "rank": 58,
           "title": "Call of Duty®: Vanguard",
           "discount_info": "할인 없음",
           "has_badge": false
@@ -3106,7 +3100,7 @@
         {
           "rank": 2,
           "title": "Jujutsu Kaisen Cursed Clash",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -3226,7 +3220,7 @@
         {
           "rank": 22,
           "title": "Resident Evil Requiem",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -3238,7 +3232,7 @@
         {
           "rank": 24,
           "title": "It Takes Two para PS4™ y PS5™",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -3250,7 +3244,7 @@
         {
           "rank": 26,
           "title": "Gran Turismo® 7",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -3268,13 +3262,13 @@
         {
           "rank": 29,
           "title": "DRAGON BALL XENOVERSE 2",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
           "rank": 30,
           "title": "Assassin’s Creed Shadows",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -3334,7 +3328,7 @@
         {
           "rank": 40,
           "title": "God of War Ragnarök",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -3418,7 +3412,7 @@
         {
           "rank": 54,
           "title": "Monster Hunter Wilds",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -3448,7 +3442,7 @@
         {
           "rank": 59,
           "title": "Capcom Fighting Collection 2",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -3508,7 +3502,7 @@
         {
           "rank": 69,
           "title": "LEGO® Star Wars™ La saga de Skywalker",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         }
       ]
@@ -3657,13 +3651,13 @@
         {
           "rank": 24,
           "title": "Resident Evil Village",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
           "rank": 25,
           "title": "Red Dead Redemption 2",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -3681,7 +3675,7 @@
         {
           "rank": 28,
           "title": "Gran Turismo® 7",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -3717,13 +3711,13 @@
         {
           "rank": 34,
           "title": "Call of Duty®: Modern Warfare®",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
           "rank": 35,
           "title": "Assassin’s Creed Shadows",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -3849,7 +3843,7 @@
         {
           "rank": 56,
           "title": "Grand Theft Auto: The Trilogy – The Definitive Edition",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -3873,7 +3867,7 @@
         {
           "rank": 60,
           "title": "TEKKEN 8",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -3885,7 +3879,7 @@
         {
           "rank": 62,
           "title": "No Man's Sky",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -4142,7 +4136,7 @@
         {
           "rank": 32,
           "title": "Ready or Not",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -4154,7 +4148,7 @@
         {
           "rank": 34,
           "title": "Mount & Blade II: Bannerlord",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -4220,7 +4214,7 @@
         {
           "rank": 45,
           "title": "Monster Hunter Wilds",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -4286,7 +4280,7 @@
         {
           "rank": 56,
           "title": "Skullgirls 2nd Encore",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -4680,7 +4674,7 @@
         {
           "rank": 2,
           "title": "Resident Evil 4",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -4806,7 +4800,7 @@
         {
           "rank": 23,
           "title": "It Takes Two para PS4™ y PS5™",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -4854,7 +4848,7 @@
         {
           "rank": 31,
           "title": "DRAGON BALL XENOVERSE 2",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -4884,7 +4878,7 @@
         {
           "rank": 36,
           "title": "ASTRO BOT",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -4980,7 +4974,7 @@
         {
           "rank": 52,
           "title": "Among Us 3D: VR",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -5040,7 +5034,7 @@
         {
           "rank": 62,
           "title": "Grand Theft Auto: The Trilogy – The Definitive Edition",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -5100,7 +5094,7 @@
         {
           "rank": 72,
           "title": "The Last of Us™ Part I",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -5130,7 +5124,7 @@
         {
           "rank": 77,
           "title": "RESIDENT EVIL 3",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -5442,7 +5436,7 @@
         {
           "rank": 129,
           "title": "Monster Hunter: World",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -5490,7 +5484,7 @@
         {
           "rank": 137,
           "title": "Demon Slayer -Kimetsu no Yaiba- The Hinokami Chronicles 2",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -5693,7 +5687,7 @@
         {
           "rank": 31,
           "title": "Grand Theft Auto: The Trilogy – The Definitive Edition",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -5705,7 +5699,7 @@
         {
           "rank": 33,
           "title": "Warhammer 40,000: Space Marine 2",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -5723,7 +5717,7 @@
         {
           "rank": 36,
           "title": "Cyberpunk 2077",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -5932,7 +5926,7 @@
         {
           "rank": 29,
           "title": "Call of Duty®: Modern Warfare®",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -6087,7 +6081,7 @@
         {
           "rank": 20,
           "title": "Ghost of Yōtei",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -6111,7 +6105,7 @@
         {
           "rank": 24,
           "title": "Red Dead Redemption 2",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -6309,7 +6303,7 @@
         {
           "rank": 57,
           "title": "No Man's Sky",
-          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -6339,7 +6333,7 @@
         {
           "rank": 62,
           "title": "Cyberpunk 2077",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -6435,7 +6429,7 @@
         {
           "rank": 78,
           "title": "Alan Wake Remastered",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -6447,7 +6441,7 @@
         {
           "rank": 80,
           "title": "ASTRO BOT",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -6548,7 +6542,7 @@
         {
           "rank": 12,
           "title": "Lies of P",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -6644,7 +6638,7 @@
         {
           "rank": 28,
           "title": "Dying Light: The Beast",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "La oferta finaliza el 11/6/2026 06:59 AM UTC",
           "has_badge": true
         },
         {
@@ -6781,7 +6775,7 @@
         {
           "rank": 21,
           "title": "Ghost of Yōtei",
-          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -6948,7 +6942,7 @@
         {
           "rank": 15,
           "title": "NBA 2K26",
-          "discount_info": "Angebot endet am 10.6.2026 10:59 PM UTC",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -9139,7 +9133,7 @@
         {
           "rank": 28,
           "title": "TEKKEN 8",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "A oferta termina a 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -9312,7 +9306,7 @@
         {
           "rank": 23,
           "title": "HITMAN World of Assassination",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -9563,7 +9557,7 @@
         {
           "rank": 39,
           "title": "Mafia: The Old Country",
-          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -9641,7 +9635,7 @@
         {
           "rank": 52,
           "title": "Starfield",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -9742,7 +9736,7 @@
         {
           "rank": 13,
           "title": "Resident Evil Requiem",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -9778,7 +9772,7 @@
         {
           "rank": 19,
           "title": "Battlefield™ 6",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -9820,13 +9814,13 @@
         {
           "rank": 26,
           "title": "ASTRO BOT",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
           "rank": 27,
           "title": "Resident Evil 4",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -9856,7 +9850,7 @@
         {
           "rank": 32,
           "title": "Warhammer 40,000: Space Marine 2",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -10023,7 +10017,7 @@
         {
           "rank": 19,
           "title": "ASTRO BOT",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -10101,7 +10095,7 @@
         {
           "rank": 32,
           "title": "Mafia: The Old Country",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -10208,7 +10202,7 @@
         {
           "rank": 10,
           "title": "NBA 2K26",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -10256,7 +10250,7 @@
         {
           "rank": 18,
           "title": "Gran Turismo™ 7",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -10442,7 +10436,7 @@
         {
           "rank": 49,
           "title": "STAR WARS Jedi: Survivor™",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -11009,7 +11003,7 @@
         {
           "rank": 17,
           "title": "Resident Evil Requiem",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "Actie eindigt op 10-6-2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -11021,7 +11015,7 @@
         {
           "rank": 19,
           "title": "Gran Turismo™ 7",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Actie eindigt op 10-6-2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -11947,7 +11941,7 @@
         {
           "rank": 35,
           "title": "Mortal Kombat 11",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -12036,7 +12030,7 @@
         {
           "rank": 5,
           "title": "NBA 2K26",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -12078,7 +12072,7 @@
         {
           "rank": 12,
           "title": "Resident Evil Requiem",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -12210,7 +12204,7 @@
         {
           "rank": 34,
           "title": "Battlefield™ 6",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -12676,7 +12670,7 @@
         {
           "rank": 18,
           "title": "Ghost of Yōtei",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -12964,7 +12958,7 @@
         {
           "rank": 66,
           "title": "STAR WARS Jedi: Survivor™",
-          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -13628,7 +13622,7 @@
         {
           "rank": 42,
           "title": "Red Dead Redemption 2",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -13760,7 +13754,7 @@
         {
           "rank": 64,
           "title": "Assetto Corsa Competizione",
-          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -13796,7 +13790,7 @@
         {
           "rank": 70,
           "title": "Dying Light: The Beast",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -14006,7 +14000,7 @@
         {
           "rank": 105,
           "title": "Call of Duty®: Modern Warfare®",
-          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -14185,7 +14179,7 @@
         {
           "rank": 24,
           "title": "ASTRO BOT",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -14334,7 +14328,7 @@
         {
           "rank": 15,
           "title": "Resident Evil Requiem",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -14502,7 +14496,7 @@
         {
           "rank": 43,
           "title": "Assassin’s Creed Shadows",
-          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -14555,7 +14549,7 @@
         {
           "rank": 7,
           "title": "NBA 2K26",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -14974,7 +14968,7 @@
         {
           "rank": 43,
           "title": "Clair Obscur: Expedition 33",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         }
       ]
@@ -15075,7 +15069,7 @@
         {
           "rank": 16,
           "title": "Red Dead Redemption 2",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -15219,7 +15213,7 @@
         {
           "rank": 40,
           "title": "It Takes Two PS4™ & PS5™",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -15321,7 +15315,7 @@
         {
           "rank": 57,
           "title": "Split Fiction",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         }
       ]
@@ -16038,7 +16032,7 @@
         {
           "rank": 45,
           "title": "Street Fighter 6",
-          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
+          "discount_info": "종료일 정보 없음",
           "has_badge": true
         },
         {
@@ -16181,7 +16175,7 @@
         {
           "rank": 7,
           "title": "Call of Duty®: Modern Warfare®",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -16337,7 +16331,7 @@
         {
           "rank": 33,
           "title": "Crash Bandicoot™ 4: It’s About Time",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "Offer ends 10/6/2026 10:59 PM UTC",
           "has_badge": true
         },
         {
@@ -17454,7 +17448,7 @@
         {
           "rank": 35,
           "title": "Sekiro™: Shadows Die Twice",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "확인 불가(Message: stale element referen)",
           "has_badge": true
         },
         {
@@ -17472,7 +17466,7 @@
         {
           "rank": 38,
           "title": "Split Fiction",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "Offer ends 10/6/2026 02:59 PM UTC",
           "has_badge": true
         },
         {
@@ -17537,7 +17531,7 @@
         {
           "rank": 7,
           "title": "Ghost of Yōtei",
-          "discount_info": "확인 불가(Message: stale element referen)",
+          "discount_info": "Offer ends 10/6/2026 02:59 PM UTC",
           "has_badge": true
         },
         {
@@ -17615,7 +17609,7 @@
         {
           "rank": 20,
           "title": "Gran Turismo® 7",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 02:59 PM UTC",
           "has_badge": true
         },
         {
@@ -17872,7 +17866,7 @@
         {
           "rank": 23,
           "title": "Split Fiction",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 02:59 PM UTC",
           "has_badge": true
         },
         {
@@ -17938,7 +17932,7 @@
         {
           "rank": 34,
           "title": "Battlefield™ 6",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 02:59 PM UTC",
           "has_badge": true
         }
       ]
@@ -18057,7 +18051,7 @@
         {
           "rank": 19,
           "title": "It Takes Two PS4™ & PS5™",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "Offer ends 10/6/2026 02:59 PM UTC",
           "has_badge": true
         },
         {
@@ -19061,7 +19055,7 @@
         {
           "rank": 38,
           "title": "光與影：33號遠征隊",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "優惠截止於10/6/2026 02:59 PM UTC",
           "has_badge": true
         },
         {
@@ -19217,7 +19211,7 @@
         {
           "rank": 64,
           "title": "宇宙機器人",
-          "discount_info": "종료일 정보 없음",
+          "discount_info": "優惠截止於10/6/2026 02:59 PM UTC",
           "has_badge": true
         }
       ]
