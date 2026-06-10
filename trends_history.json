@@ -13616,5 +13616,20 @@
         "geo_code": "DE"
       }
     }
+  },
+  {
+    "timestamp": "2026-06-10T11:08:01.771655",
+    "google": {
+      "score": 8,
+      "avg_7d": 34,
+      "top_regions": {}
+    },
+    "console_markets": {
+      "United States": {
+        "score": 48,
+        "avg_1m": 60,
+        "geo_code": "US"
+      }
+    }
   }
 ]
