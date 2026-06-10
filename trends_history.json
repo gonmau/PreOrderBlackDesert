@@ -13586,5 +13586,35 @@
         "geo_code": "JP"
       }
     }
+  },
+  {
+    "timestamp": "2026-06-10T06:48:50.043130",
+    "google": {
+      "score": 10,
+      "avg_7d": 33,
+      "top_regions": {}
+    },
+    "console_markets": {
+      "United States": {
+        "score": 49,
+        "avg_1m": 60,
+        "geo_code": "US"
+      },
+      "Japan": {
+        "score": 26,
+        "avg_1m": 56,
+        "geo_code": "JP"
+      },
+      "United Kingdom": {
+        "score": 30,
+        "avg_1m": 54,
+        "geo_code": "GB"
+      },
+      "Germany": {
+        "score": 18,
+        "avg_1m": 53,
+        "geo_code": "DE"
+      }
+    }
   }
 ]
