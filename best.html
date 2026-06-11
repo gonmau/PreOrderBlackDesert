@@ -1172,7 +1172,7 @@
               </div>
             </div>
             <div id="anchored-ref-lbl" style="font-size:11px;color:var(--tx-3);margin-top:6px"></div>
-            <div style="font-size:10px;color:var(--tx-4);margin-top:5px">D0~D12: 공식 발표 앵커 고정 (200만 3/20·300만 3/24·400만 4/1) — D13~D26: 500만 앵커 고정 (4/15) — D27+: 슬라이더 감소율 적용</div>
+            <div style="font-size:10px;color:var(--tx-4);margin-top:5px">D0~D12: 공식 발표 앵커 고정 (200만 3/20·300만 3/24·400만 4/1) — D13+: 슬라이더 감소율 적용</div>
           </div>
           <!-- 컨트롤 -->
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
@@ -1185,9 +1185,9 @@
                 style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:55px;margin-left:6px">
             </label>
             <label style="font-size:12px;color:var(--tx-3)">PS5 기본(%):
-              <input id="sales-ps-ratio" type="number" value="34" min="10" max="60" step="1"
+              <input id="sales-ps-ratio" type="number" value="36" min="10" max="60" step="1"
                 style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:3px 8px;color:var(--tx-1);font-size:13px;width:55px;margin-left:6px">
-              <span style="color:var(--tx-4);font-size:11px"> Steam <span id="sales-steam-ratio-lbl">47</span>% / Xbox 13% / 기타 6%</span>
+              <span style="color:var(--tx-4);font-size:11px"> Steam <span id="sales-steam-ratio-lbl">40</span>% / Xbox 10% / 기타 14%</span>
             </label>
             <button onclick="renderSalesChart()" style="background:var(--bg-3);border:1px solid var(--bd);border-radius:4px;padding:5px 14px;color:var(--tx-2);font-size:13px;cursor:pointer;font-weight:700">재계산</button>
           </div>
@@ -1427,8 +1427,7 @@ const COUNTRY_LOCALE = {
   "홍콩":           "en-hk",  // 공식: en-hk (zh-hant-hk 아님)
   "대만":           "zh-hant-tw",
 };
-// 1Q26 실적 기반: 미주+유럽 87%, 아시아 13% / Sensor Tower PS5: 미국48%·영국8%·프랑스5% (일본 미언급)
-const WEIGHTS = {"미국":32.0,"캐나다":5.0,"영국":8.0,"독일":7.5,"프랑스":6.5,"스페인":4.5,"이탈리아":3.5,"한국":4.5,"일본":3.0,"호주":2.5};
+const WEIGHTS = {"미국":30.0,"영국":8.5,"일본":8.0,"독일":6.5,"프랑스":6.0,"캐나다":4.5,"스페인":4.0,"이탈리아":3.5,"호주":3.0,"한국":2.8};
 const FLAGS = {
   "미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽",
   "아르헨티나":"🇦🇷","칠레":"🇨🇱","콜롬비아":"🇨🇴","페루":"🇵🇪",
@@ -1573,7 +1572,7 @@ function render() {
   // PS 타임스탬프 뱃지 전체 업데이트
   const psTs = curr.timestamp.split('.')[0].replace('T', ' ').slice(5); // MM-DD HH:mm
   document.querySelectorAll('.ps-ts-badge, #ps-data-time').forEach(el => el.textContent = psTs);
-  document.getElementById('stat-avg').innerText = (psAvg(curr) ?? curr.averages?.combined ?? 0).toFixed(1) + '위';
+  document.getElementById('stat-avg').innerText = curr.averages.combined.toFixed(1) + '위';
 
   let list = [];
   let best = { r: 999, n: '' }; let worst = { r: 0, n: '' };
@@ -1836,17 +1835,22 @@ function renderMainChart() {
   const ctx = mainEl.getContext('2d');
   if (mainChart) mainChart.destroy();
 
-  const allData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: psAvg(h) ?? h.averages?.combined }))
-    .filter(d => d.y != null);
-  const dv = allData.map(d => d.y);
+  const allData = historyData.map(h => ({
+    x: new Date(h.timestamp.split('.')[0]),
+    y: h.averages.combined,
+    isPartial: !!h.is_partial,
+    missingRate: h.missing_rate || 0
+  })).filter(d => d.y != null);
+  const dv  = allData.map(d => d.y);
   const lbs = allData.map(d => d.x);
+  const partialFlags = allData.map(d => d.isPartial);
 
   const idxFirst = 0, idxLast = dv.length - 1;
   const idxBest  = dv.reduce((bi,v,i,a) => v!==null&&(a[bi]===null||v<a[bi])?i:bi, 0);
 
   const specialIdx = new Set([idxFirst, idxLast, idxBest]);
-  const ptR = dv.map((_,i) => specialIdx.has(i) ? 5 : 0);
-  const ptC = dv.map((_,i) => i===idxBest?'#2ecc71': i===idxLast?'#f1c40f':'#ffffff');
+  const ptR = dv.map((_,i) => (specialIdx.has(i) || partialFlags[i]) ? 5 : 0);
+  const ptC = dv.map((_,i) => partialFlags[i] ? '#e74c3c' : i===idxBest ? '#2ecc71' : i===idxLast ? '#f1c40f' : '#ffffff');
 
   const fmtR = v => v != null ? v.toFixed(1) + '위' : '—';
   const setL = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
@@ -1854,6 +1858,7 @@ function renderMainChart() {
   setL('ps-leg-best',    '최고 ' + fmtR(dv[idxBest]));
   setL('ps-leg-current', '현재 ' + fmtR(dv[idxLast]));
 
+  // is_partial 구간을 점선으로 표시하기 위해 segment 콜백 사용
   mainChart = new Chart(ctx, {
     type: 'line',
     data: {
@@ -1863,7 +1868,11 @@ function renderMainChart() {
         data: dv,
         borderColor: '#f1c40f', borderWidth: 2,
         pointRadius: ptR, pointBackgroundColor: ptC, pointBorderColor: ptC,
-        pointHoverRadius: 6, tension: 0.2, fill: false
+        pointHoverRadius: 6, tension: 0.2, fill: false,
+        segment: {
+          borderColor: ctx2 => partialFlags[ctx2.p0DataIndex] ? '#e74c3c' : '#f1c40f',
+          borderDash: ctx2 => partialFlags[ctx2.p0DataIndex] ? [5, 4] : []
+        }
       }]
     },
     options: {
@@ -1878,7 +1887,13 @@ function renderMainChart() {
         },
         y: { reverse: true, suggestedMin: 0, grid: { color: '#222' }, ticks: { color: '#fff', padding: 8, callback: v => v > 0 ? v + '위' : '' } }
       },
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y + '위' } } }
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => {
+          const base = c.parsed.y + '위';
+          return partialFlags[c.dataIndex] ? base + ' ⚠️ 불완전 데이터' : base;
+        }}}
+      }
     }
   });
 }
@@ -1890,8 +1905,9 @@ function showCountryChart(countryName) {
   twemoji.parse(document.getElementById('modalTitle'), { folder: 'svg', ext: '.svg' });
   if (countryChart) { countryChart.destroy(); countryChart = null; }
   const countryData = historyData
-    .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName) }))
+    .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName), isPartial: !!h.is_partial }))
     .filter(d => d.y !== 999);
+  const cPartialFlags = countryData.map(d => d.isPartial);
 
   function drawCountryChart() {
     const canvas = document.getElementById('countryChart');
@@ -1900,6 +1916,9 @@ function showCountryChart(countryName) {
     canvas.width  = container.offsetWidth  || 700;
     canvas.height = container.offsetHeight || 400;
     const ctx = canvas.getContext('2d');
+    const baseR = countryData.length > 100 ? 0 : 2;
+    const ptR = cPartialFlags.map(p => p ? 5 : baseR);
+    const ptC = cPartialFlags.map(p => p ? '#e74c3c' : '#ff4757');
     countryChart = new Chart(ctx, {
       type: 'line',
       data: {
@@ -1907,8 +1926,11 @@ function showCountryChart(countryName) {
           label: countryName,
           data: countryData,
           borderColor: '#ff4757', borderWidth: 2,
-          pointRadius: countryData.length > 100 ? 0 : 2,
-          pointHoverRadius: 5, tension: 0.2, fill: false
+          pointRadius: ptR, pointBackgroundColor: ptC, pointBorderColor: ptC,
+          pointHoverRadius: 5, tension: 0.2, fill: false,
+          segment: {
+            borderDash: ctx2 => cPartialFlags[ctx2.p0DataIndex] ? [5, 4] : []
+          }
         }]
       },
       options: {
@@ -1922,7 +1944,13 @@ function showCountryChart(countryName) {
           },
           y: { reverse: true, suggestedMin: 0, grid: { color: '#333' }, ticks: { color: '#fff', padding: 8, callback: v => v > 0 ? v + '위' : '' } }
         },
-        plugins: { legend: { display: false } }
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: c => {
+            const base = c.parsed.y + '위';
+            return cPartialFlags[c.dataIndex] ? base + ' ⚠️ 불완전' : base;
+          }}}
+        }
       }
     });
   }
@@ -2164,9 +2192,7 @@ function stToggle(bodyId, headerEl) {
 /* ══════════════════════════════════════════════════════════════
    STEAM TOP SELLER DATA & RENDERING
 ══════════════════════════════════════════════════════════════ */
-// 붉은사막 실측 기반 (Sensor Tower 500만 + 1Q26 실적 NA/EU 81% 매출 반영)
-// NA+EU ~80%, 아시아 ~18% (중국은 Steam 구매자 많지만 위안화 단가 낮아 매출 기여 하향)
-const STS_W={"미국":22.0,"캐나다":6.0,"브라질":2.0,"독일":9.0,"영국":8.0,"프랑스":7.0,"스페인":4.0,"이탈리아":3.5,"폴란드":2.5,"네덜란드":2.0,"스웨덴":1.8,"스위스":1.5,"벨기에":1.5,"오스트리아":1.2,"노르웨이":1.0,"덴마크":0.8,"핀란드":0.8,"체코":0.7,"러시아":1.5,"중국":5.0,"한국":3.5,"일본":1.5,"호주":3.0,"대만":1.0,"홍콩":0.8,"싱가포르":0.8,"뉴질랜드":0.5,"태국":0.5,"터키":1.0};
+const STS_W={"미국":30.0,"중국":28.0,"러시아":6.0,"독일":5.5,"영국":5.0,"브라질":4.5,"한국":4.2,"프랑스":4.0,"일본":3.5,"캐나다":3.5,"호주":2.5,"터키":2.0,"폴란드":2.0,"스페인":2.0,"이탈리아":1.8,"네덜란드":0.8,"스웨덴":0.7,"노르웨이":0.5,"덴마크":0.5,"핀란드":0.4,"오스트리아":0.6,"스위스":0.7,"체코":0.4,"싱가포르":0.5,"태국":0.8,"벨기에":0.8,"홍콩":0.7,"뉴질랜드":0.4,"대만":0.8};
 const STS_F={"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","일본":"🇯🇵","호주":"🇦🇺","한국":"🇰🇷","중국":"🇨🇳","러시아":"🇷🇺","폴란드":"🇵🇱","터키":"🇹🇷","네덜란드":"🇳🇱","스웨덴":"🇸🇪","노르웨이":"🇳🇴","덴마크":"🇩🇰","핀란드":"🇫🇮","오스트리아":"🇦🇹","스위스":"🇨🇭","체코":"🇨🇿","싱가포르":"🇸🇬","태국":"🇹🇭","벨기에":"🇧🇪","홍콩":"🇭🇰","뉴질랜드":"🇳🇿","대만":"🇹🇼"};
 const STS_CC={"미국":"us","캐나다":"ca","브라질":"br","영국":"gb","독일":"de","프랑스":"fr","스페인":"es","이탈리아":"it","일본":"jp","호주":"au","한국":"kr","중국":"cn","러시아":"ru","폴란드":"pl","터키":"tr","네덜란드":"nl","스웨덴":"se","노르웨이":"no","덴마크":"dk","핀란드":"fi","오스트리아":"at","스위스":"ch","체코":"cz","싱가포르":"sg","태국":"th","벨기에":"be","홍콩":"hk","뉴질랜드":"nz","대만":"tw"};
 let stsHist=[], stsCI=null, stsMCI=null, stsSched=null;
@@ -2203,22 +2229,6 @@ function stsAvg(h) {
     const w = STS_W[n] || 1.0; ts += r * w; tw += w;
   }
   return tw > 0 ? Math.round(ts / tw * 10) / 10 : null;
-}
-
-// PS 가중평균 순위 — results 필드로 직접 계산 (WEIGHTS 기준, 과거 데이터도 일관 적용)
-function psAvg(h) {
-  if (!h) return null;
-  // results 필드 우선, 없으면 averages.combined fallback
-  if (h.results) {
-    let tw = 0, ts = 0;
-    for (const [n, d] of Object.entries(h.results)) {
-      const r = (typeof d === 'object') ? d?.rank : (typeof d === 'number' ? d : null);
-      if (!r || r >= 999) continue;
-      const w = WEIGHTS[n] || 0.1; ts += r * w; tw += w;
-    }
-    return tw > 0 ? Math.round(ts / tw * 10) / 10 : null;
-  }
-  return h.averages?.combined ?? null;
 }
 
 /* ── Steam 국가 모달 ── */
@@ -2327,12 +2337,10 @@ function closePsLinksPopover() {
      컨트롤 논란, Xbox 앱 오류 등)
 
    [플랫폼 비율 추정 근거]
-   - Sensor Tower 500만 판매 실측 기준: PS5 34%, Steam 53%, Xbox 13%
-   - best.html 기본값: PS5 34%, Steam 47%, Xbox 13%, 기타 6%
-     (Steam 순위 추적 외 EGS·Mac 등 기타 채널 포함해 Steam을 보수적으로 조정)
-   - 실적발표(Q1 매출 기준): 콘솔 50%, PC 50% — 매출 기준이므로 판매량 비중과 다름
-     (PS5 단가 > Steam 단가 → 판매량 기준 Steam 비중이 더 높은 것과 일관성 있음)
-   - 기본값: PS5 34%, Steam 47%, Xbox 13%, 기타 6%
+   - Steam 사전 판매 363K / 총 2M → Steam 비율 최소 18%
+   - 대형 AAA 통상: PS5 45~55%, PC 30~40%, Xbox 10~20%
+   - Pearl Abyss 특성상 아시아·콘솔 비중 높아 PS 비중 높게 설정
+   - 기본값: PS5 36%, Steam 40%, Xbox 10%, 기타 14%
      (입력 UI에서 조정 가능 — 주석은 코드 기본값 기준)
 
    [2M 수치 보수적 해석]
@@ -2738,8 +2746,8 @@ function renderSalesChart() {
   const soldThroughD0 = parseInt(document.getElementById('sales-day1-total').value) || 2000000;
   const refundPct = parseFloat(document.getElementById('sales-refund-pct').value) || 8;
   const psBaseRatio = parseInt(document.getElementById('sales-ps-ratio').value) || 36;
-  const xbBaseRatio = 13;
-  const otherBaseRatio = 6;
+  const xbBaseRatio = 10;
+  const otherBaseRatio = 14;
   const stBaseRatio = Math.max(5, 100 - psBaseRatio - xbBaseRatio - otherBaseRatio);
   const lbl = document.getElementById('sales-steam-ratio-lbl');
   if (lbl) lbl.textContent = stBaseRatio;
@@ -2764,11 +2772,9 @@ function renderSalesChart() {
 
   const MILESTONE_DAY4  = 3000000;
   const MILESTONE_DAY12 = 4000000;  // ← D12(4/1) 공식 발표 앵커
-  const MILESTONE_DAY26 = 5000000;  // ← D26(4/15) 공식 발표 앵커 (500만)
   const PRE4_INCREMENT  = Math.max(0, MILESTONE_DAY4 - soldThroughD0);
   const D4_TO_D12_INC   = Math.max(0, MILESTONE_DAY12 - MILESTONE_DAY4); // D5~D12 합산 = 100만
-  const D12_TO_D26_INC  = Math.max(0, MILESTONE_DAY26 - MILESTONE_DAY12); // D13~D26 합산 = 100만
-  const POST_D12_DECAY  = MODE.postDecay;  // D27+ 감소율
+  const POST_D12_DECAY  = MODE.postDecay;  // D13+ 감소율
   const POST_D4_DECAY   = MODE.postDecay;  // 하위 호환용 (미사용)
   const DAILY_FLOOR     = MODE.dailyFloor;
   const OTHER_ALLOC    = { ps: 0.20, st: 0.35, xb: 0.05, other: 0.40 };
@@ -2781,12 +2787,14 @@ function renderSalesChart() {
   };
   const otherShareForDay = di => clamp(MODE.otherMin + di * 0.005, MODE.otherMin, MODE.otherMax);
 
-  // ── PS 일별 가중 평균 순위 (results 필드로 직접 재계산 → 과거 데이터도 신규 WEIGHTS 적용) ──
+  // ── PS 일별 가중 평균 순위 (이미 WEIGHTS 반영된 averages.combined 사용) ──
+  // is_partial=true 엔트리는 결측 오염 방지를 위해 집계에서 제외
   const psByDay = {};
   historyData.forEach(h => {
+    if (h.is_partial) return;  // ⚠️ 불완전 데이터 제외
     const di = getDayIndex(h.timestamp);
     if (di < 0) return;
-    const avg = psAvg(h);
+    const avg = h.averages?.combined;
     if (avg == null || !isFinite(avg)) return;
     if (!psByDay[di]) psByDay[di] = { sum: 0, cnt: 0 };
     psByDay[di].sum += avg;
@@ -2879,22 +2887,15 @@ function renderSalesChart() {
     totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, D4_TO_D12_INC * (day5_12Weights[di - 5] / w5_12Sum)));
   }
 
-  // ── D13+: 모드별 분기 ──
+  // ── D13+: D12 앵커 기준으로 POST_D12_DECAY 적용 ──
   if (currentSalesMode === 'anchored') {
-    // 📌 공지기반: D13~D26 = 500만 앵커 고정, D27+ = 슬라이더 decay
+    // 📌 공지기반: D13+는 슬라이더 decay 사용 (순위 신호 무시, 업계 유사 타이틀 기준)
     const sliderEl = document.getElementById('anchored-decay-slider');
-    const ANC_DECAY = sliderEl ? parseFloat(sliderEl.value) : 0.893;
-    let w13_26 = 0;
-    for (let di = 13; di <= 26; di++) w13_26 += Math.pow(ANC_DECAY, di - 13);
-    const d13Base = w13_26 > 0 ? D12_TO_D26_INC / w13_26 : D12_TO_D26_INC / 14;
-    for (let di = 13; di <= 26; di++) {
-      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, d13Base * Math.pow(ANC_DECAY, di - 13)));
-    }
-    for (let di = 27; di < days.length; di++) {
-      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[26] * Math.pow(ANC_DECAY, di - 26)));
+    const ANC_D13_DECAY = sliderEl ? parseFloat(sliderEl.value) : 0.893;
+    for (let di = 13; di < days.length; di++) {
+      totalDaily[di] = Math.round(Math.max(DAILY_FLOOR, totalDaily[12] * Math.pow(ANC_D13_DECAY, di - 12)));
     }
   } else {
-    // 낙관적·보수적: 기존 순위 신호 기반 decay (D12 기준)
     for (let di = 13; di < days.length; di++) {
       const signalRef = comboSignal[12] || comboSignal[4] || comboSignal[0] || 1;
       const rel = clamp((comboSignal[di] || signalRef) / signalRef, 0.75, 1.20);
@@ -3583,7 +3584,7 @@ function renderSummaryCharts() {
   if (psEl && historyData.length > 1) {
     psEl.width  = psEl.parentElement.offsetWidth || W;
     psEl.height = H_TREND;
-    const allData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: psAvg(h) ?? h.averages?.combined })).filter(d => d.y != null);
+    const allData = historyData.map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: h.averages?.combined })).filter(d => d.y != null);
     const dv = allData.map(d => d.y), lbs = allData.map(d => d.x);
     const idxFirst = 0, idxLast = dv.length - 1;
     const idxBest  = dv.reduce((bi, v, i, a) => v < (a[bi] ?? 99) ? i : bi, 0);
