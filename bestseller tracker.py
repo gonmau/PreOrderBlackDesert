@@ -188,8 +188,8 @@ def read_schedule_meta() -> dict:
         print(f"⚠️  스케줄 파싱 오류: {e}")
         return None
 
-# 게임 미발견 시 최대 탐색 페이지
-MAX_PAGES = 30
+# 게임 미발견 시 최대 탐색 페이지 (200위까지 = 약 9페이지 x 24개)
+MAX_PAGES = 9
 
 # =============================================================================
 # 드라이버
@@ -272,6 +272,29 @@ def calculate_avg(results):
         total_sum += rank * w
         total_w += w
     return total_sum / total_w if total_w > 0 else None
+
+
+def calculate_missing_rate(results, skipped_countries=None):
+    """
+    결측률 계산: 순위 미발견 국가의 가중치 합 / 전체 추적 국가 가중치 합
+    skipped_countries(접근불가)는 제외하고 계산합니다.
+    반환: 0.0 ~ 1.0 (예: 0.3 = 30% 결측)
+    """
+    if skipped_countries is None:
+        skipped_countries = set()
+    total_w, missing_w = 0, 0
+    for c, rank in results.items():
+        if c in skipped_countries:
+            continue
+        w = MARKET_WEIGHTS.get(c, 1.0)
+        total_w += w
+        if rank is None:
+            missing_w += w
+    return missing_w / total_w if total_w > 0 else 0.0
+
+
+# is_partial 판단 임계값: 결측 가중치가 전체의 20% 초과 시 오염 데이터로 마킹
+PARTIAL_THRESHOLD = 0.20
 
 def format_diff(current, previous):
     if previous is None or current is None:
@@ -378,7 +401,7 @@ def save_baseline(combined_avg):
 # Discord 알림
 # =============================================================================
 
-def send_discord(results, combined_avg, skipped_countries, history):
+def send_discord(results, combined_avg, skipped_countries, history, is_partial=False, missing_rate=0.0):
     if not DISCORD_WEBHOOK:
         print("ℹ️  DISCORD_WEBHOOK 미설정, 알림 스킵")
         return
@@ -423,10 +446,14 @@ def send_discord(results, combined_avg, skipped_countries, history):
             changed_count += 1
 
     desc = ""
+    if is_partial:
+        desc += f"⚠️ **데이터 불완전** (결측률 {missing_rate*100:.1f}%) — 평균값 참고용\n"
     if combined_avg:
         desc += f"📊 **전체 가중 평균**: `{combined_avg:.1f}위`"
         if avg_diff:
             desc += f" ({avg_diff})"
+        if is_partial:
+            desc += " ⚠️"
         desc += "\n"
     desc += f"🌐 **추적 국가**: {tracked}개국 | **순위권 발견**: {found}개국\n"
     desc += f"🔄 **순위 변화**: {changed_count}개국\n\n"
@@ -559,7 +586,12 @@ def main():
     elapsed = (time.time() - start_time) / 60
     print(f"\n⏱️  소요 시간: {elapsed:.1f}분")
 
-    combined_avg = calculate_avg({c: r for c, r in results.items() if c not in skipped})
+    active_results = {c: r for c, r in results.items() if c not in skipped}
+    combined_avg = calculate_avg(active_results)
+    missing_rate = calculate_missing_rate(active_results)
+    is_partial = missing_rate > PARTIAL_THRESHOLD
+    if is_partial:
+        print(f"\n⚠️  결측률 {missing_rate*100:.1f}% > {PARTIAL_THRESHOLD*100:.0f}% → is_partial=True 마킹")
 
     print("\n" + "=" * 60)
     print("📊 결과 요약")
@@ -575,13 +607,16 @@ def main():
                 print(f"  {flag} {country}: {rank}위" if rank else f"  {flag} {country}: 미발견")
 
     if combined_avg:
-        print(f"\n전체 가중 평균: {combined_avg:.1f}위")
+        partial_tag = " [PARTIAL]" if is_partial else ""
+        print(f"\n전체 가중 평균: {combined_avg:.1f}위{partial_tag}")
 
     history, _ = load_history_safe()
     schedule_meta = read_schedule_meta()  # yml에서 cron 파싱
     new_entry = {
         "timestamp": datetime.now(KST).isoformat(),
         "averages": {"combined": combined_avg},
+        "missing_rate": round(missing_rate, 4),
+        "is_partial": is_partial,
         "skipped": list(skipped),
         "raw_results": results
     }
@@ -593,7 +628,7 @@ def main():
         save_history(history, schedule_meta)
         print(f"\n✅  {HISTORY_FILE} 저장 완료 (총 {len(history)}개 레코드)")
 
-    send_discord(results, combined_avg, skipped, history)
+    send_discord(results, combined_avg, skipped, history, is_partial, missing_rate)
 
 if __name__ == "__main__":
     main()
