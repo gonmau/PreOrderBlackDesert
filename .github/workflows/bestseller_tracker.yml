@@ -30,7 +30,7 @@ jobs:
     - name: Run Bestseller Tracker
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-      run: python bestseller_tracker.py
+      run: python bestseller tracker.py
 
     - name: Commit and Push changes
       env:
