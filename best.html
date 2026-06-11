@@ -1837,16 +1837,17 @@ function renderMainChart() {
 
   const allData = historyData.map(h => ({
     x: new Date(h.timestamp.split('.')[0]),
-    y: h.averages.combined,
+    y: h.averages.combined ?? null,
     isPartial: !!h.is_partial,
     missingRate: h.missing_rate || 0
-  })).filter(d => d.y != null);
+  }));
   const dv  = allData.map(d => d.y);
   const lbs = allData.map(d => d.x);
   const partialFlags = allData.map(d => d.isPartial);
 
-  const idxFirst = 0, idxLast = dv.length - 1;
-  const idxBest  = dv.reduce((bi,v,i,a) => v!==null&&(a[bi]===null||v<a[bi])?i:bi, 0);
+  const idxFirst = dv.findIndex(v => v != null);
+  const idxLast  = dv.reduce((li, v, i) => v != null ? i : li, -1);
+  const idxBest  = dv.reduce((bi,v,i,a) => v!=null&&(a[bi]==null||v<a[bi])?i:bi, 0);
 
   const specialIdx = new Set([idxFirst, idxLast, idxBest]);
   const ptR = dv.map((_,i) => (specialIdx.has(i) || partialFlags[i]) ? 5 : 0);
@@ -1868,7 +1869,7 @@ function renderMainChart() {
         data: dv,
         borderColor: '#f1c40f', borderWidth: 2,
         pointRadius: ptR, pointBackgroundColor: ptC, pointBorderColor: ptC,
-        pointHoverRadius: 6, tension: 0.2, fill: false,
+        pointHoverRadius: 6, tension: 0.2, fill: false, spanGaps: false,
         segment: {
           borderColor: ctx2 => partialFlags[ctx2.p0DataIndex] ? '#e74c3c' : '#f1c40f',
           borderDash: ctx2 => partialFlags[ctx2.p0DataIndex] ? [5, 4] : []
@@ -1905,8 +1906,7 @@ function showCountryChart(countryName) {
   twemoji.parse(document.getElementById('modalTitle'), { folder: 'svg', ext: '.svg' });
   if (countryChart) { countryChart.destroy(); countryChart = null; }
   const countryData = historyData
-    .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName), isPartial: !!h.is_partial }))
-    .filter(d => d.y !== 999);
+    .map(h => ({ x: new Date(h.timestamp.split('.')[0]), y: getRank(h, countryName) === 999 ? null : getRank(h, countryName), isPartial: !!h.is_partial }));
   const cPartialFlags = countryData.map(d => d.isPartial);
 
   function drawCountryChart() {
@@ -1927,7 +1927,7 @@ function showCountryChart(countryName) {
           data: countryData,
           borderColor: '#ff4757', borderWidth: 2,
           pointRadius: ptR, pointBackgroundColor: ptC, pointBorderColor: ptC,
-          pointHoverRadius: 5, tension: 0.2, fill: false,
+          pointHoverRadius: 5, tension: 0.2, fill: false, spanGaps: false,
           segment: {
             borderDash: ctx2 => cPartialFlags[ctx2.p0DataIndex] ? [5, 4] : []
           }
