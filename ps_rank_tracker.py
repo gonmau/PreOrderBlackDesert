@@ -202,12 +202,31 @@ def run(concept_id: str, workers: int, max_pages: int) -> pd.DataFrame:
     return df
 
 
+def save_wide(df: pd.DataFrame, out_path: str) -> int:
+    """행=국가, 열=실행 시각(오른쪽으로 계속 추가)인 wide 포맷으로 누적 저장."""
+    col_name = datetime.now(KST).strftime("%Y-%m-%d %H:%M")
+    new_series = df.set_index("country")["rank"]
+
+    if os.path.exists(out_path):
+        wide = pd.read_csv(out_path, index_col="country")
+    else:
+        wide = pd.DataFrame(index=pd.Index([], name="country"))
+
+    # 기존 국가 순서 유지 + 새로 나온 국가는 뒤에 추가
+    all_countries = list(wide.index) + [c for c in new_series.index if c not in wide.index]
+    wide = wide.reindex(all_countries)
+    wide[col_name] = new_series.reindex(all_countries)
+
+    wide.to_csv(out_path, encoding="utf-8-sig")
+    return len(wide.columns)
+
+
 def main():
     parser = argparse.ArgumentParser(description="PS Store 국가별 순위 추적 (간소화판)")
     parser.add_argument("--concept-id", default=DEFAULT_CONCEPT_ID, help="PS Store concept ID")
     parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS, help="동시 실행 Chrome 인스턴스 수")
     parser.add_argument("--max-pages", type=int, default=MAX_PAGES, help="국가당 최대 탐색 페이지")
-    parser.add_argument("--out", default="data/rank_history.csv", help="CSV 저장 경로 (실행할 때마다 이 파일에 누적됨)")
+    parser.add_argument("--out", default="data/rank_history.csv", help="CSV 저장 경로 (실행할 때마다 오른쪽에 열 추가)")
     args = parser.parse_args()
 
     df = run(args.concept_id, args.workers, args.max_pages)
@@ -219,12 +238,8 @@ def main():
         print("\n" + view.to_string(index=False))
 
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
-    file_exists = os.path.exists(args.out)
-    save_df = df[["country", "rank"]]
-    save_df.to_csv(args.out, mode="a", header=not file_exists, index=False, encoding="utf-8-sig")
-    with open(args.out, encoding="utf-8-sig") as f:
-        total_rows = sum(1 for _ in f) - 1
-    print(f"\n누적 저장됨: {args.out} (누적 {total_rows}행)")
+    run_count = save_wide(df, args.out)
+    print(f"\n누적 저장됨: {args.out} (총 {run_count}회 실행 누적)")
 
 
 if __name__ == "__main__":
