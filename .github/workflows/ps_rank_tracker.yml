@@ -36,12 +36,12 @@ jobs:
       - name: Run rank tracker
         run: |
           python ps_rank_tracker.py --concept-id "$CONCEPT_ID" --workers 4 \
-            --out data/rank_$(date -u +%Y%m%d_%H%M).csv
+            --out data/rank_history.csv
 
       - name: Commit results
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/*.csv
+          git add data/rank_history.csv
           git diff --cached --quiet || git commit -m "chore: update PS rank data $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git push
