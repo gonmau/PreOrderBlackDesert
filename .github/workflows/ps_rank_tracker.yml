@@ -1,0 +1,44 @@
+name: PS Store Rank Tracker
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # 매시 정각 (UTC 기준). 필요에 맞게 조정하세요.
+  workflow_dispatch:
+    inputs:
+      game_name:
+        description: "추적할 게임 이름"
+        required: false
+        default: "붉은사막"
+
+env:
+  GAME_NAME: ${{ github.event.inputs.game_name || '붉은사막' }}
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install playwright pandas tabulate
+          playwright install --with-deps chromium
+
+      - name: Run rank tracker
+        run: |
+          python ps_rank_tracker.py "$GAME_NAME" --out data/rank_$(date -u +%Y%m%d_%H%M).csv
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/*.csv
+          git diff --cached --quiet || git commit -m "chore: update PS rank data $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push
