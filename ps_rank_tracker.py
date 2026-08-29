@@ -40,7 +40,8 @@ KST = timezone(timedelta(hours=9))
 DEFAULT_CONCEPT_ID = "10002363"  # 붉은사막 (Crimson Desert)
 MAX_PAGES = 9        # 게임 못 찾았을 때 최대 탐색 페이지 (약 200위까지)
 PAGE_LOAD_TIMEOUT = 10  # 초 단위, 요소 로딩 대기 상한 (기존 고정 sleep(3) 대신 대기 조건으로 단축)
-DEFAULT_WORKERS = 10    # 동시에 띄울 Chrome 인스턴스 수 (PC 사양에 맞게 조절)
+DEFAULT_WORKERS = 4     # 동시에 띄울 Chrome 인스턴스 수. GitHub Actions 무료 러너(2코어)는
+                         # 4~5가 안전, 로컬 PC면 코어 수 보고 올려도 됨
 
 LOCALE_MAP = {
     "미국": "en-us", "캐나다": "en-ca", "브라질": "pt-br", "멕시코": "es-mx",
@@ -96,7 +97,7 @@ FLAGS = {
 # 드라이버 / 크롤링
 # =============================================================================
 
-def setup_driver():
+def setup_driver(driver_path: str):
     options = Options()
     options.add_argument('--headless=new')
     options.add_argument('--no-sandbox')
@@ -105,7 +106,7 @@ def setup_driver():
     options.add_argument('--window-size=1280,800')
     # 이미지 로딩 꺼서 속도 향상 (순위 링크만 필요하므로 렌더링 이미지는 불필요)
     options.add_experimental_option("prefs", {"profile.managed_default_content_settings.images": 2})
-    service = Service(ChromeDriverManager().install())
+    service = Service(driver_path)
     driver = webdriver.Chrome(service=service, options=options)
     driver.set_page_load_timeout(30)
     return driver
@@ -115,40 +116,45 @@ def get_browse_url(locale, page=1):
     return f"https://store.playstation.com/{locale}/pages/browse/{page}"
 
 
-def crawl_country(country, locale, concept_id, max_pages=MAX_PAGES):
-    """국가 하나를 처음부터 끝까지 크롤링. 스레드마다 자체 driver를 만들어 병렬 실행."""
+def _crawl_country_once(driver, locale, concept_id, max_pages):
     target = f"/concept/{concept_id}"
-    driver = setup_driver()
     total_rank = 0
-    try:
-        for page in range(1, max_pages + 1):
-            url = get_browse_url(locale, page)
-            try:
-                driver.get(url)
-                WebDriverWait(driver, PAGE_LOAD_TIMEOUT).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "a[href*='/concept/']"))
-                )
-            except Exception:
-                # 타임아웃 = 더 이상 아이템 없음(마지막 페이지) 또는 접근 불가
-                if page == 1:
-                    return country, None, "error"
-                return country, None, "not_found"
+    for page in range(1, max_pages + 1):
+        url = get_browse_url(locale, page)
+        driver.get(url)
+        WebDriverWait(driver, PAGE_LOAD_TIMEOUT).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "a[href*='/concept/']"))
+        )
+        links = driver.find_elements(By.CSS_SELECTOR, "a[href*='/concept/']")
+        if not links:
+            return None, "not_found"
 
-            links = driver.find_elements(By.CSS_SELECTOR, "a[href*='/concept/']")
-            if not links:
-                return country, None, "not_found"
+        for link in links:
+            href = link.get_attribute("href") or ""
+            if "/concept/" not in href:
+                continue
+            total_rank += 1
+            if target in href:
+                return total_rank, "found"
 
-            for link in links:
-                href = link.get_attribute("href") or ""
-                if "/concept/" not in href:
-                    continue
-                total_rank += 1
-                if target in href:
-                    return country, total_rank, "found"
+    return None, "not_found"
 
-        return country, None, "not_found"
-    finally:
-        driver.quit()
+
+def crawl_country(country, locale, driver_path, concept_id, max_pages=MAX_PAGES, retries=1):
+    """국가 하나를 처음부터 끝까지 크롤링. 스레드마다 자체 driver를 만들어 병렬 실행.
+    1페이지에서 타임아웃 나면 (동시 실행 리소스 경합 등 일시적 문제일 수 있어) retries만큼 재시도."""
+    last_status = "error"
+    for attempt in range(retries + 1):
+        driver = setup_driver(driver_path)
+        try:
+            rank, status = _crawl_country_once(driver, locale, concept_id, max_pages)
+            return country, rank, status
+        except Exception:
+            last_status = "error"
+            continue
+        finally:
+            driver.quit()
+    return country, None, last_status
 
 
 # =============================================================================
@@ -159,12 +165,16 @@ def run(concept_id: str, workers: int, max_pages: int) -> pd.DataFrame:
     countries = [c for c in LOCALE_MAP if c not in SKIP_COUNTRIES]
     now = datetime.now(KST).isoformat(timespec="seconds")
 
+    # 드라이버는 한 번만 받아서 경로를 재사용 (스레드마다 동시에 install() 호출하면
+    # webdriver_manager 캐시 경합으로 대부분 실패하는 문제가 있었음)
+    driver_path = ChromeDriverManager().install()
+
     rows = []
     start = time.time()
 
     with cf.ThreadPoolExecutor(max_workers=workers) as ex:
         futures = {
-            ex.submit(crawl_country, c, LOCALE_MAP[c], concept_id, max_pages): c
+            ex.submit(crawl_country, c, LOCALE_MAP[c], driver_path, concept_id, max_pages): c
             for c in countries
         }
         for fut in cf.as_completed(futures):
