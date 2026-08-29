@@ -5,18 +5,18 @@ on:
     - cron: "0 * * * *"   # 매시 정각 (UTC 기준). 필요에 맞게 조정하세요.
   workflow_dispatch:
     inputs:
-      game_names:
-        description: "추적할 게임 이름(들), 콤마로 언어별 병기"
+      concept_id:
+        description: "PS Store concept ID"
         required: false
-        default: "붉은사막,Crimson Desert,クリムゾン・デザート"
+        default: "10002363"
 
 env:
-  GAME_NAMES: ${{ github.event.inputs.game_names || '붉은사막,Crimson Desert,クリムゾン・デザート' }}
+  CONCEPT_ID: ${{ github.event.inputs.concept_id || '10002363' }}
 
 jobs:
   track:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,14 +26,17 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Set up Chrome
+        uses: browser-actions/setup-chrome@v1
+
       - name: Install dependencies
         run: |
-          pip install playwright pandas tabulate
-          playwright install --with-deps chromium
+          pip install selenium webdriver-manager pandas tabulate
 
       - name: Run rank tracker
         run: |
-          python ps_rank_tracker.py "$GAME_NAMES" --out data/rank_$(date -u +%Y%m%d_%H%M).csv
+          python ps_rank_tracker.py --concept-id "$CONCEPT_ID" --workers 6 \
+            --out data/rank_$(date -u +%Y%m%d_%H%M).csv
 
       - name: Commit results
         run: |
