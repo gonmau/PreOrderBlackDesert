@@ -35,7 +35,7 @@ jobs:
 
       - name: Run rank tracker
         run: |
-          python ps_rank_tracker.py --concept-id "$CONCEPT_ID" --workers 6 \
+          python ps_rank_tracker.py --concept-id "$CONCEPT_ID" --workers 4 \
             --out data/rank_$(date -u +%Y%m%d_%H%M).csv
 
       - name: Commit results
