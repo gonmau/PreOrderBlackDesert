@@ -5,13 +5,13 @@ on:
     - cron: "0 * * * *"   # 매시 정각 (UTC 기준). 필요에 맞게 조정하세요.
   workflow_dispatch:
     inputs:
-      game_name:
-        description: "추적할 게임 이름"
+      game_names:
+        description: "추적할 게임 이름(들), 콤마로 언어별 병기"
         required: false
-        default: "붉은사막"
+        default: "붉은사막,Crimson Desert,クリムゾン・デザート"
 
 env:
-  GAME_NAME: ${{ github.event.inputs.game_name || '붉은사막' }}
+  GAME_NAMES: ${{ github.event.inputs.game_names || '붉은사막,Crimson Desert,クリムゾン・デザート' }}
 
 jobs:
   track:
@@ -33,7 +33,7 @@ jobs:
 
       - name: Run rank tracker
         run: |
-          python ps_rank_tracker.py "$GAME_NAME" --out data/rank_$(date -u +%Y%m%d_%H%M).csv
+          python ps_rank_tracker.py "$GAME_NAMES" --out data/rank_$(date -u +%Y%m%d_%H%M).csv
 
       - name: Commit results
         run: |
