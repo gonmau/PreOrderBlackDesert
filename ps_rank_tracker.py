@@ -1,164 +1,218 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-PS Store 국가별 특정 게임 베스트셀러 순위 추적기
+PS Store 국가별 베스트셀러 순위 추적기 (간소화 버전)
 
-- 국가(로케일)별 PS Store 베스트셀러 카테고리 페이지를 headless 브라우저로 렌더링해서
-  타이틀 목록을 뽑고, 그 안에서 대상 게임의 순위(인덱스)를 찾아 표로 정리합니다.
-- PS Store는 공식 공개 API가 없고 페이지가 JS로 렌더링되므로 Playwright로 실제 DOM을 읽습니다.
-
-사용 전 확인할 것 (딱 1곳만 손보면 됩니다):
-  BESTSELLER_URL_TEMPLATE 의 카테고리 ID가 실제로 각 로케일에서 "베스트셀러/인기 다운로드"
-  차트로 뜨는지 브라우저로 한 번 확인하세요. PS Store > 세일/차트 > Best Sellers 메뉴에서
-  URL을 복사해 {locale} 부분만 바꿔주면 됩니다. (blackdesert-cawling에서 쓰던 URL 그대로
-  써도 됩니다 — 있으면 그걸로 교체.)
+- 가중치/스케줄/디스코드 알림 등 다 빼고, "돌릴 때마다 국가별 순위를 표로 저장" 기능만.
+- concept ID로 찾기 때문에 언어별 타이틀 신경 쓸 필요 없음.
+- 속도: 국가별로 Chrome 인스턴스를 여러 개 띄워 병렬로 크롤링 (ThreadPoolExecutor).
 
 설치:
-    pip install playwright pandas tabulate --break-system-packages
-    playwright install chromium
+    pip install selenium webdriver-manager pandas tabulate
 
-실행 (나라마다 타이틀 언어가 다르므로 콤마로 여러 언어 별칭을 같이 넣어주세요):
-    python ps_rank_tracker.py "붉은사막,Crimson Desert,クリムゾン・デザート"
-    python ps_rank_tracker.py "붉은사막,Crimson Desert" --out rank.csv
+실행:
+    python ps_rank_tracker.py                       # 기본 concept id로 전체 국가 추적
+    python ps_rank_tracker.py --concept-id 10002363
+    python ps_rank_tracker.py --workers 12 --out data/rank.csv
 """
 
 import argparse
-import re
-import sys
-from dataclasses import dataclass
-from datetime import datetime, timezone
+import concurrent.futures as cf
+import os
+import time
+from datetime import datetime, timezone, timedelta
 
 import pandas as pd
-from playwright.sync_api import sync_playwright
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 
-# 국가코드: PS Store 로케일 코드. 필요에 따라 추가/삭제하세요.
-COUNTRIES = {
-    "KR": "ko-kr",
-    "US": "en-us",
-    "JP": "ja-jp",
-    "GB": "en-gb",
-    "DE": "de-de",
-    "FR": "fr-fr",
-    "CA": "en-ca",
-    "AU": "en-au",
-    "BR": "pt-br",
-    "MX": "es-mx",
-    "IT": "it-it",
-    "ES": "es-es",
-    "SA": "ar-sa",   # 사우디
-    "AE": "ar-ae",   # UAE
-    "SE": "sv-se",
-    "NO": "no-no",
-    "NL": "nl-nl",
-    "PL": "pl-pl",
-    "PT": "pt-pt",
-    "TR": "tr-tr",
-    "HK": "zh-hant-hk",
-    "TW": "zh-hant-tw",
-    "TH": "th-th",
-    "ID": "en-id",
-    "SG": "en-sg",
-    "IN": "en-in",
-    "ZA": "en-za",
-    "AT": "de-at",
-    "CH": "de-ch",
+KST = timezone(timedelta(hours=9))
+
+# =============================================================================
+# 설정
+# =============================================================================
+
+DEFAULT_CONCEPT_ID = "10002363"  # 붉은사막 (Crimson Desert)
+MAX_PAGES = 9        # 게임 못 찾았을 때 최대 탐색 페이지 (약 200위까지)
+PAGE_LOAD_TIMEOUT = 10  # 초 단위, 요소 로딩 대기 상한 (기존 고정 sleep(3) 대신 대기 조건으로 단축)
+DEFAULT_WORKERS = 10    # 동시에 띄울 Chrome 인스턴스 수 (PC 사양에 맞게 조절)
+
+LOCALE_MAP = {
+    "미국": "en-us", "캐나다": "en-ca", "브라질": "pt-br", "멕시코": "es-mx",
+    "아르헨티나": "es-ar", "칠레": "es-cl", "콜롬비아": "es-co", "페루": "es-pe",
+    "우루과이": "es-uy", "볼리비아": "es-bo", "과테말라": "es-gt", "온두라스": "es-hn",
+    "코스타리카": "es-cr", "에콰도르": "es-ec", "엘살바도르": "es-sv",
+    "니카라과": "es-ni", "파나마": "es-pa", "파라과이": "es-py",
+    "영국": "en-gb", "독일": "de-de", "프랑스": "fr-fr", "스페인": "es-es",
+    "이탈리아": "it-it", "네덜란드": "nl-nl", "폴란드": "pl-pl", "스위스": "de-ch",
+    "스웨덴": "sv-se", "노르웨이": "no-no", "덴마크": "en-dk", "핀란드": "fi-fi",
+    "포르투갈": "pt-pt", "그리스": "en-gr", "체코": "en-cz", "헝가리": "en-hu",
+    "루마니아": "en-ro", "슬로바키아": "en-sk", "슬로베니아": "en-si",
+    "우크라이나": "ru-ua", "사우디아라비아": "en-sa", "아랍에미리트": "en-ae",
+    "남아공": "en-za", "터키": "en-tr", "벨기에": "nl-be", "오스트리아": "de-at",
+    "이스라엘": "en-il", "크로아티아": "en-hr", "불가리아": "en-bg",
+    "키프로스": "en-cy", "아이슬란드": "en-is", "아일랜드": "en-ie",
+    "쿠웨이트": "en-kw", "레바논": "en-lb", "룩셈부르크": "de-lu",
+    "몰타": "en-mt", "오만": "en-om", "카타르": "en-qa", "바레인": "en-bh",
+    "일본": "ja-jp", "한국": "ko-kr", "중국": "zh-cn", "호주": "en-au",
+    "인도": "en-in", "태국": "en-th", "싱가포르": "en-sg", "말레이시아": "en-my",
+    "인도네시아": "en-id", "필리핀": "en-ph", "베트남": "en-vn",
+    "홍콩": "en-hk", "대만": "zh-hant-tw", "뉴질랜드": "en-nz",
 }
 
-# ⚠️ 카테고리 ID는 로케일마다 동일하게 쓰이는 값이지만 PS 쪽에서 바뀔 수 있습니다.
-# 안 맞으면 브라우저에서 PS Store > Best Sellers 차트 URL을 복사해 이 템플릿에 맞게 바꿔주세요.
-BESTSELLER_URL_TEMPLATE = "https://store.playstation.com/{locale}/category/3f772501-f6f8-49b7-abac-874a88ca4897"
+# URL 없거나 스토어 미지원 국가 (기존 코드 기준)
+SKIP_COUNTRIES = {"중국", "베트남", "슬로베니아", "필리핀"}
 
-MAX_RANK_TO_SCAN = 50  # 이 순위 밖이면 "50위 밖"으로 표기
-
-
-@dataclass
-class RankResult:
-    country: str
-    locale: str
-    rank: int | None
-    title_matched: str | None
-    checked_at: str
-    error: str | None = None
-
-
-def normalize(text: str) -> str:
-    return re.sub(r"[^0-9a-zA-Z가-힣]", "", text or "").lower()
-
-
-def fetch_titles(page, url: str) -> list[str]:
-    page.goto(url, wait_until="networkidle", timeout=30000)
-    # 무한 스크롤 로딩 대응: 아래로 몇 번 스크롤해서 카드 더 불러오기
-    for _ in range(4):
-        page.mouse.wheel(0, 2000)
-        page.wait_for_timeout(500)
-
-    # PS Store 상품 카드의 타이틀은 상품 링크의 aria-label / 텍스트에 들어있습니다.
-    cards = page.locator("a[href*='/product/'], a[href*='/concept/']")
-    count = min(cards.count(), MAX_RANK_TO_SCAN)
-    titles = []
-    for i in range(count):
-        label = cards.nth(i).get_attribute("aria-label") or cards.nth(i).inner_text()
-        if label:
-            titles.append(label.strip())
-    return titles
+FLAGS = {
+    "미국": "🇺🇸", "캐나다": "🇨🇦", "브라질": "🇧🇷", "멕시코": "🇲🇽",
+    "아르헨티나": "🇦🇷", "칠레": "🇨🇱", "콜롬비아": "🇨🇴", "페루": "🇵🇪",
+    "우루과이": "🇺🇾", "볼리비아": "🇧🇴", "과테말라": "🇬🇹", "온두라스": "🇭🇳",
+    "코스타리카": "🇨🇷", "에콰도르": "🇪🇨", "엘살바도르": "🇸🇻",
+    "니카라과": "🇳🇮", "파나마": "🇵🇦", "파라과이": "🇵🇾",
+    "영국": "🇬🇧", "독일": "🇩🇪", "프랑스": "🇫🇷", "스페인": "🇪🇸",
+    "이탈리아": "🇮🇹", "네덜란드": "🇳🇱", "폴란드": "🇵🇱", "스위스": "🇨🇭",
+    "스웨덴": "🇸🇪", "노르웨이": "🇳🇴", "덴마크": "🇩🇰", "핀란드": "🇫🇮",
+    "포르투갈": "🇵🇹", "그리스": "🇬🇷", "체코": "🇨🇿", "헝가리": "🇭🇺",
+    "루마니아": "🇷🇴", "슬로바키아": "🇸🇰", "슬로베니아": "🇸🇮",
+    "우크라이나": "🇺🇦", "사우디아라비아": "🇸🇦", "아랍에미리트": "🇦🇪",
+    "남아공": "🇿🇦", "터키": "🇹🇷", "벨기에": "🇧🇪", "오스트리아": "🇦🇹",
+    "이스라엘": "🇮🇱", "크로아티아": "🇭🇷", "불가리아": "🇧🇬",
+    "키프로스": "🇨🇾", "아이슬란드": "🇮🇸", "아일랜드": "🇮🇪",
+    "쿠웨이트": "🇰🇼", "레바논": "🇱🇧", "룩셈부르크": "🇱🇺",
+    "몰타": "🇲🇹", "오만": "🇴🇲", "카타르": "🇶🇦", "바레인": "🇧🇭",
+    "일본": "🇯🇵", "한국": "🇰🇷", "중국": "🇨🇳", "호주": "🇦🇺",
+    "인도": "🇮🇳", "태국": "🇹🇭", "싱가포르": "🇸🇬", "말레이시아": "🇲🇾",
+    "인도네시아": "🇮🇩", "필리핀": "🇵🇭", "베트남": "🇻🇳",
+    "홍콩": "🇭🇰", "대만": "🇹🇼", "뉴질랜드": "🇳🇿",
+}
 
 
-def find_rank(titles: list[str], aliases: list[str]) -> tuple[int | None, str | None]:
-    targets = [normalize(a) for a in aliases if a.strip()]
-    for idx, title in enumerate(titles, start=1):
-        norm_title = normalize(title)
-        if any(t in norm_title for t in targets):
-            return idx, title
-    return None, None
+# =============================================================================
+# 드라이버 / 크롤링
+# =============================================================================
+
+def setup_driver():
+    options = Options()
+    options.add_argument('--headless=new')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--window-size=1280,800')
+    # 이미지 로딩 꺼서 속도 향상 (순위 링크만 필요하므로 렌더링 이미지는 불필요)
+    options.add_experimental_option("prefs", {"profile.managed_default_content_settings.images": 2})
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=options)
+    driver.set_page_load_timeout(30)
+    return driver
 
 
-def run(aliases: list[str]) -> pd.DataFrame:
-    results: list[RankResult] = []
-    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+def get_browse_url(locale, page=1):
+    return f"https://store.playstation.com/{locale}/pages/browse/{page}"
 
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        context = browser.new_context()
-        page = context.new_page()
 
-        for country, locale in COUNTRIES.items():
-            url = BESTSELLER_URL_TEMPLATE.format(locale=locale)
+def crawl_country(country, locale, concept_id, max_pages=MAX_PAGES):
+    """국가 하나를 처음부터 끝까지 크롤링. 스레드마다 자체 driver를 만들어 병렬 실행."""
+    target = f"/concept/{concept_id}"
+    driver = setup_driver()
+    total_rank = 0
+    try:
+        for page in range(1, max_pages + 1):
+            url = get_browse_url(locale, page)
             try:
-                titles = fetch_titles(page, url)
-                rank, matched = find_rank(titles, aliases)
-                results.append(RankResult(country, locale, rank, matched, now))
-            except Exception as e:
-                results.append(RankResult(country, locale, None, None, now, error=str(e)[:120]))
+                driver.get(url)
+                WebDriverWait(driver, PAGE_LOAD_TIMEOUT).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "a[href*='/concept/']"))
+                )
+            except Exception:
+                # 타임아웃 = 더 이상 아이템 없음(마지막 페이지) 또는 접근 불가
+                if page == 1:
+                    return country, None, "error"
+                return country, None, "not_found"
 
-        browser.close()
+            links = driver.find_elements(By.CSS_SELECTOR, "a[href*='/concept/']")
+            if not links:
+                return country, None, "not_found"
 
-    df = pd.DataFrame([r.__dict__ for r in results])
-    df["rank_display"] = df["rank"].apply(lambda r: r if pd.notna(r) else f"{MAX_RANK_TO_SCAN}위 밖/미확인")
-    df = df.sort_values(by="rank", na_position="last")
+            for link in links:
+                href = link.get_attribute("href") or ""
+                if "/concept/" not in href:
+                    continue
+                total_rank += 1
+                if target in href:
+                    return country, total_rank, "found"
+
+        return country, None, "not_found"
+    finally:
+        driver.quit()
+
+
+# =============================================================================
+# 메인
+# =============================================================================
+
+def run(concept_id: str, workers: int, max_pages: int) -> pd.DataFrame:
+    countries = [c for c in LOCALE_MAP if c not in SKIP_COUNTRIES]
+    now = datetime.now(KST).isoformat(timespec="seconds")
+
+    rows = []
+    start = time.time()
+
+    with cf.ThreadPoolExecutor(max_workers=workers) as ex:
+        futures = {
+            ex.submit(crawl_country, c, LOCALE_MAP[c], concept_id, max_pages): c
+            for c in countries
+        }
+        for fut in cf.as_completed(futures):
+            country, rank, status = fut.result()
+            print(f"  {FLAGS.get(country,'')} {country}: {rank if rank else status}")
+            rows.append({
+                "country": country,
+                "flag": FLAGS.get(country, ""),
+                "locale": LOCALE_MAP[country],
+                "rank": rank,
+                "status": status,
+                "checked_at": now,
+            })
+
+    for c in SKIP_COUNTRIES:
+        rows.append({
+            "country": c, "flag": FLAGS.get(c, ""), "locale": LOCALE_MAP.get(c, ""),
+            "rank": None, "status": "skipped", "checked_at": now,
+        })
+
+    elapsed = time.time() - start
+    print(f"\n⏱️  소요 시간: {elapsed/60:.1f}분 ({workers}개 동시 실행)")
+
+    df = pd.DataFrame(rows).sort_values(by="rank", na_position="last")
     return df
 
 
 def main():
-    parser = argparse.ArgumentParser(description="PS Store 국가별 게임 순위 추적")
-    parser.add_argument(
-        "game_names",
-        help="추적할 게임 이름(들). 나라마다 타이틀이 다르므로 콤마로 여러 언어 병기 "
-             "(예: '붉은사막,Crimson Desert,クリムゾン・デザート')",
-    )
-    parser.add_argument("--out", default=None, help="결과를 저장할 CSV 경로")
+    parser = argparse.ArgumentParser(description="PS Store 국가별 순위 추적 (간소화판)")
+    parser.add_argument("--concept-id", default=DEFAULT_CONCEPT_ID, help="PS Store concept ID")
+    parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS, help="동시 실행 Chrome 인스턴스 수")
+    parser.add_argument("--max-pages", type=int, default=MAX_PAGES, help="국가당 최대 탐색 페이지")
+    parser.add_argument("--out", default=None, help="CSV 저장 경로 (생략 시 data/rank_YYYYMMDD_HHMM.csv)")
     args = parser.parse_args()
 
-    aliases = [a.strip() for a in args.game_names.split(",")]
-    df = run(aliases)
+    df = run(args.concept_id, args.workers, args.max_pages)
 
-    view = df[["country", "rank_display", "title_matched", "checked_at", "error"]]
+    view = df[["flag", "country", "rank", "status"]]
     try:
-        print(view.to_markdown(index=False))
+        print("\n" + view.to_markdown(index=False))
     except ImportError:
-        print(view.to_string(index=False))
+        print("\n" + view.to_string(index=False))
 
-    if args.out:
-        df.to_csv(args.out, index=False, encoding="utf-8-sig")
-        print(f"\n저장됨: {args.out}")
+    out_path = args.out or f"data/rank_{datetime.now(KST).strftime('%Y%m%d_%H%M')}.csv"
+    os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
+    df.to_csv(out_path, index=False, encoding="utf-8-sig")
+    print(f"\n저장됨: {out_path}")
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
