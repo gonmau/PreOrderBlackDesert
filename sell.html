@@ -150,12 +150,11 @@
   <!-- 모델 근거 -->
   <div class="model-note">
     <b>📌 모델 근거</b><br>
-    • 공식 앵커: <b style="color:var(--gold)">D0=200만 (3/20)</b> · <b style="color:var(--gold)">D4=300만 (3/24)</b> · <b style="color:var(--gold)">D12=400만 (4/1)</b> · <b style="color:var(--gold)">D26=500만 (4/15)</b><br>
+    • 공식 앵커: <b style="color:var(--gold)">D0=200만 (3/20)</b> · <b style="color:var(--gold)">D4=300만 (3/24)</b> · <b style="color:var(--gold)">D12=400만 (4/1)</b> · <b style="color:var(--gold)">D26=500만 (4/15)</b> · <b style="color:var(--gold)">D83=600만 (6/11)</b><br>
     • PS는 WEIGHTS 기반 가중 평균 순위, Steam은 STS_W 기반 국가별 가중 평균 순위를 일별 신호로 사용합니다.<br>
-    • 공식 앵커: <b style="color:var(--gold)">D0=200만 (3/20)</b> · <b style="color:var(--gold)">D4=300만 (3/24)</b> · <b style="color:var(--gold)">D12=400만 (4/1)</b> · <b style="color:var(--gold)">D26=500만 (4/15)</b><br>
-    • D13~D26: <b style="color:#f1c40f">500만 앵커 역산</b>으로 CCU 비율 가중 고정 배분 (슬라이더로 평탄화 조정). D27+는 <b style="color:#4a9eff">실측 CCU × 0.409</b> 방식, CCU 없는 날 0.973 decay 적용.<br>
-    • 기준 배율 <b style="color:#f1c40f">1.05x</b>는 1Q26 어닝스레터 가이던스(붉은사막 연간 6,441~7,348억) 역산값. D27+ 적용.<br>
-    • <b style="color:#2ecc71">📐 추세 맞춤</b>: D27 이후 실측 CCU 기반으로 최적 배율 자동 역산.
+    • D13~D26: <b style="color:#f1c40f">500만 앵커 역산</b>, D27~D83: <b style="color:#e67e22">600만 앵커 역산</b>으로 각각 CCU 비율 가중 고정 배분 (슬라이더로 평탄화 조정). D84+는 <b style="color:#4a9eff">실측 CCU × 0.409</b> 방식, CCU 없는 날 0.973 decay 적용.<br>
+    • 기준 배율 <b style="color:#f1c40f">1.05x</b>는 1Q26 어닝스레터 가이던스(붉은사막 연간 6,441~7,348억) 역산값. D84+ 적용.<br>
+    • <b style="color:#2ecc71">📐 추세 맞춤</b>: D84 이후 실측 CCU 기반으로 최적 배율 자동 역산.
     • 각 플랫폼 <b style="color:var(--tx-2)">+숫자*</b>는 순위 미반영 채널 고정비율 추정치 (참고용).
   </div>
 
@@ -185,7 +184,7 @@
     </div>
     <div id="anchored-ref-lbl" style="font-size:11px;color:var(--tx-3);margin-top:6px"></div>
     <div id="anchored-fit-lbl" style="font-size:11px;color:#2ecc71;margin-top:4px;display:none"></div>
-    <div style="font-size:10px;color:var(--tx-4);margin-top:5px">D0~D12: 공식 앵커 고정 · D13~D26: 500만 앵커 CCU 역산 고정 (슬라이더로 배분 평탄화) · D27+: 실측 CCU × 0.409, CCU 없는 날 0.973 decay · <b style="color:#f1c40f">추세맞춤</b>으로 배율 자동보정</div>
+    <div style="font-size:10px;color:var(--tx-4);margin-top:5px">D0~D12: 공식 앵커 고정 · D13~D26: 500만 앵커 CCU 역산 고정 · D27~D83: 600만 앵커 CCU 역산 고정 (슬라이더로 배분 평탄화) · D84+: 실측 CCU × 0.409, CCU 없는 날 0.973 decay · <b style="color:#f1c40f">추세맞춤</b>으로 배율 자동보정</div>
   </div>
 
   <!-- 컨트롤 -->
@@ -342,13 +341,13 @@ function fitDecayToTrend() {
     return;
   }
   const LAUNCH = new Date('2026-03-20T07:00:00+09:00');
-  const todayDay = Math.max(13, Math.floor((Date.now() - LAUNCH.getTime()) / 86400000));
+  const todayDay = Math.max(84, Math.floor((Date.now() - LAUNCH.getTime()) / 86400000));
   const floor = window._ccuFloor || 25000;
   const CCU_DECAY = 0.973;  // 실측 주간 ~0.83 → 일별 ^(1/7)
 
-  const realDays = Object.keys(ccuByDay).map(Number).filter(d => d >= 13 && d <= todayDay).sort((a,b)=>a-b);
+  const realDays = Object.keys(ccuByDay).map(Number).filter(d => d >= 84 && d <= todayDay).sort((a,b)=>a-b);
 
-  let bestRatio = 0.364;
+  let bestRatio = 0.409;
 
   if (realDays.length >= 2) {
     // CCU 실측 있음 → (일별판매추정 / CCU) 평균
@@ -361,14 +360,14 @@ function fitDecayToTrend() {
       bestRatio = Math.max(0.28, Math.min(0.52, rs.reduce((a,b)=>a+b,0)/rs.length));
     }
   } else {
-    // CCU 없음 → 누적 증분 기반 역산
-    const currentTotal = window._latestTotCum || 4_280_000;
-    const observedInc  = Math.max(0, currentTotal - 4_000_000);
-    const daysElapsed  = todayDay - 12;
+    // CCU 없음 → 600만 앵커(D83) 이후 누적 증분 기반 역산
+    const currentTotal = window._latestTotCum || 6_200_000;
+    const observedInc  = Math.max(0, currentTotal - 6_000_000);
+    const daysElapsed  = todayDay - 83;
     if (daysElapsed >= 1 && observedInc >= 1) {
       let bestErr = Infinity;
       for (let r = 0.28; r <= 0.52; r += 0.001) {
-        let cum = 0, ccu = 250000;
+        let cum = 0, ccu = 90000;
         for (let k = 1; k <= daysElapsed; k++) { ccu *= CCU_DECAY; cum += Math.max(floor, ccu * r); }
         const err = Math.abs(cum - observedInc);
         if (err < bestErr) { bestErr = err; bestRatio = r; }
@@ -600,16 +599,42 @@ function renderSalesChart() {
     totalDaily[di] = Math.round(Math.max(CCU_FLOOR, D13_D26_INC * Math.max(0.01, blended)));
   }
 
-  // ── D27+: 실측 CCU × CCU_SALES_RATIO (전 모드 공통, CCU 없는 날 0.973 decay) ──
-  for (let di = 27; di < days.length; di++) {
+  // ── D27~D83: 600만 앵커(2026-06-11 공식 발표, 출시 83일차) 고정 배분 ──
+  // 500만(D26) → 600만(D83) 구간을 CCU 비율대로 채워 넣어, D27+ 자유추정 구간을 D84 이후로 축소
+  const MILESTONE_D83 = 6_000_000;
+  const D26_CUM = totalDaily.slice(0, 27).reduce((a, b) => a + b, 0); // D0~D26 누적
+  const D27_D83_INC = Math.max(0, MILESTONE_D83 - D26_CUM); // D27~D83 에 채워야 할 판매량
+  const uniformW27_83 = 1 / 57;
+  const d27_83Weights = [];
+  for (let di = 27; di <= 83; di++) {
+    let ccu;
+    if (ccuByDay[di] != null) {
+      ccu = ccuByDay[di];
+    } else {
+      const lastRealDay = Math.max(...Object.keys(ccuByDay).map(Number).filter(d => d <= di), 26);
+      const lastCCU = ccuByDay[lastRealDay] ?? D12_CCU_BASE;
+      const gap = di - lastRealDay;
+      ccu = lastCCU * Math.pow(CCU_DECAY, gap);
+    }
+    d27_83Weights.push(Math.max(1, ccu));
+  }
+  const wSum27_83 = d27_83Weights.reduce((a, b) => a + b, 0) || 1;
+  for (let di = 27; di <= 83; di++) {
+    const ccuW = d27_83Weights[di - 27] / wSum27_83;
+    const blended = ccuW * (1 / _flatK) + uniformW27_83 * (1 - 1 / _flatK);
+    totalDaily[di] = Math.round(Math.max(CCU_FLOOR, D27_D83_INC * Math.max(0.01, blended)));
+  }
+
+  // ── D84+: 실측 CCU × CCU_SALES_RATIO (전 모드 공통, CCU 없는 날 0.973 decay) ──
+  for (let di = 84; di < days.length; di++) {
     let ccu;
     if (ccuByDay[di] != null) {
       ccu = ccuByDay[di];  // 실측 CCU 우선
     } else {
       // 마지막 실측 CCU 이후 0.973/일 감소로 추정 (실측 주간 decay ~0.83)
       const lastRealDay = Math.max(...Object.keys(ccuByDay).map(Number).filter(d => d <= di));
-      const lastCCU = ccuByDay[isFinite(lastRealDay) ? lastRealDay : 26] ?? (ccuByDay[26] || 116053);
-      const gap = di - (isFinite(lastRealDay) ? lastRealDay : 26);
+      const lastCCU = ccuByDay[isFinite(lastRealDay) ? lastRealDay : 83] ?? (ccuByDay[83] || 90000);
+      const gap = di - (isFinite(lastRealDay) ? lastRealDay : 83);
       // 전 모드 동일: 실측 CCU decay 0.973 적용
       ccu = lastCCU * Math.pow(CCU_DECAY, gap);
     }
@@ -714,6 +739,7 @@ function renderSalesChart() {
       { target:3_000_000, date:new Date('2026-03-24T19:19:00+09:00'), day:4  },
       { target:4_000_000, date:new Date('2026-04-01T11:00:00+09:00'), day:12 },
       { target:5_000_000, date:new Date('2026-04-15T12:00:00+09:00'), day:26 },
+      { target:6_000_000, date:new Date('2026-06-11T12:00:00+09:00'), day:83 },
     ];
 
     function findMilestone(target) {
@@ -748,7 +774,7 @@ function renderSalesChart() {
       { label:'🎯 300만 달성 ✅', ms:findMilestone(3_000_000),  color:'#2ecc71' },
       { label:'🏅 400만 달성 ✅', ms:findMilestone(4_000_000),  color:'#f1c40f' },
       { label:'🚀 500만 달성 ✅', ms:findMilestone(5_000_000),  color:'#4a9eff' },
-      { label:'🚀 600만 달성',    ms:findMilestone(6_000_000),  color:'#e67e22' },
+      { label:'🚀 600만 달성 ✅', ms:findMilestone(6_000_000),  color:'#e67e22' },
       { label:'🔥 700만 달성',    ms:findMilestone(7_000_000),  color:'#e74c3c' },
       { label:'🔥 800만 달성',    ms:findMilestone(8_000_000),  color:'#c0392b' },
       { label:'💎 900만 달성',    ms:findMilestone(9_000_000),  color:'#9b59b6' },
