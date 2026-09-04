@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crimson Desert DLC 사전예약 순위</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+<style>
+*{box-sizing:border-box} body{margin:0;background:#0f0b0d;color:#eee;font-family:Arial,"Noto Sans KR",sans-serif}
+.container{max-width:1450px;margin:auto;padding:28px 20px 60px}
+header{text-align:center;margin-bottom:28px} h1{margin:0;font-size:2rem;color:#fff}.subtitle{color:#a99a9f;margin-top:8px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+.stat-box,.panel{background:#1a1318;border:1px solid #2a1f22;border-radius:12px;padding:18px}
+.stat-label{font-size:.8rem;color:#9f9096}.stat-value{font-size:1.8rem;font-weight:bold;margin-top:7px}.gold{color:#e8bd57}
+.stat-diff{font-size:.78rem;margin-top:5px;color:#888}.up{color:#5ac98b}.down{color:#ef6b73}
+.section-title{font-size:1.2rem;font-weight:bold;margin-bottom:14px}.chart-wrapper{height:320px;position:relative}
+.meta-row{display:flex;gap:20px;flex-wrap:wrap;color:#9f9096;font-size:.85rem}.meta-row strong{color:#eee}
+.region-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+.region-title{font-weight:bold;font-size:1.05rem;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{padding:9px 6px;border-bottom:1px solid #2a1f22;text-align:left}th{color:#9f9096;font-size:.75rem}td.rank{text-align:right;font-weight:bold}.country-link{color:#eee;text-decoration:none}.country-link:hover{color:#e8bd57;text-decoration:underline}.external{font-size:.72rem;color:#9f9096;margin-left:4px}td.change{text-align:right}
+.empty{color:#777}
+@media(max-width:1000px){.stats{grid-template-columns:repeat(2,1fr)}.region-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.stats{grid-template-columns:1fr}.container{padding:18px 10px}.chart-wrapper{height:260px}}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>🗺️ Crimson Desert DLC — Charting the Unknown</h1>
+<div class="subtitle">PlayStation Store 사전예약 순위 추적</div>
+</header>
+
+<div class="stats">
+<div class="stat-box"><div class="stat-label">전체 가중 평균</div><div class="stat-value" id="combined">—</div><div class="stat-diff" id="combinedDiff"></div></div>
+<div class="stat-box"><div class="stat-label">Europe & Middle East 평균</div><div class="stat-value" id="europe">—</div><div class="stat-diff" id="europeDiff"></div></div>
+<div class="stat-box"><div class="stat-label">Americas 평균</div><div class="stat-value" id="americas">—</div><div class="stat-diff" id="americasDiff"></div></div>
+<div class="stat-box"><div class="stat-label">Asia & Oceania 평균</div><div class="stat-value" id="asia">—</div><div class="stat-diff" id="asiaDiff"></div></div>
+<div class="stat-box"><div class="stat-label">최고 순위 국가</div><div class="stat-value gold" id="best">—</div><div class="stat-diff" id="bestName"></div></div>
+</div>
+
+<div class="panel">
+<div class="section-title">📈 순위 누적 히스토리</div>
+<div class="chart-wrapper"><canvas id="chart"></canvas></div>
+<div class="meta-row">
+<span>마지막 업데이트: <strong id="updated">—</strong></span>
+<span>추적 국가: <strong id="count">—</strong>개국</span>
+<span>DLC 출시일: <strong>2026-10-15</strong></span>
+</div>
+</div>
+
+<div class="region-grid" id="regions"></div>
+</div>
+
+<script>
+const REGIONS = {
+"Europe & Middle East":["영국","독일","프랑스","스페인","이탈리아","네덜란드","폴란드","스위스","스웨덴","노르웨이","덴마크","핀란드","포르투갈","그리스","체코","헝가리","루마니아","슬로바키아","슬로베니아","우크라이나","사우디아라비아","아랍에미리트","남아공","터키","벨기에","오스트리아","이스라엘","크로아티아","불가리아","키프로스","아이슬란드","아일랜드","쿠웨이트","레바논","룩셈부르크","몰타","오만","카타르","바레인"],
+"Americas":["미국","캐나다","브라질","멕시코","아르헨티나","칠레","콜롬비아","페루","우루과이","볼리비아","과테말라","온두라스","코스타리카","에콰도르","엘살바도르","니카라과","파나마","파라과이"],
+"Asia & Oceania":["일본","한국","중국","호주","인도","태국","싱가포르","말레이시아","인도네시아","필리핀","베트남","홍콩","대만","뉴질랜드"]
+};
+const FLAGS={
+"미국":"🇺🇸","캐나다":"🇨🇦","브라질":"🇧🇷","멕시코":"🇲🇽","아르헨티나":"🇦🇷","칠레":"🇨🇱","콜롬비아":"🇨🇴","페루":"🇵🇪","우루과이":"🇺🇾","볼리비아":"🇧🇴","과테말라":"🇬🇹","온두라스":"🇭🇳","코스타리카":"🇨🇷","에콰도르":"🇪🇨","엘살바도르":"🇸🇻","니카라과":"🇳🇮","파나마":"🇵🇦","파라과이":"🇵🇾",
+"영국":"🇬🇧","독일":"🇩🇪","프랑스":"🇫🇷","스페인":"🇪🇸","이탈리아":"🇮🇹","네덜란드":"🇳🇱","폴란드":"🇵🇱","스위스":"🇨🇭","스웨덴":"🇸🇪","노르웨이":"🇳🇴","덴마크":"🇩🇰","핀란드":"🇫🇮","포르투갈":"🇵🇹","그리스":"🇬🇷","체코":"🇨🇿","헝가리":"🇭🇺","루마니아":"🇷🇴","슬로바키아":"🇸🇰","슬로베니아":"🇸🇮","우크라이나":"🇺🇦","사우디아라비아":"🇸🇦","아랍에미리트":"🇦🇪","남아공":"🇿🇦","터키":"🇹🇷","벨기에":"🇧🇪","오스트리아":"🇦🇹","이스라엘":"🇮🇱","크로아티아":"🇭🇷","불가리아":"🇧🇬","키프로스":"🇨🇾","아이슬란드":"🇮🇸","아일랜드":"🇮🇪","쿠웨이트":"🇰🇼","레바논":"🇱🇧","룩셈부르크":"🇱🇺","몰타":"🇲🇹","오만":"🇴🇲","카타르":"🇶🇦","바레인":"🇧🇭",
+"일본":"🇯🇵","한국":"🇰🇷","중국":"🇨🇳","호주":"🇦🇺","인도":"🇮🇳","태국":"🇹🇭","싱가포르":"🇸🇬","말레이시아":"🇲🇾","인도네시아":"🇮🇩","필리핀":"🇵🇭","베트남":"🇻🇳","홍콩":"🇭🇰","대만":"🇹🇼","뉴질랜드":"🇳🇿"
+};
+const LOCALE_MAP={
+"미국":"en-us","캐나다":"en-ca","브라질":"pt-br","멕시코":"es-mx","아르헨티나":"es-ar","칠레":"es-cl","콜롬비아":"es-co","페루":"es-pe","우루과이":"es-uy","볼리비아":"es-bo","과테말라":"es-gt","온두라스":"es-hn","코스타리카":"es-cr","에콰도르":"es-ec","엘살바도르":"es-sv","니카라과":"es-ni","파나마":"es-pa","파라과이":"es-py",
+"영국":"en-gb","독일":"de-de","프랑스":"fr-fr","스페인":"es-es","이탈리아":"it-it","네덜란드":"nl-nl","폴란드":"pl-pl","스위스":"de-ch","스웨덴":"sv-se","노르웨이":"no-no","덴마크":"da-dk","핀란드":"fi-fi","포르투갈":"pt-pt","그리스":"en-gr","체코":"en-cz","헝가리":"en-hu","루마니아":"en-ro","슬로바키아":"en-sk","슬로베니아":"en-si","우크라이나":"uk-ua","사우디아라비아":"en-sa","아랍에미리트":"en-ae","남아공":"en-za","터키":"en-tr","벨기에":"nl-be","오스트리아":"de-at","이스라엘":"en-il","크로아티아":"en-hr","불가리아":"en-bg","키프로스":"en-cy","아이슬란드":"en-is","아일랜드":"en-ie","쿠웨이트":"en-kw","레바논":"en-lb","룩셈부르크":"fr-lu","몰타":"en-mt","오만":"en-om","카타르":"en-qa","바레인":"en-bh",
+"일본":"ja-jp","한국":"ko-kr","중국":"zh-cn","호주":"en-au","인도":"en-in","태국":"en-th","싱가포르":"en-sg","말레이시아":"en-my","인도네시아":"en-id","필리핀":"en-ph","베트남":"en-vn","홍콩":"zh-hant-hk","대만":"zh-hant-tw","뉴질랜드":"en-nz"
+};
+const PREORDER_CATEGORY="3bf499d7-7acf-4931-97dd-2667494ee2c9";
+const SKIP_COUNTRIES=new Set(["중국","베트남","슬로베니아","필리핀"]);
+function preorderUrl(country){
+ if(SKIP_COUNTRIES.has(country)||!LOCALE_MAP[country]) return null;
+ return `https://store.playstation.com/${LOCALE_MAP[country]}/category/${PREORDER_CATEGORY}/1`;
+}
+let chart;
+
+function avg(raw,countries){
+ let sum=0,n=0;
+ countries.forEach(c=>{const r=raw[c]?.rank;if(Number.isFinite(r)){sum+=r;n++}});
+ return n?sum/n:null;
+}
+function fmt(v){return v==null?"—":v.toFixed(1)+"위"}
+function diff(curr,prev){
+ if(curr==null||prev==null)return "";
+ const d=prev-curr;
+ if(d>0)return `<span class="up">▲ ${d.toFixed(1)} 상승</span>`;
+ if(d<0)return `<span class="down">▼ ${Math.abs(d).toFixed(1)} 하락</span>`;
+ return "변동 없음";
+}
+function setStat(id,diffId,curr,prev){document.getElementById(id).textContent=fmt(curr);document.getElementById(diffId).innerHTML=diff(curr,prev)}
+
+function renderRegions(raw,prevRaw){
+ const root=document.getElementById("regions"); root.innerHTML="";
+ Object.entries(REGIONS).forEach(([name,countries])=>{
+   const rows=countries.map(c=>{
+     const r=raw[c]?.rank, p=prevRaw?.[c]?.rank;
+     let ch="—";
+     if(r!=null&&p!=null){
+       const d=p-r;
+       if(d>0) ch=`<span class="up">▲ ${d}</span>`;
+       else if(d<0) ch=`<span class="down">▼ ${Math.abs(d)}</span>`;
+     }
+     const url=preorderUrl(c);
+     const countryCell=url
+       ? `<a class="country-link" href="${url}" target="_blank" rel="noopener noreferrer">${FLAGS[c]||"🌐"} ${c}<span class="external">↗</span></a>`
+       : `${FLAGS[c]||"🌐"} ${c}`;
+     return `<tr><td>${countryCell}</td><td class="rank">${r==null?"—":r+"위"}</td><td class="change">${ch}</td></tr>`;
+   }).join("");
+   root.innerHTML+=`<div class="panel"><div class="region-title">${name}</div><table><thead><tr><th>국가 · 사전예약 링크</th><th style="text-align:right">현재</th><th style="text-align:right">변동</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+ });
+}
+function renderChart(history){
+ const pts=history.map(h=>({x:new Date(h.timestamp),y:h.averages?.combined})).filter(p=>Number.isFinite(p.y));
+ if(chart)chart.destroy();
+ chart=new Chart(document.getElementById("chart"),{type:"line",data:{datasets:[{label:"DLC 가중 평균 순위",data:pts,borderColor:"#2980b9",backgroundColor:"rgba(41,128,185,.18)",fill:true,tension:.35,pointRadius:pts.length>30?1:4}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{reverse:true,ticks:{color:"#aaa"},grid:{color:"#2a1f22"}},x:{type:"time",time:{unit:"day"},ticks:{color:"#aaa"},grid:{display:false}}},plugins:{legend:{display:false}}}});
+}
+async function load(){
+ try{
+   const res=await fetch("crimson_dlc_rank_history.json?t="+Date.now());
+   const data=await res.json(); const history=Array.isArray(data)?data:(data.history||[]);
+   if(!history.length)throw new Error("history empty");
+   const latest=history.at(-1), prev=history.length>1?history.at(-2):null;
+   const raw=latest.raw_results||{}, prevRaw=prev?.raw_results||{};
+   const all=Object.values(REGIONS).flat();
+   setStat("combined","combinedDiff",avg(raw,all),prev?avg(prevRaw,all):null);
+   setStat("europe","europeDiff",avg(raw,REGIONS["Europe & Middle East"]),prev?avg(prevRaw,REGIONS["Europe & Middle East"]):null);
+   setStat("americas","americasDiff",avg(raw,REGIONS["Americas"]),prev?avg(prevRaw,REGIONS["Americas"]):null);
+   setStat("asia","asiaDiff",avg(raw,REGIONS["Asia & Oceania"]),prev?avg(prevRaw,REGIONS["Asia & Oceania"]):null);
+   const ranked=Object.entries(raw).filter(([_,v])=>Number.isFinite(v?.rank)).sort((a,b)=>a[1].rank-b[1].rank);
+   if(ranked.length){document.getElementById("best").textContent=FLAGS[ranked[0][0]]||"🏆";document.getElementById("bestName").textContent=`${ranked[0][0]} · ${ranked[0][1].rank}위`;}
+   document.getElementById("updated").textContent=new Date(latest.timestamp).toLocaleString("ko-KR");
+   document.getElementById("count").textContent=ranked.length;
+   renderChart(history); renderRegions(raw,prevRaw);
+ }catch(e){document.getElementById("updated").textContent="데이터 로드 실패";console.error(e)}
+}
+load();
+</script>
+</body></html>
