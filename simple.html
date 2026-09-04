@@ -1127,6 +1127,48 @@
       </div>
     </div>
 
+    <!-- DLC: Charting the Unknown 사전예약 -->
+    <div class="chart-section fade-in" id="dlc-section">
+      <div class="section-title collapsible-header" onclick="toggleSection('dlc-body', this)">🗺️ DLC "Charting the Unknown" 사전예약 순위 <button class="collapse-btn">▼ 펼치기</button></div>
+      <div class="collapsible-body collapsed" id="dlc-body">
+        <div class="hero-stats fade-in" id="dlc-hero-stats" style="margin-bottom:16px">
+          <div class="stat-box">
+            <div class="stat-label">전체 가중 평균 순위</div>
+            <div class="stat-value" id="dlc-stat-combined">—</div>
+            <div class="stat-diff" id="dlc-stat-combined-diff"></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Americas 평균</div>
+            <div class="stat-value gold" id="dlc-stat-americas">—</div>
+            <div class="stat-diff" id="dlc-stat-americas-diff"></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Europe & ME 평균</div>
+            <div class="stat-value neutral" id="dlc-stat-europe">—</div>
+            <div class="stat-diff" id="dlc-stat-europe-diff"></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Asia & Oceania 평균</div>
+            <div class="stat-value" id="dlc-stat-asia">—</div>
+            <div class="stat-diff" id="dlc-stat-asia-diff"></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">최고 순위 국가</div>
+            <div class="stat-value gold" id="dlc-stat-best-flag" style="font-size:2rem">—</div>
+            <div class="stat-diff" id="dlc-stat-best-name"></div>
+          </div>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="dlcRankChart"></canvas>
+        </div>
+        <div class="meta-row" style="margin-top:8px">
+          <span>마지막 업데이트: <strong id="dlc-last-updated">—</strong></span>
+          <span>추적 국가: <strong id="dlc-country-count">—</strong>개국</span>
+          <span>DLC 출시일: <strong>2026-10-15</strong></span>
+        </div>
+      </div>
+    </div>
+
     <!-- CHART -->
     <div class="chart-section fade-in">
       <div class="section-title collapsible-header" onclick="toggleSection('rank-chart-body', this)">순위 히스토리 (가중 평균) <button class="collapse-btn">▼ 펼치기</button></div>
@@ -1569,6 +1611,133 @@ function setHeroStat(valId, diffId, curr, prev, suffix='') {
     else if (d < 0) { diffEl.textContent = `▼ ${Math.abs(d).toFixed(1)} 하락`; diffEl.className = 'stat-diff down'; }
     else { diffEl.textContent = '변동 없음'; diffEl.className = 'stat-diff'; }
   }
+}
+
+// ─── DLC: Charting the Unknown 사전예약 ───
+let dlcHistory = [];
+let dlcChartInstance = null;
+
+function calcDlcAvg(rawResults, countries) {
+  let sum = 0, w = 0;
+  const list = countries || Object.keys(rawResults);
+  list.forEach(c => {
+    const rank = rawResults[c]?.rank;
+    const wt = MARKET_WEIGHTS[c] || 1;
+    if (rank) { sum += rank * wt; w += wt; }
+  });
+  return w > 0 ? sum / w : null;
+}
+
+async function loadDlcData() {
+  try {
+    const res = await fetch('crimson_dlc_rank_history.json?t=' + Date.now());
+    if (!res.ok) throw new Error('fetch failed');
+    const data = await res.json();
+    dlcHistory = Array.isArray(data) ? data : (data.history || []);
+  } catch (e) {
+    document.getElementById('dlc-last-updated').textContent = '데이터 로드 실패 (crimson_dlc_rank_history.json 확인)';
+    return;
+  }
+  renderDlc();
+}
+
+function renderDlc() {
+  if (!dlcHistory.length) return;
+  const latest = dlcHistory[dlcHistory.length - 1];
+  const prev   = dlcHistory.length >= 2 ? dlcHistory[dlcHistory.length - 2] : null;
+  const raw    = latest.raw_results || {};
+
+  const dt = new Date(latest.timestamp);
+  document.getElementById('dlc-last-updated').textContent = dt.toLocaleString('ko-KR');
+  document.getElementById('dlc-country-count').textContent =
+    Object.keys(raw).filter(c => !SKIP_COUNTRIES.has(c) && raw[c]?.rank).length;
+
+  const avg = calcDlcAvg(raw, null);
+  const prevAvg = prev ? calcDlcAvg(prev.raw_results || {}, null) : null;
+  setHeroStat('dlc-stat-combined', 'dlc-stat-combined-diff', avg, prevAvg, '위');
+
+  for (const [regionKey, regionName] of [['americas','Americas'],['europe','Europe & Middle East'],['asia','Asia & Oceania']]) {
+    const countries = REGIONS[regionName].filter(c => !SKIP_COUNTRIES.has(c));
+    const rAvg = calcDlcAvg(raw, countries);
+    const rPrevAvg = prev ? calcDlcAvg(prev.raw_results || {}, countries) : null;
+    setHeroStat(`dlc-stat-${regionKey}`, `dlc-stat-${regionKey}-diff`, rAvg, rPrevAvg, '위');
+  }
+
+  let bestCountry = null, bestRank = Infinity;
+  Object.entries(raw).forEach(([c, d]) => {
+    if (SKIP_COUNTRIES.has(c)) return;
+    if (d?.rank && d.rank < bestRank) { bestRank = d.rank; bestCountry = c; }
+  });
+  if (bestCountry) {
+    document.getElementById('dlc-stat-best-flag').textContent = FLAGS[bestCountry] || '?';
+    document.getElementById('dlc-stat-best-name').textContent = `${bestCountry} · ${bestRank}위`;
+  }
+
+  renderDlcChart();
+}
+
+function renderDlcChart() {
+  const dataPoints = dlcHistory
+    .filter(h => h.averages?.combined != null)
+    .map(h => ({ x: new Date(h.timestamp), y: h.averages.combined }));
+
+  const canvas = document.getElementById('dlcRankChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (dlcChartInstance) dlcChartInstance.destroy();
+
+  dlcChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [{
+        label: 'DLC 가중 평균 순위',
+        data: dataPoints,
+        borderColor: '#2980b9',
+        backgroundColor: (ctx2) => {
+          const g = ctx2.chart.ctx.createLinearGradient(0, 0, 0, 220);
+          g.addColorStop(0, 'rgba(41,128,185,0.25)');
+          g.addColorStop(1, 'rgba(41,128,185,0)');
+          return g;
+        },
+        borderWidth: 2,
+        pointBackgroundColor: '#3498db',
+        pointRadius: dataPoints.length > 30 ? 0 : 4,
+        pointHoverRadius: 6,
+        tension: 0.4,
+        fill: true,
+        spanGaps: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          reverse: true,
+          ticks: { color: '#7a6a65', font: { size: 11 } },
+          grid: { color: 'rgba(42,31,34,0.8)' },
+          border: { color: '#2a1f22' }
+        },
+        x: {
+          type: 'time',
+          time: { unit: 'day', displayFormats: { day: 'M/d' } },
+          ticks: { color: '#7a6a65', font: { size: 10 }, maxTicksLimit: 20, maxRotation: 45, source: 'auto' },
+          grid: { display: false },
+          border: { color: '#2a1f22' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1318',
+          borderColor: '#2a1f22',
+          borderWidth: 1,
+          titleColor: '#e8ddd5',
+          bodyColor: '#3498db',
+        }
+      }
+    }
+  });
 }
 
 // ─── 붉은사막 주요 이벤트 ───
@@ -2394,7 +2563,7 @@ function closeModalDirect() {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
 
 // ─── 자동 갱신 (30분) ───
-setInterval(() => { loadData(); loadSteamData(); loadTrendsData(); }, 30 * 60 * 1000);
+setInterval(() => { loadData(); loadDlcData(); loadSteamData(); loadTrendsData(); }, 30 * 60 * 1000);
 
 // ─── 초기 실행 ───
 // ─── 출시 카운트다운 ───
@@ -2477,6 +2646,7 @@ setBgOpacity(100);
 
 initEvPanels();
 loadData();
+loadDlcData();
 loadSteamData();
 loadTrendsData();
 loadSteamData();
