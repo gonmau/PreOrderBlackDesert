@@ -9060,6 +9060,227 @@
           "rank": null
         }
       }
+    },
+    {
+      "timestamp": "2026-09-12T10:24:03.158254+09:00",
+      "averages": {
+        "combined": null
+      },
+      "raw_results": {
+        "영국": {
+          "rank": null
+        },
+        "독일": {
+          "rank": null
+        },
+        "프랑스": {
+          "rank": null
+        },
+        "스페인": {
+          "rank": null
+        },
+        "이탈리아": {
+          "rank": null
+        },
+        "네덜란드": {
+          "rank": null
+        },
+        "폴란드": {
+          "rank": null
+        },
+        "스위스": {
+          "rank": null
+        },
+        "스웨덴": {
+          "rank": null
+        },
+        "노르웨이": {
+          "rank": null
+        },
+        "덴마크": {
+          "rank": null
+        },
+        "핀란드": {
+          "rank": null
+        },
+        "포르투갈": {
+          "rank": null
+        },
+        "그리스": {
+          "rank": null
+        },
+        "체코": {
+          "rank": null
+        },
+        "헝가리": {
+          "rank": null
+        },
+        "루마니아": {
+          "rank": null
+        },
+        "슬로바키아": {
+          "rank": null
+        },
+        "슬로베니아": {
+          "rank": null
+        },
+        "우크라이나": {
+          "rank": null
+        },
+        "사우디아라비아": {
+          "rank": null
+        },
+        "아랍에미리트": {
+          "rank": null
+        },
+        "남아공": {
+          "rank": null
+        },
+        "터키": {
+          "rank": null
+        },
+        "벨기에": {
+          "rank": null
+        },
+        "오스트리아": {
+          "rank": null
+        },
+        "이스라엘": {
+          "rank": null
+        },
+        "크로아티아": {
+          "rank": null
+        },
+        "불가리아": {
+          "rank": null
+        },
+        "키프로스": {
+          "rank": null
+        },
+        "아이슬란드": {
+          "rank": null
+        },
+        "아일랜드": {
+          "rank": null
+        },
+        "쿠웨이트": {
+          "rank": null
+        },
+        "레바논": {
+          "rank": null
+        },
+        "룩셈부르크": {
+          "rank": null
+        },
+        "몰타": {
+          "rank": null
+        },
+        "오만": {
+          "rank": null
+        },
+        "카타르": {
+          "rank": null
+        },
+        "바레인": {
+          "rank": null
+        },
+        "미국": {
+          "rank": null
+        },
+        "캐나다": {
+          "rank": null
+        },
+        "브라질": {
+          "rank": null
+        },
+        "멕시코": {
+          "rank": null
+        },
+        "아르헨티나": {
+          "rank": null
+        },
+        "칠레": {
+          "rank": null
+        },
+        "콜롬비아": {
+          "rank": null
+        },
+        "페루": {
+          "rank": null
+        },
+        "우루과이": {
+          "rank": null
+        },
+        "볼리비아": {
+          "rank": null
+        },
+        "과테말라": {
+          "rank": null
+        },
+        "온두라스": {
+          "rank": null
+        },
+        "코스타리카": {
+          "rank": null
+        },
+        "에콰도르": {
+          "rank": null
+        },
+        "엘살바도르": {
+          "rank": null
+        },
+        "니카라과": {
+          "rank": null
+        },
+        "파나마": {
+          "rank": null
+        },
+        "파라과이": {
+          "rank": null
+        },
+        "일본": {
+          "rank": null
+        },
+        "한국": {
+          "rank": null
+        },
+        "중국": {
+          "rank": null
+        },
+        "호주": {
+          "rank": null
+        },
+        "인도": {
+          "rank": null
+        },
+        "태국": {
+          "rank": null
+        },
+        "싱가포르": {
+          "rank": null
+        },
+        "말레이시아": {
+          "rank": null
+        },
+        "인도네시아": {
+          "rank": null
+        },
+        "필리핀": {
+          "rank": null
+        },
+        "베트남": {
+          "rank": null
+        },
+        "홍콩": {
+          "rank": null
+        },
+        "대만": {
+          "rank": null
+        },
+        "뉴질랜드": {
+          "rank": null
+        }
+      }
     }
   ],
   "schedule": {
