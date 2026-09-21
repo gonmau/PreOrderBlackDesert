@@ -5,10 +5,14 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE = os.path.join(BASE_DIR, "crimson_desert_schedule_analysis.json")
+CHARTJS_FILE = os.path.join(BASE_DIR, "chartjs_bundle.js")
 OUT_FILE = os.path.join(BASE_DIR, "steam_rank_timeline.html")
 
 with open(DATA_FILE, "r", encoding="utf-8") as f:
     data = json.load(f)
+
+with open(CHARTJS_FILE, "r", encoding="utf-8") as f:
+    chartjs_src = f.read()
 
 data_json = json.dumps(data, ensure_ascii=False)
 
@@ -18,7 +22,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>붉은사막 — 스팀 순위 × 일정 타임라인</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>__CHARTJS_INLINE__</script>
 <style>
   :root {
     --bg-0:#0d1117; --bg-1:#161b22; --bg-2:#1c2129;
@@ -84,9 +88,18 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   </div>
 </div>
 
+<div id="err-banner" style="display:none;background:#3a1a1a;border:1px solid #ff4757;color:#ff9aa2;padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:16px;"></div>
+
 <footer>average rank = 해당 일자 스냅샷들의 국가별 순위 평균의 일 평균 (숫자가 작을수록 상위). 데이터: crimson_desert_schedule_analysis.json</footer>
 
 <script>
+function showError(msg) {
+  const el = document.getElementById('err-banner');
+  el.style.display = 'block';
+  el.textContent = '⚠ ' + msg;
+  console.error(msg);
+}
+
 const DATA = __DATA_JSON__;
 
 const daily = DATA.daily_average_rank;
@@ -131,6 +144,8 @@ const verticalLinesPlugin = {
   }
 };
 
+try {
+if (typeof Chart === 'undefined') throw new Error('Chart.js 로드 실패 (라이브러리가 내장되어 있어야 하는데 없음)');
 const ctx = document.getElementById('rankChart').getContext('2d');
 new Chart(ctx, {
   type: 'line',
@@ -202,33 +217,45 @@ new Chart(ctx, {
   },
   plugins: [verticalLinesPlugin],
 });
-
-function fillTable(id, rows, cols) {
-  const tbody = document.getElementById(id);
-  tbody.innerHTML = rows.map(r => '<tr>' + cols.map(c => '<td class="label">' + (r[c] ?? '') + '</td>').join('') + '</tr>').join('');
+} catch (err) {
+  showError('차트 렌더링 실패: ' + err.message);
 }
 
-fillTable('tbl-sales', DATA.sales_milestones.map(e => ({
-  date: e.date.slice(0, 16).replace('T', ' '),
-  day: 'D+' + e.day,
-  label: e.label,
-})), ['date', 'day', 'label']);
+try {
+  function fillTable(id, rows, cols) {
+    const tbody = document.getElementById(id);
+    tbody.innerHTML = rows.map(r => '<tr>' + cols.map(c => '<td class="label">' + (r[c] ?? '') + '</td>').join('') + '</tr>').join('');
+  }
 
-fillTable('tbl-update', DATA.game_updates.map(e => ({
-  date: e.date,
-  label: e.label,
-})), ['date', 'label']);
+  fillTable('tbl-sales', DATA.sales_milestones.map(e => ({
+    date: e.date.slice(0, 16).replace('T', ' '),
+    day: 'D+' + e.day,
+    label: e.label,
+  })), ['date', 'day', 'label']);
 
-fillTable('tbl-pa', DATA.pearl_abyss_events.map(e => ({
-  date: e.date,
-  label: e.label,
-})), ['date', 'label']);
+  fillTable('tbl-update', DATA.game_updates.map(e => ({
+    date: e.date,
+    label: e.label,
+  })), ['date', 'label']);
+
+  fillTable('tbl-pa', DATA.pearl_abyss_events.map(e => ({
+    date: e.date,
+    label: e.label,
+  })), ['date', 'label']);
+} catch (err) {
+  showError('일정 테이블 렌더링 실패: ' + err.message);
+}
 </script>
 </body>
 </html>
 """
 
-html = HTML_TEMPLATE.replace("__DATA_JSON__", data_json).replace("__GENERATED_AT__", data["generated_at"])
+html = (
+    HTML_TEMPLATE
+    .replace("__CHARTJS_INLINE__", chartjs_src)
+    .replace("__DATA_JSON__", data_json)
+    .replace("__GENERATED_AT__", data["generated_at"])
+)
 
 with open(OUT_FILE, "w", encoding="utf-8") as f:
     f.write(html)
