@@ -1,8 +1,11 @@
 {
-  "generated_at": "2026-09-22T23:10:40.302469+00:00",
-  "source_file": "steam_topseller_history.json",
+  "generated_at": "2026-09-23T00:01:07.438918+00:00",
+  "source_files": {
+    "steam": "steam_topseller_history.json",
+    "ps": "bestseller_history.json"
+  },
   "launch_date": "2026-03-19T00:00:00+09:00",
-  "daily_average_rank": [
+  "daily_average_rank_steam": [
     {
       "date": "2026-03-04",
       "day": -15,
@@ -1824,20 +1827,1795 @@
     {
       "date": "2026-09-22",
       "day": 187,
-      "avg_rank": 105.5,
-      "best_snapshot_rank": 96.65,
-      "worst_snapshot_rank": 115.26,
-      "avg_countries_tracked": 26,
+      "avg_rank": 110.44,
+      "best_snapshot_rank": 105.96,
+      "worst_snapshot_rank": 114.92,
+      "avg_countries_tracked": 25,
+      "snapshots": 2
+    }
+  ],
+  "daily_average_rank_ps": [
+    {
+      "date": "2026-03-07",
+      "day": -12,
+      "avg_rank": 18.04,
+      "best_snapshot_rank": 18.04,
+      "worst_snapshot_rank": 18.04,
+      "avg_countries_tracked": 67,
       "snapshots": 6
     },
     {
-      "date": "2026-09-23",
-      "day": 188,
-      "avg_rank": 109.27,
-      "best_snapshot_rank": 100.79,
-      "worst_snapshot_rank": 121.38,
-      "avg_countries_tracked": 24.7,
+      "date": "2026-03-08",
+      "day": -11,
+      "avg_rank": 18.04,
+      "best_snapshot_rank": 18.04,
+      "worst_snapshot_rank": 18.04,
+      "avg_countries_tracked": 67,
+      "snapshots": 2
+    },
+    {
+      "date": "2026-03-09",
+      "day": -10,
+      "avg_rank": 18.04,
+      "best_snapshot_rank": 18.04,
+      "worst_snapshot_rank": 18.04,
+      "avg_countries_tracked": 67,
+      "snapshots": 2
+    },
+    {
+      "date": "2026-03-10",
+      "day": -9,
+      "avg_rank": 14.75,
+      "best_snapshot_rank": 13.1,
+      "worst_snapshot_rank": 18.04,
+      "avg_countries_tracked": 67,
+      "snapshots": 6
+    },
+    {
+      "date": "2026-03-11",
+      "day": -8,
+      "avg_rank": 12.32,
+      "best_snapshot_rank": 11.93,
+      "worst_snapshot_rank": 13.1,
+      "avg_countries_tracked": 67,
+      "snapshots": 8
+    },
+    {
+      "date": "2026-03-12",
+      "day": -7,
+      "avg_rank": 11.47,
+      "best_snapshot_rank": 11.3,
+      "worst_snapshot_rank": 11.93,
+      "avg_countries_tracked": 67,
+      "snapshots": 7
+    },
+    {
+      "date": "2026-03-13",
+      "day": -6,
+      "avg_rank": 10.86,
+      "best_snapshot_rank": 10.35,
+      "worst_snapshot_rank": 11.3,
+      "avg_countries_tracked": 67,
+      "snapshots": 9
+    },
+    {
+      "date": "2026-03-14",
+      "day": -5,
+      "avg_rank": 9.62,
+      "best_snapshot_rank": 9.22,
+      "worst_snapshot_rank": 10.35,
+      "avg_countries_tracked": 67,
+      "snapshots": 11
+    },
+    {
+      "date": "2026-03-15",
+      "day": -4,
+      "avg_rank": 8.43,
+      "best_snapshot_rank": 8.26,
+      "worst_snapshot_rank": 9.27,
+      "avg_countries_tracked": 67,
+      "snapshots": 12
+    },
+    {
+      "date": "2026-03-16",
+      "day": -3,
+      "avg_rank": 7.95,
+      "best_snapshot_rank": 7.8,
+      "worst_snapshot_rank": 8.26,
+      "avg_countries_tracked": 67,
+      "snapshots": 10
+    },
+    {
+      "date": "2026-03-17",
+      "day": -2,
+      "avg_rank": 7.16,
+      "best_snapshot_rank": 6.85,
+      "worst_snapshot_rank": 7.8,
+      "avg_countries_tracked": 66.9,
+      "snapshots": 15
+    },
+    {
+      "date": "2026-03-18",
+      "day": -1,
+      "avg_rank": 5.39,
+      "best_snapshot_rank": 4.92,
+      "worst_snapshot_rank": 6.85,
+      "avg_countries_tracked": 67,
+      "snapshots": 6
+    },
+    {
+      "date": "2026-03-19",
+      "day": 0,
+      "avg_rank": 3.79,
+      "best_snapshot_rank": 3.36,
+      "worst_snapshot_rank": 4.92,
+      "avg_countries_tracked": 67,
+      "snapshots": 8
+    },
+    {
+      "date": "2026-03-20",
+      "day": 1,
+      "avg_rank": 3.21,
+      "best_snapshot_rank": 3.12,
+      "worst_snapshot_rank": 3.39,
+      "avg_countries_tracked": 67,
+      "snapshots": 10
+    },
+    {
+      "date": "2026-03-21",
+      "day": 2,
+      "avg_rank": 2.49,
+      "best_snapshot_rank": 2.29,
+      "worst_snapshot_rank": 3.12,
+      "avg_countries_tracked": 66.9,
+      "snapshots": 19
+    },
+    {
+      "date": "2026-03-22",
+      "day": 3,
+      "avg_rank": 2.18,
+      "best_snapshot_rank": 2.13,
+      "worst_snapshot_rank": 2.32,
+      "avg_countries_tracked": 67,
+      "snapshots": 14
+    },
+    {
+      "date": "2026-03-23",
+      "day": 4,
+      "avg_rank": 1.82,
+      "best_snapshot_rank": 1.76,
+      "worst_snapshot_rank": 2.15,
+      "avg_countries_tracked": 67,
+      "snapshots": 12
+    },
+    {
+      "date": "2026-03-24",
+      "day": 5,
+      "avg_rank": 1.78,
+      "best_snapshot_rank": 1.76,
+      "worst_snapshot_rank": 1.78,
+      "avg_countries_tracked": 67,
+      "snapshots": 18
+    },
+    {
+      "date": "2026-03-25",
+      "day": 6,
+      "avg_rank": 1.83,
+      "best_snapshot_rank": 1.79,
+      "worst_snapshot_rank": 1.86,
+      "avg_countries_tracked": 67,
+      "snapshots": 12
+    },
+    {
+      "date": "2026-03-26",
+      "day": 7,
+      "avg_rank": 1.73,
+      "best_snapshot_rank": 1.68,
+      "worst_snapshot_rank": 1.83,
+      "avg_countries_tracked": 67,
+      "snapshots": 12
+    },
+    {
+      "date": "2026-03-27",
+      "day": 8,
+      "avg_rank": 2.12,
+      "best_snapshot_rank": 1.72,
+      "worst_snapshot_rank": 2.28,
+      "avg_countries_tracked": 67,
+      "snapshots": 18
+    },
+    {
+      "date": "2026-03-28",
+      "day": 9,
+      "avg_rank": 2.67,
+      "best_snapshot_rank": 2.18,
+      "worst_snapshot_rank": 2.86,
+      "avg_countries_tracked": 67,
+      "snapshots": 13
+    },
+    {
+      "date": "2026-03-29",
+      "day": 10,
+      "avg_rank": 3.03,
+      "best_snapshot_rank": 2.88,
+      "worst_snapshot_rank": 3.07,
+      "avg_countries_tracked": 67,
+      "snapshots": 15
+    },
+    {
+      "date": "2026-03-30",
+      "day": 11,
+      "avg_rank": 3.19,
+      "best_snapshot_rank": 3.15,
+      "worst_snapshot_rank": 3.2,
+      "avg_countries_tracked": 67,
+      "snapshots": 11
+    },
+    {
+      "date": "2026-03-31",
+      "day": 12,
+      "avg_rank": 3.23,
+      "best_snapshot_rank": 3.2,
+      "worst_snapshot_rank": 3.29,
+      "avg_countries_tracked": 66.9,
+      "snapshots": 23
+    },
+    {
+      "date": "2026-04-01",
+      "day": 13,
+      "avg_rank": 3.29,
+      "best_snapshot_rank": 3.22,
+      "worst_snapshot_rank": 3.32,
+      "avg_countries_tracked": 67,
+      "snapshots": 15
+    },
+    {
+      "date": "2026-04-02",
+      "day": 14,
+      "avg_rank": 3.5,
+      "best_snapshot_rank": 3.32,
+      "worst_snapshot_rank": 3.55,
+      "avg_countries_tracked": 66.9,
+      "snapshots": 12
+    },
+    {
+      "date": "2026-04-03",
+      "day": 15,
+      "avg_rank": 4.14,
+      "best_snapshot_rank": 3.58,
+      "worst_snapshot_rank": 4.37,
+      "avg_countries_tracked": 67,
+      "snapshots": 15
+    },
+    {
+      "date": "2026-04-04",
+      "day": 16,
+      "avg_rank": 4.49,
+      "best_snapshot_rank": 4.43,
+      "worst_snapshot_rank": 4.51,
+      "avg_countries_tracked": 67,
+      "snapshots": 11
+    },
+    {
+      "date": "2026-04-05",
+      "day": 17,
+      "avg_rank": 4.6,
+      "best_snapshot_rank": 4.57,
+      "worst_snapshot_rank": 4.61,
+      "avg_countries_tracked": 67,
+      "snapshots": 7
+    },
+    {
+      "date": "2026-04-06",
+      "day": 18,
+      "avg_rank": 4.8,
+      "best_snapshot_rank": 4.63,
+      "worst_snapshot_rank": 4.83,
+      "avg_countries_tracked": 67,
+      "snapshots": 7
+    },
+    {
+      "date": "2026-04-07",
+      "day": 19,
+      "avg_rank": 5.24,
+      "best_snapshot_rank": 5.11,
+      "worst_snapshot_rank": 5.3,
+      "avg_countries_tracked": 67,
+      "snapshots": 7
+    },
+    {
+      "date": "2026-04-08",
+      "day": 20,
+      "avg_rank": 5.38,
+      "best_snapshot_rank": 5.26,
+      "worst_snapshot_rank": 5.43,
+      "avg_countries_tracked": 67,
+      "snapshots": 9
+    },
+    {
+      "date": "2026-04-09",
+      "day": 21,
+      "avg_rank": 5.58,
+      "best_snapshot_rank": 5.42,
+      "worst_snapshot_rank": 5.67,
+      "avg_countries_tracked": 67,
+      "snapshots": 9
+    },
+    {
+      "date": "2026-04-10",
+      "day": 22,
+      "avg_rank": 6.32,
+      "best_snapshot_rank": 5.59,
+      "worst_snapshot_rank": 6.58,
+      "avg_countries_tracked": 67,
+      "snapshots": 12
+    },
+    {
+      "date": "2026-04-11",
+      "day": 23,
+      "avg_rank": 6.74,
+      "best_snapshot_rank": 6.64,
+      "worst_snapshot_rank": 6.76,
+      "avg_countries_tracked": 67,
+      "snapshots": 9
+    },
+    {
+      "date": "2026-04-12",
+      "day": 24,
+      "avg_rank": 7.25,
+      "best_snapshot_rank": 7.12,
+      "worst_snapshot_rank": 7.27,
+      "avg_countries_tracked": 67,
+      "snapshots": 8
+    },
+    {
+      "date": "2026-04-13",
+      "day": 25,
+      "avg_rank": 7.48,
+      "best_snapshot_rank": 7.36,
+      "worst_snapshot_rank": 7.51,
+      "avg_countries_tracked": 67,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-04-14",
+      "day": 26,
+      "avg_rank": 7.46,
+      "best_snapshot_rank": 7.46,
+      "worst_snapshot_rank": 7.48,
+      "avg_countries_tracked": 67,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-04-15",
+      "day": 27,
+      "avg_rank": 7.96,
+      "best_snapshot_rank": 7.49,
+      "worst_snapshot_rank": 8.15,
+      "avg_countries_tracked": 67,
+      "snapshots": 7
+    },
+    {
+      "date": "2026-04-16",
+      "day": 28,
+      "avg_rank": 8.03,
+      "best_snapshot_rank": 8.0,
+      "worst_snapshot_rank": 8.22,
+      "avg_countries_tracked": 67,
+      "snapshots": 7
+    },
+    {
+      "date": "2026-04-17",
+      "day": 29,
+      "avg_rank": 7.92,
+      "best_snapshot_rank": 7.84,
+      "worst_snapshot_rank": 8.0,
+      "avg_countries_tracked": 67,
+      "snapshots": 6
+    },
+    {
+      "date": "2026-04-18",
+      "day": 30,
+      "avg_rank": 8.04,
+      "best_snapshot_rank": 7.99,
+      "worst_snapshot_rank": 8.24,
+      "avg_countries_tracked": 66.9,
+      "snapshots": 8
+    },
+    {
+      "date": "2026-04-19",
+      "day": 31,
+      "avg_rank": 8.23,
+      "best_snapshot_rank": 8.22,
+      "worst_snapshot_rank": 8.29,
+      "avg_countries_tracked": 66.1,
+      "snapshots": 7
+    },
+    {
+      "date": "2026-04-20",
+      "day": 32,
+      "avg_rank": 8.58,
+      "best_snapshot_rank": 8.3,
+      "worst_snapshot_rank": 8.65,
+      "avg_countries_tracked": 66,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-04-21",
+      "day": 33,
+      "avg_rank": 8.41,
+      "best_snapshot_rank": 8.4,
+      "worst_snapshot_rank": 8.41,
+      "avg_countries_tracked": 66,
+      "snapshots": 6
+    },
+    {
+      "date": "2026-04-22",
+      "day": 34,
+      "avg_rank": 9.04,
+      "best_snapshot_rank": 9.01,
+      "worst_snapshot_rank": 9.04,
+      "avg_countries_tracked": 66.9,
+      "snapshots": 7
+    },
+    {
+      "date": "2026-04-23",
+      "day": 35,
+      "avg_rank": 10.21,
+      "best_snapshot_rank": 9.93,
+      "worst_snapshot_rank": 10.29,
+      "avg_countries_tracked": 67,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-04-24",
+      "day": 36,
+      "avg_rank": 15.82,
+      "best_snapshot_rank": 13.53,
+      "worst_snapshot_rank": 16.28,
+      "avg_countries_tracked": 66,
+      "snapshots": 6
+    },
+    {
+      "date": "2026-04-25",
+      "day": 37,
+      "avg_rank": 18.18,
+      "best_snapshot_rank": 16.26,
+      "worst_snapshot_rank": 18.71,
+      "avg_countries_tracked": 66.9,
+      "snapshots": 8
+    },
+    {
+      "date": "2026-04-26",
+      "day": 38,
+      "avg_rank": 16.02,
+      "best_snapshot_rank": 15.95,
+      "worst_snapshot_rank": 16.48,
+      "avg_countries_tracked": 67,
+      "snapshots": 7
+    },
+    {
+      "date": "2026-04-27",
+      "day": 39,
+      "avg_rank": 13.97,
+      "best_snapshot_rank": 13.9,
+      "worst_snapshot_rank": 14.18,
+      "avg_countries_tracked": 67,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-04-28",
+      "day": 40,
+      "avg_rank": 13.01,
+      "best_snapshot_rank": 12.97,
+      "worst_snapshot_rank": 13.13,
+      "avg_countries_tracked": 67,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-04-29",
+      "day": 41,
+      "avg_rank": 13.56,
+      "best_snapshot_rank": 13.49,
+      "worst_snapshot_rank": 13.57,
+      "avg_countries_tracked": 67,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-04-30",
+      "day": 42,
+      "avg_rank": 14.08,
+      "best_snapshot_rank": 13.67,
+      "worst_snapshot_rank": 14.3,
+      "avg_countries_tracked": 67,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-05-01",
+      "day": 43,
+      "avg_rank": 14.73,
+      "best_snapshot_rank": 14.63,
+      "worst_snapshot_rank": 14.76,
+      "avg_countries_tracked": 67,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-05-02",
+      "day": 44,
+      "avg_rank": 14.78,
+      "best_snapshot_rank": 14.77,
+      "worst_snapshot_rank": 14.81,
+      "avg_countries_tracked": 67,
+      "snapshots": 7
+    },
+    {
+      "date": "2026-05-03",
+      "day": 45,
+      "avg_rank": 14.88,
+      "best_snapshot_rank": 14.71,
+      "worst_snapshot_rank": 14.93,
+      "avg_countries_tracked": 67,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-05-04",
+      "day": 46,
+      "avg_rank": 15.01,
+      "best_snapshot_rank": 14.93,
+      "worst_snapshot_rank": 15.04,
+      "avg_countries_tracked": 67,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-05-05",
+      "day": 47,
+      "avg_rank": 15.14,
+      "best_snapshot_rank": 15.11,
+      "worst_snapshot_rank": 15.16,
+      "avg_countries_tracked": 67,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-05-06",
+      "day": 48,
+      "avg_rank": 16.1,
+      "best_snapshot_rank": 15.86,
+      "worst_snapshot_rank": 16.18,
+      "avg_countries_tracked": 66.2,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-05-07",
+      "day": 49,
+      "avg_rank": 16.39,
+      "best_snapshot_rank": 16.37,
+      "worst_snapshot_rank": 16.44,
+      "avg_countries_tracked": 66.8,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-05-08",
+      "day": 50,
+      "avg_rank": 16.35,
+      "best_snapshot_rank": 16.16,
+      "worst_snapshot_rank": 16.4,
+      "avg_countries_tracked": 67,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-05-09",
+      "day": 51,
+      "avg_rank": 16.38,
+      "best_snapshot_rank": 16.14,
+      "worst_snapshot_rank": 16.43,
+      "avg_countries_tracked": 67,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-05-10",
+      "day": 52,
+      "avg_rank": 16.74,
+      "best_snapshot_rank": 16.66,
+      "worst_snapshot_rank": 16.96,
+      "avg_countries_tracked": 66.5,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-05-11",
+      "day": 53,
+      "avg_rank": 16.69,
+      "best_snapshot_rank": 16.6,
+      "worst_snapshot_rank": 16.94,
+      "avg_countries_tracked": 67,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-05-12",
+      "day": 54,
+      "avg_rank": 16.7,
+      "best_snapshot_rank": 16.64,
+      "worst_snapshot_rank": 16.72,
+      "avg_countries_tracked": 67,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-05-13",
+      "day": 55,
+      "avg_rank": 17.18,
+      "best_snapshot_rank": 17.11,
+      "worst_snapshot_rank": 17.2,
+      "avg_countries_tracked": 67,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-05-14",
+      "day": 56,
+      "avg_rank": 17.99,
+      "best_snapshot_rank": 17.15,
+      "worst_snapshot_rank": 18.33,
+      "avg_countries_tracked": 66.4,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-05-15",
+      "day": 57,
+      "avg_rank": 18.56,
+      "best_snapshot_rank": 18.34,
+      "worst_snapshot_rank": 18.63,
+      "avg_countries_tracked": 66,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-05-16",
+      "day": 58,
+      "avg_rank": 18.59,
+      "best_snapshot_rank": 18.55,
+      "worst_snapshot_rank": 18.61,
+      "avg_countries_tracked": 65.2,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-05-17",
+      "day": 59,
+      "avg_rank": 19.07,
+      "best_snapshot_rank": 18.77,
+      "worst_snapshot_rank": 19.17,
+      "avg_countries_tracked": 65.8,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-05-18",
+      "day": 60,
+      "avg_rank": 19.97,
+      "best_snapshot_rank": 19.84,
+      "worst_snapshot_rank": 20.04,
+      "avg_countries_tracked": 67,
       "snapshots": 3
+    },
+    {
+      "date": "2026-05-19",
+      "day": 61,
+      "avg_rank": 20.1,
+      "best_snapshot_rank": 19.95,
+      "worst_snapshot_rank": 20.19,
+      "avg_countries_tracked": 66,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-05-20",
+      "day": 62,
+      "avg_rank": 19.87,
+      "best_snapshot_rank": 19.73,
+      "worst_snapshot_rank": 20.12,
+      "avg_countries_tracked": 66,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-05-21",
+      "day": 63,
+      "avg_rank": 19.94,
+      "best_snapshot_rank": 19.92,
+      "worst_snapshot_rank": 19.98,
+      "avg_countries_tracked": 66,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-05-22",
+      "day": 64,
+      "avg_rank": 20.02,
+      "best_snapshot_rank": 19.91,
+      "worst_snapshot_rank": 20.24,
+      "avg_countries_tracked": 66,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-05-23",
+      "day": 65,
+      "avg_rank": 20.76,
+      "best_snapshot_rank": 20.76,
+      "worst_snapshot_rank": 20.77,
+      "avg_countries_tracked": 65,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-05-24",
+      "day": 66,
+      "avg_rank": 22.81,
+      "best_snapshot_rank": 22.6,
+      "worst_snapshot_rank": 22.88,
+      "avg_countries_tracked": 65,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-05-25",
+      "day": 67,
+      "avg_rank": 29.47,
+      "best_snapshot_rank": 29.43,
+      "worst_snapshot_rank": 29.49,
+      "avg_countries_tracked": 60,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-05-26",
+      "day": 68,
+      "avg_rank": 30.96,
+      "best_snapshot_rank": 21.5,
+      "worst_snapshot_rank": 41.9,
+      "avg_countries_tracked": 41,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-05-27",
+      "day": 69,
+      "avg_rank": 21.55,
+      "best_snapshot_rank": 21.5,
+      "worst_snapshot_rank": 21.66,
+      "avg_countries_tracked": 23,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-05-28",
+      "day": 70,
+      "avg_rank": 24.47,
+      "best_snapshot_rank": 24.47,
+      "worst_snapshot_rank": 24.47,
+      "avg_countries_tracked": 47,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-05-29",
+      "day": 71,
+      "avg_rank": 40.25,
+      "best_snapshot_rank": 37.93,
+      "worst_snapshot_rank": 44.71,
+      "avg_countries_tracked": 62.5,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-05-30",
+      "day": 72,
+      "avg_rank": 44.21,
+      "best_snapshot_rank": 38.23,
+      "worst_snapshot_rank": 46.8,
+      "avg_countries_tracked": 65,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-05-31",
+      "day": 73,
+      "avg_rank": 42.24,
+      "best_snapshot_rank": 41.23,
+      "worst_snapshot_rank": 43.4,
+      "avg_countries_tracked": 65,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-06-01",
+      "day": 74,
+      "avg_rank": 37.43,
+      "best_snapshot_rank": 35.86,
+      "worst_snapshot_rank": 38.37,
+      "avg_countries_tracked": 66,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-06-02",
+      "day": 75,
+      "avg_rank": 33.09,
+      "best_snapshot_rank": 32.78,
+      "worst_snapshot_rank": 33.71,
+      "avg_countries_tracked": 66,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-06-03",
+      "day": 76,
+      "avg_rank": 34.32,
+      "best_snapshot_rank": 32.78,
+      "worst_snapshot_rank": 34.9,
+      "avg_countries_tracked": 66.5,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-06-04",
+      "day": 77,
+      "avg_rank": 36.56,
+      "best_snapshot_rank": 35.24,
+      "worst_snapshot_rank": 37.21,
+      "avg_countries_tracked": 67,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-06-05",
+      "day": 78,
+      "avg_rank": 36.08,
+      "best_snapshot_rank": 35.75,
+      "worst_snapshot_rank": 36.74,
+      "avg_countries_tracked": 67,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-06-06",
+      "day": 79,
+      "avg_rank": 35.79,
+      "best_snapshot_rank": 35.61,
+      "worst_snapshot_rank": 35.86,
+      "avg_countries_tracked": 67,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-06-07",
+      "day": 80,
+      "avg_rank": 38.04,
+      "best_snapshot_rank": 38.02,
+      "worst_snapshot_rank": 38.09,
+      "avg_countries_tracked": 67,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-06-08",
+      "day": 81,
+      "avg_rank": 41.0,
+      "best_snapshot_rank": 40.76,
+      "worst_snapshot_rank": 41.12,
+      "avg_countries_tracked": 64.7,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-06-09",
+      "day": 82,
+      "avg_rank": 40.61,
+      "best_snapshot_rank": 40.48,
+      "worst_snapshot_rank": 40.9,
+      "avg_countries_tracked": 63.2,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-06-10",
+      "day": 83,
+      "avg_rank": 42.81,
+      "best_snapshot_rank": 42.58,
+      "worst_snapshot_rank": 42.92,
+      "avg_countries_tracked": 56,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-06-11",
+      "day": 84,
+      "avg_rank": 24.96,
+      "best_snapshot_rank": 24.26,
+      "worst_snapshot_rank": 25.66,
+      "avg_countries_tracked": 15.5,
+      "snapshots": 2
+    },
+    {
+      "date": "2026-06-12",
+      "day": 85,
+      "avg_rank": 42.08,
+      "best_snapshot_rank": 24.26,
+      "worst_snapshot_rank": 53.96,
+      "avg_countries_tracked": 11,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-06-13",
+      "day": 86,
+      "avg_rank": 48.02,
+      "best_snapshot_rank": 47.58,
+      "worst_snapshot_rank": 48.17,
+      "avg_countries_tracked": 15,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-06-14",
+      "day": 87,
+      "avg_rank": 48.93,
+      "best_snapshot_rank": 48.93,
+      "worst_snapshot_rank": 48.93,
+      "avg_countries_tracked": 14,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-06-15",
+      "day": 88,
+      "avg_rank": 49.05,
+      "best_snapshot_rank": 49.05,
+      "worst_snapshot_rank": 49.05,
+      "avg_countries_tracked": 14,
+      "snapshots": 2
+    },
+    {
+      "date": "2026-06-16",
+      "day": 89,
+      "avg_rank": 47.5,
+      "best_snapshot_rank": 47.38,
+      "worst_snapshot_rank": 47.74,
+      "avg_countries_tracked": 14,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-06-17",
+      "day": 90,
+      "avg_rank": 48.74,
+      "best_snapshot_rank": 48.74,
+      "worst_snapshot_rank": 48.74,
+      "avg_countries_tracked": 14,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-06-19",
+      "day": 92,
+      "avg_rank": 44.99,
+      "best_snapshot_rank": 44.99,
+      "worst_snapshot_rank": 44.99,
+      "avg_countries_tracked": 16,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-06-20",
+      "day": 93,
+      "avg_rank": 44.67,
+      "best_snapshot_rank": 44.28,
+      "worst_snapshot_rank": 44.76,
+      "avg_countries_tracked": 16,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-06-21",
+      "day": 94,
+      "avg_rank": 44.06,
+      "best_snapshot_rank": 44.0,
+      "worst_snapshot_rank": 44.08,
+      "avg_countries_tracked": 16,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-06-22",
+      "day": 95,
+      "avg_rank": 43.69,
+      "best_snapshot_rank": 43.05,
+      "worst_snapshot_rank": 44.97,
+      "avg_countries_tracked": 16.7,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-06-23",
+      "day": 96,
+      "avg_rank": 41.27,
+      "best_snapshot_rank": 41.25,
+      "worst_snapshot_rank": 41.27,
+      "avg_countries_tracked": 17,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-06-24",
+      "day": 97,
+      "avg_rank": 34.86,
+      "best_snapshot_rank": 32.8,
+      "worst_snapshot_rank": 35.9,
+      "avg_countries_tracked": 63.7,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-06-25",
+      "day": 98,
+      "avg_rank": 33.4,
+      "best_snapshot_rank": 33.4,
+      "worst_snapshot_rank": 33.4,
+      "avg_countries_tracked": 65,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-06-26",
+      "day": 99,
+      "avg_rank": 33.6,
+      "best_snapshot_rank": 33.39,
+      "worst_snapshot_rank": 33.71,
+      "avg_countries_tracked": 65,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-06-27",
+      "day": 100,
+      "avg_rank": 63.75,
+      "best_snapshot_rank": 55.99,
+      "worst_snapshot_rank": 66.34,
+      "avg_countries_tracked": 65.2,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-06-28",
+      "day": 101,
+      "avg_rank": 80.51,
+      "best_snapshot_rank": 80.4,
+      "worst_snapshot_rank": 80.74,
+      "avg_countries_tracked": 63,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-06-29",
+      "day": 102,
+      "avg_rank": 93.76,
+      "best_snapshot_rank": 93.24,
+      "worst_snapshot_rank": 94.81,
+      "avg_countries_tracked": 55,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-06-30",
+      "day": 103,
+      "avg_rank": 40.19,
+      "best_snapshot_rank": 37.61,
+      "worst_snapshot_rank": 45.34,
+      "avg_countries_tracked": 60,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-07-01",
+      "day": 104,
+      "avg_rank": 38.49,
+      "best_snapshot_rank": 38.42,
+      "worst_snapshot_rank": 38.64,
+      "avg_countries_tracked": 61.3,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-07-02",
+      "day": 105,
+      "avg_rank": 38.09,
+      "best_snapshot_rank": 37.92,
+      "worst_snapshot_rank": 38.43,
+      "avg_countries_tracked": 60,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-07-03",
+      "day": 106,
+      "avg_rank": 37.72,
+      "best_snapshot_rank": 37.46,
+      "worst_snapshot_rank": 37.86,
+      "avg_countries_tracked": 60,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-07-04",
+      "day": 107,
+      "avg_rank": 38.64,
+      "best_snapshot_rank": 37.92,
+      "worst_snapshot_rank": 38.97,
+      "avg_countries_tracked": 61.4,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-07-05",
+      "day": 108,
+      "avg_rank": 39.44,
+      "best_snapshot_rank": 39.44,
+      "worst_snapshot_rank": 39.44,
+      "avg_countries_tracked": 63.7,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-07-06",
+      "day": 109,
+      "avg_rank": 39.23,
+      "best_snapshot_rank": 39.21,
+      "worst_snapshot_rank": 39.28,
+      "avg_countries_tracked": 64,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-07",
+      "day": 110,
+      "avg_rank": 39.41,
+      "best_snapshot_rank": 39.37,
+      "worst_snapshot_rank": 39.43,
+      "avg_countries_tracked": 64,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-07-08",
+      "day": 111,
+      "avg_rank": 39.91,
+      "best_snapshot_rank": 39.61,
+      "worst_snapshot_rank": 40.12,
+      "avg_countries_tracked": 65,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-09",
+      "day": 112,
+      "avg_rank": 41.92,
+      "best_snapshot_rank": 40.91,
+      "worst_snapshot_rank": 42.42,
+      "avg_countries_tracked": 65,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-07-10",
+      "day": 113,
+      "avg_rank": 42.5,
+      "best_snapshot_rank": 42.42,
+      "worst_snapshot_rank": 42.52,
+      "avg_countries_tracked": 65,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-11",
+      "day": 114,
+      "avg_rank": 45.26,
+      "best_snapshot_rank": 43.41,
+      "worst_snapshot_rank": 45.79,
+      "avg_countries_tracked": 65.8,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-07-12",
+      "day": 115,
+      "avg_rank": 47.33,
+      "best_snapshot_rank": 46.77,
+      "worst_snapshot_rank": 47.52,
+      "avg_countries_tracked": 66,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-13",
+      "day": 116,
+      "avg_rank": 49.52,
+      "best_snapshot_rank": 49.23,
+      "worst_snapshot_rank": 49.67,
+      "avg_countries_tracked": 66,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-07-14",
+      "day": 117,
+      "avg_rank": 51.25,
+      "best_snapshot_rank": 50.95,
+      "worst_snapshot_rank": 51.36,
+      "avg_countries_tracked": 66,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-15",
+      "day": 118,
+      "avg_rank": 52.53,
+      "best_snapshot_rank": 51.45,
+      "worst_snapshot_rank": 52.89,
+      "avg_countries_tracked": 66,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-16",
+      "day": 119,
+      "avg_rank": 56.81,
+      "best_snapshot_rank": 54.59,
+      "worst_snapshot_rank": 57.59,
+      "avg_countries_tracked": 63.2,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-17",
+      "day": 120,
+      "avg_rank": 60.91,
+      "best_snapshot_rank": 59.19,
+      "worst_snapshot_rank": 61.63,
+      "avg_countries_tracked": 65,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-18",
+      "day": 121,
+      "avg_rank": 62.93,
+      "best_snapshot_rank": 62.01,
+      "worst_snapshot_rank": 63.36,
+      "avg_countries_tracked": 64,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-07-19",
+      "day": 122,
+      "avg_rank": 63.9,
+      "best_snapshot_rank": 63.53,
+      "worst_snapshot_rank": 64.03,
+      "avg_countries_tracked": 64,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-20",
+      "day": 123,
+      "avg_rank": 66.29,
+      "best_snapshot_rank": 64.89,
+      "worst_snapshot_rank": 66.99,
+      "avg_countries_tracked": 62,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-07-21",
+      "day": 124,
+      "avg_rank": 67.28,
+      "best_snapshot_rank": 66.85,
+      "worst_snapshot_rank": 67.47,
+      "avg_countries_tracked": 63.5,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-22",
+      "day": 125,
+      "avg_rank": 68.38,
+      "best_snapshot_rank": 68.01,
+      "worst_snapshot_rank": 68.5,
+      "avg_countries_tracked": 62.8,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-23",
+      "day": 126,
+      "avg_rank": 67.11,
+      "best_snapshot_rank": 66.93,
+      "worst_snapshot_rank": 67.65,
+      "avg_countries_tracked": 63,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-24",
+      "day": 127,
+      "avg_rank": 68.26,
+      "best_snapshot_rank": 67.57,
+      "worst_snapshot_rank": 68.6,
+      "avg_countries_tracked": 62,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-07-25",
+      "day": 128,
+      "avg_rank": 69.36,
+      "best_snapshot_rank": 69.27,
+      "worst_snapshot_rank": 69.63,
+      "avg_countries_tracked": 63,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-26",
+      "day": 129,
+      "avg_rank": 74.88,
+      "best_snapshot_rank": 72.69,
+      "worst_snapshot_rank": 75.61,
+      "avg_countries_tracked": 64.5,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-27",
+      "day": 130,
+      "avg_rank": 79.5,
+      "best_snapshot_rank": 78.69,
+      "worst_snapshot_rank": 79.91,
+      "avg_countries_tracked": 62,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-07-28",
+      "day": 131,
+      "avg_rank": 72.44,
+      "best_snapshot_rank": 70.22,
+      "worst_snapshot_rank": 75.98,
+      "avg_countries_tracked": 63.8,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-29",
+      "day": 132,
+      "avg_rank": 73.09,
+      "best_snapshot_rank": 72.21,
+      "worst_snapshot_rank": 73.38,
+      "avg_countries_tracked": 64,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-30",
+      "day": 133,
+      "avg_rank": 75.73,
+      "best_snapshot_rank": 74.83,
+      "worst_snapshot_rank": 76.03,
+      "avg_countries_tracked": 62.8,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-07-31",
+      "day": 134,
+      "avg_rank": 79.69,
+      "best_snapshot_rank": 78.08,
+      "worst_snapshot_rank": 80.23,
+      "avg_countries_tracked": 61,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-08-01",
+      "day": 135,
+      "avg_rank": 79.96,
+      "best_snapshot_rank": 79.68,
+      "worst_snapshot_rank": 80.81,
+      "avg_countries_tracked": 60.5,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-08-02",
+      "day": 136,
+      "avg_rank": 79.85,
+      "best_snapshot_rank": 79.41,
+      "worst_snapshot_rank": 79.99,
+      "avg_countries_tracked": 62.5,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-08-03",
+      "day": 137,
+      "avg_rank": 79.37,
+      "best_snapshot_rank": 78.85,
+      "worst_snapshot_rank": 79.63,
+      "avg_countries_tracked": 63,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-08-04",
+      "day": 138,
+      "avg_rank": 76.93,
+      "best_snapshot_rank": 76.33,
+      "worst_snapshot_rank": 78.19,
+      "avg_countries_tracked": 60.5,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-08-05",
+      "day": 139,
+      "avg_rank": 73.81,
+      "best_snapshot_rank": 73.3,
+      "worst_snapshot_rank": 75.18,
+      "avg_countries_tracked": 60,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-08-06",
+      "day": 140,
+      "avg_rank": 72.19,
+      "best_snapshot_rank": 71.98,
+      "worst_snapshot_rank": 72.83,
+      "avg_countries_tracked": 60.8,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-08-07",
+      "day": 141,
+      "avg_rank": 72.62,
+      "best_snapshot_rank": 72.26,
+      "worst_snapshot_rank": 72.93,
+      "avg_countries_tracked": 60,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-08-08",
+      "day": 142,
+      "avg_rank": 73.51,
+      "best_snapshot_rank": 72.38,
+      "worst_snapshot_rank": 73.73,
+      "avg_countries_tracked": 62.4,
+      "snapshots": 9
+    },
+    {
+      "date": "2026-08-09",
+      "day": 143,
+      "avg_rank": 72.96,
+      "best_snapshot_rank": 72.66,
+      "worst_snapshot_rank": 74.42,
+      "avg_countries_tracked": 61.4,
+      "snapshots": 8
+    },
+    {
+      "date": "2026-08-10",
+      "day": 144,
+      "avg_rank": 72.04,
+      "best_snapshot_rank": 71.85,
+      "worst_snapshot_rank": 72.46,
+      "avg_countries_tracked": 60.5,
+      "snapshots": 6
+    },
+    {
+      "date": "2026-08-11",
+      "day": 145,
+      "avg_rank": 71.98,
+      "best_snapshot_rank": 71.86,
+      "worst_snapshot_rank": 72.44,
+      "avg_countries_tracked": 61,
+      "snapshots": 6
+    },
+    {
+      "date": "2026-08-12",
+      "day": 146,
+      "avg_rank": 75.66,
+      "best_snapshot_rank": 73.87,
+      "worst_snapshot_rank": 76.23,
+      "avg_countries_tracked": 60.2,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-08-13",
+      "day": 147,
+      "avg_rank": 77.02,
+      "best_snapshot_rank": 75.7,
+      "worst_snapshot_rank": 77.41,
+      "avg_countries_tracked": 59.6,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-08-14",
+      "day": 148,
+      "avg_rank": 76.12,
+      "best_snapshot_rank": 75.93,
+      "worst_snapshot_rank": 76.82,
+      "avg_countries_tracked": 59.8,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-08-15",
+      "day": 149,
+      "avg_rank": 74.6,
+      "best_snapshot_rank": 74.12,
+      "worst_snapshot_rank": 75.45,
+      "avg_countries_tracked": 58.6,
+      "snapshots": 10
+    },
+    {
+      "date": "2026-08-16",
+      "day": 150,
+      "avg_rank": 74.92,
+      "best_snapshot_rank": 74.56,
+      "worst_snapshot_rank": 75.48,
+      "avg_countries_tracked": 58.1,
+      "snapshots": 9
+    },
+    {
+      "date": "2026-08-17",
+      "day": 151,
+      "avg_rank": 75.8,
+      "best_snapshot_rank": 74.3,
+      "worst_snapshot_rank": 77.22,
+      "avg_countries_tracked": 59.4,
+      "snapshots": 9
+    },
+    {
+      "date": "2026-08-18",
+      "day": 152,
+      "avg_rank": 75.8,
+      "best_snapshot_rank": 75.66,
+      "worst_snapshot_rank": 76.07,
+      "avg_countries_tracked": 59.9,
+      "snapshots": 9
+    },
+    {
+      "date": "2026-08-19",
+      "day": 153,
+      "avg_rank": 72.36,
+      "best_snapshot_rank": 70.91,
+      "worst_snapshot_rank": 74.79,
+      "avg_countries_tracked": 54.8,
+      "snapshots": 10
+    },
+    {
+      "date": "2026-08-20",
+      "day": 154,
+      "avg_rank": 68.38,
+      "best_snapshot_rank": 67.41,
+      "worst_snapshot_rank": 72.2,
+      "avg_countries_tracked": 56.6,
+      "snapshots": 10
+    },
+    {
+      "date": "2026-08-21",
+      "day": 155,
+      "avg_rank": 102.84,
+      "best_snapshot_rank": 95.66,
+      "worst_snapshot_rank": 107.65,
+      "avg_countries_tracked": 51.8,
+      "snapshots": 9
+    },
+    {
+      "date": "2026-08-22",
+      "day": 156,
+      "avg_rank": 114.1,
+      "best_snapshot_rank": 63.41,
+      "worst_snapshot_rank": 154.04,
+      "avg_countries_tracked": 26.1,
+      "snapshots": 10
+    },
+    {
+      "date": "2026-08-24",
+      "day": 158,
+      "avg_rank": 68.81,
+      "best_snapshot_rank": 61.24,
+      "worst_snapshot_rank": 70.35,
+      "avg_countries_tracked": 63.8,
+      "snapshots": 6
+    },
+    {
+      "date": "2026-08-25",
+      "day": 159,
+      "avg_rank": 72.36,
+      "best_snapshot_rank": 71.71,
+      "worst_snapshot_rank": 73.14,
+      "avg_countries_tracked": 63,
+      "snapshots": 11
+    },
+    {
+      "date": "2026-08-26",
+      "day": 160,
+      "avg_rank": 75.52,
+      "best_snapshot_rank": 74.3,
+      "worst_snapshot_rank": 76.35,
+      "avg_countries_tracked": 63.7,
+      "snapshots": 9
+    },
+    {
+      "date": "2026-08-27",
+      "day": 161,
+      "avg_rank": 58.84,
+      "best_snapshot_rank": 58.84,
+      "worst_snapshot_rank": 58.84,
+      "avg_countries_tracked": 64,
+      "snapshots": 1
+    },
+    {
+      "date": "2026-08-28",
+      "day": 162,
+      "avg_rank": 51.63,
+      "best_snapshot_rank": 44.54,
+      "worst_snapshot_rank": 58.71,
+      "avg_countries_tracked": 64.5,
+      "snapshots": 2
+    },
+    {
+      "date": "2026-08-29",
+      "day": 163,
+      "avg_rank": 38.86,
+      "best_snapshot_rank": 37.69,
+      "worst_snapshot_rank": 41.74,
+      "avg_countries_tracked": 64.8,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-08-30",
+      "day": 164,
+      "avg_rank": 31.16,
+      "best_snapshot_rank": 30.5,
+      "worst_snapshot_rank": 32.43,
+      "avg_countries_tracked": 66.7,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-08-31",
+      "day": 165,
+      "avg_rank": 26.47,
+      "best_snapshot_rank": 25.84,
+      "worst_snapshot_rank": 27.11,
+      "avg_countries_tracked": 67,
+      "snapshots": 2
+    },
+    {
+      "date": "2026-09-01",
+      "day": 166,
+      "avg_rank": 24.35,
+      "best_snapshot_rank": 23.97,
+      "worst_snapshot_rank": 25.11,
+      "avg_countries_tracked": 67,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-09-02",
+      "day": 167,
+      "avg_rank": 24.74,
+      "best_snapshot_rank": 23.96,
+      "worst_snapshot_rank": 25.15,
+      "avg_countries_tracked": 67,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-09-03",
+      "day": 168,
+      "avg_rank": 26.11,
+      "best_snapshot_rank": 25.43,
+      "worst_snapshot_rank": 26.45,
+      "avg_countries_tracked": 67,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-09-04",
+      "day": 169,
+      "avg_rank": 17.84,
+      "best_snapshot_rank": 16.71,
+      "worst_snapshot_rank": 20.09,
+      "avg_countries_tracked": 66.7,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-09-05",
+      "day": 170,
+      "avg_rank": 16.41,
+      "best_snapshot_rank": 16.29,
+      "worst_snapshot_rank": 16.67,
+      "avg_countries_tracked": 67,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-09-06",
+      "day": 171,
+      "avg_rank": 16.37,
+      "best_snapshot_rank": 16.36,
+      "worst_snapshot_rank": 16.37,
+      "avg_countries_tracked": 67,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-09-07",
+      "day": 172,
+      "avg_rank": 16.52,
+      "best_snapshot_rank": 16.51,
+      "worst_snapshot_rank": 16.52,
+      "avg_countries_tracked": 67,
+      "snapshots": 2
+    },
+    {
+      "date": "2026-09-08",
+      "day": 173,
+      "avg_rank": 16.56,
+      "best_snapshot_rank": 16.5,
+      "worst_snapshot_rank": 16.61,
+      "avg_countries_tracked": 67,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-09-09",
+      "day": 174,
+      "avg_rank": 16.48,
+      "best_snapshot_rank": 16.44,
+      "worst_snapshot_rank": 16.56,
+      "avg_countries_tracked": 67,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-09-10",
+      "day": 175,
+      "avg_rank": 17.41,
+      "best_snapshot_rank": 17.37,
+      "worst_snapshot_rank": 17.45,
+      "avg_countries_tracked": 66.3,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-09-11",
+      "day": 176,
+      "avg_rank": 18.16,
+      "best_snapshot_rank": 18.01,
+      "worst_snapshot_rank": 18.26,
+      "avg_countries_tracked": 65.7,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-09-12",
+      "day": 177,
+      "avg_rank": 20.3,
+      "best_snapshot_rank": 20.21,
+      "worst_snapshot_rank": 20.35,
+      "avg_countries_tracked": 66.7,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-09-13",
+      "day": 178,
+      "avg_rank": 23.36,
+      "best_snapshot_rank": 23.0,
+      "worst_snapshot_rank": 23.73,
+      "avg_countries_tracked": 67,
+      "snapshots": 2
+    },
+    {
+      "date": "2026-09-14",
+      "day": 179,
+      "avg_rank": 26.24,
+      "best_snapshot_rank": 26.04,
+      "worst_snapshot_rank": 26.44,
+      "avg_countries_tracked": 65.5,
+      "snapshots": 2
+    },
+    {
+      "date": "2026-09-15",
+      "day": 180,
+      "avg_rank": 28.73,
+      "best_snapshot_rank": 25.42,
+      "worst_snapshot_rank": 30.27,
+      "avg_countries_tracked": 65.5,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-09-16",
+      "day": 181,
+      "avg_rank": 34.6,
+      "best_snapshot_rank": 32.61,
+      "worst_snapshot_rank": 35.6,
+      "avg_countries_tracked": 65,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-09-17",
+      "day": 182,
+      "avg_rank": 41.64,
+      "best_snapshot_rank": 38.74,
+      "worst_snapshot_rank": 43.18,
+      "avg_countries_tracked": 64.7,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-09-18",
+      "day": 183,
+      "avg_rank": 46.22,
+      "best_snapshot_rank": 45.33,
+      "worst_snapshot_rank": 46.67,
+      "avg_countries_tracked": 65,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-09-19",
+      "day": 184,
+      "avg_rank": 46.35,
+      "best_snapshot_rank": 46.27,
+      "worst_snapshot_rank": 46.53,
+      "avg_countries_tracked": 65,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-09-20",
+      "day": 185,
+      "avg_rank": 47.39,
+      "best_snapshot_rank": 46.55,
+      "worst_snapshot_rank": 48.64,
+      "avg_countries_tracked": 64.3,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-09-21",
+      "day": 186,
+      "avg_rank": 48.12,
+      "best_snapshot_rank": 48.0,
+      "worst_snapshot_rank": 48.25,
+      "avg_countries_tracked": 67,
+      "snapshots": 2
+    },
+    {
+      "date": "2026-09-22",
+      "day": 187,
+      "avg_rank": 49.75,
+      "best_snapshot_rank": 48.25,
+      "worst_snapshot_rank": 50.59,
+      "avg_countries_tracked": 67,
+      "snapshots": 4
     }
   ],
   "sales_milestones": [

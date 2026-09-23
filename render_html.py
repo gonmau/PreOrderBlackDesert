@@ -29,6 +29,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     --tx-1:#e6edf3; --tx-2:#9aa4b2; --tx-3:#6b7280;
     --border:#2a3038;
     --c-rank:#4a9eff;
+    --c-rank-ps:#ffa726;
     --c-sales:#f1c40f;
     --c-update:#2ecc71;
     --c-pa:#ff4757;
@@ -60,12 +61,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 
-<h1>붉은사막 — 스팀 Top Seller 평균 순위 × 판매/업데이트/펄어비스 일정</h1>
-<div class="sub">source: steam_topseller_history.json · generated: __GENERATED_AT__</div>
+<h1>붉은사막 — 스팀 × PS Store 평균 순위 × 판매/업데이트/펄어비스 일정</h1>
+<div class="sub">source: steam_topseller_history.json, bestseller_history.json · generated: __GENERATED_AT__</div>
 
 <div class="card">
   <div class="legend">
-    <span><i class="dot" style="background:var(--c-rank)"></i> 일 평균 순위</span>
+    <span><i class="dot" style="background:var(--c-rank)"></i> Steam 일 평균 순위</span>
+    <span><i class="dot" style="background:var(--c-rank-ps)"></i> PS Store 일 평균 순위</span>
     <span><i class="dot" style="background:var(--c-sales)"></i> 판매량 공지</span>
     <span><i class="dot" style="background:var(--c-update)"></i> 게임 업데이트</span>
     <span><i class="dot" style="background:var(--c-pa)"></i> 펄어비스 일정</span>
@@ -90,7 +92,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
 <div id="err-banner" style="display:none;background:#3a1a1a;border:1px solid #ff4757;color:#ff9aa2;padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:16px;"></div>
 
-<footer>average rank = 해당 일자 스냅샷들의 국가별 순위 평균의 일 평균 (숫자가 작을수록 상위). 데이터: crimson_desert_schedule_analysis.json</footer>
+<footer>daily average rank = 해당 일자 스냅샷들의 국가별 순위 평균의 일 평균 (숫자가 작을수록 상위, Steam·PS Store 각각 동일 방식 계산). 데이터: crimson_desert_schedule_analysis.json</footer>
 
 <script>
 function showError(msg) {
@@ -102,11 +104,18 @@ function showError(msg) {
 
 const DATA = __DATA_JSON__;
 
-const daily = DATA.daily_average_rank;
-const labels = daily.map(d => d.date);
-const rankSeries = daily.map(d => d.avg_rank);
-const bandLow = daily.map(d => d.best_snapshot_rank);   // 더 좋은(작은) 순위
-const bandHigh = daily.map(d => d.worst_snapshot_rank); // 더 나쁜(큰) 순위
+const dailySteam = DATA.daily_average_rank_steam;
+const dailyPs = DATA.daily_average_rank_ps;
+
+// 두 소스의 날짜를 합쳐 하나의 x축으로 사용 (없는 날은 null → 선이 끊김)
+const labelSet = new Set([...dailySteam.map(d => d.date), ...dailyPs.map(d => d.date)]);
+const labels = [...labelSet].sort();
+
+const steamByDate = Object.fromEntries(dailySteam.map(d => [d.date, d.avg_rank]));
+const psByDate = Object.fromEntries(dailyPs.map(d => [d.date, d.avg_rank]));
+
+const steamSeries = labels.map(d => steamByDate[d] ?? null);
+const psSeries = labels.map(d => psByDate[d] ?? null);
 
 function dateIndex(dateStr) {
   // event date(YYYY-MM-DD or ISO) 이후 첫 라벨 인덱스, 없으면 가장 가까운 마지막 인덱스
@@ -153,35 +162,28 @@ new Chart(ctx, {
     labels,
     datasets: [
       {
-        label: '일 평균 순위',
-        data: rankSeries,
+        label: 'Steam 일 평균 순위',
+        data: steamSeries,
         borderColor: '#4a9eff',
         backgroundColor: 'rgba(74,158,255,0.08)',
         borderWidth: 2,
         pointRadius: 0,
         tension: 0.15,
         fill: true,
+        spanGaps: true,
         order: 1,
       },
       {
-        label: '스냅샷 최저(베스트) 순위',
-        data: bandLow,
-        borderColor: 'rgba(74,158,255,0.35)',
-        borderWidth: 1,
+        label: 'PS Store 일 평균 순위',
+        data: psSeries,
+        borderColor: '#ffa726',
+        backgroundColor: 'rgba(255,167,38,0.08)',
+        borderWidth: 2,
         pointRadius: 0,
-        borderDash: [2, 2],
-        fill: false,
-        order: 2,
-      },
-      {
-        label: '스냅샷 최고(워스트) 순위',
-        data: bandHigh,
-        borderColor: 'rgba(74,158,255,0.35)',
-        borderWidth: 1,
-        pointRadius: 0,
-        borderDash: [2, 2],
-        fill: false,
-        order: 2,
+        tension: 0.15,
+        fill: true,
+        spanGaps: true,
+        order: 1,
       },
     ],
   },

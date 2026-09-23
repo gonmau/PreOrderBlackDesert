@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-크림슨 데저트 스팀 순위 + 일정(판매량 공지/게임 업데이트/펄어비스 일정) 결합 분석기
+크림슨 데저트 스팀×PS 순위 + 일정(판매량 공지/게임 업데이트/펄어비스 일정) 결합 분석기
 -------------------------------------------------------------
-1) steam_topseller_history.json(국가별 스팀 Top Seller 순위 30분 간격 스냅샷)을 읽어
-   일자별 평균 순위(전체 추적 국가 평균, 스냅샷 평균의 일 평균)를 계산
+1) steam_topseller_history.json(국가별 스팀 Top Seller 순위, 30분 간격 스냅샷),
+   bestseller_history.json(국가별 PS Store 순위, averages.combined 포함)을 읽어
+   일자별 평균 순위(전체 추적 국가 평균, 스냅샷 평균의 일 평균)를 각각 계산
 2) sell.html에 이미 반영된 판매량 공지 하드앵커, 게임 업데이트 일정(공식 발표 기반),
    주요 펄어비스 IR 일정을 결합
 3) 결과를 crimson_desert_schedule_analysis.json 으로 저장
@@ -13,7 +14,8 @@
     python3 build_schedule_analysis.py
 
 입력:
-    steam_topseller_history.json  (레포 루트, 이미 존재)
+    steam_topseller_history.json   (레포 루트, 이미 존재)
+    bestseller_history.json        (레포 루트, 이미 존재 — PS Store 순위)
 출력:
     crimson_desert_schedule_analysis.json
     steam_rank_timeline.html
@@ -26,7 +28,8 @@ from collections import defaultdict
 from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-INPUT_FILE = os.path.join(BASE_DIR, "steam_topseller_history.json")
+STEAM_INPUT_FILE = os.path.join(BASE_DIR, "steam_topseller_history.json")
+PS_INPUT_FILE = os.path.join(BASE_DIR, "bestseller_history.json")
 OUTPUT_JSON = os.path.join(BASE_DIR, "crimson_desert_schedule_analysis.json")
 OUTPUT_HTML = os.path.join(BASE_DIR, "steam_rank_timeline.html")
 
@@ -34,9 +37,9 @@ LAUNCH_DATE = datetime.fromisoformat("2026-03-19T00:00:00+09:00")
 
 
 # ─────────────────────────────────────────────
-# 1. 스팀 순위 → 일자별 평균 순위
+# 1a. 스팀 순위 → 일자별 평균 순위
 # ─────────────────────────────────────────────
-def load_daily_average_rank(path):
+def load_daily_average_rank_steam(path):
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
     history = data["history"]
@@ -67,6 +70,50 @@ def load_daily_average_rank(path):
         daily_snapshot_avgs[date_key].append(snapshot_avg)
         daily_country_counts[date_key].append(len(ranks))
 
+    return _aggregate_daily(daily_snapshot_avgs, daily_country_counts)
+
+
+# ─────────────────────────────────────────────
+# 1b. PS Store 순위 → 일자별 평균 순위
+#     (bestseller_history.json은 스냅샷마다 averages.combined를
+#      이미 계산해서 들고 있으므로 그대로 사용)
+# ─────────────────────────────────────────────
+def load_daily_average_rank_ps(path):
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    history = data["history"]
+
+    daily_snapshot_avgs = defaultdict(list)
+    daily_country_counts = defaultdict(list)
+
+    for entry in history:
+        ts_raw = entry.get("timestamp")
+        if not ts_raw:
+            continue
+        try:
+            ts = datetime.fromisoformat(ts_raw)
+        except ValueError:
+            continue
+
+        combined = entry.get("averages", {}).get("combined")
+        raw_results = entry.get("raw_results", {})
+        country_count = sum(1 for v in raw_results.values() if v is not None)
+
+        if combined is None:
+            # averages.combined가 없는 옛날 스냅샷 대비 폴백: 직접 계산
+            ranks = [v for v in raw_results.values() if isinstance(v, (int, float))]
+            if not ranks:
+                continue
+            combined = statistics.mean(ranks)
+
+        date_key = ts.date().isoformat()
+        daily_snapshot_avgs[date_key].append(combined)
+        daily_country_counts[date_key].append(country_count)
+
+    return _aggregate_daily(daily_snapshot_avgs, daily_country_counts)
+
+
+def _aggregate_daily(daily_snapshot_avgs, daily_country_counts):
     daily_average_rank = []
     for date_key in sorted(daily_snapshot_avgs.keys()):
         snap_avgs = daily_snapshot_avgs[date_key]
@@ -82,7 +129,6 @@ def load_daily_average_rank(path):
             "avg_countries_tracked": round(statistics.mean(counts), 1),
             "snapshots": len(snap_avgs),
         })
-
     return daily_average_rank
 
 
@@ -124,13 +170,18 @@ PEARL_ABYSS_EVENTS = [
 
 
 def build():
-    daily_avg = load_daily_average_rank(INPUT_FILE)
+    daily_avg_steam = load_daily_average_rank_steam(STEAM_INPUT_FILE)
+    daily_avg_ps = load_daily_average_rank_ps(PS_INPUT_FILE)
 
     result = {
         "generated_at": datetime.now().astimezone().isoformat(),
-        "source_file": "steam_topseller_history.json",
+        "source_files": {
+            "steam": "steam_topseller_history.json",
+            "ps": "bestseller_history.json",
+        },
         "launch_date": LAUNCH_DATE.isoformat(),
-        "daily_average_rank": daily_avg,
+        "daily_average_rank_steam": daily_avg_steam,
+        "daily_average_rank_ps": daily_avg_ps,
         "sales_milestones": SALES_MILESTONES,
         "game_updates": GAME_UPDATES,
         "pearl_abyss_events": PEARL_ABYSS_EVENTS,
@@ -139,7 +190,7 @@ def build():
     with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
 
-    print(f"[OK] {OUTPUT_JSON} 저장 완료 — 일자 수: {len(daily_avg)}")
+    print(f"[OK] {OUTPUT_JSON} 저장 완료 — Steam 일자 수: {len(daily_avg_steam)}, PS 일자 수: {len(daily_avg_ps)}")
     return result
 
 
