@@ -50,6 +50,12 @@
   th { color:var(--tx-3); font-weight:600; text-transform:uppercase; font-size:10px; letter-spacing:.5px; }
   td.label { color:var(--tx-1); }
   .tag { display:inline-block; padding:1px 7px; border-radius:6px; font-size:10px; font-weight:700; }
+  .badge {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:18px; height:18px; border-radius:50%; color:#0d1117;
+    font-size:10px; font-weight:800; flex-shrink:0;
+  }
+  td.num { width:26px; }
   .grid2 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
   @media (max-width: 900px) { .grid2 { grid-template-columns:1fr; } }
   footer { color:var(--tx-3); font-size:11px; margin-top:18px; }
@@ -74,15 +80,15 @@
 <div class="grid2">
   <div class="card">
     <div class="legend"><span><i class="dot" style="background:var(--c-sales)"></i> 판매량 공지</span></div>
-    <table><thead><tr><th>일자</th><th>D+</th><th>내용</th></tr></thead><tbody id="tbl-sales"></tbody></table>
+    <table><thead><tr><th></th><th>일자</th><th>D+</th><th>내용</th></tr></thead><tbody id="tbl-sales"></tbody></table>
   </div>
   <div class="card">
     <div class="legend"><span><i class="dot" style="background:var(--c-update)"></i> 게임 업데이트</span></div>
-    <table><thead><tr><th>일자</th><th>내용</th></tr></thead><tbody id="tbl-update"></tbody></table>
+    <table><thead><tr><th></th><th>일자</th><th>내용</th></tr></thead><tbody id="tbl-update"></tbody></table>
   </div>
   <div class="card">
     <div class="legend"><span><i class="dot" style="background:var(--c-pa)"></i> 펄어비스 일정</span></div>
-    <table><thead><tr><th>일자</th><th>내용</th></tr></thead><tbody id="tbl-pa"></tbody></table>
+    <table><thead><tr><th></th><th>일자</th><th>내용</th></tr></thead><tbody id="tbl-pa"></tbody></table>
   </div>
 </div>
 
@@ -121,11 +127,21 @@ function dateIndex(dateStr) {
   return idx;
 }
 
-const events = [
-  ...DATA.sales_milestones.map(e => ({ idx: dateIndex(e.date), color: 'var(--c-sales)', label: e.label, raw: e.date })),
-  ...DATA.game_updates.map(e => ({ idx: dateIndex(e.date), color: 'var(--c-update)', label: e.label, raw: e.date })),
-  ...DATA.pearl_abyss_events.map(e => ({ idx: dateIndex(e.date), color: 'var(--c-pa)', label: e.label, raw: e.date })),
-];
+function withNum(list, color, lane) {
+  return list.map((e, i) => ({
+    ...e,
+    num: i + 1,
+    idx: dateIndex(e.date),
+    color,
+    lane,
+    raw: e.date,
+  }));
+}
+
+const salesEvents = withNum(DATA.sales_milestones, 'var(--c-sales)', 0);
+const updateEvents = withNum(DATA.game_updates, 'var(--c-update)', 1);
+const paEvents = withNum(DATA.pearl_abyss_events, 'var(--c-pa)', 2);
+const events = [...salesEvents, ...updateEvents, ...paEvents];
 
 const verticalLinesPlugin = {
   id: 'verticalLinesPlugin',
@@ -133,17 +149,34 @@ const verticalLinesPlugin = {
     const { ctx, chartArea, scales } = chart;
     if (!chartArea) return;
     const xScale = scales.x;
+    const laneY = [chartArea.top - 44, chartArea.top - 26, chartArea.top - 8]; // 판매공지 / 업데이트 / 펄어비스 (상단 여백에 배치)
     ctx.save();
     events.forEach(ev => {
       const x = xScale.getPixelForValue(ev.idx);
       if (x < chartArea.left || x > chartArea.right) return;
-      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue(ev.color.replace('var(', '').replace(')', '')) || ev.color;
+      const color = getComputedStyle(document.documentElement).getPropertyValue(ev.color.replace('var(', '').replace(')', '')) || ev.color;
+      const y = laneY[ev.lane];
+
+      // 세로 점선 (뱃지 아래부터 차트 하단까지)
+      ctx.strokeStyle = color;
       ctx.setLineDash([4, 3]);
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(x, chartArea.top);
+      ctx.moveTo(x, y + 9);
       ctx.lineTo(x, chartArea.bottom);
       ctx.stroke();
+
+      // 번호 뱃지 (원 + 숫자)
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.arc(x, y, 8, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.fillStyle = '#0d1117';
+      ctx.font = 'bold 10px -apple-system,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(ev.num), x, y + 0.5);
     });
     ctx.restore();
   }
@@ -186,6 +219,7 @@ new Chart(ctx, {
   options: {
     responsive: true,
     maintainAspectRatio: false,
+    layout: { padding: { top: 56 } },
     interaction: { mode: 'index', intersect: false },
     plugins: {
       legend: { labels: { color: '#9aa4b2', font: { size: 11 } } },
@@ -195,7 +229,8 @@ new Chart(ctx, {
             const idx = items[0].dataIndex;
             const hit = events.filter(e => e.idx === idx);
             if (!hit.length) return [];
-            return ['', '── 일정 ──', ...hit.map(h => '• ' + h.label)];
+            const laneTag = ['판매', '업데이트', '펄어비스'];
+            return ['', '── 일정 ──', ...hit.map(h => `${laneTag[h.lane]}#${h.num} ${h.label}`)];
           }
         }
       }
@@ -222,24 +257,35 @@ new Chart(ctx, {
 try {
   function fillTable(id, rows, cols) {
     const tbody = document.getElementById(id);
-    tbody.innerHTML = rows.map(r => '<tr>' + cols.map(c => '<td class="label">' + (r[c] ?? '') + '</td>').join('') + '</tr>').join('');
+    tbody.innerHTML = rows.map(r => '<tr>' + cols.map(c => {
+      if (c === 'num') {
+        return '<td class="num"><span class="badge" style="background:' + r.color + '">' + r.num + '</span></td>';
+      }
+      return '<td class="label">' + (r[c] ?? '') + '</td>';
+    }).join('') + '</tr>').join('');
   }
 
-  fillTable('tbl-sales', DATA.sales_milestones.map(e => ({
+  fillTable('tbl-sales', salesEvents.map(e => ({
+    num: e.num,
+    color: e.color,
     date: e.date.slice(0, 16).replace('T', ' '),
     day: 'D+' + e.day,
     label: e.label,
-  })), ['date', 'day', 'label']);
+  })), ['num', 'date', 'day', 'label']);
 
-  fillTable('tbl-update', DATA.game_updates.map(e => ({
+  fillTable('tbl-update', updateEvents.map(e => ({
+    num: e.num,
+    color: e.color,
     date: e.date,
     label: e.label,
-  })), ['date', 'label']);
+  })), ['num', 'date', 'label']);
 
-  fillTable('tbl-pa', DATA.pearl_abyss_events.map(e => ({
+  fillTable('tbl-pa', paEvents.map(e => ({
+    num: e.num,
+    color: e.color,
     date: e.date,
     label: e.label,
-  })), ['date', 'label']);
+  })), ['num', 'date', 'label']);
 } catch (err) {
   showError('일정 테이블 렌더링 실패: ' + err.message);
 }
