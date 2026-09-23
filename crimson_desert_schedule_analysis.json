@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-23T08:20:31.836522+00:00",
+  "generated_at": "2026-09-23T11:28:23.017324+00:00",
   "source_files": {
     "steam": "steam_topseller_history.json",
     "ps": "bestseller_history.json",
@@ -1828,11 +1828,20 @@
     {
       "date": "2026-09-22",
       "day": 187,
-      "avg_rank": 110.44,
-      "best_snapshot_rank": 105.96,
-      "worst_snapshot_rank": 114.92,
-      "avg_countries_tracked": 25,
-      "snapshots": 2
+      "avg_rank": 105.5,
+      "best_snapshot_rank": 96.65,
+      "worst_snapshot_rank": 115.26,
+      "avg_countries_tracked": 26,
+      "snapshots": 6
+    },
+    {
+      "date": "2026-09-23",
+      "day": 188,
+      "avg_rank": 107.83,
+      "best_snapshot_rank": 99.8,
+      "worst_snapshot_rank": 121.38,
+      "avg_countries_tracked": 24.6,
+      "snapshots": 5
     }
   ],
   "daily_average_rank_ps": [
@@ -3617,6 +3626,15 @@
       "worst_snapshot_rank": 50.59,
       "avg_countries_tracked": 67,
       "snapshots": 4
+    },
+    {
+      "date": "2026-09-23",
+      "day": 188,
+      "avg_rank": 51.96,
+      "best_snapshot_rank": 51.7,
+      "worst_snapshot_rank": 52.23,
+      "avg_countries_tracked": 66,
+      "snapshots": 2
     }
   ],
   "daily_average_rank_dlc_preorder": [
@@ -3790,6 +3808,15 @@
       "worst_snapshot_rank": 13.05,
       "avg_countries_tracked": 62,
       "snapshots": 5
+    },
+    {
+      "date": "2026-09-23",
+      "day": 188,
+      "avg_rank": 12.06,
+      "best_snapshot_rank": 11.4,
+      "worst_snapshot_rank": 12.41,
+      "avg_countries_tracked": 62,
+      "snapshots": 3
     }
   ],
   "sales_milestones": [
