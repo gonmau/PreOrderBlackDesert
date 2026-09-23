@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-23T09:24:06.276524+00:00",
+  "generated_at": "2026-09-23T08:20:31.836522+00:00",
   "source_files": {
     "steam": "steam_topseller_history.json",
     "ps": "bestseller_history.json",
@@ -1828,20 +1828,11 @@
     {
       "date": "2026-09-22",
       "day": 187,
-      "avg_rank": 105.5,
-      "best_snapshot_rank": 96.65,
-      "worst_snapshot_rank": 115.26,
-      "avg_countries_tracked": 26,
-      "snapshots": 6
-    },
-    {
-      "date": "2026-09-23",
-      "day": 188,
-      "avg_rank": 107.83,
-      "best_snapshot_rank": 99.8,
-      "worst_snapshot_rank": 121.38,
-      "avg_countries_tracked": 24.6,
-      "snapshots": 5
+      "avg_rank": 110.44,
+      "best_snapshot_rank": 105.96,
+      "worst_snapshot_rank": 114.92,
+      "avg_countries_tracked": 25,
+      "snapshots": 2
     }
   ],
   "daily_average_rank_ps": [
@@ -3626,15 +3617,6 @@
       "worst_snapshot_rank": 50.59,
       "avg_countries_tracked": 67,
       "snapshots": 4
-    },
-    {
-      "date": "2026-09-23",
-      "day": 188,
-      "avg_rank": 51.96,
-      "best_snapshot_rank": 51.7,
-      "worst_snapshot_rank": 52.23,
-      "avg_countries_tracked": 66,
-      "snapshots": 2
     }
   ],
   "daily_average_rank_dlc_preorder": [
@@ -3808,15 +3790,6 @@
       "worst_snapshot_rank": 13.05,
       "avg_countries_tracked": 62,
       "snapshots": 5
-    },
-    {
-      "date": "2026-09-23",
-      "day": 188,
-      "avg_rank": 12.06,
-      "best_snapshot_rank": 11.4,
-      "worst_snapshot_rank": 12.41,
-      "avg_countries_tracked": 62,
-      "snapshots": 3
     }
   ],
   "sales_milestones": [
@@ -3853,6 +3826,31 @@
   ],
   "game_updates": [
     {
+      "date": "2025-08-20",
+      "label": "게임스컴 2025 최초 플레이어블 데모 공개 (쾰른)",
+      "type": "demo"
+    },
+    {
+      "date": "2025-09-25",
+      "label": "State of Play — 출시일(2026-03-19) 최초 공개 + 신규 영상 공개",
+      "type": "trailer"
+    },
+    {
+      "date": "2026-02-24",
+      "label": "글로벌 프리뷰 이벤트 (미디어·인플루언서 대상, 4시간 분량 시연) — 2월 말",
+      "type": "preview_event"
+    },
+    {
+      "date": "2026-03-12",
+      "label": "공식 론칭 트레일러 공개",
+      "type": "trailer"
+    },
+    {
+      "date": "2026-03-18",
+      "label": "사전 다운로드 시작 (오전 7시 KST)",
+      "type": "predownload"
+    },
+    {
       "date": "2026-03-19",
       "label": "출시 & 데이원 패치 (1.000.142)",
       "type": "launch"
@@ -3881,6 +3879,16 @@
       "date": "2026-08-12",
       "label": "출시 후 17개 메이저 업데이트 회고 인포그래픽 공개 + DLC Q4 출시 예정 확인",
       "type": "retrospective"
+    },
+    {
+      "date": "2026-08-25",
+      "label": "'Crimson Desert Enhanced' 무료 대형 업데이트(신규 컷신·5개 언어 더빙) + 전 플랫폼 최초 20% 할인 시작",
+      "type": "update_discount"
+    },
+    {
+      "date": "2026-09-09",
+      "label": "출시 후 첫 할인 종료 (20%, 전 플랫폼)",
+      "type": "discount_end"
     },
     {
       "date": "2026-10-15",
@@ -3918,6 +3926,28 @@
       "date": "2026-12-31",
       "label": "자사주 매입 프로그램(1,000억원) 종료 예정",
       "type": "shareholder_return"
+    }
+  ],
+  "marketing_events": [
+    {
+      "date": "2025-09-25",
+      "label": "PlayStation State of Play — 정식 출시일(3/19) 최초 공개 + 스토리 트레일러, 예약구매 시작",
+      "type": "reveal"
+    },
+    {
+      "date": "2026-03-12",
+      "label": "정식 출시 트레일러(런칭 트레일러) 공개",
+      "type": "trailer"
+    },
+    {
+      "date": "2026-03-17",
+      "label": "사전 다운로드(프리로드) 시작",
+      "type": "predownload"
+    },
+    {
+      "date": "2026-08-25",
+      "label": "Steam·PS·Xbox 전역 첫 20% 할인 시작 (~9/10 KST) + gamescom Awards 2026 'Most Epic'·'Best PC Game' 노미네이트",
+      "type": "sale"
     }
   ]
 }

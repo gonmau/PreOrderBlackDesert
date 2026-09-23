@@ -194,12 +194,19 @@ SALES_MILESTONES = [
 # 3. 게임 업데이트 일정 (공식 발표/패치 기반, 출시 이후)
 # ─────────────────────────────────────────────
 GAME_UPDATES = [
+    {"date": "2025-08-20", "label": "게임스컴 2025 최초 플레이어블 데모 공개 (쾰른)", "type": "demo"},
+    {"date": "2025-09-25", "label": "State of Play — 출시일(2026-03-19) 최초 공개 + 신규 영상 공개", "type": "trailer"},
+    {"date": "2026-02-24", "label": "글로벌 프리뷰 이벤트 (미디어·인플루언서 대상, 4시간 분량 시연) — 2월 말", "type": "preview_event"},
+    {"date": "2026-03-12", "label": "공식 론칭 트레일러 공개", "type": "trailer"},
+    {"date": "2026-03-18", "label": "사전 다운로드 시작 (오전 7시 KST)", "type": "predownload"},
     {"date": "2026-03-19", "label": "출시 & 데이원 패치 (1.000.142)", "type": "launch"},
     {"date": "2026-04-24", "label": "난이도 설정 · 컨트롤 프리셋 · 인벤토리 탭 패치", "type": "patch"},
     {"date": "2026-06-02", "label": "6~9월 로드맵 Dev Update 공개 (Re-Blockade, 크로스세이브, DLC 개발 확인)", "type": "roadmap"},
     {"date": "2026-06-19", "label": "업데이트 1.000.352 (v1.12.0) — 하우징 신규 아이템", "type": "patch"},
     {"date": "2026-07-15", "label": "7월 업데이트 — 장비 밸런스, 오옹카/다미안 확장", "type": "patch"},
     {"date": "2026-08-12", "label": "출시 후 17개 메이저 업데이트 회고 인포그래픽 공개 + DLC Q4 출시 예정 확인", "type": "retrospective"},
+    {"date": "2026-08-25", "label": "'Crimson Desert Enhanced' 무료 대형 업데이트(신규 컷신·5개 언어 더빙) + 전 플랫폼 최초 20% 할인 시작", "type": "update_discount"},
+    {"date": "2026-09-09", "label": "출시 후 첫 할인 종료 (20%, 전 플랫폼)", "type": "discount_end"},
     {"date": "2026-10-15", "label": "DLC 'Crimson Desert Enhanced: Charting the Unknown' 정식 출시 예정 (사전예약은 9월 초부터 진행 중)", "type": "dlc"},
 ]
 
@@ -213,6 +220,16 @@ PEARL_ABYSS_EVENTS = [
     {"date": "2026-08-11", "label": "2026년 2분기 실적 발표 (가이던스 하회, 연간 가이던스 하향)", "type": "earnings"},
     {"date": "2026-08-12", "label": "붉은사막 DLC Q4 출시 예정 공식 확인", "type": "dlc_guidance"},
     {"date": "2026-12-31", "label": "자사주 매입 프로그램(1,000억원) 종료 예정", "type": "shareholder_return"},
+]
+
+# ─────────────────────────────────────────────
+# 5. 마케팅/프로모션 일정 (트레일러·영상 공개, 할인, 시상식 등)
+# ─────────────────────────────────────────────
+MARKETING_EVENTS = [
+    {"date": "2025-09-25", "label": "PlayStation State of Play — 정식 출시일(3/19) 최초 공개 + 스토리 트레일러, 예약구매 시작", "type": "reveal"},
+    {"date": "2026-03-12", "label": "정식 출시 트레일러(런칭 트레일러) 공개", "type": "trailer"},
+    {"date": "2026-03-17", "label": "사전 다운로드(프리로드) 시작", "type": "predownload"},
+    {"date": "2026-08-25", "label": "Steam·PS·Xbox 전역 첫 20% 할인 시작 (~9/10 KST) + gamescom Awards 2026 'Most Epic'·'Best PC Game' 노미네이트", "type": "sale"},
 ]
 
 
@@ -235,6 +252,7 @@ def build():
         "sales_milestones": SALES_MILESTONES,
         "game_updates": GAME_UPDATES,
         "pearl_abyss_events": PEARL_ABYSS_EVENTS,
+        "marketing_events": MARKETING_EVENTS,
     }
 
     with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
