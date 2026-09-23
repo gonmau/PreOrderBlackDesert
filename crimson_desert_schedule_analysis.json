@@ -1,8 +1,9 @@
 {
-  "generated_at": "2026-09-23T00:01:07.438918+00:00",
+  "generated_at": "2026-09-23T00:12:57.459386+00:00",
   "source_files": {
     "steam": "steam_topseller_history.json",
-    "ps": "bestseller_history.json"
+    "ps": "bestseller_history.json",
+    "dlc_preorder": "crimson_dlc_rank_history.json"
   },
   "launch_date": "2026-03-19T00:00:00+09:00",
   "daily_average_rank_steam": [
@@ -3618,6 +3619,179 @@
       "snapshots": 4
     }
   ],
+  "daily_average_rank_dlc_preorder": [
+    {
+      "date": "2026-09-04",
+      "day": 169,
+      "avg_rank": 10.38,
+      "best_snapshot_rank": 10.38,
+      "worst_snapshot_rank": 10.38,
+      "avg_countries_tracked": 67,
+      "snapshots": 4
+    },
+    {
+      "date": "2026-09-05",
+      "day": 170,
+      "avg_rank": 8.07,
+      "best_snapshot_rank": 7.81,
+      "worst_snapshot_rank": 9.39,
+      "avg_countries_tracked": 67,
+      "snapshots": 6
+    },
+    {
+      "date": "2026-09-06",
+      "day": 171,
+      "avg_rank": 8.0,
+      "best_snapshot_rank": 7.84,
+      "worst_snapshot_rank": 8.03,
+      "avg_countries_tracked": 66.7,
+      "snapshots": 6
+    },
+    {
+      "date": "2026-09-07",
+      "day": 172,
+      "avg_rank": 8.2,
+      "best_snapshot_rank": 8.06,
+      "worst_snapshot_rank": 8.24,
+      "avg_countries_tracked": 67,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-09-08",
+      "day": 173,
+      "avg_rank": 8.41,
+      "best_snapshot_rank": 8.27,
+      "worst_snapshot_rank": 8.44,
+      "avg_countries_tracked": 67,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-09-09",
+      "day": 174,
+      "avg_rank": 8.07,
+      "best_snapshot_rank": 7.93,
+      "worst_snapshot_rank": 8.1,
+      "avg_countries_tracked": 67,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-09-10",
+      "day": 175,
+      "avg_rank": 8.19,
+      "best_snapshot_rank": 8.08,
+      "worst_snapshot_rank": 8.22,
+      "avg_countries_tracked": 66.8,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-09-11",
+      "day": 176,
+      "avg_rank": 8.27,
+      "best_snapshot_rank": 8.24,
+      "worst_snapshot_rank": 8.28,
+      "avg_countries_tracked": 67,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-09-12",
+      "day": 177,
+      "avg_rank": 9.64,
+      "best_snapshot_rank": 9.64,
+      "worst_snapshot_rank": 9.64,
+      "avg_countries_tracked": 62,
+      "snapshots": 3
+    },
+    {
+      "date": "2026-09-13",
+      "day": 178,
+      "avg_rank": 10.66,
+      "best_snapshot_rank": 10.09,
+      "worst_snapshot_rank": 10.8,
+      "avg_countries_tracked": 62,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-09-14",
+      "day": 179,
+      "avg_rank": 11.35,
+      "best_snapshot_rank": 11.33,
+      "worst_snapshot_rank": 11.39,
+      "avg_countries_tracked": 62,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-09-15",
+      "day": 180,
+      "avg_rank": 10.0,
+      "best_snapshot_rank": 9.77,
+      "worst_snapshot_rank": 10.89,
+      "avg_countries_tracked": 62,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-09-16",
+      "day": 181,
+      "avg_rank": 10.42,
+      "best_snapshot_rank": 9.86,
+      "worst_snapshot_rank": 10.55,
+      "avg_countries_tracked": 62,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-09-17",
+      "day": 182,
+      "avg_rank": 10.93,
+      "best_snapshot_rank": 10.33,
+      "worst_snapshot_rank": 11.53,
+      "avg_countries_tracked": 62,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-09-18",
+      "day": 183,
+      "avg_rank": 10.99,
+      "best_snapshot_rank": 10.96,
+      "worst_snapshot_rank": 11.1,
+      "avg_countries_tracked": 62,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-09-19",
+      "day": 184,
+      "avg_rank": 10.95,
+      "best_snapshot_rank": 10.94,
+      "worst_snapshot_rank": 10.95,
+      "avg_countries_tracked": 62,
+      "snapshots": 6
+    },
+    {
+      "date": "2026-09-20",
+      "day": 185,
+      "avg_rank": 11.51,
+      "best_snapshot_rank": 10.94,
+      "worst_snapshot_rank": 11.65,
+      "avg_countries_tracked": 62,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-09-21",
+      "day": 186,
+      "avg_rank": 12.41,
+      "best_snapshot_rank": 11.69,
+      "worst_snapshot_rank": 12.61,
+      "avg_countries_tracked": 62,
+      "snapshots": 5
+    },
+    {
+      "date": "2026-09-22",
+      "day": 187,
+      "avg_rank": 12.22,
+      "best_snapshot_rank": 11.36,
+      "worst_snapshot_rank": 13.05,
+      "avg_countries_tracked": 62,
+      "snapshots": 5
+    }
+  ],
   "sales_milestones": [
     {
       "date": "2026-03-20T23:46:00+09:00",
@@ -3683,7 +3857,7 @@
     },
     {
       "date": "2026-10-15",
-      "label": "DLC 'Crimson Desert Enhanced: Charting the Unknown' 프리오더 오픈",
+      "label": "DLC 'Crimson Desert Enhanced: Charting the Unknown' 정식 출시 예정 (사전예약은 9월 초부터 진행 중)",
       "type": "dlc"
     }
   ],

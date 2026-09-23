@@ -30,6 +30,7 @@ from datetime import datetime
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STEAM_INPUT_FILE = os.path.join(BASE_DIR, "steam_topseller_history.json")
 PS_INPUT_FILE = os.path.join(BASE_DIR, "bestseller_history.json")
+DLC_INPUT_FILE = os.path.join(BASE_DIR, "crimson_dlc_rank_history.json")
 OUTPUT_JSON = os.path.join(BASE_DIR, "crimson_desert_schedule_analysis.json")
 OUTPUT_HTML = os.path.join(BASE_DIR, "steam_rank_timeline.html")
 
@@ -113,6 +114,52 @@ def load_daily_average_rank_ps(path):
     return _aggregate_daily(daily_snapshot_avgs, daily_country_counts)
 
 
+# ─────────────────────────────────────────────
+# 1c. DLC('Charting the Unknown') 사전예약 순위 → 일자별 평균 순위
+#     (crimson_dlc_rank_history.json: averages.combined 존재,
+#      raw_results는 {국가: {rank: N}} 중첩 dict 형태)
+# ─────────────────────────────────────────────
+def load_daily_average_rank_dlc(path):
+    if not os.path.exists(path):
+        return []
+
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    history = data["history"]
+
+    daily_snapshot_avgs = defaultdict(list)
+    daily_country_counts = defaultdict(list)
+
+    for entry in history:
+        ts_raw = entry.get("timestamp")
+        if not ts_raw:
+            continue
+        try:
+            ts = datetime.fromisoformat(ts_raw)
+        except ValueError:
+            continue
+
+        combined = entry.get("averages", {}).get("combined")
+        raw_results = entry.get("raw_results", {})
+        ranks = [
+            v.get("rank") if isinstance(v, dict) else v
+            for v in raw_results.values()
+        ]
+        ranks = [r for r in ranks if isinstance(r, (int, float))]
+        country_count = len(ranks)
+
+        if combined is None:
+            if not ranks:
+                continue
+            combined = statistics.mean(ranks)
+
+        date_key = ts.date().isoformat()
+        daily_snapshot_avgs[date_key].append(combined)
+        daily_country_counts[date_key].append(country_count)
+
+    return _aggregate_daily(daily_snapshot_avgs, daily_country_counts)
+
+
 def _aggregate_daily(daily_snapshot_avgs, daily_country_counts):
     daily_average_rank = []
     for date_key in sorted(daily_snapshot_avgs.keys()):
@@ -153,7 +200,7 @@ GAME_UPDATES = [
     {"date": "2026-06-19", "label": "업데이트 1.000.352 (v1.12.0) — 하우징 신규 아이템", "type": "patch"},
     {"date": "2026-07-15", "label": "7월 업데이트 — 장비 밸런스, 오옹카/다미안 확장", "type": "patch"},
     {"date": "2026-08-12", "label": "출시 후 17개 메이저 업데이트 회고 인포그래픽 공개 + DLC Q4 출시 예정 확인", "type": "retrospective"},
-    {"date": "2026-10-15", "label": "DLC 'Crimson Desert Enhanced: Charting the Unknown' 프리오더 오픈", "type": "dlc"},
+    {"date": "2026-10-15", "label": "DLC 'Crimson Desert Enhanced: Charting the Unknown' 정식 출시 예정 (사전예약은 9월 초부터 진행 중)", "type": "dlc"},
 ]
 
 # ─────────────────────────────────────────────
@@ -172,16 +219,19 @@ PEARL_ABYSS_EVENTS = [
 def build():
     daily_avg_steam = load_daily_average_rank_steam(STEAM_INPUT_FILE)
     daily_avg_ps = load_daily_average_rank_ps(PS_INPUT_FILE)
+    daily_avg_dlc = load_daily_average_rank_dlc(DLC_INPUT_FILE)
 
     result = {
         "generated_at": datetime.now().astimezone().isoformat(),
         "source_files": {
             "steam": "steam_topseller_history.json",
             "ps": "bestseller_history.json",
+            "dlc_preorder": "crimson_dlc_rank_history.json",
         },
         "launch_date": LAUNCH_DATE.isoformat(),
         "daily_average_rank_steam": daily_avg_steam,
         "daily_average_rank_ps": daily_avg_ps,
+        "daily_average_rank_dlc_preorder": daily_avg_dlc,
         "sales_milestones": SALES_MILESTONES,
         "game_updates": GAME_UPDATES,
         "pearl_abyss_events": PEARL_ABYSS_EVENTS,
@@ -190,7 +240,10 @@ def build():
     with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
 
-    print(f"[OK] {OUTPUT_JSON} 저장 완료 — Steam 일자 수: {len(daily_avg_steam)}, PS 일자 수: {len(daily_avg_ps)}")
+    print(
+        f"[OK] {OUTPUT_JSON} 저장 완료 — "
+        f"Steam {len(daily_avg_steam)}일 / PS {len(daily_avg_ps)}일 / DLC사전예약 {len(daily_avg_dlc)}일"
+    )
     return result
 
 

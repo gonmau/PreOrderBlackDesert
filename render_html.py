@@ -30,6 +30,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     --border:#2a3038;
     --c-rank:#4a9eff;
     --c-rank-ps:#ffa726;
+    --c-rank-dlc:#ab47bc;
     --c-sales:#f1c40f;
     --c-update:#2ecc71;
     --c-pa:#ff4757;
@@ -67,13 +68,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 
-<h1>붉은사막 — 스팀 × PS Store 평균 순위 × 판매/업데이트/펄어비스 일정</h1>
-<div class="sub">source: steam_topseller_history.json, bestseller_history.json · generated: __GENERATED_AT__</div>
+<h1>붉은사막 — 스팀 × PS Store × DLC 사전예약 평균 순위 × 판매/업데이트/펄어비스 일정</h1>
+<div class="sub">source: steam_topseller_history.json, bestseller_history.json, crimson_dlc_rank_history.json · generated: __GENERATED_AT__</div>
 
 <div class="card">
   <div class="legend">
     <span><i class="dot" style="background:var(--c-rank)"></i> Steam 일 평균 순위</span>
     <span><i class="dot" style="background:var(--c-rank-ps)"></i> PS Store 일 평균 순위</span>
+    <span><i class="dot" style="background:var(--c-rank-dlc)"></i> DLC 사전예약 일 평균 순위</span>
     <span><i class="dot" style="background:var(--c-sales)"></i> 판매량 공지</span>
     <span><i class="dot" style="background:var(--c-update)"></i> 게임 업데이트</span>
     <span><i class="dot" style="background:var(--c-pa)"></i> 펄어비스 일정</span>
@@ -112,16 +114,23 @@ const DATA = __DATA_JSON__;
 
 const dailySteam = DATA.daily_average_rank_steam;
 const dailyPs = DATA.daily_average_rank_ps;
+const dailyDlc = DATA.daily_average_rank_dlc_preorder || [];
 
-// 두 소스의 날짜를 합쳐 하나의 x축으로 사용 (없는 날은 null → 선이 끊김)
-const labelSet = new Set([...dailySteam.map(d => d.date), ...dailyPs.map(d => d.date)]);
+// 세 소스의 날짜를 합쳐 하나의 x축으로 사용 (없는 날은 null → 선이 끊김)
+const labelSet = new Set([
+  ...dailySteam.map(d => d.date),
+  ...dailyPs.map(d => d.date),
+  ...dailyDlc.map(d => d.date),
+]);
 const labels = [...labelSet].sort();
 
 const steamByDate = Object.fromEntries(dailySteam.map(d => [d.date, d.avg_rank]));
 const psByDate = Object.fromEntries(dailyPs.map(d => [d.date, d.avg_rank]));
+const dlcByDate = Object.fromEntries(dailyDlc.map(d => [d.date, d.avg_rank]));
 
 const steamSeries = labels.map(d => steamByDate[d] ?? null);
 const psSeries = labels.map(d => psByDate[d] ?? null);
+const dlcSeries = labels.map(d => dlcByDate[d] ?? null);
 
 function dateIndex(dateStr) {
   // event date(YYYY-MM-DD or ISO) 이후 첫 라벨 인덱스, 없으면 가장 가까운 마지막 인덱스
@@ -211,6 +220,18 @@ new Chart(ctx, {
         data: psSeries,
         borderColor: '#ffa726',
         backgroundColor: 'rgba(255,167,38,0.08)',
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: 0.15,
+        fill: true,
+        spanGaps: true,
+        order: 1,
+      },
+      {
+        label: 'DLC 사전예약 일 평균 순위',
+        data: dlcSeries,
+        borderColor: '#ab47bc',
+        backgroundColor: 'rgba(171,71,188,0.08)',
         borderWidth: 2,
         pointRadius: 0,
         tension: 0.15,
