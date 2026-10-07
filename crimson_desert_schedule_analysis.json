@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-07T10:36:42.445437+00:00",
+  "generated_at": "2026-10-07T12:02:54.143907+00:00",
   "source_files": {
     "steam": "steam_topseller_history.json",
     "ps": "bestseller_history.json",
@@ -3882,11 +3882,11 @@
     {
       "date": "2026-10-07",
       "day": 202,
-      "avg_rank": 76.38,
-      "best_snapshot_rank": 76.38,
+      "avg_rank": 68.82,
+      "best_snapshot_rank": 61.25,
       "worst_snapshot_rank": 76.38,
-      "avg_countries_tracked": 30,
-      "snapshots": 1
+      "avg_countries_tracked": 25.5,
+      "snapshots": 2
     }
   ],
   "daily_average_rank_dlc_preorder": [
