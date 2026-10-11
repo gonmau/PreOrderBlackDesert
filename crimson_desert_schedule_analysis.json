@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-11T00:03:18.572608+00:00",
+  "generated_at": "2026-10-11T02:02:44.454349+00:00",
   "source_files": {
     "steam": "steam_topseller_history.json",
     "ps": "bestseller_history.json",
@@ -4289,11 +4289,11 @@
     {
       "date": "2026-10-11",
       "day": 206,
-      "avg_rank": 12.66,
-      "best_snapshot_rank": 12.66,
+      "avg_rank": 12.57,
+      "best_snapshot_rank": 12.48,
       "worst_snapshot_rank": 12.66,
       "avg_countries_tracked": 62,
-      "snapshots": 1
+      "snapshots": 2
     }
   ],
   "sales_milestones": [
