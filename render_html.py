@@ -64,6 +64,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   .grid2 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
   @media (max-width: 900px) { .grid2 { grid-template-columns:1fr; } }
   footer { color:var(--tx-3); font-size:11px; margin-top:18px; }
+  /* 일정 on/off 토글 */
+  .toggle {
+    cursor:pointer; user-select:none; padding:3px 10px; border-radius:999px;
+    border:1px solid var(--border); background:var(--bg-2); transition:opacity .15s, background .15s;
+  }
+  .toggle:hover { background:#242b35; }
+  .toggle.off { opacity:.4; text-decoration:line-through; }
+  .toggle.off .dot { background:var(--tx-3) !important; }
+  .card.off { opacity:.35; }
+  .toggle-hint { color:var(--tx-3); font-size:11px; margin-left:4px; align-self:center; }
 </style>
 </head>
 <body>
@@ -76,24 +86,25 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <span><i class="dot" style="background:var(--c-rank)"></i> Steam 일 평균 순위</span>
     <span><i class="dot" style="background:var(--c-rank-ps)"></i> PS Store 일 평균 순위</span>
     <span><i class="dot" style="background:var(--c-rank-dlc)"></i> DLC 사전예약 일 평균 순위</span>
-    <span><i class="dot" style="background:var(--c-sales)"></i> 판매량 공지</span>
-    <span><i class="dot" style="background:var(--c-update)"></i> 게임 업데이트</span>
-    <span><i class="dot" style="background:var(--c-pa)"></i> 펄어비스 일정</span>
+    <span class="toggle" data-lane="0" role="button" tabindex="0"><i class="dot" style="background:var(--c-sales)"></i> 판매량 공지</span>
+    <span class="toggle" data-lane="1" role="button" tabindex="0"><i class="dot" style="background:var(--c-update)"></i> 게임 업데이트</span>
+    <span class="toggle" data-lane="2" role="button" tabindex="0"><i class="dot" style="background:var(--c-pa)"></i> 펄어비스 일정</span>
+    <span class="toggle-hint">← 클릭하면 차트 일정 표시 켜기/끄기</span>
   </div>
   <div class="chart-wrap"><canvas id="rankChart"></canvas></div>
 </div>
 
 <div class="grid2">
-  <div class="card">
-    <div class="legend"><span><i class="dot" style="background:var(--c-sales)"></i> 판매량 공지</span></div>
+  <div class="card" id="card-lane-0">
+    <div class="legend"><span class="toggle" data-lane="0" role="button" tabindex="0"><i class="dot" style="background:var(--c-sales)"></i> 판매량 공지</span></div>
     <table><thead><tr><th></th><th>일자</th><th>D+</th><th>내용</th></tr></thead><tbody id="tbl-sales"></tbody></table>
   </div>
-  <div class="card">
-    <div class="legend"><span><i class="dot" style="background:var(--c-update)"></i> 게임 업데이트</span></div>
+  <div class="card" id="card-lane-1">
+    <div class="legend"><span class="toggle" data-lane="1" role="button" tabindex="0"><i class="dot" style="background:var(--c-update)"></i> 게임 업데이트</span></div>
     <table><thead><tr><th></th><th>일자</th><th>내용</th></tr></thead><tbody id="tbl-update"></tbody></table>
   </div>
-  <div class="card">
-    <div class="legend"><span><i class="dot" style="background:var(--c-pa)"></i> 펄어비스 일정</span></div>
+  <div class="card" id="card-lane-2">
+    <div class="legend"><span class="toggle" data-lane="2" role="button" tabindex="0"><i class="dot" style="background:var(--c-pa)"></i> 펄어비스 일정</span></div>
     <table><thead><tr><th></th><th>일자</th><th>내용</th></tr></thead><tbody id="tbl-pa"></tbody></table>
   </div>
 </div>
@@ -156,6 +167,11 @@ const updateEvents = withNum(DATA.game_updates, 'var(--c-update)', 1);
 const paEvents = withNum(DATA.pearl_abyss_events, 'var(--c-pa)', 2);
 const events = [...salesEvents, ...updateEvents, ...paEvents];
 
+// 일정 레인별 표시 여부 (0: 판매량 공지, 1: 게임 업데이트, 2: 펄어비스 일정)
+const laneVisible = [true, true, true];
+const TOP10_LABEL = '10위 기준선';
+let rankChart = null;
+
 const verticalLinesPlugin = {
   id: 'verticalLinesPlugin',
   afterDatasetsDraw(chart) {
@@ -165,6 +181,7 @@ const verticalLinesPlugin = {
     const laneY = [chartArea.top - 44, chartArea.top - 26, chartArea.top - 8]; // 판매공지 / 업데이트 / 펄어비스 (상단 여백에 배치)
     ctx.save();
     events.forEach(ev => {
+      if (!laneVisible[ev.lane]) return;
       const x = xScale.getPixelForValue(ev.idx);
       if (x < chartArea.left || x > chartArea.right) return;
       const color = getComputedStyle(document.documentElement).getPropertyValue(ev.color.replace('var(', '').replace(')', '')) || ev.color;
@@ -195,10 +212,29 @@ const verticalLinesPlugin = {
   }
 };
 
+// 10위 기준선 라벨 (차트 좌측 끝)
+const top10LabelPlugin = {
+  id: 'top10LabelPlugin',
+  afterDatasetsDraw(chart) {
+    const meta = chart.data.datasets.findIndex(d => d.label === TOP10_LABEL);
+    if (meta < 0 || !chart.isDatasetVisible(meta)) return;
+    const { ctx, chartArea, scales } = chart;
+    const y = scales.y.getPixelForValue(10);
+    if (y < chartArea.top || y > chartArea.bottom) return;
+    ctx.save();
+    ctx.fillStyle = '#ff6b6b';
+    ctx.font = 'bold 10px -apple-system,sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('TOP 10', chartArea.left + 6, y - 3);
+    ctx.restore();
+  }
+};
+
 try {
 if (typeof Chart === 'undefined') throw new Error('Chart.js 로드 실패 (라이브러리가 내장되어 있어야 하는데 없음)');
 const ctx = document.getElementById('rankChart').getContext('2d');
-new Chart(ctx, {
+rankChart = new Chart(ctx, {
   type: 'line',
   data: {
     labels,
@@ -239,6 +275,18 @@ new Chart(ctx, {
         spanGaps: true,
         order: 1,
       },
+      {
+        label: TOP10_LABEL,
+        data: labels.map(() => 10),
+        borderColor: 'rgba(255,107,107,0.85)',
+        backgroundColor: 'transparent',
+        borderWidth: 1.5,
+        borderDash: [6, 4],
+        pointRadius: 0,
+        pointHoverRadius: 0,
+        fill: false,
+        order: 0,
+      },
     ],
   },
   options: {
@@ -247,12 +295,13 @@ new Chart(ctx, {
     layout: { padding: { top: 56 } },
     interaction: { mode: 'index', intersect: false },
     plugins: {
-      legend: { labels: { color: '#9aa4b2', font: { size: 11 } } },
+      legend: { position: 'bottom', labels: { color: '#9aa4b2', font: { size: 11 } } },
       tooltip: {
+        filter: item => item.dataset.label !== TOP10_LABEL,
         callbacks: {
           afterBody(items) {
             const idx = items[0].dataIndex;
-            const hit = events.filter(e => e.idx === idx);
+            const hit = events.filter(e => e.idx === idx && laneVisible[e.lane]);
             if (!hit.length) return [];
             const laneTag = ['판매', '업데이트', '펄어비스'];
             return ['', '── 일정 ──', ...hit.map(h => `${laneTag[h.lane]}#${h.num} ${h.label}`)];
@@ -273,11 +322,32 @@ new Chart(ctx, {
       },
     },
   },
-  plugins: [verticalLinesPlugin],
+  plugins: [verticalLinesPlugin, top10LabelPlugin],
 });
 } catch (err) {
   showError('차트 렌더링 실패: ' + err.message);
 }
+
+// 일정 토글: 상단 범례와 하단 카드 헤더의 동일 레인 버튼이 상태를 공유
+function setLane(lane, visible) {
+  laneVisible[lane] = visible;
+  document.querySelectorAll('.toggle[data-lane="' + lane + '"]').forEach(el => {
+    el.classList.toggle('off', !visible);
+    el.setAttribute('aria-pressed', String(visible));
+  });
+  const card = document.getElementById('card-lane-' + lane);
+  if (card) card.classList.toggle('off', !visible);
+  if (rankChart) rankChart.update('none');
+}
+document.querySelectorAll('.toggle[data-lane]').forEach(el => {
+  const lane = Number(el.dataset.lane);
+  el.setAttribute('aria-pressed', 'true');
+  const flip = () => setLane(lane, !laneVisible[lane]);
+  el.addEventListener('click', flip);
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
+  });
+});
 
 try {
   function fillTable(id, rows, cols) {

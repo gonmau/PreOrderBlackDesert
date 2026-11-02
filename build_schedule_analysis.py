@@ -207,7 +207,8 @@ GAME_UPDATES = [
     {"date": "2026-08-12", "label": "출시 후 17개 메이저 업데이트 회고 인포그래픽 공개 + DLC Q4 출시 예정 확인", "type": "retrospective"},
     {"date": "2026-08-25", "label": "'Crimson Desert Enhanced' 무료 대형 업데이트(신규 컷신·5개 언어 더빙) + 전 플랫폼 최초 20% 할인 시작", "type": "update_discount"},
     {"date": "2026-09-09", "label": "출시 후 첫 할인 종료 (20%, 전 플랫폼)", "type": "discount_end"},
-    {"date": "2026-10-15", "label": "DLC 'Crimson Desert Enhanced: Charting the Unknown' 정식 출시 예정 (사전예약은 9월 초부터 진행 중)", "type": "dlc"},
+    {"date": "2026-09-04", "label": "첫 DLC '미지의 여정' 공개 — 10/16 출시 예정, 정가 27,800원 (예약구매 보너스: 다이빙 슈트)", "type": "dlc_reveal"},
+    {"date": "2026-10-30", "label": "DLC '미지의 여정' 글로벌 동시 출시 (PS5·Xbox·Steam·Epic) — 신규 해양/해저 탐험, 하우징 확장", "type": "dlc"},
 ]
 
 # ─────────────────────────────────────────────
@@ -219,6 +220,7 @@ PEARL_ABYSS_EVENTS = [
     {"date": "2026-06-30", "label": "자사주 50%(1,403,945주) 소각", "type": "shareholder_return"},
     {"date": "2026-08-11", "label": "2026년 2분기 실적 발표 (가이던스 하회, 연간 가이던스 하향)", "type": "earnings"},
     {"date": "2026-08-12", "label": "붉은사막 DLC Q4 출시 예정 공식 확인", "type": "dlc_guidance"},
+    {"date": "2026-09-30", "label": "첫 DLC 출시 2주 연기 공지 (10/16 → 10/30, 완성도·안정성 사유)", "type": "dlc_delay"},
     {"date": "2026-12-31", "label": "자사주 매입 프로그램(1,000억원) 종료 예정", "type": "shareholder_return"},
 ]
 
